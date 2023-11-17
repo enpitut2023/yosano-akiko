@@ -1,0 +1,103 @@
+body {
+  font-family: sans-serif;
+}
+
+main {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  display: grid;
+  grid-template-columns: auto 40ch 30ch;
+  grid-template-rows: auto;
+}
+
+main > * {
+  overflow: scroll;
+}
+
+#requirements {
+  grid-column: 1/2;
+  position: relative;
+}
+
+#left-bar {
+  grid-column: 2/3;
+}
+
+#right-bar {
+  grid-column: 3/4;
+}
+
+#left-bar,
+#right-bar {
+  padding: 1em;
+}
+
+.cell {
+  position: absolute;
+  box-sizing: border-box;
+  border: 4px dashed rgba(0, 0, 255, 0.5);
+  cursor: pointer;
+}
+
+.cell:hover {
+  background-color: rgba(0, 0, 255, 0.2);
+}
+
+.cell.selected {
+  background-color: rgba(0, 0, 255, 0.4);
+}
+
+#b1 {
+  left: 426px;
+  top: 435px;
+  width: 211px;
+  height: 151px;
+}
+
+#b2 {
+  left: 426px;
+  top: 588px;
+  width: 211px;
+  height: 228px;
+}
+
+.classes > p {
+  display: none;
+}
+
+.classes > table {
+  display: table;
+}
+
+.classes.no-cell-selected > p {
+  display: block;
+}
+
+.classes.no-cell-selected > table {
+  display: none;
+}
+
+table,
+th,
+td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+
+table {
+  width: 100%;
+}
+
+th,
+td {
+  white-space: nowrap;
+}
+
+tr {
+  cursor: grab;
+  background-color: white;
+}
