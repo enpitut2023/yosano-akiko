@@ -25,4 +25,17 @@ function isB2(id) {
   );
 }
 
-setup(courses, { b1: isB1, b2: isB2 });
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isD3(id) {
+  return (
+    id !== "GB13312" &&
+    id !== "GB13322" &&
+    id !== "GB13332" &&
+    id.startsWith("GB1")
+  );
+}
+
+setup(courses, { b1: isB1, b2: isB2, d3: isD3});
