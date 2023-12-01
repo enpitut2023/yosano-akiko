@@ -25,15 +25,22 @@ main > * {
 
 #left-bar {
   grid-column: 2/3;
+  border-left: 1px dashed black;
 }
 
 #right-bar {
   grid-column: 3/4;
+  border-left: 1px dashed black;
 }
 
 #left-bar,
 #right-bar {
   padding: 1em;
+}
+
+#right-bar > .separator {
+  margin: 4ch 0;
+  border-top: 1px dashed black;
 }
 
 .cell {
@@ -51,33 +58,19 @@ main > * {
   background-color: rgba(0, 0, 255, 0.4);
 }
 
-#b1 {
-  left: 426px;
-  top: 435px;
-  width: 211px;
-  height: 151px;
-}
-
-#b2 {
-  left: 426px;
-  top: 588px;
-  width: 211px;
-  height: 228px;
-}
-
-.classes > p {
+.courses > p {
   display: none;
 }
-
-.classes > table {
-  display: table;
+.courses > table {
+  display: revert;
 }
 
-.classes.no-cell-selected > p {
-  display: block;
+.courses.no-cell-selected > p,
+.courses.contains-no-courses > p {
+  display: revert;
 }
-
-.classes.no-cell-selected > table {
+.courses.no-cell-selected > table,
+.courses.contains-no-courses > table {
   display: none;
 }
 
@@ -92,12 +85,26 @@ table {
   width: 100%;
 }
 
-th,
-td {
+th {
   white-space: nowrap;
 }
 
-tr {
+tbody > tr {
   cursor: grab;
   background-color: white;
+}
+
+.courses .course > .id-name,
+.courses .course > .credit,
+.courses .course > .term,
+.courses .course > .when,
+.courses .course > .expects {
+  display: none;
+}
+.courses.show-id-name .course > .id-name,
+.courses.show-credit .course > .credit,
+.courses.show-term .course > .term,
+.courses.show-when .course > .when,
+.courses.show-expects .course > .expects {
+  display: revert;
 }
