@@ -44,8 +44,8 @@ function isD3(id) {
  */
 function isD2(id) {
   return (
-    id === "GB13614" ||
-    id === "GB13624"
+    id === "GB13614" || // Computer Science in English A
+    id === "GB13624" // Computer Science in English B
   );
 }
 
