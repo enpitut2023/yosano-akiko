@@ -12,9 +12,22 @@
   height: 228px;
 }
 
+#d1 {
+  left: 997px;
+  top: 434px;
+  width: 213px;
+  height: 267px;
+}
+
 #d3 {
   left: 997px;
   top: 856px;
+  width: 213px;
+  height: 152px;
+}
+#d4 {
+  left: 997px;
+  top: 1009px;
   width: 213px;
   height: 152px;
 }
