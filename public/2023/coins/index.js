@@ -38,4 +38,15 @@ function isD3(id) {
   );
 }
 
-setup(courses, { b1: isB1, b2: isB2, d3: isD3});
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isD2(id) {
+  return (
+    id === "GB13614" ||
+    id === "GB13624"
+  );
+}
+
+setup(courses, { b1: isB1, b2: isB2, d2: isD2, d3: isD3 });
