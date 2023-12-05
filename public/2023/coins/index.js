@@ -130,4 +130,4 @@ function isH2(id) {
     );
 }
 
-setup(courses, { b1: isB1, b2: isB2, d1: isD1, d3: isD3, d4: isD4, e1: isE1, e2: isE2, e3: isE3, e4: isE4, f1: isF1, f2: isF2, h1: isH1, h2: isH2});
+setup(courses, { b1: isB1, b2: isB2, d1: isD1, d3: isD3, d4: isD4, f1: isF1, f2: isF2, h1: isH1, h2: isH2});
