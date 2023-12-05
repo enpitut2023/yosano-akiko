@@ -25,9 +25,66 @@
   width: 213px;
   height: 152px;
 }
+
 #d4 {
   left: 997px;
   top: 1009px;
   width: 213px;
+  height: 152px;
+}
+
+/* #e1 {
+  left: 1268px;
+  top: 434px;
+  width: 171px;
+  height: 152px;
+}
+
+#e2 {
+  left: 1268px;
+  top: 587px;
+  width: 171px;
+  height: 38px;
+}
+
+#e3 {
+  left: 1268px;
+  top: 626px;
+  width: 171px;
+  height: 38px;
+}
+
+#e4 {
+  left: 1268px;
+  top: 663px;
+  width: 171px;
+  height: 38px;
+} */
+
+#f1 {
+  left: 1497px;
+  top: 434px;
+  width: 171px;
+  height: 152px;
+}
+
+#f2 {
+  left: 1497px;
+  top: 587px;
+  width: 171px;
+  height: 152px;
+}
+
+#h1 {
+  left: 1831px;
+  top: 434px;
+  width: 171px;
+  height: 152px;
+}
+
+#h2 {
+  left: 1831px;
+  top: 587px;
+  width: 171px;
   height: 152px;
 }
