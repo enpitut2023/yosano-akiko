@@ -39,6 +39,7 @@ function isD1(id) {
     id === "GB12812" //論理システム演習
   );
 }
+
 /**
  * @param {string} id
  * @returns {boolean}
@@ -51,6 +52,7 @@ function isD3(id) {
     id.startsWith("GB1")
   );
 }
+
 /**
  * @param {string} id
  * @returns {boolean}
@@ -59,4 +61,78 @@ function isD4(id) {
   return id.startsWith("GA1");
 }
 
-setup(courses, { b1: isB1, b2: isB2, d1: isD1, d3: isD3, d4: isD4});
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isE1(id) {
+  return (
+    id.startsWith("11") && ["27", "28"].includes(id) // 総合科目(ファーストイヤーセミナー・学問への誘い)
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isE2(id) {
+  return false; // 体育
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isE3(id) {
+  return false; // 外国語(英語)
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isE4(id) {
+  return id.startsWith("6"); // 情報
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isF1(id) {
+  return (
+    (id.startsWith("12") || id.startsWith("14")) &&
+    !(["27", "28", "30", "90"].includes(id.substring(2,4))) 
+  ); // 総合科目(学士基盤科目)
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isF2(id) {
+  return id.match(/^[2-5]/); // 体育・外国語・国語・芸術
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isH1(id) {
+  return (
+    !(id.startsWith("E") && id.startsWith("F") && id.startsWith("G") && id.startsWith("H") &&
+    id.match(/^\d/)) //共通科目及び教職に関する科目
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isH2(id) {
+  return (
+    id.startsWith("E") || id.startsWith("F") || id.startsWith("GC") || id.startsWith("GE") || id.startsWith("H")
+  );
+}
+
+setup(courses, { b1: isB1, b2: isB2, d1: isD1, d3: isD3, d4: isD4, f1: isF1, f2: isF2, h1: isH1, h2: isH2});
