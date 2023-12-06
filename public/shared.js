@@ -1,7 +1,14 @@
 // @ts-check
 
 /**
- * @typedef {import("./courses.js").Course} Course
+ * @typedef {{
+ *   id: string;
+ *   name: string;
+ *   credit: number | undefined;
+ *   expects: string;
+ *   term: string;
+ *   when: string;
+ * }} Course
  *
  * @typedef {"not-taken" | "might-take" | "taken"} CourseElementState
  * @typedef {{
