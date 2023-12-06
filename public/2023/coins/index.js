@@ -44,6 +44,17 @@ function isD1(id) {
  * @param {string} id
  * @returns {boolean}
  */
+function isD2(id) {
+  return (
+    id === "GB13614" || // Computer Science in English A
+    id === "GB13624" // Computer Science in English B
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
 function isD3(id) {
   return (
     id !== "GB13312" && //情報特別演習I
@@ -135,4 +146,4 @@ function isH2(id) {
   );
 }
 
-setup(courses, { b1: isB1, b2: isB2, d1: isD1, d3: isD3, d4: isD4, f1: isF1, f2: isF2, h1: isH1, h2: isH2});
+setup(courses, { b1: isB1, b2: isB2, d1: isD1,　d2: isD2, d3: isD3, d4: isD4, f1: isF1, f2: isF2, h1: isH1, h2: isH2});
