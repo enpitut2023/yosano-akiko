@@ -1,4 +1,4 @@
-import { courses } from "../../courses.js";
+import { courses } from "../courses.js";
 import { setup } from "../../shared.js";
 
 /**
@@ -31,11 +31,11 @@ function isB2(id) {
  */
 function isD1(id) {
   return (
-    id === "GB11601" && //確率論
-    id === "GB11621" && //統計学
-    id === "GB12301" && //数値計算法
-    id === "GB12601" && //論理と形式化
-    id === "GB12801" && //論理システム
+    id === "GB11601" || //確率論
+    id === "GB11621" || //統計学
+    id === "GB12301" || //数値計算法
+    id === "GB12601" || //論理と形式化
+    id === "GB12801" || //論理システム
     id === "GB12812" //論理システム演習
   );
 }
@@ -78,7 +78,9 @@ function isD4(id) {
  */
 function isE1(id) {
   return (
-    id.startsWith("11") && ["27", "28"].includes(id) // 総合科目(ファーストイヤーセミナー・学問への誘い)
+    id.startsWith("11") &&
+    // 総合科目(ファーストイヤーセミナー・学問への誘い)
+    ["27", "28"].includes(id)
   );
 }
 
@@ -113,8 +115,9 @@ function isE4(id) {
 function isF1(id) {
   return (
     (id.startsWith("12") || id.startsWith("14")) &&
-    !(["27", "28", "30", "90"].includes(id.substring(2,4))) 
-  ); // 総合科目(学士基盤科目)
+    // 総合科目(学士基盤科目)
+    !["27", "28", "30", "90"].includes(id.substring(2, 4))
+  );
 }
 
 /**
@@ -130,9 +133,13 @@ function isF2(id) {
  * @returns {boolean}
  */
 function isH1(id) {
-  return (
-    !(id.startsWith("E") && id.startsWith("F") && id.startsWith("G") && id.startsWith("H") &&
-    id.match(/^\d/)) //共通科目及び教職に関する科目
+  return !(
+    id.startsWith("E") ||
+    id.startsWith("F") ||
+    id.startsWith("G") ||
+    id.startsWith("H") ||
+    // 共通科目及び教職に関する科目
+    id.match(/^\d/)
   );
 }
 
@@ -142,8 +149,23 @@ function isH1(id) {
  */
 function isH2(id) {
   return (
-    id.startsWith("E") || id.startsWith("F") || id.startsWith("GC") || id.startsWith("GE") || id.startsWith("H")
+    id.startsWith("E") ||
+    id.startsWith("F") ||
+    id.startsWith("GC") ||
+    id.startsWith("GE") ||
+    id.startsWith("H")
   );
 }
 
-setup(courses, { b1: isB1, b2: isB2, d1: isD1,　d2: isD2, d3: isD3, d4: isD4, f1: isF1, f2: isF2, h1: isH1, h2: isH2});
+setup(courses, {
+  b1: isB1,
+  b2: isB2,
+  d1: isD1,
+  d2: isD2,
+  d3: isD3,
+  d4: isD4,
+  f1: isF1,
+  f2: isF2,
+  h1: isH1,
+  h2: isH2,
+});
