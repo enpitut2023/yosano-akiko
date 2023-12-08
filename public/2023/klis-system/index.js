@@ -7,7 +7,9 @@ import { setup } from "../../shared.js";
  */
 function isB1(id) {
   return (
-    id.startsWith("GB20") || id.startsWith("GB30") || id.startsWith("GB40")
+    id.startsWith("GE7") &&
+    id !== "GE70113" &&
+    id !== "GE70123"
   );
 }
 
@@ -20,8 +22,7 @@ function isB2(id) {
     id === "GB13312" || //情報特別演習I
     id === "GB13322" || //情報特別演習II
     id === "GB13332" || //情報科学特別演習
-    ((id.startsWith("GB2") || id.startsWith("GB3") || id.startsWith("GB4")) &&
-      id[3] !== "0")
+    ((id.startsWith("GA4") || id.startsWith("GE4") || id.startsWith("GE6") || id.startsWith("GE8")))
   );
 }
 
