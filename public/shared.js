@@ -127,10 +127,9 @@ function showCellCredits(courseElements) {
   let taken_sum = 0;
   let taken_mighttaken_sum = 0;
   for (const courseElement of courseElements) {
-    console.log(courseElement);
     const state = courseElement.state;
     const credit = courseElement.course.credit;
-    if (credit != undefined && (state != "not-taken")) {
+    if (credit !== undefined && (state !== "not-taken")) {
       taken_mighttaken_sum += credit;
       if (state == "taken") {
         taken_sum += credit
@@ -142,7 +141,7 @@ function showCellCredits(courseElements) {
   <div id="taken-sum">履修した合計単位：${taken_sum}</div>
   <div id="takne-mighttaken-sum">履修する予定の合計単位：${taken_mighttaken_sum}</div>
   `
-  if (e != null) {
+  if (e !== null) {
     e.innerHTML = sums;
   }
 }
