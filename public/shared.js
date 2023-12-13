@@ -121,6 +121,33 @@ function mustGetElementById(id) {
 }
 
 /**
+ * @param {CourseElement[]} courseElements
+ */
+function showCellCredits(courseElements) {
+  let taken_sum = 0;
+  let taken_mighttaken_sum = 0;
+  for (const courseElement of courseElements) {
+    console.log(courseElement);
+    const state = courseElement.state;
+    const credit = courseElement.course.credit;
+    if (credit != undefined && (state != "not-taken")) {
+      taken_mighttaken_sum += credit;
+      if (state == "taken") {
+        taken_sum += credit
+      }
+    }
+  }
+  const e = document.getElementById("credit-summary")
+  const summarys = `
+  <div id="taken-summary">履修した合計単位：${taken_sum}</div>
+  <div id="takne-mighttaken-summary">履修する予定の合計単位：${taken_mighttaken_sum}</div>
+  `
+  if (e != null) {
+    e.innerHTML = summarys;
+  }
+}
+
+/**
  * @param {Course[]} courses
  * @param {Record<string, (id: string) => boolean>} cellIdToFilter
  */
@@ -185,7 +212,7 @@ export function setup(courses, cellIdToFilter) {
   for (const cellElement of cellElements) {
     cellElement.addEventListener("click", (event) => {
       event.preventDefault();
-
+      
       for (const c of cellElements) {
         if (c.id !== cellElement.id) {
           c.classList.remove("selected");
@@ -201,9 +228,11 @@ export function setup(courses, cellIdToFilter) {
       }
       selectedCellId = cellElement.id;
       const cellTbodys = cellIdToCellTbodys.get(selectedCellId);
-      if (cellTbodys === undefined) {
+      const courseElements = cellIdToCourseElements.get(selectedCellId);
+      if (cellTbodys === undefined || courseElements === undefined) {
         throw new Error(`no such cell: '${selectedCellId}'`);
       }
+      showCellCredits(courseElements);
       updateCourseTables(courseTables, cellTbodys);
       updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
     });
@@ -248,22 +277,7 @@ export function setup(courses, cellIdToFilter) {
     updateCellTbodys(cellTbodys, courseElements);
     updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
 
-    const b1 = cellIdToCourseElements.get("b1");
-    let taken_sum = 0;
-    let taken_mighttaken_sum = 0;
-    for (const courseElement of courseElements) {
-      console.log(courseElement);
-      const state = courseElement.state;
-      const credit = courseElement.course.credit;
-      if (credit != undefined && (state != "not-taken")) {
-        taken_mighttaken_sum += credit;
-        if (state == "taken") {
-          taken_sum += credit
-        }
-      }
-    }
-    console.log("TakenSummary:", taken_sum)
-    console.log("Taken-MightTaken-Summary:", taken_mighttaken_sum)
+    showCellCredits(courseElements);
 
   }
   leftBar.addEventListener("drop", (event) => {
