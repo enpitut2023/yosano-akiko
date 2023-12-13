@@ -58,6 +58,18 @@ export function escapeHtml(html) {
 }
 
 /**
+ * @param {Element} mightTakeContainer
+ * @param {Element} mightTakeTbody
+ */
+function updateMightTakeContainer(mightTakeContainer, mightTakeTbody) {
+  if (mightTakeTbody.childElementCount === 0) {
+    mightTakeContainer.classList.add("contains-no-courses");
+  } else {
+    mightTakeContainer.classList.remove("contains-no-courses");
+  }
+}
+
+/**
  * @param {CellTbodys} cellTbodys
  * @param {CourseElement[]} courseElements
  */
@@ -94,6 +106,18 @@ function updateCourseTables(courseTables, cellTbodys) {
   courseTables.notTaken.appendChild(cellTbodys.notTaken);
   courseTables.mightTake.appendChild(cellTbodys.mightTake);
   courseTables.taken.appendChild(cellTbodys.taken);
+}
+
+/**
+ * @param {string} id
+ * @returns {HTMLElement}
+ */
+function mustGetElementById(id) {
+  const e = document.getElementById(id);
+  if (e === null) {
+    throw new Error(`cannot find "#${id}"`);
+  }
+  return e;
 }
 
 /**
@@ -141,21 +165,12 @@ export function setup(courses, cellIdToFilter) {
   }
 
   const cellElements = [...document.querySelectorAll(".cell")];
-  const leftBar = document.getElementById("left-bar");
-  if (leftBar === null) {
-    throw new Error("cannot find '#left-bar'");
-  }
+  const leftBar = mustGetElementById("left-bar");
   const leftTable = leftBar.getElementsByTagName("table")[0];
-  const rightBar = document.getElementById("right-bar");
-  if (rightBar === null) {
-    throw new Error("cannot find '#right-bar'");
-  }
+  const rightBar = mustGetElementById("right-bar");
   const rightTable = rightBar.getElementsByTagName("table")[0];
   const mightTakeTable = rightBar.getElementsByTagName("table")[1];
-  const mightTakeContainer = document.getElementById("container-might-take");
-  if (mightTakeContainer === null) {
-    throw new Error("cannot find '#container-might-take'");
-  }
+  const mightTakeContainer = mustGetElementById("container-might-take");
 
   /** @type {CourseTables} */
   const courseTables = {
@@ -190,6 +205,7 @@ export function setup(courses, cellIdToFilter) {
         throw new Error(`no such cell: '${selectedCellId}'`);
       }
       updateCourseTables(courseTables, cellTbodys);
+      updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
     });
   }
 
@@ -206,12 +222,15 @@ export function setup(courses, cellIdToFilter) {
     }
   });
 
-  leftBar.addEventListener("drop", (event) => {
+  /**
+   * @param {DragEvent} event
+   * @param {CourseElementState} newState
+   */
+  function handleDrop(event, newState) {
     event.preventDefault();
     if (selectedCellId === undefined) {
       return;
     }
-
     const courseId = event.dataTransfer?.getData("text/plain");
     if (courseId === undefined) {
       return;
@@ -223,43 +242,16 @@ export function setup(courses, cellIdToFilter) {
     }
     for (const e of courseElements) {
       if (e.course.id === courseId) {
-        e.state = "not-taken";
+        e.state = newState;
       }
     }
     updateCellTbodys(cellTbodys, courseElements);
-
-    if (cellTbodys.mightTake.childElementCount === 0) {
-      mightTakeContainer.classList.add("contains-no-courses");
-    } else {
-      mightTakeContainer.classList.remove("contains-no-courses");
-    }
+    updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
+  }
+  leftBar.addEventListener("drop", (event) => {
+    handleDrop(event, "not-taken");
   });
   rightBar.addEventListener("drop", (event) => {
-    event.preventDefault();
-    if (selectedCellId === undefined) {
-      return;
-    }
-
-    const courseId = event.dataTransfer?.getData("text/plain");
-    if (courseId === undefined) {
-      return;
-    }
-    const cellTbodys = cellIdToCellTbodys.get(selectedCellId);
-    const courseElements = cellIdToCourseElements.get(selectedCellId);
-    if (cellTbodys === undefined || courseElements === undefined) {
-      throw new Error(`no such cell: '${selectedCellId}'`);
-    }
-    for (const e of courseElements) {
-      if (e.course.id === courseId) {
-        e.state = "might-take";
-      }
-    }
-    updateCellTbodys(cellTbodys, courseElements);
-
-    if (cellTbodys.mightTake.childElementCount === 0) {
-      mightTakeContainer.classList.add("contains-no-courses");
-    } else {
-      mightTakeContainer.classList.remove("contains-no-courses");
-    }
+    handleDrop(event, "might-take");
   });
 }
