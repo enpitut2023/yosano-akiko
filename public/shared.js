@@ -247,6 +247,24 @@ export function setup(courses, cellIdToFilter) {
     }
     updateCellTbodys(cellTbodys, courseElements);
     updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
+
+    const b1 = cellIdToCourseElements.get("b1");
+    let taken_sum = 0;
+    let taken_mighttaken_sum = 0;
+    for (const courseElement of courseElements) {
+      console.log(courseElement);
+      const state = courseElement.state;
+      const credit = courseElement.course.credit;
+      if (credit != undefined && (state != "not-taken")) {
+        taken_mighttaken_sum += credit;
+        if (state == "taken") {
+          taken_sum += credit
+        }
+      }
+    }
+    console.log("TakenSummary:", taken_sum)
+    console.log("Taken-MightTaken-Summary:", taken_mighttaken_sum)
+
   }
   leftBar.addEventListener("drop", (event) => {
     handleDrop(event, "not-taken");
