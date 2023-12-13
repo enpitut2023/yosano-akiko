@@ -1,5 +1,7 @@
 // @ts-check
 
+import { parse } from "./vendor/csv-parse.js";
+
 /**
  * @typedef {{
  *   id: string;
@@ -134,9 +136,12 @@ export function setup(courses, cellIdToFilter) {
     const elements = courses
       .filter(({ id }) => cellIdToFilter[cellId](id))
       .map((course) => {
+        // FIXME: year
         const element = stringToHtmlElement(`
             <tr class="course" draggable="true">
-              <td class="id-name">${course.id}<br>${course.name}</td>
+              <td class="id-name">${course.id}<br>
+                <a href="https://kdb.tsukuba.ac.jp/syllabi/2023/${course.id}/jpn" target="_blank">${course.name}</a>
+              </td>
               <td class="credit">${course.credit}</td>
               <td class="term">${course.term}</td>
               <td class="when">${course.when}</td>
