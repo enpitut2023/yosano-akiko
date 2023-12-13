@@ -19,9 +19,11 @@ function isB1(id) {
  */
 function isB2(id) {
   return (
-    id === "GB13312" || //情報特別演習I
-    id === "GB13322" || //情報特別演習II
-    id === "GB13332" || //情報科学特別演習
+    id !== "GE80401" && // 経営情報システム論
+    id !== "GE61901" && // 情報検索システム
+    id !== "GE62401" && // Machine Learning and Information Retrieval
+    id !== "GE62501" && // Human Information Interaction
+    id !== "GE61801" && // データ構造とアルゴリズム
     ((id.startsWith("GA4") || id.startsWith("GE4") || id.startsWith("GE6") || id.startsWith("GE8")))
   );
 }
@@ -32,45 +34,20 @@ function isB2(id) {
  */
 function isD1(id) {
   return (
-    id === "GB11601" || //確率論
-    id === "GB11621" || //統計学
-    id === "GB12301" || //数値計算法
-    id === "GB12601" || //論理と形式化
-    id === "GB12801" || //論理システム
-    id === "GB12812" //論理システム演習
+    id !== "GA14111" && // 知識情報概論
+    id !== "GA14121" &&
+    id !== "GA18212" && // プログラミング入門A
+    id !== "GA18222" &&
+    id !== "GA18232" &&
+    id !== "GA18312" && // プログラミング入門B
+    id !== "GA18322" &&
+    id !== "GA18332" &&
+    id !== "GA15111" && // 情報数学A
+    id !== "GA15121" &&
+    id !== "GA15131" &&
+    id !== "GA15141" &&
+    ((id.startsWith("GA1") || id.startsWith("GE2") || id.startsWith("GE3")))
   );
-}
-
-/**
- * @param {string} id
- * @returns {boolean}
- */
-function isD2(id) {
-  return (
-    id === "GB13614" || // Computer Science in English A
-    id === "GB13624" // Computer Science in English B
-  );
-}
-
-/**
- * @param {string} id
- * @returns {boolean}
- */
-function isD3(id) {
-  return (
-    id !== "GB13312" && //情報特別演習I
-    id !== "GB13322" && //情報特別演習II
-    id !== "GB13332" && //情報科学特別演習
-    id.startsWith("GB1")
-  );
-}
-
-/**
- * @param {string} id
- * @returns {boolean}
- */
-function isD4(id) {
-  return id.startsWith("GA1");
 }
 
 /**
@@ -135,10 +112,10 @@ function isF2(id) {
  */
 function isH1(id) {
   return !(
-    id.startsWith("E") ||
-    id.startsWith("F") ||
-    id.startsWith("G") ||
-    id.startsWith("H") ||
+    id.startsWith("GA") ||
+    id.startsWith("GB") ||
+    id.startsWith("GC") ||
+    id.startsWith("GE") ||
     // 共通科目及び教職に関する科目
     id.match(/^\d/)
   );
@@ -150,11 +127,8 @@ function isH1(id) {
  */
 function isH2(id) {
   return (
-    id.startsWith("E") ||
-    id.startsWith("F") ||
     id.startsWith("GC") ||
-    id.startsWith("GE") ||
-    id.startsWith("H")
+    id.startsWith("GB")
   );
 }
 
@@ -162,9 +136,6 @@ setup(courses, {
   b1: isB1,
   b2: isB2,
   d1: isD1,
-  d2: isD2,
-  d3: isD3,
-  d4: isD4,
   f1: isF1,
   f2: isF2,
   h1: isH1,
