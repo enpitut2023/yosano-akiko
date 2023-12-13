@@ -137,13 +137,13 @@ function showCellCredits(courseElements) {
       }
     }
   }
-  const e = document.getElementById("credit-summary")
-  const summarys = `
-  <div id="taken-summary">履修した合計単位：${taken_sum}</div>
-  <div id="takne-mighttaken-summary">履修する予定の合計単位：${taken_mighttaken_sum}</div>
+  const e = document.getElementById("credit-sum")
+  const sums = `
+  <div id="taken-sum">履修した合計単位：${taken_sum}</div>
+  <div id="takne-mighttaken-sum">履修する予定の合計単位：${taken_mighttaken_sum}</div>
   `
   if (e != null) {
-    e.innerHTML = summarys;
+    e.innerHTML = sums;
   }
 }
 
@@ -212,7 +212,7 @@ export function setup(courses, cellIdToFilter) {
   for (const cellElement of cellElements) {
     cellElement.addEventListener("click", (event) => {
       event.preventDefault();
-      
+
       for (const c of cellElements) {
         if (c.id !== cellElement.id) {
           c.classList.remove("selected");
