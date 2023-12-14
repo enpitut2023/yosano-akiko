@@ -138,6 +138,8 @@ function showCellCredits(courseElements) {
   }
   const e = document.getElementById("credit-sum")
   const sums = `
+  <div class="separator"></div>
+  <h1>単位数</h1>
   <div id="taken-sum">履修した合計単位：${taken_sum}</div>
   <div id="takne-mighttaken-sum">履修する予定の合計単位：${taken_mighttaken_sum}</div>
   `
