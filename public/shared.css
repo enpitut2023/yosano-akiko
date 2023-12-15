@@ -54,6 +54,10 @@ main > * {
   border-top: 1px dashed black;
 }
 
+#csv {
+  margin-bottom: 2em;
+}
+
 .cell {
   position: absolute;
   box-sizing: border-box;
