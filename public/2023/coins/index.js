@@ -158,14 +158,14 @@ function isH2(id) {
 }
 
 setup(courses, {
-  b1: isB1,
-  b2: isB2,
-  d1: isD1,
-  d2: isD2,
-  d3: isD3,
-  d4: isD4,
-  f1: isF1,
-  f2: isF2,
-  h1: isH1,
-  h2: isH2,
+  b1: {filter: isB1, creditMin: 16, creditMax: undefined}, 
+  b2: {filter: isB2, creditMin: 0, creditMax: 18}, 
+  d1: {filter: isD1, creditMin: 8, creditMax: undefined}, 
+  d2: {filter: isD2, creditMin: 2, creditMax: undefined}, 
+  d3: {filter: isD3, creditMin: 4, creditMax: undefined}, 
+  d4: {filter: isD4, creditMin: 8, creditMax: undefined}, 
+  f1: {filter: isF1, creditMin: 1, creditMax: undefined}, 
+  f2: {filter: isF2, creditMin: 0, creditMax: 4}, 
+  h1: {filter: isH1, creditMin: 6, creditMax: undefined}, 
+  h2: {filter: isH2, creditMin: 0, creditMax: 4}
 });
