@@ -36,6 +36,12 @@ import { parse } from "./vendor/csv-parse.js";
  *   id: string;
  *   grade: Grade;
  * }} GradedCourse
+ *
+ * @typedef {{
+ *   filter: (id: string) => boolean;
+ *   creditMin: number | undefined;
+ *   creditMax: number | undefined;
+ * }} CellMetadata
  */
 
 /**
@@ -130,12 +136,12 @@ function mustGetElementById(id) {
 
 /**
  * @param {string} courseId
- * @param {Record<string, (id: string) => boolean>} cellIdToFilter
+ * @param {Record<string, CellMetadata>} cellIdToCellMetadata
  * @returns {string | undefined}
  */
-function courseIdToCellId(courseId, cellIdToFilter) {
-  for (const cellId in cellIdToFilter) {
-    if (cellIdToFilter[cellId](courseId)) {
+function courseIdToCellId(courseId, cellIdToCellMetadata) {
+  for (const cellId in cellIdToCellMetadata) {
+    if (cellIdToCellMetadata[cellId].filter(courseId)) {
       return cellId;
     }
   }
@@ -150,13 +156,13 @@ function courseIdToCellId(courseId, cellIdToFilter) {
  * }} ApplyCourseGradesResult
  *
  * @param {Map<string, CourseElement[]>} cellIdToCourseElements
- * @param {Record<string, (id: string) => boolean>} cellIdToFilter
+ * @param {Record<string, CellMetadata>} cellIdToCellMetadata
  * @param {GradedCourse[]} gradedCourses
  * @returns {ApplyCourseGradesResult}
  */
 function applyCourseGrades(
   cellIdToCourseElements,
-  cellIdToFilter,
+  cellIdToCellMetadata,
   gradedCourses,
 ) {
   /** @type {string[]} */
@@ -166,7 +172,7 @@ function applyCourseGrades(
       // gradedCourseが認可された授業だった場合
       continue;
     }
-    const cellId = courseIdToCellId(gradedCourse.id, cellIdToFilter);
+    const cellId = courseIdToCellId(gradedCourse.id, cellIdToCellMetadata);
     if (cellId === undefined) {
       // gradedCourseが必修だった場合
       continue;
@@ -273,18 +279,49 @@ function csvToGradedCourses(csv) {
 }
 
 /**
- * @param {Course[]} courses
- * @param {Record<string, (id: string) => boolean>} cellIdToFilter
+ * @param {CourseElement[]} courseElements
+ * @param {CellMetadata} cellMetaData
  */
-export function setup(courses, cellIdToFilter) {
-  const cellIds = Object.keys(cellIdToFilter);
+function showCellCredits(courseElements, cellMetaData) {
+  let taken_sum = 0;
+  let taken_mighttaken_sum = 0;
+  for (const courseElement of courseElements) {
+    const state = courseElement.state;
+    const credit = courseElement.course.credit;
+    if (credit !== undefined && state !== "not-taken") {
+      taken_mighttaken_sum += credit;
+      if (state == "taken") {
+        taken_sum += credit;
+      }
+    }
+  }
+  const creditMax = cellMetaData.creditMax;
+  const creditMin = cellMetaData.creditMin;
+  const e = document.getElementById("credit-sum");
+  const sums = `
+  <div class="separator"></div>
+  <h1>単位数</h1>
+  <div id="taken-sum">履修した合計単位：${taken_sum}/${creditMin}</div>
+  <div id="takne-mighttaken-sum">履修する予定の合計単位：${taken_mighttaken_sum}/${creditMin}</div>
+  `;
+  if (e !== null) {
+    e.innerHTML = sums;
+  }
+}
+
+/**
+ * @param {Course[]} courses
+ * @param {Record<string, CellMetadata>} cellIdToCellMetadata
+ */
+export function setup(courses, cellIdToCellMetadata) {
+  const cellIds = Object.keys(cellIdToCellMetadata);
 
   /** @type {Map<string, CourseElement[]>} */
   const cellIdToCourseElements = new Map();
   for (const cellId of cellIds) {
     /** @type {CourseElement[]} */
     const elements = courses
-      .filter(({ id }) => cellIdToFilter[cellId](id))
+      .filter(({ id }) => cellIdToCellMetadata[cellId].filter(id))
       .map((course) => {
         // FIXME: year in the url
         const element = stringToHtmlElement(`
@@ -356,11 +393,14 @@ export function setup(courses, cellIdToFilter) {
       }
       selectedCellId = cellElement.id;
       const cellTbodys = cellIdToCellTbodys.get(selectedCellId);
-      if (cellTbodys === undefined) {
+      const courseElements = cellIdToCourseElements.get(selectedCellId);
+      if (cellTbodys === undefined || courseElements === undefined) {
         throw new Error(`no such cell: '${selectedCellId}'`);
       }
+      const selectedCellMetaData = cellIdToCellMetadata[selectedCellId];
       updateCourseTables(courseTables, cellTbodys);
       updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
+      showCellCredits(courseElements, selectedCellMetaData);
     });
   }
 
@@ -389,7 +429,7 @@ export function setup(courses, cellIdToFilter) {
       }
       const applyCourseGradesResult = applyCourseGrades(
         cellIdToCourseElements,
-        cellIdToFilter,
+        cellIdToCellMetadata,
         result.gradedCourses,
       );
       if (applyCourseGradesResult.kind === "unknown-courses") {
@@ -405,6 +445,16 @@ export function setup(courses, cellIdToFilter) {
           throw new Error("should be unreachable");
         }
         updateCellTbodys(cellTbodys, courseElements);
+      }
+
+      if (selectedCellId !== undefined) {
+        const cellTbodys = cellIdToCellTbodys.get(selectedCellId);
+        const courseElements = cellIdToCourseElements.get(selectedCellId);
+        if (cellTbodys === undefined || courseElements === undefined) {
+          throw new Error(`no such cell: '${selectedCellId}'`);
+        }
+        const selectedCellMetaData = cellIdToCellMetadata[selectedCellId];
+        showCellCredits(courseElements, selectedCellMetaData);
       }
     });
     reader.readAsText(csvFile);
@@ -448,6 +498,7 @@ export function setup(courses, cellIdToFilter) {
     }
     updateCellTbodys(cellTbodys, courseElements);
     updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
+    showCellCredits(courseElements, cellIdToCellMetadata[selectedCellId]);
   }
   leftBar.addEventListener("drop", (event) => {
     handleDrop(event, "not-taken");

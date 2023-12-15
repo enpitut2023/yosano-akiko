@@ -11,7 +11,7 @@ main {
 
   display: grid;
   grid-template-columns: auto 40ch 30ch;
-  grid-template-rows: auto;
+  grid-template-rows: auto 20ch;
 }
 
 main > * {
@@ -20,21 +20,32 @@ main > * {
 
 #requirements {
   grid-column: 1/2;
+  grid-row: 1/3;
   position: relative;
 }
 
 #left-bar {
   grid-column: 2/3;
+  grid-row: 1/3;
   border-left: 1px dashed black;
 }
 
 #right-bar {
   grid-column: 3/4;
+  grid-row: 1/2;
+  border-left: 1px dashed black;
+}
+
+#credit-sum {
+  grid-column: 3/4;
+  grid-row: 2/3;
+  border-top: 1px dashed black;
   border-left: 1px dashed black;
 }
 
 #left-bar,
-#right-bar {
+#right-bar,
+#credit-sum {
   padding: 1em;
 }
 
