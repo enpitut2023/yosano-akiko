@@ -30,6 +30,12 @@ import { parse } from "./vendor/csv-parse.js";
  *   mightTake: HTMLTableElement;
  *   taken: HTMLTableElement;
  * }} CourseTables
+ *
+ * @typedef {"wip" | "a+" | "a" | "b" | "c" | "d" | "pass" | "fail" | "ok"} Grade;
+ * @typedef {{
+ *   id: string;
+ *   grade: Grade;
+ * }} GradedCourse
  */
 
 /**
@@ -123,6 +129,150 @@ function mustGetElementById(id) {
 }
 
 /**
+ * @param {string} courseId
+ * @param {Record<string, (id: string) => boolean>} cellIdToFilter
+ * @returns {string | undefined}
+ */
+function courseIdToCellId(courseId, cellIdToFilter) {
+  for (const cellId in cellIdToFilter) {
+    if (cellIdToFilter[cellId](courseId)) {
+      return cellId;
+    }
+  }
+}
+
+/**
+ * @typedef {{
+ *   kind: "ok";
+ * } | {
+ *   kind: "unknown-courses";
+ *   unknownCourseIds: string[];
+ * }} ApplyCourseGradesResult
+ *
+ * @param {Map<string, CourseElement[]>} cellIdToCourseElements
+ * @param {Record<string, (id: string) => boolean>} cellIdToFilter
+ * @param {GradedCourse[]} gradedCourses
+ * @returns {ApplyCourseGradesResult}
+ */
+function applyCourseGrades(
+  cellIdToCourseElements,
+  cellIdToFilter,
+  gradedCourses,
+) {
+  /** @type {string[]} */
+  const unknownCourseIds = [];
+  for (const gradedCourse of gradedCourses) {
+    if (gradedCourse.id === "") {
+      // gradedCourseが認可された授業だった場合
+      continue;
+    }
+    const cellId = courseIdToCellId(gradedCourse.id, cellIdToFilter);
+    if (cellId === undefined) {
+      // gradedCourseが必修だった場合
+      continue;
+    }
+    const courseElements = cellIdToCourseElements.get(cellId);
+    if (courseElements === undefined) {
+      throw new Error("should be unreachable");
+    }
+    const courseElement = courseElements.find(
+      (e) => e.course.id === gradedCourse.id,
+    );
+    if (courseElement === undefined) {
+      unknownCourseIds.push(gradedCourse.id);
+    } else {
+      courseElement.state = "taken";
+    }
+  }
+  if (unknownCourseIds.length === 0) {
+    return { kind: "ok" };
+  } else {
+    return { kind: "unknown-courses", unknownCourseIds };
+  }
+}
+
+/**
+ * @param {string} s
+ * @returns {Grade | undefined}
+ */
+function parseGrade(s) {
+  switch (s) {
+    case "履修中":
+      return "wip";
+    case "A+":
+      return "a+";
+    case "A":
+      return "a";
+    case "B":
+      return "b";
+    case "C":
+      return "c";
+    case "D":
+      return "d";
+    case "P":
+      return "pass";
+    case "F":
+      return "fail";
+    case "認":
+      return "ok";
+  }
+}
+
+/**
+ * @param {unknown[]} row
+ * @returns {GradedCourse | undefined}
+ */
+function parseGradedCourse(row) {
+  const id = row[2];
+  const rawGrade = row[7];
+  if (typeof id !== "string" || typeof rawGrade !== "string") {
+    return;
+  }
+  const grade = parseGrade(rawGrade);
+  if (grade === undefined) {
+    return;
+  }
+  return { id, grade };
+}
+
+/**
+ * @typedef {{
+ *   kind: "ok";
+ *   gradedCourses: GradedCourse[];
+ * } | {
+ *   kind: "failed-to-parse-as-csv";
+ * } | {
+ *   kind: "unexpected-csv-content";
+ * }} CsvToGradedCoursesResult
+ *
+ * @param {string} csv
+ * @returns {CsvToGradedCoursesResult}
+ */
+function csvToGradedCourses(csv) {
+  /** @type {unknown} */
+  let rows;
+  try {
+    rows = parse(csv);
+  } catch {
+    return { kind: "failed-to-parse-as-csv" };
+  }
+  if (!(Array.isArray(rows) && rows.length >= 1)) {
+    return { kind: "unexpected-csv-content" };
+  }
+
+  /** @type {GradedCourse[]} */
+  const gradedCourses = [];
+  for (const row of rows.slice(1)) {
+    const gradedCourse = parseGradedCourse(row);
+    if (gradedCourse === undefined) {
+      return { kind: "unexpected-csv-content" };
+    }
+    gradedCourses.push(gradedCourse);
+  }
+  return { kind: "ok", gradedCourses };
+}
+
+/**
  * @param {Course[]} courses
  * @param {Record<string, (id: string) => boolean>} cellIdToFilter
  */
@@ -136,7 +286,7 @@ export function setup(courses, cellIdToFilter) {
     const elements = courses
       .filter(({ id }) => cellIdToFilter[cellId](id))
       .map((course) => {
-        // FIXME: year
+        // FIXME: year in the url
         const element = stringToHtmlElement(`
             <tr class="course" draggable="true">
               <td class="id-name">${course.id}<br>
@@ -213,6 +363,52 @@ export function setup(courses, cellIdToFilter) {
       updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
     });
   }
+
+  const csvInput = mustGetElementById("csv");
+  if (!(csvInput instanceof HTMLInputElement && csvInput.type === "file")) {
+    throw new Error('"#csv" must be a file input element');
+  }
+  csvInput.addEventListener("change", () => {
+    const csvFile = csvInput.files?.[0];
+    if (csvFile === undefined) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      const csv = reader.result;
+      if (typeof csv !== "string") {
+        throw new Error("readAsText() must produce string");
+      }
+      const result = csvToGradedCourses(csv);
+      if (result.kind === "failed-to-parse-as-csv") {
+        alert("CSVファイルを正しく読み込めませんでした。");
+        return;
+      } else if (result.kind === "unexpected-csv-content") {
+        alert("CSVファイルを成績データとして読み込めませんでした。");
+        return;
+      }
+      const applyCourseGradesResult = applyCourseGrades(
+        cellIdToCourseElements,
+        cellIdToFilter,
+        result.gradedCourses,
+      );
+      if (applyCourseGradesResult.kind === "unknown-courses") {
+        const ids = applyCourseGradesResult.unknownCourseIds.join("\n");
+        alert(
+          `未知の科目番号の授業が含まれています。間違った年次のページを開いていませんか？\n未知の科目番号一覧:\n${ids}`,
+        );
+      }
+      for (const cellId of cellIds) {
+        const cellTbodys = cellIdToCellTbodys.get(cellId);
+        const courseElements = cellIdToCourseElements.get(cellId);
+        if (cellTbodys === undefined || courseElements === undefined) {
+          throw new Error("should be unreachable");
+        }
+        updateCellTbodys(cellTbodys, courseElements);
+      }
+    });
+    reader.readAsText(csvFile);
+  });
 
   leftBar.addEventListener("dragover", (event) => {
     event.preventDefault();
