@@ -28,6 +28,12 @@
  *   mightTake: HTMLTableElement;
  *   taken: HTMLTableElement;
  * }} CourseTables
+ * 
+ * @typedef {{
+ *  filter: (id: string) => boolean;
+ *  creditMin: number | undefined;
+ *  creditMax: number | undefined; 
+ * }} CellMetaData
  */
 
 /**
@@ -122,8 +128,9 @@ function mustGetElementById(id) {
 
 /**
  * @param {CourseElement[]} courseElements
+ * @param {CellMetaData} cellMetaData
  */
-function showCellCredits(courseElements) {
+function showCellCredits(courseElements, cellMetaData) {
   let taken_sum = 0;
   let taken_mighttaken_sum = 0;
   for (const courseElement of courseElements) {
@@ -136,12 +143,14 @@ function showCellCredits(courseElements) {
       }
     }
   }
+  const creditMax = cellMetaData.creditMax
+  const creditMin = cellMetaData.creditMin
   const e = document.getElementById("credit-sum")
   const sums = `
   <div class="separator"></div>
   <h1>単位数</h1>
-  <div id="taken-sum">履修した合計単位：${taken_sum}</div>
-  <div id="takne-mighttaken-sum">履修する予定の合計単位：${taken_mighttaken_sum}</div>
+  <div id="taken-sum">履修した合計単位：${taken_sum}/${creditMin}</div>
+  <div id="takne-mighttaken-sum">履修する予定の合計単位：${taken_mighttaken_sum}/${creditMin}</div>
   `
   if (e !== null) {
     e.innerHTML = sums;
@@ -150,17 +159,17 @@ function showCellCredits(courseElements) {
 
 /**
  * @param {Course[]} courses
- * @param {Record<string, (id: string) => boolean>} cellIdToFilter
+ * @param {Record<string, CellMetaData>} cellIdToCellMetaData
  */
-export function setup(courses, cellIdToFilter) {
-  const cellIds = Object.keys(cellIdToFilter);
+export function setup(courses, cellIdToCellMetaData) {
+  const cellIds = Object.keys(cellIdToCellMetaData);
 
   /** @type {Map<string, CourseElement[]>} */
   const cellIdToCourseElements = new Map();
   for (const cellId of cellIds) {
     /** @type {CourseElement[]} */
     const elements = courses
-      .filter(({ id }) => cellIdToFilter[cellId](id))
+      .filter(({ id }) => cellIdToCellMetaData[cellId].filter(id))
       .map((course) => {
         const element = stringToHtmlElement(`
             <tr class="course" draggable="true">
@@ -233,7 +242,8 @@ export function setup(courses, cellIdToFilter) {
       if (cellTbodys === undefined || courseElements === undefined) {
         throw new Error(`no such cell: '${selectedCellId}'`);
       }
-      showCellCredits(courseElements);
+      const selectedCellMetaData = cellIdToCellMetaData[selectedCellId]
+      showCellCredits(courseElements, selectedCellMetaData);
       updateCourseTables(courseTables, cellTbodys);
       updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
     });
@@ -278,7 +288,7 @@ export function setup(courses, cellIdToFilter) {
     updateCellTbodys(cellTbodys, courseElements);
     updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
 
-    showCellCredits(courseElements);
+    showCellCredits(courseElements, cellIdToCellMetaData[selectedCellId]);
 
   }
   leftBar.addEventListener("drop", (event) => {
