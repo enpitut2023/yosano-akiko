@@ -21,7 +21,7 @@ function isB2(id) {
     id === "GB13322" || //情報特別演習II
     id === "GB13332" || //情報科学特別演習
     ((id.startsWith("GB2") || id.startsWith("GB3") || id.startsWith("GB4")) &&
-      id[3] !== "0")
+      id[3] !== "0" && id[3] !== "6")
   );
 }
 
@@ -60,7 +60,17 @@ function isD3(id) {
     id !== "GB13312" && //情報特別演習I
     id !== "GB13322" && //情報特別演習II
     id !== "GB13332" && //情報科学特別演習
-    id.startsWith("GB1")
+    id.startsWith("GB1") &&
+    !isD1(id) && !isD2(id) && //同列の他セルに含まれない
+    !id.startsWith("GB19") && //他列に含まれない
+    //必修を除外
+    !(
+      id.startsWith("GB102") ||
+      id.startsWith("GB104") ||
+      id.startsWith("GB108") ||
+      id.startsWith("GB119") ||
+      id.startsWith("GB122")
+    )
   );
 }
 
@@ -69,7 +79,14 @@ function isD3(id) {
  * @returns {boolean}
  */
 function isD4(id) {
-  return id.startsWith("GA1");
+  return (
+    id.startsWith("GA1") &&
+    //必修を除外
+    !(
+      id.startsWith("GA15") ||
+      id.startsWith("GA18")
+    )
+  );
 }
 
 /**
@@ -125,7 +142,16 @@ function isF1(id) {
  * @returns {boolean}
  */
 function isF2(id) {
-  return id.match(/^[2-5]/); // 体育・外国語・国語・芸術
+  return (
+    id.match(/^[2-5]/) && // 体育・外国語・国語・芸術
+    //必修を除外
+    !(
+      id.startsWith("31H") ||
+      id.startsWith("31J") ||
+      id.startsWith("31K") ||
+      id.startsWith("31L")
+    )
+  );
 }
 
 /**
