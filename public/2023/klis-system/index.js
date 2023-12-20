@@ -24,6 +24,10 @@ function isB2(id) {
     id !== "GE62401" && // Machine Learning and Information Retrieval
     id !== "GE62501" && // Human Information Interaction
     id !== "GE61801" && // データ構造とアルゴリズム
+    id !== "GE60113" && // 知識科学実習A
+    id !== "GE60123" && // 知識科学実習B
+    id !== "GE80113" && // 情報資源経営実習A
+    id !== "GE80123" && // 情報資源経営実習B
     ((id.startsWith("GA4") || id.startsWith("GE4") || id.startsWith("GE6") || id.startsWith("GE8")))
   );
 }
