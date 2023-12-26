@@ -482,7 +482,6 @@ export function setup(courses, cellIdToCellMetadata) {
         );
       }
       for (const cellId of cellIds) {
-        console.log("cellId",cellId);
         const cellTbodys = cellIdToCellTbodys.get(cellId);
         const courseElements = cellIdToCourseElements.get(cellId);
         if (cellTbodys === undefined || courseElements === undefined) {
