@@ -142,8 +142,8 @@ function updateCreditSum(cellId, courseElements, cellMetadata) {
   }
   const creditMax = cellMetadata.creditMax;
   const creditMin = cellMetadata.creditMin;
-  const e = document.getElementById(`${cellId}-sum`);
-  if (e !== null) {
+  const sumEllement = document.getElementById(`${cellId}-sum`);
+  if (sumEllement !== null) {
     let sums = "";
     if (taken_sum == taken_mighttaken_sum) {
       sums = `${taken_sum}/${creditMin}`;
@@ -154,7 +154,14 @@ function updateCreditSum(cellId, courseElements, cellMetadata) {
       ${taken_mighttaken_sum}/${creditMin}
       `;
     }
-    e.innerHTML = sums;
+    sumEllement.innerHTML = sums;
+  }
+  if (creditMin !== undefined && taken_sum >= creditMin) {
+    const cellElement = document.getElementById(cellId);
+    if (cellElement !== null) {
+     cellElement.style.border = "4px dashed rgba(0, 255, 0, 0.5)";
+     cellElement.style.backgroundColor = "rgba(0, 255, 0, 0.2)"; 
+    }
   }
 }
 
