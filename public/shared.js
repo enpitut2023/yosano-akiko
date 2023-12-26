@@ -123,6 +123,42 @@ function updateCourseTables(courseTables, cellTbodys) {
 }
 
 /**
+ * @param {String} cellId
+ * @param {CourseElement[]} courseElements
+ * @param {CellMetadata} cellMetadata
+ */
+function updateCreditSum(cellId, courseElements, cellMetadata) {
+  let taken_sum = 0;
+  let taken_mighttaken_sum = 0;
+  for (const courseElement of courseElements) {
+    const state = courseElement.state;
+    const credit = courseElement.course.credit;
+    if (credit !== undefined && state !== "not-taken") {
+      taken_mighttaken_sum += credit;
+      if (state == "taken") {
+        taken_sum += credit;
+      }
+    }
+  }
+  const creditMax = cellMetadata.creditMax;
+  const creditMin = cellMetadata.creditMin;
+  const e = document.getElementById(`${cellId}-sum`);
+  if (e !== null) {
+    let sums = "";
+    if (taken_sum == taken_mighttaken_sum) {
+      sums = `${taken_sum}/${creditMin}`;
+    } else {
+      sums = `
+      ${taken_sum}/${creditMin}<br>
+      ↓<br>
+      ${taken_mighttaken_sum}/${creditMin}
+      `;
+    }
+    e.innerHTML = sums;
+  }
+}
+
+/**
  * @param {string} id
  * @returns {HTMLElement}
  */
@@ -439,12 +475,14 @@ export function setup(courses, cellIdToCellMetadata) {
         );
       }
       for (const cellId of cellIds) {
+        console.log("cellId",cellId);
         const cellTbodys = cellIdToCellTbodys.get(cellId);
         const courseElements = cellIdToCourseElements.get(cellId);
         if (cellTbodys === undefined || courseElements === undefined) {
           throw new Error("should be unreachable");
         }
         updateCellTbodys(cellTbodys, courseElements);
+        updateCreditSum(cellId, courseElements, cellIdToCellMetadata[cellId]);
       }
 
       if (selectedCellId !== undefined) {
@@ -496,9 +534,11 @@ export function setup(courses, cellIdToCellMetadata) {
         e.state = newState;
       }
     }
+    const cellMetadata = cellIdToCellMetadata[selectedCellId];
     updateCellTbodys(cellTbodys, courseElements);
     updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
-    showCellCredits(courseElements, cellIdToCellMetadata[selectedCellId]);
+    updateCreditSum(selectedCellId, courseElements, cellMetadata);
+    showCellCredits(courseElements, cellMetadata);
   }
   leftBar.addEventListener("drop", (event) => {
     handleDrop(event, "not-taken");

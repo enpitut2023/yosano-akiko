@@ -73,6 +73,14 @@ main > * {
   background-color: rgba(0, 0, 255, 0.4);
 }
 
+.sum {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 50px;
+  height: 75px;
+}
+
 .courses > p {
   display: none;
 }
