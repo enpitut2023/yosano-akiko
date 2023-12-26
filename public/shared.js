@@ -156,11 +156,29 @@ function updateCreditSum(cellId, courseElements, cellMetadata) {
     }
     sumEllement.innerHTML = sums;
   }
-  if (creditMin !== undefined && taken_sum >= creditMin) {
-    const cellElement = document.getElementById(cellId);
-    if (cellElement !== null) {
-     cellElement.style.border = "4px dashed rgba(0, 255, 0, 0.5)";
-     cellElement.style.backgroundColor = "rgba(0, 255, 0, 0.2)"; 
+  if (creditMin !== undefined) {
+    updateBackground(cellId, taken_mighttaken_sum, creditMin);
+  }
+}
+
+/**
+ * @param {string} cellId
+ * @param {number} taken_mighttaken_sum
+ * @param {number} creditMin
+ */
+function updateBackground(cellId, taken_mighttaken_sum, creditMin) {
+  const cellElement = document.getElementById(cellId);
+  const gageElement = document.getElementById(`${cellId}-gage`);
+  if (gageElement !== null && cellElement !== null) {
+    if (taken_mighttaken_sum >= creditMin) {
+      cellElement.style.border = "4px dashed rgba(0, 255, 0, 0.5)";
+      cellElement.style.backgroundColor = "rgba(0, 255, 0, 0.2)";
+      gageElement.style.width = "";
+    } else {
+      const gageValue = 100 * taken_mighttaken_sum / creditMin;
+      gageElement.style.width = `${gageValue}%`;
+      cellElement.style.border = "";
+      cellElement.style.backgroundColor = "";
     }
   }
 }
