@@ -123,6 +123,67 @@ function updateCourseTables(courseTables, cellTbodys) {
 }
 
 /**
+ * @param {String} cellId
+ * @param {CourseElement[]} courseElements
+ * @param {CellMetadata} cellMetadata
+ */
+function updateCreditSum(cellId, courseElements, cellMetadata) {
+  let taken_sum = 0;
+  let taken_mighttaken_sum = 0;
+  for (const courseElement of courseElements) {
+    const state = courseElement.state;
+    const credit = courseElement.course.credit;
+    if (credit !== undefined && state !== "not-taken") {
+      taken_mighttaken_sum += credit;
+      if (state == "taken") {
+        taken_sum += credit;
+      }
+    }
+  }
+  const creditMax = cellMetadata.creditMax;
+  const creditMin = cellMetadata.creditMin;
+  const sumEllement = document.getElementById(`${cellId}-sum`);
+  if (sumEllement !== null) {
+    let sums = "";
+    if (taken_sum == taken_mighttaken_sum) {
+      sums = `${taken_sum}/${creditMin}`;
+    } else {
+      sums = `
+      ${taken_sum}/${creditMin}<br>
+      ↓<br>
+      ${taken_mighttaken_sum}/${creditMin}
+      `;
+    }
+    sumEllement.innerHTML = sums;
+  }
+  if (creditMin !== undefined) {
+    updateBackground(cellId, taken_mighttaken_sum, creditMin);
+  }
+}
+
+/**
+ * @param {string} cellId
+ * @param {number} taken_mighttaken_sum
+ * @param {number} creditMin
+ */
+function updateBackground(cellId, taken_mighttaken_sum, creditMin) {
+  const cellElement = document.getElementById(cellId);
+  const gageElement = document.getElementById(`${cellId}-gage`);
+  if (gageElement !== null && cellElement !== null) {
+    if (taken_mighttaken_sum >= creditMin) {
+      cellElement.style.border = "4px dashed rgba(0, 255, 0, 0.5)";
+      cellElement.style.backgroundColor = "rgba(0, 255, 0, 0.2)";
+      gageElement.style.width = "";
+    } else {
+      const gageValue = 100 * taken_mighttaken_sum / creditMin;
+      gageElement.style.width = `${gageValue}%`;
+      cellElement.style.border = "";
+      cellElement.style.backgroundColor = "";
+    }
+  }
+}
+
+/**
  * @param {string} id
  * @returns {HTMLElement}
  */
@@ -445,6 +506,7 @@ export function setup(courses, cellIdToCellMetadata) {
           throw new Error("should be unreachable");
         }
         updateCellTbodys(cellTbodys, courseElements);
+        updateCreditSum(cellId, courseElements, cellIdToCellMetadata[cellId]);
       }
 
       if (selectedCellId !== undefined) {
@@ -496,9 +558,11 @@ export function setup(courses, cellIdToCellMetadata) {
         e.state = newState;
       }
     }
+    const cellMetadata = cellIdToCellMetadata[selectedCellId];
     updateCellTbodys(cellTbodys, courseElements);
     updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
-    showCellCredits(courseElements, cellIdToCellMetadata[selectedCellId]);
+    updateCreditSum(selectedCellId, courseElements, cellMetadata);
+    showCellCredits(courseElements, cellMetadata);
   }
   leftBar.addEventListener("drop", (event) => {
     handleDrop(event, "not-taken");
