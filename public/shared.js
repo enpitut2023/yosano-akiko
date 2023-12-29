@@ -226,6 +226,13 @@ function applyCourseGrades(
   cellIdToCellMetadata,
   gradedCourses,
 ) {
+  for (const courseElements of cellIdToCourseElements.values()) {
+    for (const courseElement of courseElements) {
+      if (courseElement.state !== "might-take") {
+        courseElement.state = "not-taken";
+      }
+    }
+  }
   /** @type {string[]} */
   const unknownCourseIds = [];
   for (const gradedCourse of gradedCourses) {
@@ -249,6 +256,11 @@ function applyCourseGrades(
       unknownCourseIds.push(gradedCourse.id);
     } else {
       courseElement.state = "taken";
+    }
+  }
+  for (const courseElements of cellIdToCourseElements.values()) {
+    for (const courseElement of courseElements) {
+      courseElement.element.draggable = courseElement.state !== "taken";
     }
   }
   if (unknownCourseIds.length === 0) {
@@ -397,6 +409,9 @@ export function setup(courses, cellIdToCellMetadata) {
             </tr>
           `);
         element.addEventListener("dragstart", (event) => {
+          if (!(event.target instanceof HTMLTableRowElement)) {
+            return;
+          }
           event.dataTransfer?.setData("text/plain", course.id);
         });
         return { state: "not-taken", course, element };
@@ -517,6 +532,7 @@ export function setup(courses, cellIdToCellMetadata) {
         }
         const selectedCellMetaData = cellIdToCellMetadata[selectedCellId];
         showCellCredits(courseElements, selectedCellMetaData);
+        updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
       }
     });
     reader.readAsText(csvFile);
