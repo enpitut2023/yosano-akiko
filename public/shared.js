@@ -424,6 +424,7 @@ export function setup(courses, cellIdToCellMetadata) {
   const rightTable = rightBar.getElementsByTagName("table")[0];
   const mightTakeTable = rightBar.getElementsByTagName("table")[1];
   const mightTakeContainer = mustGetElementById("container-might-take");
+  const tablesCloseButton = mustGetElementById("close-button"); /*後で変更*/
 
   /** @type {CourseTables} */
   const courseTables = {
@@ -532,6 +533,19 @@ export function setup(courses, cellIdToCellMetadata) {
     event.preventDefault();
     if (event.dataTransfer !== null) {
       event.dataTransfer.dropEffect = "move";
+    }
+  });
+
+  tablesCloseButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    const mainElements = document.getElementsByTagName("main");
+    const mainElement = mainElements[0];
+    if (mainElement.classList.contains("close")) {
+      mainElement.classList.remove("close");
+      tablesCloseButton.innerHTML = "とじる";
+    } else {
+      mainElement.classList.add("close");
+      tablesCloseButton.innerHTML = "ひらく";
     }
   });
 
