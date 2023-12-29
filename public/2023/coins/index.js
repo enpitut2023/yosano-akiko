@@ -69,7 +69,8 @@ function isD3(id) {
       id.startsWith("GB104") ||
       id.startsWith("GB108") ||
       id.startsWith("GB119") ||
-      id.startsWith("GB122")
+      id.startsWith("GB122") ||
+      id.startsWith("GB120")
     )
   );
 }
@@ -146,6 +147,9 @@ function isF2(id) {
     id.match(/^[2-5]/) && // 体育・外国語・国語・芸術
     //必修を除外
     !(
+      id.startsWith("21") ||
+      id.startsWith("22") ||
+      id.startsWith("23") ||
       id.startsWith("31H") ||
       id.startsWith("31J") ||
       id.startsWith("31K") ||
