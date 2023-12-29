@@ -121,8 +121,11 @@ th {
 }
 
 tbody > tr {
-  cursor: grab;
   background-color: white;
+}
+
+tbody > tr[draggable="true"] {
+  cursor: grab;
 }
 
 .courses .course > .id-name,
