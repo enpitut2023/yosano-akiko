@@ -31,6 +31,12 @@ import { parse } from "./vendor/csv-parse.js";
  *   taken: HTMLTableElement;
  * }} CourseTables
  *
+ * @typedef {{
+ *   notTaken: HTMLElement;
+ *   mightTake: HTMLElement;
+ *   taken: HTMLElement;
+ * }} CourseContainers
+ *
  * @typedef {"wip" | "a+" | "a" | "b" | "c" | "d" | "pass" | "fail" | "ok"} Grade;
  * @typedef {{
  *   id: string;
@@ -72,14 +78,20 @@ export function escapeHtml(html) {
 }
 
 /**
- * @param {Element} mightTakeContainer
- * @param {Element} mightTakeTbody
+ * @param {CourseContainers} courseContainers
+ * @param {CellTbodys} cellTbodys
  */
-function updateMightTakeContainer(mightTakeContainer, mightTakeTbody) {
-  if (mightTakeTbody.childElementCount === 0) {
-    mightTakeContainer.classList.add("contains-no-courses");
-  } else {
-    mightTakeContainer.classList.remove("contains-no-courses");
+function updateCourseContainers(courseContainers, cellTbodys) {
+  for (const [courseContainer, cellTbody] of /** @type {const} */ ([
+    [courseContainers.notTaken, cellTbodys.notTaken],
+    [courseContainers.mightTake, cellTbodys.mightTake],
+    [courseContainers.taken, cellTbodys.taken],
+  ])) {
+    if (cellTbody.childElementCount === 0) {
+      courseContainer.classList.add("contains-no-courses");
+    } else {
+      courseContainer.classList.remove("contains-no-courses");
+    }
   }
 }
 
@@ -400,8 +412,8 @@ function showCellCredits(courseElements, cellMetaData) {
   const creditMin = cellMetaData.creditMin;
   mustGetElementById("credit-sum").innerHTML = `
     <h1>単位数</h1>
-    <div>取得済み単位の合計：${taken_sum}/${creditMin}</div>
-    <div>履修中・取るかもしれない授業の単位を全て取得した場合の単位の合計：${taken_mighttaken_sum}/${creditMin}</div>
+    <div>取得済みの単位の合計：${taken_sum}/${creditMin}</div>
+    <div>履修中・履修するかもしれない授業の単位を全て取得した場合の単位の合計：${taken_mighttaken_sum}/${creditMin}</div>
   `;
 }
 
@@ -464,13 +476,18 @@ export function setup(courses, cellIdToCellMetadata) {
     "might-take-table",
     HTMLTableElement,
   );
-  const mightTakeContainer = mustGetElementById("container-might-take");
 
   /** @type {CourseTables} */
   const courseTables = {
     notTaken: leftTable,
     mightTake: mightTakeTable,
     taken: takenTable,
+  };
+  /** @type {CourseContainers} */
+  const courseContainers = {
+    notTaken: mustGetElementById("not-taken-course-container"),
+    mightTake: mustGetElementById("might-take-course-container"),
+    taken: mustGetElementById("taken-course-container"),
   };
 
   /** @type {string | undefined} */
@@ -501,7 +518,7 @@ export function setup(courses, cellIdToCellMetadata) {
       }
       const selectedCellMetaData = cellIdToCellMetadata[selectedCellId];
       updateCourseTables(courseTables, cellTbodys);
-      updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
+      updateCourseContainers(courseContainers, cellTbodys);
       showCellCredits(courseElements, selectedCellMetaData);
     });
   }
@@ -559,7 +576,7 @@ export function setup(courses, cellIdToCellMetadata) {
         const selectedCellMetaData = cellIdToCellMetadata[selectedCellId];
         showCellCredits(courseElements, selectedCellMetaData);
         updateCellTbodys(cellTbodys, courseElements);
-        updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
+        updateCourseContainers(courseContainers, cellTbodys);
       }
     });
     reader.readAsText(csvFile);
@@ -603,7 +620,7 @@ export function setup(courses, cellIdToCellMetadata) {
     }
     const cellMetadata = cellIdToCellMetadata[selectedCellId];
     updateCellTbodys(cellTbodys, courseElements);
-    updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
+    updateCourseContainers(courseContainers, cellTbodys);
     updateCreditSum(selectedCellId, courseElements, cellMetadata);
     showCellCredits(courseElements, cellMetadata);
   }

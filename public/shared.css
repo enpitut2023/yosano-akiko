@@ -84,20 +84,25 @@ main > * {
   height: 75px;
 }
 
-.courses > p {
+.course-container > * {
   display: none;
 }
-.courses > table {
+.course-container > table {
   display: revert;
 }
 
-.courses.no-cell-selected > p,
-.courses.contains-no-courses > p {
+.course-container.contains-no-courses > * {
+  display: none;
+}
+.course-container.contains-no-courses > .hint-when-contains-no-courses {
   display: revert;
 }
-.courses.no-cell-selected > table,
-.courses.contains-no-courses > table {
+
+.course-container.no-cell-selected > * {
   display: none;
+}
+.course-container.no-cell-selected > .hint-when-no-cells-selected {
+  display: revert;
 }
 
 table,
@@ -120,17 +125,17 @@ tbody > tr {
   background-color: white;
 }
 
-.courses .course > .id-name,
-.courses .course > .credit,
-.courses .course > .term,
-.courses .course > .when,
-.courses .course > .expects {
+.course-container .course > .id-name,
+.course-container .course > .credit,
+.course-container .course > .term,
+.course-container .course > .when,
+.course-container .course > .expects {
   display: none;
 }
-.courses.show-id-name .course > .id-name,
-.courses.show-credit .course > .credit,
-.courses.show-term .course > .term,
-.courses.show-when .course > .when,
-.courses.show-expects .course > .expects {
+.course-container.show-id-name .course > .id-name,
+.course-container.show-credit .course > .credit,
+.course-container.show-term .course > .term,
+.course-container.show-when .course > .when,
+.course-container.show-expects .course > .expects {
   display: revert;
 }
