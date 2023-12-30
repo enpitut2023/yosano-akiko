@@ -31,6 +31,12 @@ import { parse } from "./vendor/csv-parse.js";
  *   taken: HTMLTableElement;
  * }} CourseTables
  *
+ * @typedef {{
+ *   notTaken: HTMLElement;
+ *   mightTake: HTMLElement;
+ *   taken: HTMLElement;
+ * }} CourseContainers
+ *
  * @typedef {"wip" | "a+" | "a" | "b" | "c" | "d" | "pass" | "fail" | "ok"} Grade;
  * @typedef {{
  *   id: string;
@@ -72,14 +78,20 @@ export function escapeHtml(html) {
 }
 
 /**
- * @param {Element} mightTakeContainer
- * @param {Element} mightTakeTbody
+ * @param {CourseContainers} courseContainers
+ * @param {CellTbodys} cellTbodys
  */
-function updateMightTakeContainer(mightTakeContainer, mightTakeTbody) {
-  if (mightTakeTbody.childElementCount === 0) {
-    mightTakeContainer.classList.add("contains-no-courses");
-  } else {
-    mightTakeContainer.classList.remove("contains-no-courses");
+function updateCourseContainers(courseContainers, cellTbodys) {
+  for (const [courseContainer, cellTbody] of /** @type {const} */ ([
+    [courseContainers.notTaken, cellTbodys.notTaken],
+    [courseContainers.mightTake, cellTbodys.mightTake],
+    [courseContainers.taken, cellTbodys.taken],
+  ])) {
+    if (cellTbody.childElementCount === 0) {
+      courseContainer.classList.add("contains-no-courses");
+    } else {
+      courseContainer.classList.remove("contains-no-courses");
+    }
   }
 }
 
@@ -175,7 +187,7 @@ function updateBackground(cellId, taken_mighttaken_sum, creditMin) {
       cellElement.style.backgroundColor = "rgba(0, 255, 0, 0.2)";
       gageElement.style.width = "";
     } else {
-      const gageValue = 100 * taken_mighttaken_sum / creditMin;
+      const gageValue = (100 * taken_mighttaken_sum) / creditMin;
       gageElement.style.width = `${gageValue}%`;
       cellElement.style.border = "";
       cellElement.style.backgroundColor = "";
@@ -196,6 +208,20 @@ function mustGetElementById(id) {
 }
 
 /**
+ * @template {HTMLElement} T
+ * @param {string} id
+ * @param {new (...args: unknown[]) => T} type
+ * @returns {T}
+ */
+function mustGetElementByIdOfType(id, type) {
+  const e = document.getElementById(id);
+  if (!(e !== null && e instanceof type)) {
+    throw new Error(`cannot find "#${id}"`);
+  }
+  return e;
+}
+
+/**
  * @param {string} courseId
  * @param {Record<string, CellMetadata>} cellIdToCellMetadata
  * @returns {string | undefined}
@@ -205,6 +231,27 @@ function courseIdToCellId(courseId, cellIdToCellMetadata) {
     if (cellIdToCellMetadata[cellId].filter(courseId)) {
       return cellId;
     }
+  }
+}
+
+/**
+ * @param {Grade} g
+ * @returns {CourseElementState}
+ */
+function gradeToCourseElementState(g) {
+  switch (g) {
+    case "wip":
+      return "might-take";
+    case "a+":
+    case "a":
+    case "b":
+    case "c":
+    case "pass":
+    case "ok":
+      return "taken";
+    case "d":
+    case "fail":
+      return "not-taken";
   }
 }
 
@@ -228,9 +275,7 @@ function applyCourseGrades(
 ) {
   for (const courseElements of cellIdToCourseElements.values()) {
     for (const courseElement of courseElements) {
-      if (courseElement.state !== "might-take") {
-        courseElement.state = "not-taken";
-      }
+      courseElement.state = "not-taken";
     }
   }
   /** @type {string[]} */
@@ -255,7 +300,7 @@ function applyCourseGrades(
     if (courseElement === undefined) {
       unknownCourseIds.push(gradedCourse.id);
     } else {
-      courseElement.state = "taken";
+      courseElement.state = gradeToCourseElementState(gradedCourse.grade);
     }
   }
   for (const courseElements of cellIdToCourseElements.values()) {
@@ -370,16 +415,11 @@ function showCellCredits(courseElements, cellMetaData) {
   }
   const creditMax = cellMetaData.creditMax;
   const creditMin = cellMetaData.creditMin;
-  const e = document.getElementById("credit-sum");
-  const sums = `
-  <div class="separator"></div>
-  <h1>単位数</h1>
-  <div id="taken-sum">履修した合計単位：${taken_sum}/${creditMin}</div>
-  <div id="takne-mighttaken-sum">履修する予定の合計単位：${taken_mighttaken_sum}/${creditMin}</div>
+  mustGetElementById("credit-sum").innerHTML = `
+    <h1>単位数</h1>
+    <div>取得済みの単位の合計：${taken_sum}/${creditMin}</div>
+    <div>履修中・履修するかもしれない授業の単位を全て取得した場合の単位の合計：${taken_mighttaken_sum}/${creditMin}</div>
   `;
-  if (e !== null) {
-    e.innerHTML = sums;
-  }
 }
 
 /**
@@ -434,17 +474,28 @@ export function setup(courses, cellIdToCellMetadata) {
 
   const cellElements = [...document.querySelectorAll(".cell")];
   const leftBar = mustGetElementById("left-bar");
-  const leftTable = leftBar.getElementsByTagName("table")[0];
+  const leftTable = mustGetElementByIdOfType(
+    "not-taken-table",
+    HTMLTableElement,
+  );
   const rightBar = mustGetElementById("right-bar");
-  const rightTable = rightBar.getElementsByTagName("table")[0];
-  const mightTakeTable = rightBar.getElementsByTagName("table")[1];
-  const mightTakeContainer = mustGetElementById("container-might-take");
+  const takenTable = mustGetElementByIdOfType("taken-table", HTMLTableElement);
+  const mightTakeTable = mustGetElementByIdOfType(
+    "might-take-table",
+    HTMLTableElement,
+  );
 
   /** @type {CourseTables} */
   const courseTables = {
     notTaken: leftTable,
     mightTake: mightTakeTable,
-    taken: rightTable,
+    taken: takenTable,
+  };
+  /** @type {CourseContainers} */
+  const courseContainers = {
+    notTaken: mustGetElementById("not-taken-course-container"),
+    mightTake: mustGetElementById("might-take-course-container"),
+    taken: mustGetElementById("taken-course-container"),
   };
 
   /** @type {string | undefined} */
@@ -475,7 +526,7 @@ export function setup(courses, cellIdToCellMetadata) {
       }
       const selectedCellMetaData = cellIdToCellMetadata[selectedCellId];
       updateCourseTables(courseTables, cellTbodys);
-      updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
+      updateCourseContainers(courseContainers, cellTbodys);
       showCellCredits(courseElements, selectedCellMetaData);
     });
   }
@@ -532,7 +583,8 @@ export function setup(courses, cellIdToCellMetadata) {
         }
         const selectedCellMetaData = cellIdToCellMetadata[selectedCellId];
         showCellCredits(courseElements, selectedCellMetaData);
-        updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
+        updateCellTbodys(cellTbodys, courseElements);
+        updateCourseContainers(courseContainers, cellTbodys);
       }
     });
     reader.readAsText(csvFile);
@@ -576,7 +628,7 @@ export function setup(courses, cellIdToCellMetadata) {
     }
     const cellMetadata = cellIdToCellMetadata[selectedCellId];
     updateCellTbodys(cellTbodys, courseElements);
-    updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
+    updateCourseContainers(courseContainers, cellTbodys);
     updateCreditSum(selectedCellId, courseElements, cellMetadata);
     showCellCredits(courseElements, cellMetadata);
   }

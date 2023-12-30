@@ -56,10 +56,14 @@
       <div id="left-bar">
         <h1>未履修の授業</h1>
         <div
-          class="courses no-cell-selected show-id-name show-credit show-term show-when"
+          id="not-taken-course-container"
+          class="course-container no-cell-selected show-id-name show-credit show-term show-when"
         >
-          <p>セルを選択してください</p>
-          <table>
+          <p class="hint-when-no-cells-selected">セルを選択してください</p>
+          <p class="hint-when-contains-no-courses">
+            このセルに該当する未履修の授業がありません
+          </p>
+          <table id="not-taken-table">
             <thead>
               <tr class="course">
                 <th class="id-name">科目</th>
@@ -73,12 +77,23 @@
         </div>
       </div>
       <div id="right-bar">
-        <h1>履修済みの授業</h1>
-        <span>Twinsからの成績ファイル（CSV）をインポート:</span>
-        <input type="file" id="csv" name="csv" accept=".csv" />
-        <div class="courses no-cell-selected show-id-name show-credit">
-          <p>セルを選択してください</p>
-          <table>
+        <p>
+          <label for="csv">TWINSの成績データをインポート：</label>
+          <input type="file" id="csv" name="csv" accept=".csv" />
+        </p>
+        <div class="separator"></div>
+        <h1>履修中・履修するかもしれない授業</h1>
+        <div
+          id="might-take-course-container"
+          class="course-container contains-no-courses show-id-name show-credit show-term show-when"
+        >
+          <p class="hint-when-no-cells-selected">
+            ここに授業をドラッグ&ドロップ
+          </p>
+          <p class="hint-when-contains-no-courses">
+            ここに授業をドラッグ&ドロップ
+          </p>
+          <table id="might-take-table">
             <thead>
               <tr class="course">
                 <th class="id-name">科目</th>
@@ -90,14 +105,16 @@
             </thead>
           </table>
         </div>
-        <div class="separator"></div>
-        <h1>取るかもしれない授業</h1>
+        <h1>単位取得済みの授業</h1>
         <div
-          id="container-might-take"
-          class="courses contains-no-courses show-id-name show-credit show-term show-when"
+          id="taken-course-container"
+          class="course-container no-cell-selected show-id-name show-credit"
         >
-          <p>ここに授業をドラッグ&ドロップ</p>
-          <table>
+          <p class="hint-when-no-cells-selected">セルを選択してください</p>
+          <p class="hint-when-contains-no-courses">
+            このセルに該当する単位取得済みの授業がありません
+          </p>
+          <table id="taken-table">
             <thead>
               <tr class="course">
                 <th class="id-name">科目</th>
@@ -111,10 +128,7 @@
         </div>
       </div>
       <div id="credit-sum">
-        <div class="separator"></div>
         <h1>単位数</h1>
-        <div id="taken-sum"></div>
-        <div id="takne-mighttaken-sum"></div>
       </div>
     </main>
   </body>
