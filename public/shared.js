@@ -398,16 +398,11 @@ function showCellCredits(courseElements, cellMetaData) {
   }
   const creditMax = cellMetaData.creditMax;
   const creditMin = cellMetaData.creditMin;
-  const e = document.getElementById("credit-sum");
-  const sums = `
-  <div class="separator"></div>
-  <h1>単位数</h1>
-  <div id="taken-sum">履修した合計単位：${taken_sum}/${creditMin}</div>
-  <div id="takne-mighttaken-sum">履修する予定の合計単位：${taken_mighttaken_sum}/${creditMin}</div>
+  mustGetElementById("credit-sum").innerHTML = `
+    <h1>単位数</h1>
+    <div>取得済み単位の合計：${taken_sum}/${creditMin}</div>
+    <div>履修中・取るかもしれない授業の単位を全て取得した場合の単位の合計：${taken_mighttaken_sum}/${creditMin}</div>
   `;
-  if (e !== null) {
-    e.innerHTML = sums;
-  }
 }
 
 /**
