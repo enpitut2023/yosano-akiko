@@ -54,12 +54,12 @@
         </div>
       </div>
       <div id="left-bar">
-        <h1>未履修の授業</h1>
+        <h1>単位未取得の授業</h1>
         <div
           class="courses no-cell-selected show-id-name show-credit show-term show-when"
         >
           <p>セルを選択してください</p>
-          <table>
+          <table id="not-taken-table">
             <thead>
               <tr class="course">
                 <th class="id-name">科目</th>
@@ -73,12 +73,16 @@
         </div>
       </div>
       <div id="right-bar">
-        <h1>履修済みの授業</h1>
-        <span>Twinsからの成績ファイル（CSV）をインポート:</span>
+        <span>TWINSの成績データをインポート：</span>
         <input type="file" id="csv" name="csv" accept=".csv" />
-        <div class="courses no-cell-selected show-id-name show-credit">
-          <p>セルを選択してください</p>
-          <table>
+        <div class="separator"></div>
+        <h1>履修中・取るかもしれない授業</h1>
+        <div
+          id="container-might-take"
+          class="courses contains-no-courses show-id-name show-credit show-term show-when"
+        >
+          <p>ここに授業をドラッグ&ドロップ</p>
+          <table id="might-take-table">
             <thead>
               <tr class="course">
                 <th class="id-name">科目</th>
@@ -90,14 +94,10 @@
             </thead>
           </table>
         </div>
-        <div class="separator"></div>
-        <h1>取るかもしれない授業</h1>
-        <div
-          id="container-might-take"
-          class="courses contains-no-courses show-id-name show-credit show-term show-when"
-        >
-          <p>ここに授業をドラッグ&ドロップ</p>
-          <table>
+        <h1>単位取得済みの授業</h1>
+        <div class="courses no-cell-selected show-id-name show-credit">
+          <p>セルを選択してください</p>
+          <table id="taken-table">
             <thead>
               <tr class="course">
                 <th class="id-name">科目</th>

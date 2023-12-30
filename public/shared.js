@@ -175,7 +175,7 @@ function updateBackground(cellId, taken_mighttaken_sum, creditMin) {
       cellElement.style.backgroundColor = "rgba(0, 255, 0, 0.2)";
       gageElement.style.width = "";
     } else {
-      const gageValue = 100 * taken_mighttaken_sum / creditMin;
+      const gageValue = (100 * taken_mighttaken_sum) / creditMin;
       gageElement.style.width = `${gageValue}%`;
       cellElement.style.border = "";
       cellElement.style.backgroundColor = "";
@@ -196,6 +196,20 @@ function mustGetElementById(id) {
 }
 
 /**
+ * @template {HTMLElement} T
+ * @param {string} id
+ * @param {new (...args: unknown[]) => T} type
+ * @returns {T}
+ */
+function mustGetElementByIdOfType(id, type) {
+  const e = document.getElementById(id);
+  if (!(e !== null && e instanceof type)) {
+    throw new Error(`cannot find "#${id}"`);
+  }
+  return e;
+}
+
+/**
  * @param {string} courseId
  * @param {Record<string, CellMetadata>} cellIdToCellMetadata
  * @returns {string | undefined}
@@ -205,6 +219,27 @@ function courseIdToCellId(courseId, cellIdToCellMetadata) {
     if (cellIdToCellMetadata[cellId].filter(courseId)) {
       return cellId;
     }
+  }
+}
+
+/**
+ * @param {Grade} g
+ * @returns {CourseElementState}
+ */
+function gradeToCourseElementState(g) {
+  switch (g) {
+    case "wip":
+      return "might-take";
+    case "a+":
+    case "a":
+    case "b":
+    case "c":
+    case "pass":
+    case "ok":
+      return "taken";
+    case "d":
+    case "fail":
+      return "not-taken";
   }
 }
 
@@ -226,6 +261,11 @@ function applyCourseGrades(
   cellIdToCellMetadata,
   gradedCourses,
 ) {
+  for (const courseElements of cellIdToCourseElements.values()) {
+    for (const courseElement of courseElements) {
+      courseElement.state = "not-taken";
+    }
+  }
   /** @type {string[]} */
   const unknownCourseIds = [];
   for (const gradedCourse of gradedCourses) {
@@ -248,7 +288,7 @@ function applyCourseGrades(
     if (courseElement === undefined) {
       unknownCourseIds.push(gradedCourse.id);
     } else {
-      courseElement.state = "taken";
+      courseElement.state = gradeToCourseElementState(gradedCourse.grade);
     }
   }
   if (unknownCourseIds.length === 0) {
@@ -419,17 +459,23 @@ export function setup(courses, cellIdToCellMetadata) {
 
   const cellElements = [...document.querySelectorAll(".cell")];
   const leftBar = mustGetElementById("left-bar");
-  const leftTable = leftBar.getElementsByTagName("table")[0];
+  const leftTable = mustGetElementByIdOfType(
+    "not-taken-table",
+    HTMLTableElement,
+  );
   const rightBar = mustGetElementById("right-bar");
-  const rightTable = rightBar.getElementsByTagName("table")[0];
-  const mightTakeTable = rightBar.getElementsByTagName("table")[1];
+  const takenTable = mustGetElementByIdOfType("taken-table", HTMLTableElement);
+  const mightTakeTable = mustGetElementByIdOfType(
+    "might-take-table",
+    HTMLTableElement,
+  );
   const mightTakeContainer = mustGetElementById("container-might-take");
 
   /** @type {CourseTables} */
   const courseTables = {
     notTaken: leftTable,
     mightTake: mightTakeTable,
-    taken: rightTable,
+    taken: takenTable,
   };
 
   /** @type {string | undefined} */
@@ -517,6 +563,8 @@ export function setup(courses, cellIdToCellMetadata) {
         }
         const selectedCellMetaData = cellIdToCellMetadata[selectedCellId];
         showCellCredits(courseElements, selectedCellMetaData);
+        updateCellTbodys(cellTbodys, courseElements);
+        updateMightTakeContainer(mightTakeContainer, cellTbodys.mightTake);
       }
     });
     reader.readAsText(csvFile);
