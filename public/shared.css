@@ -14,8 +14,17 @@ main {
   grid-template-rows: auto 20ch;
 }
 
+main.close {
+  grid-template-columns: auto 0 0;
+}
+
 main > * {
   overflow: scroll;
+}
+
+main.close > #left-bar,
+main.close > #right-bar {
+  display: none;
 }
 
 #requirements {
@@ -87,6 +96,16 @@ main > * {
   bottom: 0;
   width: 50px;
   height: 75px;
+}
+
+#close-button {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  width: 50px;
+  height: 50px;
+  background-color: aquamarine;
+  cursor: pointer;
 }
 
 .courses > p {
