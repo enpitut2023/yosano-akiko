@@ -303,6 +303,11 @@ function applyCourseGrades(
       courseElement.state = gradeToCourseElementState(gradedCourse.grade);
     }
   }
+  for (const courseElements of cellIdToCourseElements.values()) {
+    for (const courseElement of courseElements) {
+      courseElement.element.draggable = courseElement.state !== "taken";
+    }
+  }
   if (unknownCourseIds.length === 0) {
     return { kind: "ok" };
   } else {
@@ -444,6 +449,9 @@ export function setup(courses, cellIdToCellMetadata) {
             </tr>
           `);
         element.addEventListener("dragstart", (event) => {
+          if (!(event.target instanceof HTMLTableRowElement)) {
+            return;
+          }
           event.dataTransfer?.setData("text/plain", course.id);
         });
         return { state: "not-taken", course, element };
