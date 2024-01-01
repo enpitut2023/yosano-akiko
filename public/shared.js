@@ -45,10 +45,79 @@ import { parse } from "./vendor/csv-parse.js";
  *
  * @typedef {{
  *   filter: (id: string) => boolean;
- *   creditMin: number | undefined;
+ *   creditMin: number;
  *   creditMax: number | undefined;
  * }} CellMetadata
+ *
+ * @typedef {{
+ *   creditMin: number;
+ *   creditMax: number | undefined;
+ * }} CellCreditRequirements
+ * @typedef {{
+ *   creditMin: number;
+ *   creditMax: number;
+ * }} ColumnCreditRequirements
+ * @typedef {{
+ *   takenSum: number;
+ *   mightTakeSum: number;
+ *   requirements: CellCreditRequirements;
+ * }} CellCredit
+ * @typedef {{
+ *   takenSum: number;
+ *   mightTakeSum: number;
+ *   requirements: ColumnCreditRequirements;
+ * }} ColumnCredit
  */
+
+class CreditSumView extends HTMLElement {
+  /** @private @type {HTMLSpanElement | undefined} */
+  takenSumSpan = undefined;
+  /** @private @type {HTMLSpanElement | undefined} */
+  takenAndMightTakeSumSpan = undefined;
+
+  constructor() {
+    super();
+  }
+
+  /**
+   * @protected
+   */
+  connectedCallback() {
+    this.innerHTML = `
+      <h1>単位数</h1>
+      <div>
+        <p>セルを選択してください</p>
+        <ul>
+          <li>取得済みの単位の合計：<span></span></li>
+          <li>履修中・履修するかもしれない授業の単位を全て取得した場合の単位の合計：<span></span></li>
+        </ul>
+      </div>
+    `;
+    [this.takenSumSpan, this.takenAndMightTakeSumSpan] =
+      this.getElementsByTagName("span");
+  }
+
+  /**
+   * @public
+   * @param {[ CellCredit, ColumnCredit ] | undefined} credits
+   */
+  update(credits) {
+    if (
+      this.takenSumSpan === undefined ||
+      this.takenAndMightTakeSumSpan === undefined
+    ) {
+      return;
+    }
+
+    this.classList.toggle("no-cell-selected", credits === undefined);
+    if (credits !== undefined) {
+      const [cellCredit, columnCredit] = credits;
+      this.takenSumSpan.innerHTML = `${cellCredit.takenSum}/${cellCredit.requirements.creditMin}`;
+      this.takenAndMightTakeSumSpan.innerHTML = `${cellCredit.mightTakeSum}/${cellCredit.requirements.creditMin}`;
+    }
+  }
+}
+window.customElements.define("credit-sum-view", CreditSumView);
 
 /**
  * @param {string} s
@@ -397,36 +466,100 @@ function csvToGradedCourses(csv) {
 }
 
 /**
- * @param {CourseElement[]} courseElements
- * @param {CellMetadata} cellMetaData
+ * @template T
+ * @param {Iterable<T>} elements
+ * @param {(t: T) => number} f
+ * @returns {number}
  */
-function showCellCredits(courseElements, cellMetaData) {
-  let taken_sum = 0;
-  let taken_mighttaken_sum = 0;
-  for (const courseElement of courseElements) {
-    const state = courseElement.state;
-    const credit = courseElement.course.credit;
-    if (credit !== undefined && state !== "not-taken") {
-      taken_mighttaken_sum += credit;
-      if (state == "taken") {
-        taken_sum += credit;
-      }
-    }
+function mapSum(elements, f) {
+  let sum = 0;
+  for (const e of elements) {
+    sum += f(e);
   }
-  const creditMax = cellMetaData.creditMax;
-  const creditMin = cellMetaData.creditMin;
-  mustGetElementById("credit-sum").innerHTML = `
-    <h1>単位数</h1>
-    <div>取得済みの単位の合計：${taken_sum}/${creditMin}</div>
-    <div>履修中・履修するかもしれない授業の単位を全て取得した場合の単位の合計：${taken_mighttaken_sum}/${creditMin}</div>
-  `;
+  return sum;
+}
+
+/**
+ * @param {Map<string, CourseElement[]>} cellIdToCourseElements
+ * @param {Record<string, CellMetadata>} cellIdToCellMetadata
+ * @returns {Record<string, CellCredit>}
+ */
+function calculateCellIdToCellCredits(
+  cellIdToCourseElements,
+  cellIdToCellMetadata,
+) {
+  /** @type {Record<string, CellCredit>} */
+  const cellIdToCellCredits = {};
+  for (const [cellId, courseElements] of cellIdToCourseElements) {
+    const cellMetadata = cellIdToCellMetadata[cellId];
+    const takenSum = mapSum(courseElements, (e) =>
+      e.state === "taken" ? e.course.credit ?? 0 : 0,
+    );
+    const mightTakeSum = mapSum(courseElements, (e) =>
+      e.state === "might-take" ? e.course.credit ?? 0 : 0,
+    );
+    cellIdToCellCredits[cellId] = {
+      takenSum,
+      mightTakeSum,
+      requirements: {
+        creditMin: cellMetadata.creditMin,
+        creditMax: cellMetadata.creditMax,
+      },
+    };
+  }
+  return cellIdToCellCredits;
+}
+
+/**
+ * @param {Record<string, CellCredit>} cellIdToCellCredits
+ * @param {Record<string, ColumnCreditRequirements>} columnIdToColumnCreditRequirements
+ * @returns {Record<string, ColumnCredit>}
+ */
+function calculateColumnIdToColumnCredits(
+  cellIdToCellCredits,
+  columnIdToColumnCreditRequirements,
+) {
+  const cellIdToCellCreditsEntries = Object.entries(cellIdToCellCredits);
+  /** @type {Record<string, ColumnCredit>} */
+  const columnIdToColumnCredits = {};
+  for (const [columnId, columnCreditRequirements] of Object.entries(
+    columnIdToColumnCreditRequirements,
+  )) {
+    const entries = cellIdToCellCreditsEntries.filter(([id, _]) =>
+      id.startsWith(columnId),
+    );
+    const takenSum = mapSum(entries, ([_, { takenSum }]) => takenSum);
+    const mightTakeSum = mapSum(
+      entries,
+      ([_, { mightTakeSum }]) => mightTakeSum,
+    );
+    columnIdToColumnCredits[columnId] = {
+      takenSum,
+      mightTakeSum,
+      requirements: columnCreditRequirements,
+    };
+  }
+  return columnIdToColumnCredits;
+}
+
+/**
+ * @param {string} cellId
+ * @returns {string}
+ */
+function cellIdToColumnId(cellId) {
+  return cellId[0];
 }
 
 /**
  * @param {Course[]} courses
  * @param {Record<string, CellMetadata>} cellIdToCellMetadata
+ * @param {Record<string, ColumnCreditRequirements>} columnIdToColumnCreditRequirements
  */
-export function setup(courses, cellIdToCellMetadata) {
+export function setup(
+  courses,
+  cellIdToCellMetadata,
+  columnIdToColumnCreditRequirements,
+) {
   const cellIds = Object.keys(cellIdToCellMetadata);
 
   /** @type {Map<string, CourseElement[]>} */
@@ -484,6 +617,10 @@ export function setup(courses, cellIdToCellMetadata) {
     "might-take-table",
     HTMLTableElement,
   );
+  const creditSumView = document.getElementsByTagName("credit-sum-view")?.[0];
+  if (!(creditSumView instanceof CreditSumView)) {
+    throw new Error();
+  }
 
   /** @type {CourseTables} */
   const courseTables = {
@@ -500,6 +637,14 @@ export function setup(courses, cellIdToCellMetadata) {
 
   /** @type {string | undefined} */
   let selectedCellId = undefined;
+  let cellIdToCellCredits = calculateCellIdToCellCredits(
+    cellIdToCourseElements,
+    cellIdToCellMetadata,
+  );
+  let columnIdToColumnCredits = calculateColumnIdToColumnCredits(
+    cellIdToCellCredits,
+    columnIdToColumnCreditRequirements,
+  );
 
   for (const cellElement of cellElements) {
     cellElement.addEventListener("click", (event) => {
@@ -524,10 +669,12 @@ export function setup(courses, cellIdToCellMetadata) {
       if (cellTbodys === undefined || courseElements === undefined) {
         throw new Error(`no such cell: '${selectedCellId}'`);
       }
-      const selectedCellMetaData = cellIdToCellMetadata[selectedCellId];
       updateCourseTables(courseTables, cellTbodys);
       updateCourseContainers(courseContainers, cellTbodys);
-      showCellCredits(courseElements, selectedCellMetaData);
+      creditSumView.update([
+        cellIdToCellCredits[selectedCellId],
+        columnIdToColumnCredits[cellIdToColumnId(selectedCellId)],
+      ]);
     });
   }
 
@@ -565,6 +712,15 @@ export function setup(courses, cellIdToCellMetadata) {
           `未知の科目番号の授業が含まれています。間違った年次のページを開いていませんか？\n未知の科目番号一覧:\n${ids}`,
         );
       }
+      cellIdToCellCredits = calculateCellIdToCellCredits(
+        cellIdToCourseElements,
+        cellIdToCellMetadata,
+      );
+      columnIdToColumnCredits = calculateColumnIdToColumnCredits(
+        cellIdToCellCredits,
+        columnIdToColumnCreditRequirements,
+      );
+
       for (const cellId of cellIds) {
         const cellTbodys = cellIdToCellTbodys.get(cellId);
         const courseElements = cellIdToCourseElements.get(cellId);
@@ -581,10 +737,12 @@ export function setup(courses, cellIdToCellMetadata) {
         if (cellTbodys === undefined || courseElements === undefined) {
           throw new Error(`no such cell: '${selectedCellId}'`);
         }
-        const selectedCellMetaData = cellIdToCellMetadata[selectedCellId];
-        showCellCredits(courseElements, selectedCellMetaData);
         updateCellTbodys(cellTbodys, courseElements);
         updateCourseContainers(courseContainers, cellTbodys);
+        creditSumView.update([
+          cellIdToCellCredits[selectedCellId],
+          columnIdToColumnCredits[cellIdToColumnId(selectedCellId)],
+        ]);
       }
     });
     reader.readAsText(csvFile);
@@ -607,7 +765,7 @@ export function setup(courses, cellIdToCellMetadata) {
    * @param {DragEvent} event
    * @param {CourseElementState} newState
    */
-  function handleDrop(event, newState) {
+  const handleDrop = (event, newState) => {
     event.preventDefault();
     if (selectedCellId === undefined) {
       return;
@@ -626,12 +784,24 @@ export function setup(courses, cellIdToCellMetadata) {
         e.state = newState;
       }
     }
+    cellIdToCellCredits = calculateCellIdToCellCredits(
+      cellIdToCourseElements,
+      cellIdToCellMetadata,
+    );
+    columnIdToColumnCredits = calculateColumnIdToColumnCredits(
+      cellIdToCellCredits,
+      columnIdToColumnCreditRequirements,
+    );
+
     const cellMetadata = cellIdToCellMetadata[selectedCellId];
     updateCellTbodys(cellTbodys, courseElements);
     updateCourseContainers(courseContainers, cellTbodys);
     updateCreditSum(selectedCellId, courseElements, cellMetadata);
-    showCellCredits(courseElements, cellMetadata);
-  }
+    creditSumView.update([
+      cellIdToCellCredits[selectedCellId],
+      columnIdToColumnCredits[cellIdToColumnId(selectedCellId)],
+    ]);
+  };
   leftBar.addEventListener("drop", (event) => {
     handleDrop(event, "not-taken");
   });

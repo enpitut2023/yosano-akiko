@@ -36,7 +36,7 @@ main > * {
   border-left: 1px dashed black;
 }
 
-#credit-sum {
+credit-sum-view {
   grid-column: 2/3;
   grid-row: 2/3;
   border-top: 1px dashed black;
@@ -45,7 +45,7 @@ main > * {
 
 #left-bar,
 #right-bar,
-#credit-sum {
+credit-sum-view {
   padding: 0 1em;
 }
 
@@ -140,5 +140,19 @@ tbody > tr[draggable="true"] {
 .course-container.show-term .course > .term,
 .course-container.show-when .course > .when,
 .course-container.show-expects .course > .expects {
+  display: revert;
+}
+
+credit-sum-view > div > * {
+  display: none;
+}
+credit-sum-view > div > ul {
+  display: revert;
+}
+
+credit-sum-view.no-cell-selected > div > * {
+  display: none;
+}
+credit-sum-view.no-cell-selected > div > p {
   display: revert;
 }
