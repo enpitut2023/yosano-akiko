@@ -11,7 +11,7 @@ main {
 
   display: grid;
   grid-template-columns: auto 40ch 40ch;
-  grid-template-rows: auto 20ch;
+  grid-template-rows: 1fr auto;
 }
 
 main > * {

@@ -71,9 +71,13 @@ import { parse } from "./vendor/csv-parse.js";
 
 class CreditSumView extends HTMLElement {
   /** @private @type {HTMLSpanElement | undefined} */
-  takenSumSpan = undefined;
+  cellWiseTakenSumSpan = undefined;
   /** @private @type {HTMLSpanElement | undefined} */
-  takenAndMightTakeSumSpan = undefined;
+  cellWiseTakenAndMightTakeSumSpan = undefined;
+  /** @private @type {HTMLSpanElement | undefined} */
+  columnWiseTakenSumSpan = undefined;
+  /** @private @type {HTMLSpanElement | undefined} */
+  columnWiseTakenAndMightTakeSumSpan = undefined;
 
   constructor() {
     super();
@@ -88,13 +92,25 @@ class CreditSumView extends HTMLElement {
       <div>
         <p>セルを選択してください</p>
         <ul>
-          <li>取得済みの単位の合計：<span></span></li>
-          <li>履修中・履修するかもしれない授業の単位を全て取得した場合の単位の合計：<span></span></li>
+          <li>選択されているセル<ul>
+              <li>取得済み：<span></span></li>
+              <li>取得済み＋履修中・履修するかもしれない：<span></span></li>
+            </ul>
+          </li>
+          <li>選択されている列の全セル<ul>
+              <li>取得済み：<span></span></li>
+              <li>取得済み＋履修中・履修するかもしれない：<span></span></li>
+            </ul>
+          </li>
         </ul>
       </div>
     `;
-    [this.takenSumSpan, this.takenAndMightTakeSumSpan] =
-      this.getElementsByTagName("span");
+    [
+      this.cellWiseTakenSumSpan,
+      this.cellWiseTakenAndMightTakeSumSpan,
+      this.columnWiseTakenSumSpan,
+      this.columnWiseTakenAndMightTakeSumSpan,
+    ] = this.getElementsByTagName("span");
   }
 
   /**
@@ -103,8 +119,10 @@ class CreditSumView extends HTMLElement {
    */
   update(credits) {
     if (
-      this.takenSumSpan === undefined ||
-      this.takenAndMightTakeSumSpan === undefined
+      this.cellWiseTakenSumSpan === undefined ||
+      this.cellWiseTakenAndMightTakeSumSpan === undefined ||
+      this.columnWiseTakenSumSpan === undefined ||
+      this.columnWiseTakenAndMightTakeSumSpan === undefined
     ) {
       return;
     }
@@ -112,9 +130,43 @@ class CreditSumView extends HTMLElement {
     this.classList.toggle("no-cell-selected", credits === undefined);
     if (credits !== undefined) {
       const [cellCredit, columnCredit] = credits;
-      this.takenSumSpan.innerHTML = `${cellCredit.takenSum}/${cellCredit.requirements.creditMin}`;
-      this.takenAndMightTakeSumSpan.innerHTML = `${cellCredit.mightTakeSum}/${cellCredit.requirements.creditMin}`;
+      const cellMessage = CreditSumView.cellCreditToMessage(cellCredit);
+      const columnMessage = CreditSumView.columnCreditToMessage(columnCredit);
+      this.cellWiseTakenSumSpan.innerHTML = cellMessage.taken;
+      this.cellWiseTakenAndMightTakeSumSpan.innerHTML =
+        cellMessage.takenAndMightTake;
+      this.columnWiseTakenSumSpan.innerHTML = columnMessage.taken;
+      this.columnWiseTakenAndMightTakeSumSpan.innerHTML =
+        columnMessage.takenAndMightTake;
     }
+  }
+
+  /**
+   * @private
+   * @param {CellCredit} cellCredit
+   * @returns {{ taken: string, takenAndMightTake: string }}
+   */
+  static cellCreditToMessage(cellCredit) {
+    const { takenSum, mightTakeSum, requirements } = cellCredit;
+    const takenAndMightTakeSum = takenSum + mightTakeSum;
+    let taken = `${takenSum}/${requirements.creditMin}`;
+    let takenAndMightTake = `${takenAndMightTakeSum}/${requirements.creditMin}`;
+    if (takenSum > (requirements.creditMax ?? Infinity)) {
+      taken += `（⚠️${requirements.creditMax}単位まで有効）`;
+    }
+    if (takenAndMightTakeSum > (requirements.creditMax ?? Infinity)) {
+      takenAndMightTake += `（⚠️${requirements.creditMax}単位まで有効）`;
+    }
+    return { taken, takenAndMightTake };
+  }
+
+  /**
+   * @private
+   * @param {ColumnCredit} columnCredit
+   * @returns {{ taken: string, takenAndMightTake: string }}
+   */
+  static columnCreditToMessage(columnCredit) {
+    return CreditSumView.cellCreditToMessage(columnCredit);
   }
 }
 window.customElements.define("credit-sum-view", CreditSumView);
@@ -511,6 +563,22 @@ function calculateCellIdToCellCredits(
 }
 
 /**
+ * @param {number} value
+ * @param {number} min
+ * @param {number} max
+ * @returns {number}
+ */
+function clamp(value, min, max) {
+  if (value < min) {
+    return min;
+  } else if (value > max) {
+    return max;
+  } else {
+    return value;
+  }
+}
+
+/**
  * @param {Record<string, CellCredit>} cellIdToCellCredits
  * @param {Record<string, ColumnCreditRequirements>} columnIdToColumnCreditRequirements
  * @returns {Record<string, ColumnCredit>}
@@ -528,10 +596,13 @@ function calculateColumnIdToColumnCredits(
     const entries = cellIdToCellCreditsEntries.filter(([id, _]) =>
       id.startsWith(columnId),
     );
-    const takenSum = mapSum(entries, ([_, { takenSum }]) => takenSum);
+    const takenSum = mapSum(entries, ([_, { takenSum, requirements }]) =>
+      clamp(takenSum, 0, requirements.creditMax ?? Infinity),
+    );
     const mightTakeSum = mapSum(
       entries,
-      ([_, { mightTakeSum }]) => mightTakeSum,
+      ([_, { mightTakeSum, requirements }]) =>
+        clamp(mightTakeSum, 0, requirements.creditMax ?? Infinity),
     );
     columnIdToColumnCredits[columnId] = {
       takenSum,
