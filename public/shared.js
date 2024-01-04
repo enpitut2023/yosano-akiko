@@ -171,6 +171,75 @@ class CreditSumView extends HTMLElement {
 }
 window.customElements.define("credit-sum-view", CreditSumView);
 
+class CreditSumOverlay extends HTMLElement {
+  /** @private @type {Map<string, HTMLDivElement>} */
+  columnIdToColumnDiv = new Map();
+
+  constructor() {
+    super();
+  }
+
+  /**
+   * @protected
+   */
+  connectedCallback() {
+    for (const div of this.getElementsByTagName("div")) {
+      if (div.classList.contains("column")) {
+        this.columnIdToColumnDiv.set(div.id, div);
+      }
+    }
+  }
+
+  /**
+   * @public
+   * @param {Map<string, ColumnCredit>} columnIdToColumnCredit
+   */
+  update(columnIdToColumnCredit) {
+    for (const [_, columnCredit, columnDiv] of zipMapIntersection(
+      columnIdToColumnCredit,
+      this.columnIdToColumnDiv,
+    )) {
+      columnDiv.textContent =
+        CreditSumOverlay.columnCreditToMessage(columnCredit);
+    }
+  }
+
+  /**
+   * @private
+   * @param {ColumnCredit} columnCredit
+   * @returns {string}
+   */
+  static columnCreditToMessage(columnCredit) {
+    const { takenSum, mightTakeSum, requirements } = columnCredit;
+    const takenAndMightTakeSum = takenSum + mightTakeSum;
+    if (takenSum === takenAndMightTakeSum) {
+      return takenSum.toString();
+    } else {
+      let message = `${takenSum} → ${takenAndMightTakeSum}`;
+      if (takenAndMightTakeSum > requirements.creditMax) {
+        message = "⚠️ " + message;
+      }
+      return message;
+    }
+  }
+}
+window.customElements.define("credit-sum-overlay", CreditSumOverlay);
+
+/**
+ * @template K, Va, Vb
+ * @param {Map<K, Va>} a
+ * @param {Map<K, Vb>} b
+ * @returns {Generator<[K, Va, Vb]>}
+ */
+function* zipMapIntersection(a, b) {
+  for (const [key, av] of a.entries()) {
+    const bv = b.get(key);
+    if (bv !== undefined) {
+      yield [key, av, bv];
+    }
+  }
+}
+
 /**
  * @param {string} s
  * @return {HTMLElement}
@@ -692,6 +761,11 @@ export function setup(
   if (!(creditSumView instanceof CreditSumView)) {
     throw new Error();
   }
+  const creditSumOverlay =
+    document.getElementsByTagName("credit-sum-overlay")?.[0];
+  if (!(creditSumOverlay instanceof CreditSumOverlay)) {
+    throw new Error();
+  }
 
   /** @type {CourseTables} */
   const courseTables = {
@@ -716,6 +790,7 @@ export function setup(
     cellIdToCellCredits,
     columnIdToColumnCreditRequirements,
   );
+  creditSumOverlay.update(new Map(Object.entries(columnIdToColumnCredits)));
 
   for (const cellElement of cellElements) {
     cellElement.addEventListener("click", (event) => {
@@ -746,6 +821,7 @@ export function setup(
         cellIdToCellCredits[selectedCellId],
         columnIdToColumnCredits[cellIdToColumnId(selectedCellId)],
       ]);
+      creditSumOverlay.update(new Map(Object.entries(columnIdToColumnCredits)));
     });
   }
 
@@ -791,6 +867,7 @@ export function setup(
         cellIdToCellCredits,
         columnIdToColumnCreditRequirements,
       );
+      creditSumOverlay.update(new Map(Object.entries(columnIdToColumnCredits)));
 
       for (const cellId of cellIds) {
         const cellTbodys = cellIdToCellTbodys.get(cellId);
@@ -872,6 +949,7 @@ export function setup(
       cellIdToCellCredits[selectedCellId],
       columnIdToColumnCredits[cellIdToColumnId(selectedCellId)],
     ]);
+    creditSumOverlay.update(new Map(Object.entries(columnIdToColumnCredits)));
   };
   leftBar.addEventListener("drop", (event) => {
     handleDrop(event, "not-taken");
