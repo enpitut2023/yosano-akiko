@@ -135,3 +135,11 @@
   width: 227px;
   height: 43px;
 }
+
+#net {
+  --width: 15ch;
+  left: calc(2172.5px - var(--width));
+  top: 1476px;
+  width: var(--width);
+  height: 100px;
+}

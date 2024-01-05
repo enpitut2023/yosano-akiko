@@ -67,6 +67,11 @@ import { parse } from "./vendor/csv-parse.js";
  *   mightTakeSum: number;
  *   requirements: ColumnCreditRequirements;
  * }} ColumnCredit
+ * @typedef {{
+ *   takenSum: number;
+ *   mightTakeSum: number;
+ *   required: number;
+ * }} NetCredit
  */
 
 class CreditSumView extends HTMLElement {
@@ -174,6 +179,8 @@ window.customElements.define("credit-sum-view", CreditSumView);
 class CreditSumOverlay extends HTMLElement {
   /** @private @type {Map<string, HTMLDivElement>} */
   columnIdToColumnDiv = new Map();
+  /** @private */
+  netDiv = document.createElement("div");
 
   constructor() {
     super();
@@ -188,13 +195,17 @@ class CreditSumOverlay extends HTMLElement {
         this.columnIdToColumnDiv.set(div.id, div);
       }
     }
+
+    this.netDiv.id = "net";
+    this.appendChild(this.netDiv);
   }
 
   /**
    * @public
    * @param {Map<string, ColumnCredit>} columnIdToColumnCredit
+   * @param {NetCredit} netCredit
    */
-  update(columnIdToColumnCredit) {
+  update(columnIdToColumnCredit, netCredit) {
     for (const [_, columnCredit, columnDiv] of zipMapIntersection(
       columnIdToColumnCredit,
       this.columnIdToColumnDiv,
@@ -202,6 +213,7 @@ class CreditSumOverlay extends HTMLElement {
       columnDiv.textContent =
         CreditSumOverlay.columnCreditToMessage(columnCredit);
     }
+    this.netDiv.textContent = CreditSumOverlay.netCreditToMessage(netCredit);
   }
 
   /**
@@ -221,6 +233,24 @@ class CreditSumOverlay extends HTMLElement {
       }
       return message;
     }
+  }
+
+  /**
+   * @private
+   * @param {NetCredit} netCredit
+   * @returns {string}
+   */
+  static netCreditToMessage(netCredit) {
+    const { takenSum, mightTakeSum, required } = netCredit;
+    const takenAndMightTakeSum = takenSum + mightTakeSum;
+    if (takenSum === takenAndMightTakeSum) {
+      return `${takenSum}/${required}`;
+    }
+    let message = `${takenSum} → ${takenAndMightTakeSum}/${required}`;
+    if (takenAndMightTakeSum > required) {
+      message = "⚠️ " + message;
+    }
+    return message;
   }
 }
 window.customElements.define("credit-sum-overlay", CreditSumOverlay);
@@ -682,6 +712,22 @@ function calculateColumnIdToColumnCredit(
 }
 
 /**
+ * @param {Map<string, ColumnCredit>} columnIdToColumnCredit
+ * @param {number} netRequired
+ * @returns {NetCredit}
+ */
+function calculateNetCredit(columnIdToColumnCredit, netRequired) {
+  const columnCredits = Array.from(columnIdToColumnCredit.values());
+  const takenSum = mapSum(columnCredits, (c) =>
+    Math.min(c.takenSum, c.requirements.creditMax),
+  );
+  const mightTakeSum = mapSum(columnCredits, (c) =>
+    Math.min(c.mightTakeSum, c.requirements.creditMax),
+  );
+  return { takenSum, mightTakeSum, required: netRequired };
+}
+
+/**
  * @param {string} cellId
  * @returns {string}
  */
@@ -713,11 +759,13 @@ function selectedCellCreditAndColumnCredit(
  * @param {Course[]} courses
  * @param {Record<string, CellMetadata>} cellIdToCellMetadata
  * @param {Record<string, ColumnCreditRequirements>} columnIdToColumnCreditRequirements
+ * @param {number} netRequired
  */
 export function setup(
   courses,
   cellIdToCellMetadata,
   columnIdToColumnCreditRequirements,
+  netRequired,
 ) {
   const cellIds = Object.keys(cellIdToCellMetadata);
 
@@ -809,8 +857,9 @@ export function setup(
     cellIdToCellCredit,
     columnIdToColumnCreditRequirements,
   );
+  let netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
 
-  creditSumOverlay.update(columnIdToColumnCredit);
+  creditSumOverlay.update(columnIdToColumnCredit, netCredit);
 
   for (const cellElement of cellElements) {
     cellElement.addEventListener("click", (event) => {
@@ -846,7 +895,7 @@ export function setup(
       if (selectedCredits !== undefined) {
         creditSumView.update(selectedCredits);
       }
-      creditSumOverlay.update(columnIdToColumnCredit);
+      creditSumOverlay.update(columnIdToColumnCredit, netCredit);
     });
   }
 
@@ -892,7 +941,8 @@ export function setup(
         cellIdToCellCredit,
         columnIdToColumnCreditRequirements,
       );
-      creditSumOverlay.update(columnIdToColumnCredit);
+      netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
+      creditSumOverlay.update(columnIdToColumnCredit, netCredit);
 
       for (const cellId of cellIds) {
         const cellTbodys = cellIdToCellTbodys.get(cellId);
@@ -970,6 +1020,7 @@ export function setup(
       cellIdToCellCredit,
       columnIdToColumnCreditRequirements,
     );
+    netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
 
     const cellMetadata = cellIdToCellMetadata[selectedCellId];
     updateCellTbodys(cellTbodys, courseElements);
@@ -984,7 +1035,7 @@ export function setup(
     if (selectedCredits !== undefined) {
       creditSumView.update(selectedCredits);
     }
-    creditSumOverlay.update(columnIdToColumnCredit);
+    creditSumOverlay.update(columnIdToColumnCredit, netCredit);
   };
   leftBar.addEventListener("drop", (event) => {
     handleDrop(event, "not-taken");

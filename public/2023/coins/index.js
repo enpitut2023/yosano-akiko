@@ -207,4 +207,5 @@ setup(
     f: { creditMin: 1, creditMax: 5 },
     h: { creditMin: 6, creditMax: 10 },
   },
+  71,
 );
