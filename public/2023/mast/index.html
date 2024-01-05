@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../../shared.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>あきこ</title>
+    <script type="module" src="index.js"></script>
+  </head>
+  <body>
+    <main>
+      <div id="requirements">
+        <img src="table.png" />
+        <div class="cell" id="b1"></div>
+        <div class="cell" id="d1"></div>
+        <div class="cell" id="f1"></div>
+        <div class="cell" id="f2"></div>
+        <div class="cell" id="f3"></div>
+        <div class="cell" id="f4"></div>
+        <div class="cell" id="f5"></div>
+        <div class="cell" id="h1"></div>
+        <div class="cell" id="h2"></div>
+        <div class="cell" id="h3"></div>
+      </div>
+      <div id="left-bar">
+        <h1>未履修の授業</h1>
+        <div
+          class="courses no-cell-selected show-id-name show-credit show-term show-when"
+        >
+          <p>セルを選択してください</p>
+          <table>
+            <thead>
+              <tr class="course">
+                <th class="id-name">科目</th>
+                <th class="credit">単位</th>
+                <th class="term">学期</th>
+                <th class="when">時限</th>
+                <th class="expects">標準履修年次</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+      </div>
+      <div id="right-bar">
+        <h1>履修済みの授業</h1>
+        <span>Twinsからの成績ファイル（CSV）をインポート:</span>
+        <input type="file" id="csv" name="csv" accept=".csv" />
+        <div class="courses no-cell-selected show-id-name show-credit">
+          <p>セルを選択してください</p>
+          <table>
+            <thead>
+              <tr class="course">
+                <th class="id-name">科目</th>
+                <th class="credit">単位</th>
+                <th class="term">学期</th>
+                <th class="when">時限</th>
+                <th class="expects">標準履修年次</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+        <div class="separator"></div>
+        <h1>取るかもしれない授業</h1>
+        <div
+          id="container-might-take"
+          class="courses contains-no-courses show-id-name show-credit show-term show-when"
+        >
+          <p>ここに授業をドラッグ&ドロップ</p>
+          <table>
+            <thead>
+              <tr class="course">
+                <th class="id-name">科目</th>
+                <th class="credit">単位</th>
+                <th class="term">学期</th>
+                <th class="when">時限</th>
+                <th class="expects">標準履修年次</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+      </div>
+      <div id="credit-sum">
+        <div class="separator"></div>
+        <h1>単位数</h1>
+        <div id="taken-sum"></div>
+        <div id="takne-mighttaken-sum"></div>
+      </div>
+    </main>
+  </body>
+</html>
