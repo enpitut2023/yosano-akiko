@@ -603,14 +603,14 @@ function mapSum(elements, f) {
 /**
  * @param {Map<string, CourseElement[]>} cellIdToCourseElements
  * @param {Record<string, CellMetadata>} cellIdToCellMetadata
- * @returns {Record<string, CellCredit>}
+ * @returns {Map<string, CellCredit>}
  */
-function calculateCellIdToCellCredits(
+function calculateCellIdToCellCredit(
   cellIdToCourseElements,
   cellIdToCellMetadata,
 ) {
-  /** @type {Record<string, CellCredit>} */
-  const cellIdToCellCredits = {};
+  /** @type {Map<string, CellCredit>} */
+  const cellIdToCellCredit = new Map();
   for (const [cellId, courseElements] of cellIdToCourseElements) {
     const cellMetadata = cellIdToCellMetadata[cellId];
     const takenSum = mapSum(courseElements, (e) =>
@@ -619,16 +619,16 @@ function calculateCellIdToCellCredits(
     const mightTakeSum = mapSum(courseElements, (e) =>
       e.state === "might-take" ? e.course.credit ?? 0 : 0,
     );
-    cellIdToCellCredits[cellId] = {
+    cellIdToCellCredit.set(cellId, {
       takenSum,
       mightTakeSum,
       requirements: {
         creditMin: cellMetadata.creditMin,
         creditMax: cellMetadata.creditMax,
       },
-    };
+    });
   }
-  return cellIdToCellCredits;
+  return cellIdToCellCredit;
 }
 
 /**
@@ -648,21 +648,20 @@ function clamp(value, min, max) {
 }
 
 /**
- * @param {Record<string, CellCredit>} cellIdToCellCredits
+ * @param {Map<string, CellCredit>} cellIdToCellCredit
  * @param {Record<string, ColumnCreditRequirements>} columnIdToColumnCreditRequirements
- * @returns {Record<string, ColumnCredit>}
+ * @returns {Map<string, ColumnCredit>}
  */
-function calculateColumnIdToColumnCredits(
-  cellIdToCellCredits,
+function calculateColumnIdToColumnCredit(
+  cellIdToCellCredit,
   columnIdToColumnCreditRequirements,
 ) {
-  const cellIdToCellCreditsEntries = Object.entries(cellIdToCellCredits);
-  /** @type {Record<string, ColumnCredit>} */
-  const columnIdToColumnCredits = {};
+  /** @type {Map<string, ColumnCredit>} */
+  const columnIdToColumnCredit = new Map();
   for (const [columnId, columnCreditRequirements] of Object.entries(
     columnIdToColumnCreditRequirements,
   )) {
-    const entries = cellIdToCellCreditsEntries.filter(([id, _]) =>
+    const entries = Array.from(cellIdToCellCredit.entries()).filter(([id, _]) =>
       id.startsWith(columnId),
     );
     const takenSum = mapSum(entries, ([_, { takenSum, requirements }]) =>
@@ -673,13 +672,13 @@ function calculateColumnIdToColumnCredits(
       ([_, { mightTakeSum, requirements }]) =>
         clamp(mightTakeSum, 0, requirements.creditMax ?? Infinity),
     );
-    columnIdToColumnCredits[columnId] = {
+    columnIdToColumnCredit.set(columnId, {
       takenSum,
       mightTakeSum,
       requirements: columnCreditRequirements,
-    };
+    });
   }
-  return columnIdToColumnCredits;
+  return columnIdToColumnCredit;
 }
 
 /**
@@ -688,6 +687,26 @@ function calculateColumnIdToColumnCredits(
  */
 function cellIdToColumnId(cellId) {
   return cellId[0];
+}
+
+/**
+ * @param {string} selectedCellId
+ * @param {Map<string, CellCredit>} cellIdToCellCredit
+ * @param {Map<string, ColumnCredit>} columnIdToColumnCredit
+ * @returns {[CellCredit, ColumnCredit] | undefined}
+ */
+function selectedCellCreditAndColumnCredit(
+  selectedCellId,
+  cellIdToCellCredit,
+  columnIdToColumnCredit,
+) {
+  const cellCredit = cellIdToCellCredit.get(selectedCellId);
+  const columnCredit = columnIdToColumnCredit.get(
+    cellIdToColumnId(selectedCellId),
+  );
+  if (cellCredit !== undefined && columnCredit !== undefined) {
+    return [cellCredit, columnCredit];
+  }
 }
 
 /**
@@ -782,15 +801,16 @@ export function setup(
 
   /** @type {string | undefined} */
   let selectedCellId = undefined;
-  let cellIdToCellCredits = calculateCellIdToCellCredits(
+  let cellIdToCellCredit = calculateCellIdToCellCredit(
     cellIdToCourseElements,
     cellIdToCellMetadata,
   );
-  let columnIdToColumnCredits = calculateColumnIdToColumnCredits(
-    cellIdToCellCredits,
+  let columnIdToColumnCredit = calculateColumnIdToColumnCredit(
+    cellIdToCellCredit,
     columnIdToColumnCreditRequirements,
   );
-  creditSumOverlay.update(new Map(Object.entries(columnIdToColumnCredits)));
+
+  creditSumOverlay.update(columnIdToColumnCredit);
 
   for (const cellElement of cellElements) {
     cellElement.addEventListener("click", (event) => {
@@ -817,11 +837,16 @@ export function setup(
       }
       updateCourseTables(courseTables, cellTbodys);
       updateCourseContainers(courseContainers, cellTbodys);
-      creditSumView.update([
-        cellIdToCellCredits[selectedCellId],
-        columnIdToColumnCredits[cellIdToColumnId(selectedCellId)],
-      ]);
-      creditSumOverlay.update(new Map(Object.entries(columnIdToColumnCredits)));
+
+      const selectedCredits = selectedCellCreditAndColumnCredit(
+        selectedCellId,
+        cellIdToCellCredit,
+        columnIdToColumnCredit,
+      );
+      if (selectedCredits !== undefined) {
+        creditSumView.update(selectedCredits);
+      }
+      creditSumOverlay.update(columnIdToColumnCredit);
     });
   }
 
@@ -859,15 +884,15 @@ export function setup(
           `未知の科目番号の授業が含まれています。間違った年次のページを開いていませんか？\n未知の科目番号一覧:\n${ids}`,
         );
       }
-      cellIdToCellCredits = calculateCellIdToCellCredits(
+      cellIdToCellCredit = calculateCellIdToCellCredit(
         cellIdToCourseElements,
         cellIdToCellMetadata,
       );
-      columnIdToColumnCredits = calculateColumnIdToColumnCredits(
-        cellIdToCellCredits,
+      columnIdToColumnCredit = calculateColumnIdToColumnCredit(
+        cellIdToCellCredit,
         columnIdToColumnCreditRequirements,
       );
-      creditSumOverlay.update(new Map(Object.entries(columnIdToColumnCredits)));
+      creditSumOverlay.update(columnIdToColumnCredit);
 
       for (const cellId of cellIds) {
         const cellTbodys = cellIdToCellTbodys.get(cellId);
@@ -887,10 +912,15 @@ export function setup(
         }
         updateCellTbodys(cellTbodys, courseElements);
         updateCourseContainers(courseContainers, cellTbodys);
-        creditSumView.update([
-          cellIdToCellCredits[selectedCellId],
-          columnIdToColumnCredits[cellIdToColumnId(selectedCellId)],
-        ]);
+
+        const selectedCredits = selectedCellCreditAndColumnCredit(
+          selectedCellId,
+          cellIdToCellCredit,
+          columnIdToColumnCredit,
+        );
+        if (selectedCredits !== undefined) {
+          creditSumView.update(selectedCredits);
+        }
       }
     });
     reader.readAsText(csvFile);
@@ -932,12 +962,12 @@ export function setup(
         e.state = newState;
       }
     }
-    cellIdToCellCredits = calculateCellIdToCellCredits(
+    cellIdToCellCredit = calculateCellIdToCellCredit(
       cellIdToCourseElements,
       cellIdToCellMetadata,
     );
-    columnIdToColumnCredits = calculateColumnIdToColumnCredits(
-      cellIdToCellCredits,
+    columnIdToColumnCredit = calculateColumnIdToColumnCredit(
+      cellIdToCellCredit,
       columnIdToColumnCreditRequirements,
     );
 
@@ -945,11 +975,16 @@ export function setup(
     updateCellTbodys(cellTbodys, courseElements);
     updateCourseContainers(courseContainers, cellTbodys);
     updateCreditSum(selectedCellId, courseElements, cellMetadata);
-    creditSumView.update([
-      cellIdToCellCredits[selectedCellId],
-      columnIdToColumnCredits[cellIdToColumnId(selectedCellId)],
-    ]);
-    creditSumOverlay.update(new Map(Object.entries(columnIdToColumnCredits)));
+
+    const selectedCredits = selectedCellCreditAndColumnCredit(
+      selectedCellId,
+      cellIdToCellCredit,
+      columnIdToColumnCredit,
+    );
+    if (selectedCredits !== undefined) {
+      creditSumView.update(selectedCredits);
+    }
+    creditSumOverlay.update(columnIdToColumnCredit);
   };
   leftBar.addEventListener("drop", (event) => {
     handleDrop(event, "not-taken");
