@@ -132,12 +132,22 @@ function isH2(id) {
   );
 }
 
-setup(courses, {
-  b1: {filter: isB1, creditMin: 16, creditMax: undefined},
-  b2: {filter: isB2, creditMin: 8, creditMax: undefined},
-  d1: {filter: isD1, creditMin: 32, creditMax: 52},
-  f1: {filter: isF1, creditMin: 1, creditMax: undefined},
-  f2: {filter: isF2, creditMin: 0, creditMax: undefined},
-  h1: {filter: isH1, creditMin: 6, creditMax: undefined},
-  h2: {filter: isH2, creditMin: 0, creditMax: undefined}
-});
+setup(
+  courses,
+  {
+    b1: { filter: isB1, creditMin: 16, creditMax: undefined },
+    b2: { filter: isB2, creditMin: 8, creditMax: undefined },
+    d1: { filter: isD1, creditMin: 32, creditMax: 52 },
+    f1: { filter: isF1, creditMin: 1, creditMax: undefined },
+    f2: { filter: isF2, creditMin: 0, creditMax: undefined },
+    h1: { filter: isH1, creditMin: 6, creditMax: undefined },
+    h2: { filter: isH2, creditMin: 0, creditMax: undefined },
+  },
+  {
+    b: { creditMin: 24, creditMax: 44 },
+    d: { creditMin: 32, creditMax: 52 },
+    f: { creditMin: 1, creditMax: 21 },
+    h: { creditMin: 6, creditMax: 26 },
+  },
+  83,
+);
