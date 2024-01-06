@@ -37,9 +37,12 @@ import { parse } from "./vendor/csv-parse.js";
  *   taken: HTMLElement;
  * }} CourseContainers
  *
- * @typedef {"wip" | "a+" | "a" | "b" | "c" | "d" | "pass" | "fail" | "ok"} Grade;
+ * @typedef {"wip" | "a+" | "a" | "b" | "c" | "d" | "pass" | "fail" | "free"} Grade;
  * @typedef {{
  *   id: string;
+ *   name: string;
+ *   credit: number | undefined;
+ *   takenYear: number;
  *   grade: Grade;
  * }} GradedCourse
  *
@@ -467,7 +470,7 @@ function gradeToCourseElementState(g) {
     case "b":
     case "c":
     case "pass":
-    case "ok":
+    case "free":
       return "taken";
     case "d":
     case "fail":
@@ -558,8 +561,21 @@ function parseGrade(s) {
     case "F":
       return "fail";
     case "認":
-      return "ok";
+      return "free";
   }
+}
+
+/**
+ * @param {unknown[]} array
+ * @returns {array is string[]}
+ */
+function isStringArray(array) {
+  for (const e of array) {
+    if (typeof e !== "string") {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -567,16 +583,24 @@ function parseGrade(s) {
  * @returns {GradedCourse | undefined}
  */
 function parseGradedCourse(row) {
-  const id = row[2];
-  const rawGrade = row[7];
-  if (typeof id !== "string" || typeof rawGrade !== "string") {
+  if (!(isStringArray(row) && row.length === 11)) {
     return;
   }
+  // 学籍番号, 学生氏名, 科目番号, 科目名, 単位数, 春学期, 秋学期, 総合評価, 科目区分, 開講年度, 開講区分
+  const [, , id, name, rawCredit, , , rawGrade, , rawYearTaken, ,] = row;
   const grade = parseGrade(rawGrade);
   if (grade === undefined) {
     return;
   }
-  return { id, grade };
+  const credit = parseInt(rawCredit);
+  if (isNaN(credit)) {
+    return;
+  }
+  const takenYear = parseInt(rawYearTaken);
+  if (isNaN(takenYear)) {
+    return;
+  }
+  return { id, name, grade, credit, takenYear };
 }
 
 /**
@@ -596,7 +620,7 @@ function csvToGradedCourses(csv) {
   /** @type {unknown} */
   let rows;
   try {
-    rows = parse(csv);
+    rows = parse(csv, { trim: true });
   } catch {
     return { kind: "failed-to-parse-as-csv" };
   }
@@ -780,9 +804,11 @@ export function setup(
         const element = stringToHtmlElement(`
             <tr class="course" draggable="true">
               <td class="id-name">${course.id}<br>
-                <a href="https://kdb.tsukuba.ac.jp/syllabi/2023/${course.id}/jpn" target="_blank">${course.name}</a>
+                <a href="https://kdb.tsukuba.ac.jp/syllabi/2023/${
+                  course.id
+                }/jpn" target="_blank">${course.name}</a>
               </td>
-              <td class="credit">${course.credit}</td>
+              <td class="credit">${course.credit ?? "-"}</td>
               <td class="term">${course.term}</td>
               <td class="when">${course.when}</td>
               <td class="expects">${course.expects}</td>
