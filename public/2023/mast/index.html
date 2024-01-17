@@ -12,24 +12,65 @@
     <main>
       <div id="requirements">
         <img src="table.png" />
-        <div class="cell" id="b1"></div>
-        <div class="cell" id="d1"></div>
-        <div class="cell" id="f1"></div>
-        <div class="cell" id="f2"></div>
-        <div class="cell" id="f3"></div>
-        <div class="cell" id="f4"></div>
-        <div class="cell" id="f5"></div>
-        <div class="cell" id="h1"></div>
-        <div class="cell" id="h2"></div>
-        <div class="cell" id="h3"></div>
+        <div class="cell" id="b1">
+          <div class="gage" id="b1-gage"></div>
+          <div class="sum" id="b1-sum"></div>
+        </div>
+        <div class="cell" id="d1">
+          <div class="gage" id="d1-gage"></div>
+          <div class="sum" id="d1-sum"></div>
+        </div>
+        <div class="cell" id="f1">
+          <div class="gage" id="f1-gage"></div>
+          <div class="sum" id="f1-sum"></div>
+        </div>
+        <div class="cell" id="f2">
+          <div class="gage" id="f2-gage"></div>
+          <div class="sum" id="f2-sum"></div>
+        </div>
+        <div class="cell" id="f3">
+          <div class="gage" id="f3-gage"></div>
+          <div class="sum" id="f3-sum"></div>
+        </div>
+        <div class="cell" id="f4">
+          <div class="gage" id="f4-gage"></div>
+          <div class="sum" id="f4-sum"></div>
+        </div>
+        <div class="cell" id="f5">
+          <div class="gage" id="f5-gage"></div>
+          <div class="sum" id="f5-sum"></div></div>
+        <div class="cell" id="h1">
+          <div class="gage" id="h1-gage"></div>
+          <div class="sum" id="h1-sum"></div>
+        </div>
+        <div class="cell" id="h2">
+          <div class="gage" id="h2-gage"></div>
+          <div class="sum" id="h2-sum"></div>
+        </div>
+        <div class="cell" id="h3">
+          <div class="gage" id="h3-gage"></div>
+          <div class="sum" id="h3-sum"></div>
+        </div>
+        
+        <credit-sum-overlay>
+          <div id="b" class="column"></div>
+          <div id="d" class="column"></div>
+          <div id="f" class="column"></div>
+          <div id="h" class="column"></div>
+        </credit-sum-overlay>
       </div>
+
       <div id="left-bar">
         <h1>未履修の授業</h1>
         <div
-          class="courses no-cell-selected show-id-name show-credit show-term show-when"
+          id="not-taken-course-container"
+          class="course-container no-cell-selected show-id-name show-credit show-term show-when"
         >
-          <p>セルを選択してください</p>
-          <table>
+          <p class="hint-when-no-cells-selected">セルを選択してください</p>
+          <p class="hint-when-contains-no-courses">
+            このセルに該当する未履修の授業がありません
+          </p>
+          <table id="not-taken-table">
             <thead>
               <tr class="course">
                 <th class="id-name">科目</th>
@@ -42,32 +83,26 @@
           </table>
         </div>
       </div>
+      <credit-sum-view class="no-cell-selected"></credit-sum-view>
+
       <div id="right-bar">
-        <h1>履修済みの授業</h1>
-        <span>Twinsからの成績ファイル（CSV）をインポート:</span>
-        <input type="file" id="csv" name="csv" accept=".csv" />
-        <div class="courses no-cell-selected show-id-name show-credit">
-          <p>セルを選択してください</p>
-          <table>
-            <thead>
-              <tr class="course">
-                <th class="id-name">科目</th>
-                <th class="credit">単位</th>
-                <th class="term">学期</th>
-                <th class="when">時限</th>
-                <th class="expects">標準履修年次</th>
-              </tr>
-            </thead>
-          </table>
-        </div>
+        <p>
+          <label for="csv">TWINSの成績データをインポート：</label>
+          <input type="file" id="csv" name="csv" accept=".csv" />
+        </p>
         <div class="separator"></div>
-        <h1>取るかもしれない授業</h1>
+        <h1>履修中・履修するかもしれない授業</h1>
         <div
-          id="container-might-take"
-          class="courses contains-no-courses show-id-name show-credit show-term show-when"
+          id="might-take-course-container"
+          class="course-container contains-no-courses show-id-name show-credit show-term show-when"
         >
-          <p>ここに授業をドラッグ&ドロップ</p>
-          <table>
+          <p class="hint-when-no-cells-selected">
+            ここに授業をドラッグ&ドロップ
+          </p>
+          <p class="hint-when-contains-no-courses">
+            ここに授業をドラッグ&ドロップ
+          </p>
+          <table id="might-take-table">
             <thead>
               <tr class="course">
                 <th class="id-name">科目</th>
@@ -79,12 +114,27 @@
             </thead>
           </table>
         </div>
-      </div>
-      <div id="credit-sum">
-        <div class="separator"></div>
-        <h1>単位数</h1>
-        <div id="taken-sum"></div>
-        <div id="takne-mighttaken-sum"></div>
+        <h1>単位取得済みの授業</h1>
+        <div
+          id="taken-course-container"
+          class="course-container no-cell-selected show-id-name show-credit"
+        >
+          <p class="hint-when-no-cells-selected">セルを選択してください</p>
+          <p class="hint-when-contains-no-courses">
+            このセルに該当する単位取得済みの授業がありません
+          </p>
+          <table id="taken-table">
+            <thead>
+              <tr class="course">
+                <th class="id-name">科目</th>
+                <th class="credit">単位</th>
+                <th class="term">学期</th>
+                <th class="when">時限</th>
+                <th class="expects">標準履修年次</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
       </div>
     </main>
   </body>

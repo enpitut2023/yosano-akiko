@@ -197,4 +197,12 @@ setup(courses, {
   h1: {filter: isH1, creditMin: 6, creditMax: 15}, 
   h2: {filter: isH2, creditMin: 0, creditMax: 9},
   h3: {filter: isH3, creditMin: 0, creditMax: 9}
-});
+},
+{
+  b: { creditMin: 20, creditMax: 35 },
+  d: { creditMin: 32, creditMax: 47 },
+  f: { creditMin: 1, creditMax: 10 },
+  h: { creditMin: 6, creditMax: 15 },
+},
+74,
+);
