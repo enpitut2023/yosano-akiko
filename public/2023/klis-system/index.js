@@ -107,7 +107,20 @@ function isF1(id) {
  * @returns {boolean}
  */
 function isF2(id) {
-  return id.match(/^[2-5]/); // 体育・外国語・国語・芸術
+  return (
+    id.match(/^[2-5]/) && // 体育・外国語・国語・芸術
+    // 必修を除外
+    // 応急処置として「基礎...」「応用...」みたいな体育はF2に入れない
+    !(
+      id.startsWith("21") ||
+      id.startsWith("22") ||
+      id.startsWith("23") ||
+      id.startsWith("31H") ||
+      id.startsWith("31J") ||
+      id.startsWith("31K") ||
+      id.startsWith("31L")
+    )
+  );
 }
 
 /**
@@ -144,4 +157,12 @@ setup(courses, {
   f2: {filter: isF2, creditMin: 0, creditMax: undefined},
   h1: {filter: isH1, creditMin: 6, creditMax: undefined},
   h2: {filter: isH2, creditMin: 0, creditMax: undefined}
-});
+},
+{
+  b: { creditMin: 24, creditMax: 44 },
+  d: { creditMin: 32, creditMax: 52 },
+  f: { creditMin: 1, creditMax: 21 },
+  h: { creditMin: 6, creditMax: 26 },
+},
+83,
+);
