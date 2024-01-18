@@ -54,18 +54,40 @@ credit-sum-view {
 }
 
 .cell {
+  --border-width: 4px;
+  --green-percentage: 0%;
+  --yellow-percentage: 0%;
   position: absolute;
   box-sizing: border-box;
-  border: 4px dashed rgba(0, 0, 255, 0.5);
+  border: var(--border-width) dashed #888;
   cursor: pointer;
+  mix-blend-mode: multiply;
+}
+
+.cell::before {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: calc(-1 * var(--border-width));
+  background: linear-gradient(
+    90deg,
+    rgba(51, 204, 51) 0%,
+    rgba(51, 204, 51) var(--green-percentage),
+    rgba(255, 204, 0) var(--green-percentage),
+    rgba(255, 204, 0) var(--yellow-percentage),
+    transparent var(--yellow-percentage),
+    transparent 100%
+  );
+  opacity: 0.4;
 }
 
 .cell:hover {
-  background-color: rgba(0, 0, 255, 0.2);
+  background-color: rgba(0, 0, 0, 0.25);
 }
 
 .cell.selected {
-  background-color: rgba(0, 0, 255, 0.4);
+  outline: 6px solid #0066ff;
+  outline-offset: 4px;
 }
 
 credit-sum-overlay > .column,

@@ -37,12 +37,6 @@ import { parse } from "./vendor/csv-parse.js";
  *   taken: HTMLElement;
  * }} CourseContainers
  *
- * @typedef {"wip" | "a+" | "a" | "b" | "c" | "d" | "pass" | "fail" | "ok"} Grade;
- * @typedef {{
- *   id: string;
- *   grade: Grade;
- * }} GradedCourse
- *
  * @typedef {{
  *   filter: (id: string) => boolean;
  *   creditMin: number;
@@ -74,6 +68,30 @@ import { parse } from "./vendor/csv-parse.js";
  * }} NetCredit
  */
 
+/**
+ * @typedef {"wip" | "a+" | "a" | "b" | "c" | "d" | "pass" | "fail" | "free"} ImportedCourseGrade;
+ * @typedef {{
+ *   id: string;
+ *   name: string;
+ *   credit: number | undefined;
+ *   takenYear: number;
+ *   grade: ImportedCourseGrade;
+ * }} ImportedCourse
+ * @typedef {{
+ *   id: string;
+ *   course: Course;
+ *   importedCourse: undefined;
+ * } | {
+ *   id: string;
+ *   course: undefined;
+ *   importedCourse: ImportedCourse;
+ * } | {
+ *   id: string;
+ *   course: Course;
+ *   importedCourse: ImportedCourse;
+ * }} MaybeImportedCourse
+ */
+
 class CreditSumView extends HTMLElement {
   /** @private @type {HTMLSpanElement | undefined} */
   cellWiseTakenSumSpan = undefined;
@@ -93,18 +111,18 @@ class CreditSumView extends HTMLElement {
    */
   connectedCallback() {
     this.innerHTML = `
-      <h1>単位数</h1>
+      <h2>単位数</h2>
       <div>
-        <p>セルを選択してください</p>
+        <p>マスを選択してください</p>
         <ul>
-          <li>選択されているセル<ul>
+          <li>選択されているマス<ul>
               <li>取得済み：<span></span></li>
-              <li>取得済み＋履修中・履修するかもしれない：<span></span></li>
+              <li>取得済み＋取るかもしれない：<span></span></li>
             </ul>
           </li>
-          <li>選択されている列の全セル<ul>
+          <li>選択されている列の全マス<ul>
               <li>取得済み：<span></span></li>
-              <li>取得済み＋履修中・履修するかもしれない：<span></span></li>
+              <li>取得済み＋取るかもしれない：<span></span></li>
             </ul>
           </li>
         </ul>
@@ -255,6 +273,218 @@ class CreditSumOverlay extends HTMLElement {
 }
 window.customElements.define("credit-sum-overlay", CreditSumOverlay);
 
+class Akiko {
+  /**
+   * @typedef {{
+   *   creditRequirements: CellCreditRequirements;
+   *   courseIdToWontTakeCourse: Map<string, [Course, ImportedCourse | undefined]>;
+   *   courseIdToMightTakeCourse: Map<string, [Course, ImportedCourse | undefined]>;
+   *   courseIdToTakenCourse: Map<string, [Course | undefined, ImportedCourse]>;
+   * }} Cell
+   */
+
+  /** @type {number} */
+  requirementsTableYear;
+  /** @type {Map<string, Cell>} */
+  cellIdToCell;
+  /** @type {Map<string, string>} */
+  courseIdToCellId;
+
+  /**
+   * @param {number} requirementsTableYear
+   * @param {Map<string, Cell>} cellIdToCell
+   * @param {Map<string, string>} courseIdToCellId
+   */
+  constructor(requirementsTableYear, cellIdToCell, courseIdToCellId) {
+    this.requirementsTableYear = requirementsTableYear;
+    this.cellIdToCell = cellIdToCell;
+    this.courseIdToCellId = courseIdToCellId;
+  }
+
+  /**
+   * @param {"wont-take-to-might-take" | "might-take-to-wont-take"} direction
+   * @param {string} courseId
+   * @returns {{
+   *   kind: "unknown-course-id";
+   *   courseId: string;
+   * } | {
+   *   kind: "already-moved";
+   *   courseId: string;
+   * } | undefined}
+   */
+  moveCourse(direction, courseId) {
+    const cellId = this.courseIdToCellId.get(courseId);
+    if (cellId === undefined) {
+      return { kind: "unknown-course-id", courseId };
+    }
+    const cell = this.cellIdToCell.get(cellId);
+    if (cell === undefined) {
+      throw new Error(`bad cell id: '${cellId}'`);
+    }
+    const [from, to] =
+      direction === "wont-take-to-might-take"
+        ? [cell.courseIdToWontTakeCourse, cell.courseIdToMightTakeCourse]
+        : [cell.courseIdToMightTakeCourse, cell.courseIdToWontTakeCourse];
+    const course = from.get(courseId);
+    if (course === undefined) {
+      if (to.has(courseId)) {
+        return { kind: "already-moved", courseId };
+      } else {
+        throw new Error(`lost track of course '${courseId}'`);
+      }
+    }
+    from.delete(courseId);
+    to.set(courseId, course);
+  }
+
+  /**
+   * @returns {Map<string, CellCredit>}
+   */
+  calculateCellIdToCellCredit() {
+    /** @type {Map<string, CellCredit>} */
+    const cellIdToCellCredit = new Map();
+    for (const [cellId, cell] of this.cellIdToCell.entries()) {
+      cellIdToCellCredit.set(cellId, {
+        takenSum: mapSum(
+          cell.courseIdToTakenCourse.values(),
+          ([_, c]) => c.credit ?? 0,
+        ),
+        mightTakeSum: mapSum(
+          cell.courseIdToMightTakeCourse.values(),
+          ([c, _]) => c.credit ?? 0,
+        ),
+        requirements: {
+          creditMin: cell.creditRequirements.creditMin,
+          creditMax: cell.creditRequirements.creditMax,
+        },
+      });
+    }
+    return cellIdToCellCredit;
+  }
+
+  /**
+   * @param {Map<string, CellMetadata>} cellIdToCellMetadata
+   * @param {number} requirementsTableYear
+   * @param {Course[]} courses
+   * @param {ImportedCourse[]} importedCourses
+   * @returns {Akiko}
+   */
+  static fromCellIdToCourses(
+    cellIdToCellMetadata,
+    requirementsTableYear,
+    courses,
+    importedCourses,
+  ) {
+    /** @type {Map<string, MaybeImportedCourse>} */
+    const courseIdToMaybeImportedCourse = new Map(
+      map(courses.values(), (course) => [
+        course.id,
+        { id: course.id, course, importedCourse: undefined },
+      ]),
+    );
+    for (const importedCourse of importedCourses) {
+      if (importedCourse.id === "") {
+        // TODO: 認可された授業がインポートされた
+        continue;
+      }
+      // TODO: requirementsTableYearより過去の授業が来た場合対応
+      const maybeImportedCourse = courseIdToMaybeImportedCourse.get(
+        importedCourse.id,
+      );
+      if (maybeImportedCourse === undefined) {
+        courseIdToMaybeImportedCourse.set(importedCourse.id, {
+          id: importedCourse.id,
+          course: undefined,
+          importedCourse,
+        });
+      } else {
+        maybeImportedCourse.importedCourse = importedCourse;
+      }
+    }
+
+    const akiko = new Akiko(requirementsTableYear, new Map(), new Map());
+    for (const [cellId, cellMetadata] of cellIdToCellMetadata.entries()) {
+      const maybeImportedCourses = Array.from(
+        filter(courseIdToMaybeImportedCourse.values(), (c) =>
+          cellMetadata.filter(c.id),
+        ),
+      );
+      /** @type {Cell} */
+      const cell = {
+        creditRequirements: {
+          creditMin: cellMetadata.creditMin,
+          creditMax: cellMetadata.creditMax,
+        },
+        courseIdToWontTakeCourse: new Map(),
+        courseIdToMightTakeCourse: new Map(),
+        courseIdToTakenCourse: new Map(),
+      };
+      for (const { id, course, importedCourse } of maybeImportedCourses) {
+        if (!cellMetadata.filter(id)) {
+          continue;
+        }
+        if (course !== undefined && importedCourse !== undefined) {
+          switch (importedCourse.grade) {
+            case "wip": {
+              cell.courseIdToMightTakeCourse.set(id, [course, importedCourse]);
+              break;
+            }
+            case "a+":
+            case "a":
+            case "b":
+            case "c":
+            case "pass":
+            case "free": {
+              cell.courseIdToTakenCourse.set(id, [course, importedCourse]);
+              break;
+            }
+            case "d":
+            case "fail": {
+              cell.courseIdToWontTakeCourse.set(id, [course, importedCourse]);
+              break;
+            }
+          }
+        } else if (importedCourse === undefined) {
+          cell.courseIdToWontTakeCourse.set(id, [course, undefined]);
+        } else {
+          cell.courseIdToTakenCourse.set(id, [undefined, importedCourse]);
+        }
+      }
+      akiko.cellIdToCell.set(cellId, cell);
+      for (const { id } of maybeImportedCourses) {
+        akiko.courseIdToCellId.set(id, cellId);
+      }
+    }
+    return akiko;
+  }
+}
+
+/**
+ * @template T, U
+ * @param {Iterable<T>} ts
+ * @param {(t: T) => U} f
+ * @returns {Generator<U>}
+ */
+function* map(ts, f) {
+  for (const t of ts) {
+    yield f(t);
+  }
+}
+
+/**
+ * @template T
+ * @param {Iterable<T>} ts
+ * @param {(t: T) => boolean} predicate
+ * @returns {Generator<T>}
+ */
+function* filter(ts, predicate) {
+  for (const t of ts) {
+    if (predicate(t)) {
+      yield t;
+    }
+  }
+}
+
 /**
  * @template K, Va, Vb
  * @param {Map<K, Va>} a
@@ -268,6 +498,36 @@ function* zipMapIntersection(a, b) {
       yield [key, av, bv];
     }
   }
+}
+
+/**
+ * @param {string} a
+ * @param {string} b
+ * @returns {number}
+ */
+function compareStrings(a, b) {
+  if (a < b) {
+    return -1;
+  } else if (a > b) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+/**
+ * @template {{}} T
+ * @param {unknown[]} array
+ * @param {new (...args: unknown[]) => T} constructor
+ * @returns {array is T[]}
+ */
+function isArrayOfInstanceOf(array, constructor) {
+  for (const e of array) {
+    if (!(e instanceof constructor)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -316,26 +576,6 @@ function updateCourseContainers(courseContainers, cellTbodys) {
 }
 
 /**
- * @param {CellTbodys} cellTbodys
- * @param {CourseElement[]} courseElements
- */
-function updateCellTbodys(cellTbodys, courseElements) {
-  for (const { state, element } of courseElements) {
-    switch (state) {
-      case "not-taken":
-        cellTbodys.notTaken.appendChild(element);
-        break;
-      case "might-take":
-        cellTbodys.mightTake.appendChild(element);
-        break;
-      case "taken":
-        cellTbodys.taken.appendChild(element);
-        break;
-    }
-  }
-}
-
-/**
  * @param {CourseTables} courseTables
  * @param {CellTbodys} cellTbodys
  */
@@ -352,67 +592,6 @@ function updateCourseTables(courseTables, cellTbodys) {
   courseTables.notTaken.appendChild(cellTbodys.notTaken);
   courseTables.mightTake.appendChild(cellTbodys.mightTake);
   courseTables.taken.appendChild(cellTbodys.taken);
-}
-
-/**
- * @param {String} cellId
- * @param {CourseElement[]} courseElements
- * @param {CellMetadata} cellMetadata
- */
-function updateCreditSum(cellId, courseElements, cellMetadata) {
-  let taken_sum = 0;
-  let taken_mighttaken_sum = 0;
-  for (const courseElement of courseElements) {
-    const state = courseElement.state;
-    const credit = courseElement.course.credit;
-    if (credit !== undefined && state !== "not-taken") {
-      taken_mighttaken_sum += credit;
-      if (state == "taken") {
-        taken_sum += credit;
-      }
-    }
-  }
-  const creditMax = cellMetadata.creditMax;
-  const creditMin = cellMetadata.creditMin;
-  const sumEllement = document.getElementById(`${cellId}-sum`);
-  if (sumEllement !== null) {
-    let sums = "";
-    if (taken_sum == taken_mighttaken_sum) {
-      sums = `${taken_sum}/${creditMin}`;
-    } else {
-      sums = `
-      ${taken_sum}/${creditMin}<br>
-      ↓<br>
-      ${taken_mighttaken_sum}/${creditMin}
-      `;
-    }
-    sumEllement.innerHTML = sums;
-  }
-  if (creditMin !== undefined) {
-    updateBackground(cellId, taken_mighttaken_sum, creditMin);
-  }
-}
-
-/**
- * @param {string} cellId
- * @param {number} taken_mighttaken_sum
- * @param {number} creditMin
- */
-function updateBackground(cellId, taken_mighttaken_sum, creditMin) {
-  const cellElement = document.getElementById(cellId);
-  const gageElement = document.getElementById(`${cellId}-gage`);
-  if (gageElement !== null && cellElement !== null) {
-    if (taken_mighttaken_sum >= creditMin) {
-      cellElement.style.border = "4px dashed rgba(0, 255, 0, 0.5)";
-      cellElement.style.backgroundColor = "rgba(0, 255, 0, 0.2)";
-      gageElement.style.width = "";
-    } else {
-      const gageValue = (100 * taken_mighttaken_sum) / creditMin;
-      gageElement.style.width = `${gageValue}%`;
-      cellElement.style.border = "";
-      cellElement.style.backgroundColor = "";
-    }
-  }
 }
 
 /**
@@ -442,104 +621,10 @@ function mustGetElementByIdOfType(id, type) {
 }
 
 /**
- * @param {string} courseId
- * @param {Record<string, CellMetadata>} cellIdToCellMetadata
- * @returns {string | undefined}
- */
-function courseIdToCellId(courseId, cellIdToCellMetadata) {
-  for (const cellId in cellIdToCellMetadata) {
-    if (cellIdToCellMetadata[cellId].filter(courseId)) {
-      return cellId;
-    }
-  }
-}
-
-/**
- * @param {Grade} g
- * @returns {CourseElementState}
- */
-function gradeToCourseElementState(g) {
-  switch (g) {
-    case "wip":
-      return "might-take";
-    case "a+":
-    case "a":
-    case "b":
-    case "c":
-    case "pass":
-    case "ok":
-      return "taken";
-    case "d":
-    case "fail":
-      return "not-taken";
-  }
-}
-
-/**
- * @typedef {{
- *   kind: "ok";
- * } | {
- *   kind: "unknown-courses";
- *   unknownCourseIds: string[];
- * }} ApplyCourseGradesResult
- *
- * @param {Map<string, CourseElement[]>} cellIdToCourseElements
- * @param {Record<string, CellMetadata>} cellIdToCellMetadata
- * @param {GradedCourse[]} gradedCourses
- * @returns {ApplyCourseGradesResult}
- */
-function applyCourseGrades(
-  cellIdToCourseElements,
-  cellIdToCellMetadata,
-  gradedCourses,
-) {
-  for (const courseElements of cellIdToCourseElements.values()) {
-    for (const courseElement of courseElements) {
-      courseElement.state = "not-taken";
-    }
-  }
-  /** @type {string[]} */
-  const unknownCourseIds = [];
-  for (const gradedCourse of gradedCourses) {
-    if (gradedCourse.id === "") {
-      // gradedCourseが認可された授業だった場合
-      continue;
-    }
-    const cellId = courseIdToCellId(gradedCourse.id, cellIdToCellMetadata);
-    if (cellId === undefined) {
-      // gradedCourseが必修だった場合
-      continue;
-    }
-    const courseElements = cellIdToCourseElements.get(cellId);
-    if (courseElements === undefined) {
-      throw new Error("should be unreachable");
-    }
-    const courseElement = courseElements.find(
-      (e) => e.course.id === gradedCourse.id,
-    );
-    if (courseElement === undefined) {
-      unknownCourseIds.push(gradedCourse.id);
-    } else {
-      courseElement.state = gradeToCourseElementState(gradedCourse.grade);
-    }
-  }
-  for (const courseElements of cellIdToCourseElements.values()) {
-    for (const courseElement of courseElements) {
-      courseElement.element.draggable = courseElement.state !== "taken";
-    }
-  }
-  if (unknownCourseIds.length === 0) {
-    return { kind: "ok" };
-  } else {
-    return { kind: "unknown-courses", unknownCourseIds };
-  }
-}
-
-/**
  * @param {string} s
- * @returns {Grade | undefined}
+ * @returns {ImportedCourseGrade | undefined}
  */
-function parseGrade(s) {
+function parseImportedCourseGrade(s) {
   switch (s) {
     case "履修中":
       return "wip";
@@ -558,45 +643,69 @@ function parseGrade(s) {
     case "F":
       return "fail";
     case "認":
-      return "ok";
+      return "free";
   }
 }
 
 /**
- * @param {unknown[]} row
- * @returns {GradedCourse | undefined}
+ * @param {unknown[]} array
+ * @returns {array is string[]}
  */
-function parseGradedCourse(row) {
-  const id = row[2];
-  const rawGrade = row[7];
-  if (typeof id !== "string" || typeof rawGrade !== "string") {
+function isStringArray(array) {
+  for (const e of array) {
+    if (typeof e !== "string") {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * @param {unknown[]} row
+ * @returns {ImportedCourse | undefined}
+ */
+function parseImportedCourse(row) {
+  if (!(isStringArray(row) && row.length === 11)) {
     return;
   }
-  const grade = parseGrade(rawGrade);
+  for (let i = 0; i < row.length; i++) {
+    row[i] = row[i].trim();
+  }
+  // 学籍番号, 学生氏名, 科目番号, 科目名, 単位数, 春学期, 秋学期, 総合評価, 科目区分, 開講年度, 開講区分
+  const [, , id, name, rawCredit, , , rawGrade, , rawYearTaken, ,] = row;
+  const grade = parseImportedCourseGrade(rawGrade);
   if (grade === undefined) {
     return;
   }
-  return { id, grade };
+  const credit = parseInt(rawCredit);
+  if (isNaN(credit)) {
+    return;
+  }
+  const takenYear = parseInt(rawYearTaken);
+  if (isNaN(takenYear)) {
+    return;
+  }
+  return { id, name, grade, credit, takenYear };
 }
 
 /**
  * @typedef {{
  *   kind: "ok";
- *   gradedCourses: GradedCourse[];
+ *   importedCourses: ImportedCourse[];
  * } | {
  *   kind: "failed-to-parse-as-csv";
  * } | {
  *   kind: "unexpected-csv-content";
- * }} CsvToGradedCoursesResult
+ * }} CsvToImportedCoursesResult
  *
  * @param {string} csv
- * @returns {CsvToGradedCoursesResult}
+ * @returns {CsvToImportedCoursesResult}
  */
-function csvToGradedCourses(csv) {
+function csvToImportedCourses(csv) {
   /** @type {unknown} */
   let rows;
   try {
-    rows = parse(csv);
+    rows = parse(csv, { trim: true });
   } catch {
     return { kind: "failed-to-parse-as-csv" };
   }
@@ -604,16 +713,16 @@ function csvToGradedCourses(csv) {
     return { kind: "unexpected-csv-content" };
   }
 
-  /** @type {GradedCourse[]} */
-  const gradedCourses = [];
+  /** @type {ImportedCourse[]} */
+  const importedCourses = [];
   for (const row of rows.slice(1)) {
-    const gradedCourse = parseGradedCourse(row);
-    if (gradedCourse === undefined) {
+    const importedCourse = parseImportedCourse(row);
+    if (importedCourse === undefined) {
       return { kind: "unexpected-csv-content" };
     }
-    gradedCourses.push(gradedCourse);
+    importedCourses.push(importedCourse);
   }
-  return { kind: "ok", gradedCourses };
+  return { kind: "ok", importedCourses };
 }
 
 /**
@@ -628,53 +737,6 @@ function mapSum(elements, f) {
     sum += f(e);
   }
   return sum;
-}
-
-/**
- * @param {Map<string, CourseElement[]>} cellIdToCourseElements
- * @param {Record<string, CellMetadata>} cellIdToCellMetadata
- * @returns {Map<string, CellCredit>}
- */
-function calculateCellIdToCellCredit(
-  cellIdToCourseElements,
-  cellIdToCellMetadata,
-) {
-  /** @type {Map<string, CellCredit>} */
-  const cellIdToCellCredit = new Map();
-  for (const [cellId, courseElements] of cellIdToCourseElements) {
-    const cellMetadata = cellIdToCellMetadata[cellId];
-    const takenSum = mapSum(courseElements, (e) =>
-      e.state === "taken" ? e.course.credit ?? 0 : 0,
-    );
-    const mightTakeSum = mapSum(courseElements, (e) =>
-      e.state === "might-take" ? e.course.credit ?? 0 : 0,
-    );
-    cellIdToCellCredit.set(cellId, {
-      takenSum,
-      mightTakeSum,
-      requirements: {
-        creditMin: cellMetadata.creditMin,
-        creditMax: cellMetadata.creditMax,
-      },
-    });
-  }
-  return cellIdToCellCredit;
-}
-
-/**
- * @param {number} value
- * @param {number} min
- * @param {number} max
- * @returns {number}
- */
-function clamp(value, min, max) {
-  if (value < min) {
-    return min;
-  } else if (value > max) {
-    return max;
-  } else {
-    return value;
-  }
 }
 
 /**
@@ -695,12 +757,12 @@ function calculateColumnIdToColumnCredit(
       id.startsWith(columnId),
     );
     const takenSum = mapSum(entries, ([_, { takenSum, requirements }]) =>
-      clamp(takenSum, 0, requirements.creditMax ?? Infinity),
+      Math.min(takenSum, requirements.creditMax ?? Infinity),
     );
     const mightTakeSum = mapSum(
       entries,
       ([_, { mightTakeSum, requirements }]) =>
-        clamp(mightTakeSum, 0, requirements.creditMax ?? Infinity),
+        Math.min(mightTakeSum, requirements.creditMax ?? Infinity),
     );
     columnIdToColumnCredit.set(columnId, {
       takenSum,
@@ -756,63 +818,218 @@ function selectedCellCreditAndColumnCredit(
 }
 
 /**
- * @param {Course[]} courses
- * @param {Record<string, CellMetadata>} cellIdToCellMetadata
- * @param {Record<string, ColumnCreditRequirements>} columnIdToColumnCreditRequirements
- * @param {number} netRequired
+ * @param {string} s
+ * @returns {string}
  */
-export function setup(
-  courses,
-  cellIdToCellMetadata,
-  columnIdToColumnCreditRequirements,
-  netRequired,
-) {
-  const cellIds = Object.keys(cellIdToCellMetadata);
+function lfToBr(s) {
+  return s.replace(/\n/g, "<br>");
+}
 
-  /** @type {Map<string, CourseElement[]>} */
-  const cellIdToCourseElements = new Map();
-  for (const cellId of cellIds) {
-    /** @type {CourseElement[]} */
-    const elements = courses
-      .filter(({ id }) => cellIdToCellMetadata[cellId].filter(id))
-      .map((course) => {
+/**
+ * @param {Akiko} akiko
+ * @param {Map<string, CellTbodys>} cellIdToCellTbodys
+ */
+function initializeCourseElements(akiko, cellIdToCellTbodys) {
+  /** @type {{ [key in ImportedCourseGrade]: string }} */
+  const gradeToString = {
+    wip: "履修中",
+    "a+": "A+",
+    a: "A",
+    b: "B",
+    c: "C",
+    d: "落単済",
+    pass: "P",
+    fail: "落単済",
+    free: "認可",
+  };
+
+  for (const [_, cell, cellTbodys] of zipMapIntersection(
+    akiko.cellIdToCell,
+    cellIdToCellTbodys,
+  )) {
+    const wontTakeCourses = Array.from(cell.courseIdToWontTakeCourse.values());
+    wontTakeCourses.sort(([a], [b]) => compareStrings(a.id, b.id));
+    const wontTakeCourseElements = wontTakeCourses.map(
+      ([course, importedCourse]) => {
+        const grade =
+          importedCourse === undefined
+            ? ""
+            : `（${gradeToString[importedCourse.grade]}）`;
         // FIXME: year in the url
         const element = stringToHtmlElement(`
-            <tr class="course" draggable="true">
-              <td class="id-name">${course.id}<br>
-                <a href="https://kdb.tsukuba.ac.jp/syllabi/2023/${course.id}/jpn" target="_blank">${course.name}</a>
-              </td>
-              <td class="credit">${course.credit}</td>
-              <td class="term">${course.term}</td>
-              <td class="when">${course.when}</td>
-              <td class="expects">${course.expects}</td>
-            </tr>
-          `);
+<tr class="course" draggable="true" data-course-id="${course.id}">
+  <td class="id-name">${course.id}<br>
+    <a href="https://kdb.tsukuba.ac.jp/syllabi/2023/${
+      course.id
+    }/jpn" target="_blank">${course.name}</a>
+    <span>${grade}</span>
+  </td>
+  <td class="credit">${course.credit ?? "-"}</td>
+  <td class="term">${lfToBr(course.term)}</td>
+  <td class="when">${lfToBr(course.when)}</td>
+  <td class="expects">${course.expects}</td>
+</tr>
+`);
         element.addEventListener("dragstart", (event) => {
           if (!(event.target instanceof HTMLTableRowElement)) {
             return;
           }
           event.dataTransfer?.setData("text/plain", course.id);
         });
-        return { state: "not-taken", course, element };
-      });
-    cellIdToCourseElements.set(cellId, elements);
+        return element;
+      },
+    );
+
+    const mightTakeCourses = Array.from(
+      cell.courseIdToMightTakeCourse.values(),
+    );
+    mightTakeCourses.sort(([a], [b]) => compareStrings(a.id, b.id));
+    const mightTakeCourseElements = mightTakeCourses.map(
+      ([course, importedCourse]) => {
+        const grade =
+          importedCourse === undefined
+            ? ""
+            : `（${gradeToString[importedCourse.grade]}）`;
+        // FIXME: year in the url
+        const element = stringToHtmlElement(`
+<tr class="course" draggable="true" data-course-id="${course.id}">
+  <td class="id-name">${course.id}<br>
+    <a href="https://kdb.tsukuba.ac.jp/syllabi/2023/${
+      course.id
+    }/jpn" target="_blank">${course.name}</a>
+    <span>${grade}</span>
+  </td>
+  <td class="credit">${course.credit ?? "-"}</td>
+  <td class="term">${lfToBr(course.term)}</td>
+  <td class="when">${lfToBr(course.when)}</td>
+  <td class="expects">${course.expects}</td>
+</tr>
+`);
+        element.addEventListener("dragstart", (event) => {
+          if (!(event.target instanceof HTMLTableRowElement)) {
+            return;
+          }
+          event.dataTransfer?.setData("text/plain", course.id);
+        });
+        return element;
+      },
+    );
+
+    const takenCourses = Array.from(cell.courseIdToTakenCourse.values());
+    takenCourses.sort(([, a], [, b]) => compareStrings(a.id, b.id));
+    const takenCourseElements = takenCourses.map(([course, importedCourse]) => {
+      const element = stringToHtmlElement(`
+<tr class="course">
+  <td class="id-name">${escapeHtml(importedCourse.id)}<br>
+    <a href="https://kdb.tsukuba.ac.jp/syllabi/${importedCourse.takenYear}/${
+      importedCourse.id
+    }/jpn" target="_blank">${escapeHtml(importedCourse.name)}</a>
+    <span>(${escapeHtml(importedCourse.takenYear.toString())})</span><br>
+    <span>評価：${escapeHtml(gradeToString[importedCourse.grade])}</span>
+  </td>
+  <td class="credit">${escapeHtml(
+    importedCourse.credit?.toString() ?? "-",
+  )}</td>
+  <td class="term">${lfToBr(course?.term ?? "-")}</td>
+  <td class="when">${lfToBr(course?.when ?? "-")}</td>
+  <td class="expects">${course?.expects ?? "-"}</td>
+</tr>
+`);
+      return element;
+    });
+
+    cellTbodys.notTaken.replaceChildren(...wontTakeCourseElements);
+    cellTbodys.mightTake.replaceChildren(...mightTakeCourseElements);
+    cellTbodys.taken.replaceChildren(...takenCourseElements);
   }
+}
+
+/**
+ * @param {HTMLElement} tbody
+ * @param {string} courseId
+ * @param {HTMLElement} courseElement
+ */
+function insertCourseElement(tbody, courseId, courseElement) {
+  for (const child of tbody.children) {
+    if (!(child instanceof HTMLTableRowElement)) {
+      throw new Error("cell tbody should only contain <tr>s");
+    }
+    const childCourseId = child.dataset.courseId;
+    if (childCourseId === undefined) {
+      throw new Error("'data-course-id' not set");
+    }
+    if (courseId < childCourseId) {
+      child.insertAdjacentElement("beforebegin", courseElement);
+      return;
+    }
+  }
+  tbody.appendChild(courseElement);
+}
+
+/**
+ * @param {Map<string, HTMLElement>} cellIdToCellElement
+ * @param {Map<string, CellCredit>} cellIdToCellCredit
+ */
+function updateCellGauge(cellIdToCellElement, cellIdToCellCredit) {
+  for (const [, cellElement, cellCredit] of zipMapIntersection(
+    cellIdToCellElement,
+    cellIdToCellCredit,
+  )) {
+    /** @type {number} */
+    let green;
+    /** @type {number} */
+    let yellow;
+    if (cellCredit.requirements.creditMin === 0) {
+      green = 1;
+      yellow = 1;
+    } else {
+      green = cellCredit.takenSum / cellCredit.requirements.creditMin;
+      yellow =
+        (cellCredit.takenSum + cellCredit.mightTakeSum) /
+        cellCredit.requirements.creditMin;
+    }
+    cellElement.style.setProperty("--green-percentage", `${100 * green}%`);
+    cellElement.style.setProperty("--yellow-percentage", `${100 * yellow}%`);
+  }
+}
+
+/**
+ * @param {number} requirementsTableYear
+ * @param {Course[]} courses
+ * @param {Record<string, CellMetadata>} cellIdToCellMetadataRecord
+ * @param {Record<string, ColumnCreditRequirements>} columnIdToColumnCreditRequirements
+ * @param {number} netRequired
+ */
+export function setup(
+  requirementsTableYear,
+  courses,
+  cellIdToCellMetadataRecord,
+  columnIdToColumnCreditRequirements,
+  netRequired,
+) {
+  const cellIdToCellMetadata = new Map(
+    Object.entries(cellIdToCellMetadataRecord),
+  );
+  const cellIds = Array.from(cellIdToCellMetadata.keys());
 
   /** @type {Map<string, CellTbodys>} */
-  const cellIdToCellTbodys = new Map();
-  for (const [id, courseElements] of cellIdToCourseElements.entries()) {
-    /** @type {CellTbodys} */
-    const tbodys = {
-      notTaken: document.createElement("tbody"),
-      mightTake: document.createElement("tbody"),
-      taken: document.createElement("tbody"),
-    };
-    updateCellTbodys(tbodys, courseElements);
-    cellIdToCellTbodys.set(id, tbodys);
-  }
+  const cellIdToCellTbodys = new Map(
+    cellIds.map((id) => [
+      id,
+      {
+        notTaken: document.createElement("tbody"),
+        mightTake: document.createElement("tbody"),
+        taken: document.createElement("tbody"),
+      },
+    ]),
+  );
 
   const cellElements = [...document.querySelectorAll(".cell")];
+  if (!isArrayOfInstanceOf(cellElements, HTMLElement)) {
+    throw new Error("cell elements must be HTMLElements");
+  }
+  const cellIdToCellElement = new Map(map(cellElements, (e) => [e.id, e]));
+
   const leftBar = mustGetElementById("left-bar");
   const leftTable = mustGetElementByIdOfType(
     "not-taken-table",
@@ -834,6 +1051,13 @@ export function setup(
     throw new Error();
   }
 
+  let akiko = Akiko.fromCellIdToCourses(
+    cellIdToCellMetadata,
+    requirementsTableYear,
+    courses,
+    [],
+  );
+
   /** @type {CourseTables} */
   const courseTables = {
     notTaken: leftTable,
@@ -849,10 +1073,7 @@ export function setup(
 
   /** @type {string | undefined} */
   let selectedCellId = undefined;
-  let cellIdToCellCredit = calculateCellIdToCellCredit(
-    cellIdToCourseElements,
-    cellIdToCellMetadata,
-  );
+  let cellIdToCellCredit = akiko.calculateCellIdToCellCredit();
   let columnIdToColumnCredit = calculateColumnIdToColumnCredit(
     cellIdToCellCredit,
     columnIdToColumnCreditRequirements,
@@ -880,8 +1101,7 @@ export function setup(
       }
       selectedCellId = cellElement.id;
       const cellTbodys = cellIdToCellTbodys.get(selectedCellId);
-      const courseElements = cellIdToCourseElements.get(selectedCellId);
-      if (cellTbodys === undefined || courseElements === undefined) {
+      if (cellTbodys === undefined) {
         throw new Error(`no such cell: '${selectedCellId}'`);
       }
       updateCourseTables(courseTables, cellTbodys);
@@ -898,9 +1118,11 @@ export function setup(
       creditSumOverlay.update(columnIdToColumnCredit, netCredit);
     });
   }
+  initializeCourseElements(akiko, cellIdToCellTbodys);
+  updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
 
-  const csvInput = mustGetElementById("csv");
-  if (!(csvInput instanceof HTMLInputElement && csvInput.type === "file")) {
+  const csvInput = mustGetElementByIdOfType("csv", HTMLInputElement);
+  if (!(csvInput.type === "file")) {
     throw new Error('"#csv" must be a file input element');
   }
   csvInput.addEventListener("change", () => {
@@ -914,7 +1136,7 @@ export function setup(
       if (typeof csv !== "string") {
         throw new Error("readAsText() must produce string");
       }
-      const result = csvToGradedCourses(csv);
+      const result = csvToImportedCourses(csv);
       if (result.kind === "failed-to-parse-as-csv") {
         alert("CSVファイルを正しく読み込めませんでした。");
         return;
@@ -922,21 +1144,13 @@ export function setup(
         alert("CSVファイルを成績データとして読み込めませんでした。");
         return;
       }
-      const applyCourseGradesResult = applyCourseGrades(
-        cellIdToCourseElements,
+      akiko = Akiko.fromCellIdToCourses(
         cellIdToCellMetadata,
-        result.gradedCourses,
+        requirementsTableYear,
+        courses,
+        result.importedCourses,
       );
-      if (applyCourseGradesResult.kind === "unknown-courses") {
-        const ids = applyCourseGradesResult.unknownCourseIds.join("\n");
-        alert(
-          `未知の科目番号の授業が含まれています。間違った年次のページを開いていませんか？\n未知の科目番号一覧:\n${ids}`,
-        );
-      }
-      cellIdToCellCredit = calculateCellIdToCellCredit(
-        cellIdToCourseElements,
-        cellIdToCellMetadata,
-      );
+      cellIdToCellCredit = akiko.calculateCellIdToCellCredit();
       columnIdToColumnCredit = calculateColumnIdToColumnCredit(
         cellIdToCellCredit,
         columnIdToColumnCreditRequirements,
@@ -944,23 +1158,14 @@ export function setup(
       netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
       creditSumOverlay.update(columnIdToColumnCredit, netCredit);
 
-      for (const cellId of cellIds) {
-        const cellTbodys = cellIdToCellTbodys.get(cellId);
-        const courseElements = cellIdToCourseElements.get(cellId);
-        if (cellTbodys === undefined || courseElements === undefined) {
-          throw new Error("should be unreachable");
-        }
-        updateCellTbodys(cellTbodys, courseElements);
-        updateCreditSum(cellId, courseElements, cellIdToCellMetadata[cellId]);
-      }
+      initializeCourseElements(akiko, cellIdToCellTbodys);
+      updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
 
       if (selectedCellId !== undefined) {
         const cellTbodys = cellIdToCellTbodys.get(selectedCellId);
-        const courseElements = cellIdToCourseElements.get(selectedCellId);
-        if (cellTbodys === undefined || courseElements === undefined) {
+        if (cellTbodys === undefined) {
           throw new Error(`no such cell: '${selectedCellId}'`);
         }
-        updateCellTbodys(cellTbodys, courseElements);
         updateCourseContainers(courseContainers, cellTbodys);
 
         const selectedCredits = selectedCellCreditAndColumnCredit(
@@ -991,9 +1196,9 @@ export function setup(
 
   /**
    * @param {DragEvent} event
-   * @param {CourseElementState} newState
+   * @param {"wont-take" | "might-take"} droppedOn
    */
-  const handleDrop = (event, newState) => {
+  const handleDrop = (event, droppedOn) => {
     event.preventDefault();
     if (selectedCellId === undefined) {
       return;
@@ -1003,19 +1208,16 @@ export function setup(
       return;
     }
     const cellTbodys = cellIdToCellTbodys.get(selectedCellId);
-    const courseElements = cellIdToCourseElements.get(selectedCellId);
-    if (cellTbodys === undefined || courseElements === undefined) {
+    if (cellTbodys === undefined) {
       throw new Error(`no such cell: '${selectedCellId}'`);
     }
-    for (const e of courseElements) {
-      if (e.course.id === courseId) {
-        e.state = newState;
-      }
-    }
-    cellIdToCellCredit = calculateCellIdToCellCredit(
-      cellIdToCourseElements,
-      cellIdToCellMetadata,
+    akiko.moveCourse(
+      droppedOn === "wont-take"
+        ? "might-take-to-wont-take"
+        : "wont-take-to-might-take",
+      courseId,
     );
+    cellIdToCellCredit = akiko.calculateCellIdToCellCredit();
     columnIdToColumnCredit = calculateColumnIdToColumnCredit(
       cellIdToCellCredit,
       columnIdToColumnCreditRequirements,
@@ -1023,9 +1225,13 @@ export function setup(
     netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
 
     const cellMetadata = cellIdToCellMetadata[selectedCellId];
-    updateCellTbodys(cellTbodys, courseElements);
+    insertCourseElement(
+      droppedOn === "wont-take" ? cellTbodys.notTaken : cellTbodys.mightTake,
+      courseId,
+      document.querySelectorAll(`[data-course-id="${courseId}"]`)[0],
+    );
     updateCourseContainers(courseContainers, cellTbodys);
-    updateCreditSum(selectedCellId, courseElements, cellMetadata);
+    updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
 
     const selectedCredits = selectedCellCreditAndColumnCredit(
       selectedCellId,
@@ -1038,7 +1244,7 @@ export function setup(
     creditSumOverlay.update(columnIdToColumnCredit, netCredit);
   };
   leftBar.addEventListener("drop", (event) => {
-    handleDrop(event, "not-taken");
+    handleDrop(event, "wont-take");
   });
   rightBar.addEventListener("drop", (event) => {
     handleDrop(event, "might-take");
