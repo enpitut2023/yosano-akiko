@@ -1,0 +1,105 @@
+#b1 {
+  left: 360px;
+  top: 412px;
+  width: 136px;
+  height: 693px;
+}
+
+#d1 {
+  left: 867px;
+  top: 412px;
+  width: 136px;
+  height: 693px;
+}
+
+#f1 {
+  left: 1332px;
+  top: 412px;
+  width: 190px;
+  height: 119px;
+}
+
+#f2 {
+  left: 1332px;
+  top: 527px;
+  width: 190px;
+  height: 33px;
+}
+
+#f3 {
+  left: 1332px;
+  top: 556px;
+  width: 190px;
+  height: 32px;
+}
+
+#f4 {
+  left: 1332px;
+  top: 584px;
+  width: 190px;
+  height: 33px;
+}
+
+#f5 {
+  left: 1332px;
+  top: 613px;
+  width: 190px;
+  height: 33px;
+}
+
+#h1 {
+  left: 1690px;
+  top: 412px;
+  width: 204px;
+  height: 176px;
+}
+
+#h2 {
+  left: 1690px;
+  top: 584px;
+  width: 204px;
+  height: 62px;
+}
+
+#h3 {
+  left: 1690px;
+  top: 642px;
+  width: 204px;
+  height: 118px;
+}
+
+#b {
+  left: 362px;
+  top: 1150px;
+  width: 133px;
+  height: 43px;
+}
+
+#d {
+  left: 869px;
+  top: 1150px;
+  width: 132px;
+  height: 43px;
+}
+
+#f {
+  left: 1334px;
+  top: 1150px;
+  width: 186px;
+  height: 43px;
+}
+
+#h {
+  left: 1692px;
+  top: 1150px;
+  width: 200px;
+  height: 43px;
+}
+
+#net {
+  --width: 15ch;
+  left: calc(2101px - var(--width));
+  top: 1150px;
+  width: var(--width);
+  height: 100px;
+}
