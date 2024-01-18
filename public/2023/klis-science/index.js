@@ -1,3 +1,5 @@
+// @ts-check
+
 import { courses } from "../courses.js";
 import { setup } from "../../shared.js";
 
@@ -6,7 +8,7 @@ import { setup } from "../../shared.js";
  * @returns {boolean}
  */
 function isB1(id) {
-  return id.startsWith("GE7") && id !== "GE70113" && id !== "GE70123";
+  return id.startsWith("GE6") && id !== "GE60113" && id !== "GE60123";
 }
 
 /**
@@ -15,14 +17,17 @@ function isB1(id) {
  */
 function isB2(id) {
   return (
-    id !== "GE80401" && // 経営情報システム論
-    id !== "GE61901" && // 情報検索システム
-    id !== "GE62401" && // Machine Learning and Information Retrieval
-    id !== "GE62501" && // Human Information Interaction
-    id !== "GE61801" && // データ構造とアルゴリズム
+    id !== "GE70501" && // 情報検索システム
+    id !== "GE72701" && // Machine Learning and Information Retrieval
+    id !== "GE73101" && // Human Information Interaction
+    id !== "GE71801" && // データ構造とアルゴリズム
+    id !== "GE70113" && // 知識情報システム実習A
+    id !== "GE70123" && // 知識情報システム実習B
+    id !== "GE80113" && // 情報資源経営実習A
+    id !== "GE80123" && // 情報資源経営実習B
     (id.startsWith("GA4") ||
       id.startsWith("GE4") ||
-      id.startsWith("GE6") ||
+      id.startsWith("GE7") ||
       id.startsWith("GE8"))
   );
 }
