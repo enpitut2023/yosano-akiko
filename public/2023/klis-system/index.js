@@ -6,11 +6,7 @@ import { setup } from "../../shared.js";
  * @returns {boolean}
  */
 function isB1(id) {
-  return (
-    id.startsWith("GE7") &&
-    id !== "GE70113" &&
-    id !== "GE70123"
-  );
+  return id.startsWith("GE7") && id !== "GE70113" && id !== "GE70123";
 }
 
 /**
@@ -24,7 +20,10 @@ function isB2(id) {
     id !== "GE62401" && // Machine Learning and Information Retrieval
     id !== "GE62501" && // Human Information Interaction
     id !== "GE61801" && // データ構造とアルゴリズム
-    ((id.startsWith("GA4") || id.startsWith("GE4") || id.startsWith("GE6") || id.startsWith("GE8")))
+    (id.startsWith("GA4") ||
+      id.startsWith("GE4") ||
+      id.startsWith("GE6") ||
+      id.startsWith("GE8"))
   );
 }
 
@@ -46,7 +45,7 @@ function isD1(id) {
     id !== "GA15121" &&
     id !== "GA15131" &&
     id !== "GA15141" &&
-    ((id.startsWith("GA1") || id.startsWith("GE2") || id.startsWith("GE3")))
+    (id.startsWith("GA1") || id.startsWith("GE2") || id.startsWith("GE3"))
   );
 }
 
@@ -103,7 +102,20 @@ function isF1(id) {
  * @returns {boolean}
  */
 function isF2(id) {
-  return id.match(/^[2-5]/); // 体育・外国語・国語・芸術
+  return (
+    id.match(/^[2-5]/) && // 体育・外国語・国語・芸術
+    // 必修を除外
+    // 応急処置として「基礎...」「応用...」みたいな体育はF2に入れない
+    !(
+      id.startsWith("21") ||
+      id.startsWith("22") ||
+      id.startsWith("23") ||
+      id.startsWith("31H") ||
+      id.startsWith("31J") ||
+      id.startsWith("31K") ||
+      id.startsWith("31L")
+    )
+  );
 }
 
 /**
@@ -126,18 +138,26 @@ function isH1(id) {
  * @returns {boolean}
  */
 function isH2(id) {
-  return (
-    id.startsWith("GC") ||
-    id.startsWith("GB")
-  );
+  return id.startsWith("GC") || id.startsWith("GB");
 }
 
-setup(courses, {
-  b1: {filter: isB1, creditMin: 16, creditMax: undefined},
-  b2: {filter: isB2, creditMin: 8, creditMax: undefined},
-  d1: {filter: isD1, creditMin: 32, creditMax: 52},
-  f1: {filter: isF1, creditMin: 1, creditMax: undefined},
-  f2: {filter: isF2, creditMin: 0, creditMax: undefined},
-  h1: {filter: isH1, creditMin: 6, creditMax: undefined},
-  h2: {filter: isH2, creditMin: 0, creditMax: undefined}
-});
+setup(
+  2023,
+  courses,
+  {
+    b1: { filter: isB1, creditMin: 16, creditMax: undefined },
+    b2: { filter: isB2, creditMin: 8, creditMax: undefined },
+    d1: { filter: isD1, creditMin: 32, creditMax: 52 },
+    f1: { filter: isF1, creditMin: 1, creditMax: undefined },
+    f2: { filter: isF2, creditMin: 0, creditMax: undefined },
+    h1: { filter: isH1, creditMin: 6, creditMax: undefined },
+    h2: { filter: isH2, creditMin: 0, creditMax: undefined },
+  },
+  {
+    b: { creditMin: 24, creditMax: 44 },
+    d: { creditMin: 32, creditMax: 52 },
+    f: { creditMin: 1, creditMax: 21 },
+    h: { creditMin: 6, creditMax: 26 },
+  },
+  83,
+);
