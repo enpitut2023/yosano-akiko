@@ -12,34 +12,24 @@
     <main>
       <div id="requirements">
         <img src="table.png" />
-        <div class="cell" id="b1">
-          <div class="gage" id="b1-gage"></div>
-          <div class="sum" id="b1-sum"></div>
-        </div>
-        <div class="cell" id="b2">
-          <div class="gage" id="b2-gage"></div>
-          <div class="sum" id="b2-sum"></div>
-        </div>
-        <div class="cell" id="d1">
-          <div class="gage" id="d1-gage"></div>
-          <div class="sum" id="d1-sum"></div>
-        </div>
-        <div class="cell" id="f1">
-          <div class="gage" id="f1-gage"></div>
-          <div class="sum" id="f1-sum"></div>
-        </div>
-        <div class="cell" id="f2">
-          <div class="gage" id="f2-gage"></div>
-          <div class="sum" id="f2-sum"></div>
-        </div>
-        <div class="cell" id="h1">
-          <div class="gage" id="h1-gage"></div>
-          <div class="sum" id="h1-sum"></div>
-        </div>
-        <div class="cell" id="h2">
-          <div class="gage" id="h2-gage"></div>
-          <div class="sum" id="h2-sum"></div>
-        </div>
+        <div
+          style="
+            position: absolute;
+            background-color: white;
+            opacity: 0.95;
+            left: 110px;
+            top: 877px;
+            width: 2124px;
+            height: 480px;
+          "
+        ></div>
+        <div class="cell" id="b1"></div>
+        <div class="cell" id="b2"></div>
+        <div class="cell" id="d1"></div>
+        <div class="cell" id="f1"></div>
+        <div class="cell" id="f2"></div>
+        <div class="cell" id="h1"></div>
+        <div class="cell" id="h2"></div>
 
         <credit-sum-overlay>
           <div id="b" class="column"></div>
@@ -50,14 +40,14 @@
       </div>
 
       <div id="left-bar">
-        <h1>未履修の授業</h1>
+        <h2>取らない授業</h2>
         <div
           id="not-taken-course-container"
-          class="course-container no-cell-selected show-id-name show-credit show-term show-when"        
+          class="course-container no-cell-selected show-id-name show-credit show-term show-when show-expects"
         >
-          <p class="hint-when-no-cells-selected">セルを選択してください</p>
+          <p class="hint-when-no-cells-selected">マスを選択してください</p>
           <p class="hint-when-contains-no-courses">
-            このセルに該当する未履修の授業がありません
+            このマスに該当する授業がありません
           </p>
           <table id="not-taken-table">
             <thead>
@@ -66,7 +56,7 @@
                 <th class="credit">単位</th>
                 <th class="term">学期</th>
                 <th class="when">時限</th>
-                <th class="expects">標準履修年次</th>
+                <th class="expects">標準<br />履修<br />年次</th>
               </tr>
             </thead>
           </table>
@@ -80,7 +70,7 @@
           <input type="file" id="csv" name="csv" accept=".csv" />
         </p>
         <div class="separator"></div>
-        <h1>履修中・履修するかもしれない授業</h1>
+        <h2>取るかもしれない授業</h2>
         <div
           id="might-take-course-container"
           class="course-container contains-no-courses show-id-name show-credit show-term show-when"
@@ -98,19 +88,19 @@
                 <th class="credit">単位</th>
                 <th class="term">学期</th>
                 <th class="when">時限</th>
-                <th class="expects">標準履修年次</th>
+                <th class="expects">標準<br />履修<br />年次</th>
               </tr>
             </thead>
           </table>
         </div>
-        <h1>単位取得済みの授業</h1>
+        <h2>単位取得済みの授業</h2>
         <div
           id="taken-course-container"
           class="course-container no-cell-selected show-id-name show-credit"
         >
-          <p class="hint-when-no-cells-selected">セルを選択してください</p>
+          <p class="hint-when-no-cells-selected">マスを選択してください</p>
           <p class="hint-when-contains-no-courses">
-            このセルに該当する単位取得済みの授業がありません
+            このマスに該当する授業がありません
           </p>
           <table id="taken-table">
             <thead>
@@ -119,7 +109,7 @@
                 <th class="credit">単位</th>
                 <th class="term">学期</th>
                 <th class="when">時限</th>
-                <th class="expects">標準履修年次</th>
+                <th class="expects">標準<br />履修<br />年次</th>
               </tr>
             </thead>
           </table>
