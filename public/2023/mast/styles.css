@@ -67,3 +67,39 @@
   width: 204px;
   height: 118px;
 }
+
+#b {
+  left: 362px;
+  top: 1150px;
+  width: 133px;
+  height: 43px;
+}
+
+#d {
+  left: 869px;
+  top: 1150px;
+  width: 132px;
+  height: 43px;
+}
+
+#f {
+  left: 1334px;
+  top: 1150px;
+  width: 186px;
+  height: 43px;
+}
+
+#h {
+  left: 1692px;
+  top: 1150px;
+  width: 200px;
+  height: 43px;
+}
+
+#net {
+  --width: 15ch;
+  left: calc(2101px - var(--width));
+  top: 1150px;
+  width: var(--width);
+  height: 100px;
+}
