@@ -677,7 +677,7 @@ function parseImportedCourse(row) {
   if (grade === undefined) {
     return;
   }
-  const credit = parseInt(rawCredit);
+  const credit = parseFloat(rawCredit);
   if (isNaN(credit)) {
     return;
   }
