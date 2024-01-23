@@ -363,6 +363,17 @@ class Akiko {
   }
 
   /**
+   * @returns {string[]}
+   */
+  mightTakeCourseIds() {
+    return Array.from(
+      flatMap(this.cellIdToCell.values(), (cell) =>
+        map(cell.courseIdToMightTakeCourse.values(), ([course]) => course.id),
+      ),
+    );
+  }
+
+  /**
    * @param {Map<string, CellMetadata>} cellIdToCellMetadata
    * @param {number} requirementsTableYear
    * @param {Course[]} courses
@@ -468,6 +479,20 @@ class Akiko {
 function* map(ts, f) {
   for (const t of ts) {
     yield f(t);
+  }
+}
+
+/**
+ * @template T, U
+ * @param {Iterable<T>} ts
+ * @param {(t: T) => Iterable<U>} f
+ * @returns {Generator<U>}
+ */
+function* flatMap(ts, f) {
+  for (const t of ts) {
+    for (const u of f(t)) {
+      yield u;
+    }
   }
 }
 
@@ -1180,6 +1205,23 @@ export function setup(
     });
     reader.readAsText(csvFile);
   });
+
+  mustGetElementById("export-might-take-course-ids").addEventListener(
+    "click",
+    () => {
+      const content = akiko.mightTakeCourseIds().join("\n") + "\n";
+      const e = document.createElement("a");
+      e.setAttribute(
+        "href",
+        "data:text/csv;charset=utf-8," + encodeURIComponent(content),
+      );
+      e.setAttribute("download", "科目番号一覧.csv");
+      e.style.display = "none";
+      document.body.appendChild(e);
+      e.click();
+      e.remove();
+    },
+  );
 
   leftBar.addEventListener("dragover", (event) => {
     event.preventDefault();
