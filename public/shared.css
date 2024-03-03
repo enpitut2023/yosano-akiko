@@ -92,20 +92,21 @@ credit-sum-view {
 
 credit-sum-overlay > .column,
 #net {
+  --border-width: 2px;
   position: absolute;
   padding-right: 0.5ch;
   box-sizing: border-box;
   display: grid;
   justify-content: right;
   font-size: 1.5rem;
-  border-bottom: 2px dotted black;
+  border-bottom: var(--border-width) dotted black;
 }
 credit-sum-overlay > .column {
   align-content: center;
 }
 #net {
   align-content: end;
-  border-right: 2px dotted black;
+  border-right: var(--border-width) dotted black;
 }
 
 .gage {
