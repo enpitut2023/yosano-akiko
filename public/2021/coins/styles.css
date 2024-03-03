@@ -1,0 +1,141 @@
+:root {
+  --first-cell-top: 362.1px;
+  --table-bottom: 1273.9px;
+  --net-right: 1900.7px;
+
+  --a-left: 125.2px;
+  --b-left: 371.5px;
+  --c-left: 607.1px;
+  --d-left: 872.1px;
+  --e-left: 1108.5px;
+  --f-left: 1309.1px;
+  --g-left: 1509.6px;
+  --h-left: 1601.5px;
+  --last-column-right: 1802px;
+
+  --a-width: calc(var(--b-left) - var(--a-left));
+  --b-width: calc(var(--c-left) - var(--b-left));
+  --c-width: calc(var(--d-left) - var(--c-left));
+  --d-width: calc(var(--e-left) - var(--d-left));
+  --e-width: calc(var(--f-left) - var(--e-left));
+  --f-width: calc(var(--g-left) - var(--f-left));
+  --g-width: calc(var(--h-left) - var(--g-left));
+  --h-width: calc(var(--last-column-right) - var(--h-left));
+
+  --b1-bottom: 496.4px;
+  --b2-bottom: 697.8px;
+  --d1-bottom: 630.6px;
+  --d2-bottom: 764.9px;
+  --d3-bottom: 899.2px;
+  --d4-bottom: 1033.4px;
+  --f1-bottom: 496.4px;
+  --f2-bottom: 630.6px;
+  --h1-bottom: 496.4px;
+  --h2-bottom: 630.6px;
+}
+
+#b1 {
+  left: var(--b-left);
+  width: var(--b-width);
+  top: var(--first-cell-top);
+  height: calc(var(--b1-bottom) - var(--first-cell-top));
+}
+
+#b2 {
+  left: var(--b-left);
+  width: var(--b-width);
+  top: var(--b1-bottom);
+  height: calc(var(--b2-bottom) - var(--b1-bottom));
+}
+
+#d1 {
+  left: var(--d-left);
+  width: var(--d-width);
+  top: var(--first-cell-top);
+  height: calc(var(--d1-bottom) - var(--first-cell-top));
+}
+
+#d2 {
+  left: var(--d-left);
+  width: var(--d-width);
+  top: var(--d1-bottom);
+  height: calc(var(--d2-bottom) - var(--d1-bottom));
+}
+
+#d3 {
+  left: var(--d-left);
+  width: var(--d-width);
+  top: var(--d2-bottom);
+  height: calc(var(--d3-bottom) - var(--d2-bottom));
+}
+
+#d4 {
+  left: var(--d-left);
+  width: var(--d-width);
+  top: var(--d3-bottom);
+  height: calc(var(--d4-bottom) - var(--d3-bottom));
+}
+
+#f1 {
+  left: var(--f-left);
+  width: var(--f-width);
+  top: var(--first-cell-top);
+  height: calc(var(--f1-bottom) - var(--first-cell-top));
+}
+
+#f2 {
+  left: var(--f-left);
+  width: var(--f-width);
+  top: var(--f1-bottom);
+  height: calc(var(--f2-bottom) - var(--f1-bottom));
+}
+
+#h1 {
+  left: var(--h-left);
+  width: var(--h-width);
+  top: var(--first-cell-top);
+  height: calc(var(--h1-bottom) - var(--first-cell-top));
+}
+
+#h2 {
+  left: var(--h-left);
+  width: var(--h-width);
+  top: var(--h1-bottom);
+  height: calc(var(--h2-bottom) - var(--h1-bottom));
+}
+
+#b {
+  left: var(--b-left);
+  top: var(--table-bottom);
+  width: var(--b-width);
+  height: 43px;
+}
+
+#d {
+  left: var(--d-left);
+  top: var(--table-bottom);
+  width: var(--d-width);
+  height: 43px;
+}
+
+#f {
+  left: var(--f-left);
+  top: var(--table-bottom);
+  width: var(--f-width);
+  height: 43px;
+}
+
+#h {
+  left: var(--h-left);
+  top: var(--table-bottom);
+  width: var(--h-width);
+  height: 43px;
+}
+
+#net {
+  --width: 15ch;
+  left: calc(var(--net-right) - var(--width) + var(--border-width));
+  top: var(--table-bottom);
+  width: var(--width);
+  height: 100px;
+}
