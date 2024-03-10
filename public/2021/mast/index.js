@@ -41,42 +41,6 @@ function isD1(id) {
  * @param {string} id
  * @returns {boolean}
  */
-function isE1(id) {
-  return (
-    id.startsWith("11") &&
-    // 総合科目(ファーストイヤーセミナー・学問への誘い)
-    ["27", "28"].includes(id)
-  );
-}
-
-/**
- * @param {string} id
- * @returns {boolean}
- */
-function isE2(id) {
-  return false; // 情報
-}
-
-/**
- * @param {string} id
- * @returns {boolean}
- */
-function isE3(id) {
-  return false; // 体育
-}
-
-/**
- * @param {string} id
- * @returns {boolean}
- */
-function isE4(id) {
-  return id.startsWith("6"); // 外国語（英語）
-}
-
-/**
- * @param {string} id
- * @returns {boolean}
- */
 function isF1(id) {
   return (
     (id.startsWith("12") || id.startsWith("14")) &&
