@@ -861,7 +861,7 @@ function initializeCourseElements(akiko, cellIdToCellTbodys) {
   <td class="id-name">${course.id}<br>
     <a href="https://kdb.tsukuba.ac.jp/syllabi/2023/${
       course.id
-    }/jpn" target="_blank">${course.name}</a>
+    }/jpn" target="_blank" draggable="false">${course.name}</a>
     <span>${grade}</span>
   </td>
   <td class="credit">${course.credit ?? "-"}</td>
@@ -896,7 +896,7 @@ function initializeCourseElements(akiko, cellIdToCellTbodys) {
   <td class="id-name">${course.id}<br>
     <a href="https://kdb.tsukuba.ac.jp/syllabi/2023/${
       course.id
-    }/jpn" target="_blank">${course.name}</a>
+    }/jpn" target="_blank" draggable="false">${course.name}</a>
     <span>${grade}</span>
   </td>
   <td class="credit">${course.credit ?? "-"}</td>
@@ -923,7 +923,9 @@ function initializeCourseElements(akiko, cellIdToCellTbodys) {
   <td class="id-name">${escapeHtml(importedCourse.id)}<br>
     <a href="https://kdb.tsukuba.ac.jp/syllabi/${importedCourse.takenYear}/${
       importedCourse.id
-    }/jpn" target="_blank">${escapeHtml(importedCourse.name)}</a>
+    }/jpn" target="_blank" draggable="false">${escapeHtml(
+      importedCourse.name,
+    )}</a>
     <span>(${escapeHtml(importedCourse.takenYear.toString())})</span><br>
     <span>評価：${escapeHtml(gradeToString[importedCourse.grade])}</span>
   </td>
