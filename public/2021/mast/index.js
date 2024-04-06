@@ -167,6 +167,8 @@ function isH3(id) {
 setup(
   2021,
   courses,
+  2023,
+  "mast",
   {
     b1: { filter: isB1, creditMin: 20, creditMax: 35 },
     d1: { filter: isD1, creditMin: 32, creditMax: 47 },

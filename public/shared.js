@@ -92,6 +92,46 @@ import { parse } from "./vendor/csv-parse.js";
  * }} MaybeImportedCourse
  */
 
+/**
+ * @typedef {{
+ *   courseYearToMightTakeCourseIds: Map<number, string[]>;
+ *   importedCourses: ImportedCourse[];
+ * }} AkikoLocalData
+ */
+
+/**
+ * @param {string} localDataAsJsonString
+ * @returns {AkikoLocalData | undefined}
+ */
+function parseLocalData(localDataAsJsonString) {
+  // FIXME:
+  const localData = JSON.parse(localDataAsJsonString);
+  return {
+    courseYearToMightTakeCourseIds: new Map(
+      map(
+        Object.entries(localData.courseYearToMightTakeCourseIds),
+        ([year, x]) => {
+          return [parseInt(year), x];
+        },
+      ),
+    ),
+    importedCourses: localData.importedCourses,
+  };
+}
+
+/**
+ * @param {AkikoLocalData} localData
+ * @returns {string}
+ */
+function stringifyLocalData(localData) {
+  return JSON.stringify({
+    courseYearToMightTakeCourseIds: Object.fromEntries(
+      localData.courseYearToMightTakeCourseIds.entries(),
+    ),
+    importedCourses: localData.importedCourses,
+  });
+}
+
 class CreditSumView extends HTMLElement {
   /** @private @type {HTMLSpanElement | undefined} */
   cellWiseTakenSumSpan = undefined;
@@ -363,6 +403,15 @@ class Akiko {
   }
 
   /**
+   * @returns {Iterable<string>}
+   */
+  mightTakeCourseIds() {
+    return flatMap(this.cellIdToCell.values(), (cell) =>
+      map(cell.courseIdToMightTakeCourse.values(), ([{ id }]) => id),
+    );
+  }
+
+  /**
    * @param {Map<string, CellMetadata>} cellIdToCellMetadata
    * @param {number} requirementsTableYear
    * @param {Course[]} courses
@@ -468,6 +517,20 @@ class Akiko {
 function* map(ts, f) {
   for (const t of ts) {
     yield f(t);
+  }
+}
+
+/**
+ * @template T, U
+ * @param {Iterable<T>} ts
+ * @param {(t: T) => Iterable<U>} f
+ * @returns {Generator<U>}
+ */
+function* flatMap(ts, f) {
+  for (const t of ts) {
+    for (const u of f(t)) {
+      yield u;
+    }
   }
 }
 
@@ -998,6 +1061,8 @@ function updateCellGauge(cellIdToCellElement, cellIdToCellCredit) {
 /**
  * @param {number} requirementsTableYear
  * @param {Course[]} courses
+ * @param {number} courseYear
+ * @param {string} department
  * @param {Record<string, CellMetadata>} cellIdToCellMetadataRecord
  * @param {Record<string, ColumnCreditRequirements>} columnIdToColumnCreditRequirements
  * @param {number} netRequired
@@ -1005,6 +1070,8 @@ function updateCellGauge(cellIdToCellElement, cellIdToCellCredit) {
 export function setup(
   requirementsTableYear,
   courses,
+  courseYear,
+  department,
   cellIdToCellMetadataRecord,
   columnIdToColumnCreditRequirements,
   netRequired,
@@ -1053,12 +1120,28 @@ export function setup(
     throw new Error();
   }
 
+  const localDataKey = `${department}_${requirementsTableYear}`;
+  const localDataAsJson = localStorage.getItem(localDataKey);
+  /** @type {AkikoLocalData} */
+  const localData =
+    localDataAsJson === null
+      ? { courseYearToMightTakeCourseIds: new Map(), importedCourses: [] }
+      : parseLocalData(localDataAsJson) ?? {
+          courseYearToMightTakeCourseIds: new Map(),
+          importedCourses: [],
+        };
+
   let akiko = Akiko.fromCellIdToCourses(
     cellIdToCellMetadata,
     requirementsTableYear,
     courses,
-    [],
+    localData.importedCourses,
   );
+  for (const courseId of localData.courseYearToMightTakeCourseIds.get(
+    courseYear,
+  ) ?? []) {
+    akiko.moveCourse("wont-take-to-might-take", courseId);
+  }
 
   /** @type {CourseTables} */
   const courseTables = {
@@ -1160,6 +1243,14 @@ export function setup(
       netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
       creditSumOverlay.update(columnIdToColumnCredit, netCredit);
 
+      // FIXME:
+      localData.courseYearToMightTakeCourseIds.set(
+        courseYear,
+        Array.from(akiko.mightTakeCourseIds()),
+      );
+      localData.importedCourses = result.importedCourses;
+      localStorage.setItem(localDataKey, stringifyLocalData(localData));
+
       initializeCourseElements(akiko, cellIdToCellTbodys);
       updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
 
@@ -1226,7 +1317,6 @@ export function setup(
     );
     netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
 
-    const cellMetadata = cellIdToCellMetadata[selectedCellId];
     insertCourseElement(
       droppedOn === "wont-take" ? cellTbodys.notTaken : cellTbodys.mightTake,
       courseId,
@@ -1244,6 +1334,13 @@ export function setup(
       creditSumView.update(selectedCredits);
     }
     creditSumOverlay.update(columnIdToColumnCredit, netCredit);
+
+    // FIXME:
+    localData.courseYearToMightTakeCourseIds.set(
+      courseYear,
+      Array.from(akiko.mightTakeCourseIds()),
+    );
+    localStorage.setItem(localDataKey, stringifyLocalData(localData));
   };
   leftBar.addEventListener("drop", (event) => {
     handleDrop(event, "wont-take");
