@@ -1120,7 +1120,7 @@ export function setup(
     throw new Error();
   }
 
-  const localDataKey = `${department}_${requirementsTableYear}`;
+  const localDataKey = `${department}_${requirementsTableYear}_v1`;
   const localDataAsJson = localStorage.getItem(localDataKey);
   /** @type {AkikoLocalData} */
   const localData =
