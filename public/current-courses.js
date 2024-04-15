@@ -1,1 +1,1 @@
-2023/courses.js
+courses/2024.js

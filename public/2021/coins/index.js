@@ -160,7 +160,7 @@ function isH2(id) {
 setup(
   2021,
   courses,
-  2023,
+  2024,
   "coins",
   {
     b1: { filter: isB1, creditMin: 18, creditMax: undefined },
