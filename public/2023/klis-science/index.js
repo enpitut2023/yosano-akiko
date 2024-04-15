@@ -1,6 +1,6 @@
 // @ts-check
 
-import { courses } from "../courses.js";
+import { courses } from "../../current-courses.js";
 import { setup } from "../../shared.js";
 
 /**
