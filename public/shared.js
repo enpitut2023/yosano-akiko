@@ -891,8 +891,9 @@ function lfToBr(s) {
 /**
  * @param {Akiko} akiko
  * @param {Map<string, CellTbodys>} cellIdToCellTbodys
+ * @param {number} courseYear
  */
-function initializeCourseElements(akiko, cellIdToCellTbodys) {
+function initializeCourseElements(akiko, cellIdToCellTbodys, courseYear) {
   /** @type {{ [key in ImportedCourseGrade]: string }} */
   const gradeToString = {
     wip: "履修中",
@@ -918,11 +919,10 @@ function initializeCourseElements(akiko, cellIdToCellTbodys) {
           importedCourse === undefined
             ? ""
             : `（${gradeToString[importedCourse.grade]}）`;
-        // FIXME: year in the url
         const element = stringToHtmlElement(`
 <tr class="course" draggable="true" data-course-id="${course.id}">
   <td class="id-name">${course.id}<br>
-    <a href="https://kdb.tsukuba.ac.jp/syllabi/2023/${
+    <a href="https://kdb.tsukuba.ac.jp/syllabi/${courseYear}/${
       course.id
     }/jpn" target="_blank" draggable="false">${course.name}</a>
     <span>${grade}</span>
@@ -953,11 +953,10 @@ function initializeCourseElements(akiko, cellIdToCellTbodys) {
           importedCourse === undefined
             ? ""
             : `（${gradeToString[importedCourse.grade]}）`;
-        // FIXME: year in the url
         const element = stringToHtmlElement(`
 <tr class="course" draggable="true" data-course-id="${course.id}">
   <td class="id-name">${course.id}<br>
-    <a href="https://kdb.tsukuba.ac.jp/syllabi/2023/${
+    <a href="https://kdb.tsukuba.ac.jp/syllabi/${courseYear}/${
       course.id
     }/jpn" target="_blank" draggable="false">${course.name}</a>
     <span>${grade}</span>
@@ -1203,7 +1202,7 @@ export function setup(
       creditSumOverlay.update(columnIdToColumnCredit, netCredit);
     });
   }
-  initializeCourseElements(akiko, cellIdToCellTbodys);
+  initializeCourseElements(akiko, cellIdToCellTbodys, courseYear);
   updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
 
   const csvInput = mustGetElementByIdOfType("csv", HTMLInputElement);
