@@ -56,18 +56,7 @@ function isF1(id) {
  * @returns {boolean}
  */
 function isF2(id) {
-  return (
-    id.match(/^[2]/) && // 体育
-    !(
-      id.startsWith("21") ||
-      id.startsWith("22") ||
-      id.startsWith("23") ||
-      id.startsWith("31H") ||
-      id.startsWith("31J") ||
-      id.startsWith("31K") ||
-      id.startsWith("31L")
-    )
-  );
+  return id.startsWith("28"); // 体育（自由科目）
 }
 
 /**
@@ -76,7 +65,7 @@ function isF2(id) {
  */
 function isF3(id) {
   return (
-    id.match(/^[3]/) && // 外国語（英語）
+    id.startsWith("3") && // 外国語（英語）
     !(
       id.startsWith("31H") ||
       id.startsWith("31J") ||
@@ -91,7 +80,7 @@ function isF3(id) {
  * @returns {boolean}
  */
 function isF4(id) {
-  return id.match(/^[5]/); // 国語
+  return id.startsWith("5"); // 国語
 }
 
 /**
@@ -99,7 +88,7 @@ function isF4(id) {
  * @returns {boolean}
  */
 function isF5(id) {
-  return id.match(/^[4]/); // 芸術
+  return id.startsWith("4"); // 芸術
 }
 
 /**

@@ -112,13 +112,13 @@ function isF1(id) {
  */
 function isF2(id) {
   return (
-    id.match(/^[2-5]/) !== null && // 体育・外国語・国語・芸術
-    // 必修を除外
-    // 応急処置として「基礎...」「応用...」みたいな体育はF2に入れない
+    // 体育（自由科目）、外国語、国語、芸術
+    (id.startsWith("28") ||
+      id.startsWith("3") ||
+      id.startsWith("4") ||
+      id.startsWith("5")) &&
+    // 必修の外国語を除外
     !(
-      id.startsWith("21") ||
-      id.startsWith("22") ||
-      id.startsWith("23") ||
       id.startsWith("31H") ||
       id.startsWith("31J") ||
       id.startsWith("31K") ||
