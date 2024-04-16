@@ -1,105 +1,228 @@
+#a1 {
+  left: 126.375px;
+  top: 363.325px;
+  width: 189.843px;
+  height: 23.81px;
+}
+#a2 {
+  left: 126.375px;
+  top: 388.466px;
+  width: 189.843px;
+  height: 48.836px;
+}
+#a3 {
+  left: 126.375px;
+  top: 438.746px;
+  width: 189.843px;
+  height: 23.696px;
+}
+#a4 {
+  left: 126.375px;
+  top: 463.886px;
+  width: 189.843px;
+  height: 23.696px;
+}
+#a5 {
+  left: 126.375px;
+  top: 489.026px;
+  width: 189.843px;
+  height: 23.696px;
+}
+#a6 {
+  left: 126.432px;
+  top: 514.166px;
+  width: 189.843px;
+  height: 23.696px;
+}
 #b1 {
-  left: 360px;
-  top: 412px;
-  width: 136px;
-  height: 693px;
+  left: 317.663px;
+  top: 363.325px;
+  width: 114.147px;
+  height: 601.919px;
 }
-
+#c1 {
+  left: 508.39px;
+  top: 363.325px;
+  width: 251.686px;
+  height: 23.696px;
+}
+#c2 {
+  left: 508.39px;
+  top: 388.466px;
+  width: 251.686px;
+  height: 23.696px;
+}
+#c3 {
+  left: 508.39px;
+  top: 413.606px;
+  width: 251.686px;
+  height: 23.696px;
+}
+#c4 {
+  left: 508.39px;
+  top: 438.746px;
+  width: 251.686px;
+  height: 23.696px;
+}
+#c5 {
+  left: 508.39px;
+  top: 463.886px;
+  width: 251.686px;
+  height: 23.696px;
+}
+#c6 {
+  left: 508.39px;
+  top: 489.026px;
+  width: 251.686px;
+  height: 23.696px;
+}
+#c7 {
+  left: 508.39px;
+  top: 514.166px;
+  width: 251.686px;
+  height: 23.696px;
+}
+#c8 {
+  left: 508.39px;
+  top: 539.306px;
+  width: 251.686px;
+  height: 23.696px;
+}
+#c9 {
+  left: 508.39px;
+  top: 564.447px;
+  width: 251.686px;
+  height: 23.696px;
+}
+#c10 {
+  left: 508.39px;
+  top: 589.587px;
+  width: 251.686px;
+  height: 23.696px;
+}
+#c11 {
+  left: 508.39px;
+  top: 614.727px;
+  width: 251.686px;
+  height: 23.696px;
+}
+#c12 {
+  left: 508.39px;
+  top: 639.867px;
+  width: 251.686px;
+  height: 23.696px;
+}
+#c13 {
+  left: 508.39px;
+  top: 665.007px;
+  width: 251.686px;
+  height: 23.696px;
+}
 #d1 {
-  left: 867px;
-  top: 412px;
-  width: 136px;
-  height: 693px;
+  left: 761.52px;
+  top: 363.325px;
+  width: 114.138px;
+  height: 601.919px;
 }
-
+#e1 {
+  left: 952.238px;
+  top: 363.325px;
+  width: 215.278px;
+  height: 99.116px;
+}
+#e2 {
+  left: 952.238px;
+  top: 463.886px;
+  width: 215.278px;
+  height: 23.696px;
+}
+#e3 {
+  left: 952.238px;
+  top: 489.026px;
+  width: 215.278px;
+  height: 23.696px;
+}
+#e4 {
+  left: 952.238px;
+  top: 514.166px;
+  width: 215.278px;
+  height: 23.696px;
+}
 #f1 {
-  left: 1332px;
-  top: 412px;
-  width: 190px;
-  height: 119px;
+  left: 1168.96px;
+  top: 363.325px;
+  width: 161.539px;
+  height: 99.116px;
 }
-
 #f2 {
-  left: 1332px;
-  top: 527px;
-  width: 190px;
-  height: 33px;
+  left: 1168.96px;
+  top: 463.886px;
+  width: 161.539px;
+  height: 23.696px;
 }
-
 #f3 {
-  left: 1332px;
-  top: 556px;
-  width: 190px;
-  height: 32px;
+  left: 1168.96px;
+  top: 489.026px;
+  width: 161.539px;
+  height: 23.696px;
 }
-
 #f4 {
-  left: 1332px;
-  top: 584px;
-  width: 190px;
-  height: 33px;
+  left: 1168.96px;
+  top: 514.166px;
+  width: 161.539px;
+  height: 23.696px;
 }
-
 #f5 {
-  left: 1332px;
-  top: 613px;
-  width: 190px;
-  height: 33px;
+  left: 1168.96px;
+  top: 539.306px;
+  width: 161.539px;
+  height: 23.696px;
 }
-
 #h1 {
-  left: 1690px;
-  top: 412px;
-  width: 204px;
-  height: 176px;
+  left: 1482.2px;
+  top: 363.325px;
+  width: 173.663px;
+  height: 149.397px;
 }
-
 #h2 {
-  left: 1690px;
-  top: 584px;
-  width: 204px;
-  height: 62px;
+  left: 1482.2px;
+  top: 514.166px;
+  width: 173.663px;
+  height: 48.836px;
 }
-
 #h3 {
-  left: 1690px;
-  top: 642px;
-  width: 204px;
-  height: 118px;
+  left: 1482.2px;
+  top: 564.447px;
+  width: 173.663px;
+  height: 99.116px;
 }
-
 #b {
-  left: 362px;
-  top: 1150px;
-  width: 133px;
-  height: 43px;
+  left: 317.663px;
+  top: 1007.14px;
+  width: 114.147px;
+  height: 40px;
 }
-
 #d {
-  left: 869px;
-  top: 1150px;
-  width: 132px;
-  height: 43px;
+  left: 761.52px;
+  top: 1007.14px;
+  width: 114.147px;
+  height: 40px;
 }
-
 #f {
-  left: 1334px;
-  top: 1150px;
-  width: 186px;
-  height: 43px;
+  left: 1168.96px;
+  top: 1007.14px;
+  width: 161.539px;
+  height: 40px;
 }
-
 #h {
-  left: 1692px;
-  top: 1150px;
-  width: 200px;
-  height: 43px;
+  left: 1482.2px;
+  top: 1007.14px;
+  width: 173.663px;
+  height: 40px;
 }
-
 #net {
-  --width: 15ch;
-  left: calc(2101px - var(--width));
-  top: 1150px;
-  width: var(--width);
+  left: 1639.94px;
+  top: 1007.14px;
+  width: 200px;
   height: 100px;
 }
