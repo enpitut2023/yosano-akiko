@@ -424,6 +424,11 @@ class Akiko {
     courses,
     importedCourses,
   ) {
+    // 同じ授業を複数回履修している場合最新の授業の成績を使う。
+    // 一度落単した授業を取り直して単位を取った場合など。
+    importedCourses = Array.from(importedCourses);
+    importedCourses.sort((a, b) => a.takenYear - b.takenYear);
+
     /** @type {Map<string, MaybeImportedCourse>} */
     const courseIdToMaybeImportedCourse = new Map(
       map(courses.values(), (course) => [
