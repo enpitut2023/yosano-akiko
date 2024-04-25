@@ -1321,10 +1321,22 @@ export function setup(
     );
     netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
 
+    const courseElements = Array.from(
+      document.querySelectorAll(`[data-course-id="${courseId}"]`),
+    );
+    if (courseElements.length !== 1) {
+      throw new Error(
+        `${courseElements.length} elements for course ${courseId} exist`,
+      );
+    }
+    const courseElement = courseElements[0];
+    if (!(courseElement instanceof HTMLElement)) {
+      throw new Error(`element for course ${courseId} is not html element`);
+    }
     insertCourseElement(
       droppedOn === "wont-take" ? cellTbodys.notTaken : cellTbodys.mightTake,
       courseId,
-      document.querySelectorAll(`[data-course-id="${courseId}"]`)[0],
+      courseElement,
     );
     updateCourseContainers(courseContainers, cellTbodys);
     updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
