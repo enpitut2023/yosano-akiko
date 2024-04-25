@@ -1,113 +1,204 @@
+#a1 {
+  left: 133.283px;
+  top: 351.762px;
+  width: 254.603px;
+  height: 26.337px;
+}
+#a2 {
+  left: 133.283px;
+  top: 379.515px;
+  width: 254.603px;
+  height: 26.337px;
+}
+#a3 {
+  left: 133.283px;
+  top: 407.268px;
+  width: 254.603px;
+  height: 26.337px;
+}
+#a4 {
+  left: 133.283px;
+  top: 435.021px;
+  width: 254.603px;
+  height: 26.337px;
+}
+#a5 {
+  left: 133.283px;
+  top: 462.774px;
+  width: 254.603px;
+  height: 26.337px;
+}
+#a6 {
+  left: 133.283px;
+  top: 490.527px;
+  width: 254.603px;
+  height: 248.38px;
+}
 #b1 {
-  left: 442px;
-  top: 399px;
-  width: 204px;
-  height: 99px;
+  left: 389.302px;
+  top: 351.762px;
+  width: 175.306px;
+  height: 81.843px;
 }
-
 #b2 {
-  left: 442px;
-  top: 494px;
-  width: 204px;
-  height: 352px;
+  left: 389.302px;
+  top: 435.021px;
+  width: 175.306px;
+  height: 303.886px;
 }
-
+#c1 {
+  left: 631.724px;
+  top: 351.762px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c2 {
+  left: 631.724px;
+  top: 379.515px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c3 {
+  left: 631.724px;
+  top: 407.268px;
+  width: 245.549px;
+  height: 54.09px;
+}
+#c4 {
+  left: 631.724px;
+  top: 462.774px;
+  width: 245.549px;
+  height: 54.09px;
+}
+#c5 {
+  left: 631.724px;
+  top: 518.28px;
+  width: 245.549px;
+  height: 26.347px;
+}
+#c6 {
+  left: 631.724px;
+  top: 546.043px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c7 {
+  left: 631.724px;
+  top: 573.796px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c8 {
+  left: 631.724px;
+  top: 601.549px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c9 {
+  left: 631.724px;
+  top: 629.302px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c10 {
+  left: 631.724px;
+  top: 657.055px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c11 {
+  left: 631.724px;
+  top: 684.808px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c12 {
+  left: 631.724px;
+  top: 712.561px;
+  width: 245.549px;
+  height: 26.337px;
+}
 #d1 {
-  left: 1001px;
-  top: 399px;
-  width: 204px;
-  height: 447px;
+  left: 878.689px;
+  top: 351.762px;
+  width: 175.306px;
+  height: 387.145px;
 }
-
+#e1 {
+  left: 1121.11px;
+  top: 351.762px;
+  width: 136.789px;
+  height: 109.596px;
+}
+#e2 {
+  left: 1121.11px;
+  top: 462.774px;
+  width: 136.789px;
+  height: 81.853px;
+}
+#e3 {
+  left: 1121.11px;
+  top: 546.043px;
+  width: 136.789px;
+  height: 26.337px;
+}
+#e4 {
+  left: 1121.11px;
+  top: 573.796px;
+  width: 136.789px;
+  height: 165.112px;
+}
 #f1 {
-  left: 1436px;
-  top: 399px;
-  width: 185px;
-  height: 130px;
+  left: 1259.32px;
+  top: 351.762px;
+  width: 159.439px;
+  height: 109.596px;
 }
-
 #f2 {
-  left: 1436px;
-  top: 525px;
-  width: 185px;
-  height: 321px;
+  left: 1259.32px;
+  top: 462.774px;
+  width: 159.439px;
+  height: 276.133px;
 }
-
 #h1 {
-  left: 1769px;
-  top: 399px;
-  width: 200px;
-  height: 162px;
+  left: 1551.58px;
+  top: 351.762px;
+  width: 171.905px;
+  height: 137.349px;
 }
-
 #h2 {
-  left: 1769px;
-  top: 557px;
-  width: 200px;
-  height: 289px;
+  left: 1551.58px;
+  top: 490.527px;
+  width: 171.905px;
+  height: 248.38px;
 }
-
-#b1-gage {
-  /* height: 143px; */
-  height: 95px;
-}
-
-#b2-gage {
-  height: 220px;
-}
-
-#d1-gage {
-  height: 442px;
-}
-
-#f1-gage {
-  height: 144px;
-}
-
-#f2-gage {
-  height: 144px;
-}
-
-#h1-gage {
-  height: 144px;
-}
-
-#h2-gage {
-  height: 144px;
-}
-
 #b {
-  left: 444px;
-  top: 877px;
-  width: 202px;
-  height: 43px;
+  left: 389.302px;
+  top: 768.076px;
+  width: 175.306px;
+  height: 40px;
 }
-
 #d {
-  left: 1003px;
-  top: 877px;
-  width: 203px;
-  height: 43px;
+  left: 878.689px;
+  top: 768.076px;
+  width: 175.306px;
+  height: 40px;
 }
-
 #f {
-  left: 1437px;
-  top: 877px;
-  width: 184px;
-  height: 43px;
+  left: 1259.32px;
+  top: 768.076px;
+  width: 159.439px;
+  height: 40px;
 }
-
 #h {
-  left: 1771px;
-  top: 877px;
-  width: 199px;
-  height: 43px;
+  left: 1551.58px;
+  top: 768.076px;
+  width: 171.905px;
+  height: 40px;
 }
-
 #net {
-  --width: 15ch;
-  left: calc(2120px - var(--width));
-  top: 877px;
-  width: var(--width);
+  left: 1656.31px;
+  top: 768.076px;
+  width: 200px;
   height: 100px;
 }

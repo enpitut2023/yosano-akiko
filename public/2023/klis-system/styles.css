@@ -1,112 +1,204 @@
+#a1 {
+  left: 133.283px;
+  top: 768.076px;
+  width: 254.603px;
+  height: 26.337px;
+}
+#a2 {
+  left: 133.283px;
+  top: 795.829px;
+  width: 254.603px;
+  height: 26.337px;
+}
+#a3 {
+  left: 133.283px;
+  top: 823.582px;
+  width: 254.603px;
+  height: 26.337px;
+}
+#a4 {
+  left: 133.283px;
+  top: 851.335px;
+  width: 254.603px;
+  height: 26.337px;
+}
+#a5 {
+  left: 133.283px;
+  top: 879.088px;
+  width: 254.603px;
+  height: 26.337px;
+}
+#a6 {
+  left: 133.283px;
+  top: 906.841px;
+  width: 254.603px;
+  height: 248.38px;
+}
 #b1 {
-  left: 442px;
-  top: 875px;
-  width: 203px;
-  height: 99px;
+  left: 389.302px;
+  top: 768.076px;
+  width: 175.306px;
+  height: 81.843px;
 }
-
 #b2 {
-  left: 442px;
-  top: 970px;
-  width: 203px;
-  height: 352px;
+  left: 389.302px;
+  top: 851.335px;
+  width: 175.306px;
+  height: 303.886px;
 }
-
+#c1 {
+  left: 631.724px;
+  top: 768.076px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c2 {
+  left: 631.724px;
+  top: 795.829px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c3 {
+  left: 631.724px;
+  top: 823.582px;
+  width: 245.549px;
+  height: 54.09px;
+}
+#c4 {
+  left: 631.724px;
+  top: 879.088px;
+  width: 245.549px;
+  height: 54.09px;
+}
+#c5 {
+  left: 631.724px;
+  top: 934.594px;
+  width: 245.549px;
+  height: 26.347px;
+}
+#c6 {
+  left: 631.724px;
+  top: 962.356px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c7 {
+  left: 631.724px;
+  top: 990.109px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c8 {
+  left: 631.724px;
+  top: 1017.86px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c9 {
+  left: 631.724px;
+  top: 1045.62px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c10 {
+  left: 631.724px;
+  top: 1073.37px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c11 {
+  left: 631.724px;
+  top: 1101.12px;
+  width: 245.549px;
+  height: 26.337px;
+}
+#c12 {
+  left: 631.724px;
+  top: 1128.87px;
+  width: 245.549px;
+  height: 26.337px;
+}
 #d1 {
-  left: 1001px;
-  top: 875px;
-  width: 203px;
-  height: 447px;
+  left: 878.689px;
+  top: 768.076px;
+  width: 175.306px;
+  height: 387.145px;
 }
-
+#e1 {
+  left: 1121.11px;
+  top: 768.076px;
+  width: 136.789px;
+  height: 109.596px;
+}
+#e2 {
+  left: 1121.11px;
+  top: 879.088px;
+  width: 136.789px;
+  height: 81.853px;
+}
+#e3 {
+  left: 1121.11px;
+  top: 962.356px;
+  width: 136.789px;
+  height: 26.337px;
+}
+#e4 {
+  left: 1121.11px;
+  top: 990.109px;
+  width: 136.789px;
+  height: 165.112px;
+}
 #f1 {
-  left: 1436px;
-  top: 875px;
-  width: 184px;
-  height: 130px;
+  left: 1259.32px;
+  top: 768.076px;
+  width: 159.439px;
+  height: 109.596px;
 }
-
 #f2 {
-  left: 1436px;
-  top: 1001px;
-  width: 184px;
-  height: 321px;
+  left: 1259.32px;
+  top: 879.088px;
+  width: 159.439px;
+  height: 276.133px;
 }
-
 #h1 {
-  left: 1769px;
-  top: 874px;
-  width: 200px;
-  height: 162px;
+  left: 1551.58px;
+  top: 768.076px;
+  width: 171.905px;
+  height: 137.349px;
 }
-
 #h2 {
-  left: 1769px;
-  top: 1033px;
-  width: 200px;
-  height: 289px;
+  left: 1551.58px;
+  top: 906.841px;
+  width: 171.905px;
+  height: 248.38px;
 }
-
-#b1-gage {
-  height: 91px;
-}
-
-#b2-gage {
-  height: 344px;
-}
-
-#d1-gage {
-  height: 439px;
-}
-
-#f1-gage {
-  height: 122px;
-}
-
-#f2-gage {
-  height: 313px;
-}
-
-#h1-gage {
-  height: 154px;
-}
-
-#h2-gage {
-  height: 281px;
-}
-
 #b {
-  left: 444px;
-  top: 1353px;
-  width: 202px;
-  height: 43px;
+  left: 389.302px;
+  top: 1184.39px;
+  width: 175.306px;
+  height: 40px;
 }
-
 #d {
-  left: 1003px;
-  top: 1353px;
-  width: 203px;
-  height: 43px;
+  left: 878.689px;
+  top: 1184.39px;
+  width: 175.306px;
+  height: 40px;
 }
-
 #f {
-  left: 1437px;
-  top: 1353px;
-  width: 184px;
-  height: 43px;
+  left: 1259.32px;
+  top: 1184.39px;
+  width: 159.439px;
+  height: 40px;
 }
-
 #h {
-  left: 1771px;
-  top: 1353px;
-  width: 199px;
-  height: 43px;
+  left: 1551.58px;
+  top: 1184.39px;
+  width: 171.905px;
+  height: 40px;
 }
-
 #net {
-  --width: 15ch;
-  left: calc(2120px - var(--width));
-  top: 1353px;
-  width: var(--width);
+  left: 1656.31px;
+  top: 1184.39px;
+  width: 200px;
   height: 100px;
 }

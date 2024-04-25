@@ -1,4 +1,6 @@
-import { courses } from "../courses.js";
+// @ts-check
+
+import { courses } from "../../current-courses.js";
 import { setup } from "../../shared.js";
 
 /**
@@ -53,42 +55,6 @@ function isD1(id) {
  * @param {string} id
  * @returns {boolean}
  */
-function isE1(id) {
-  return (
-    id.startsWith("11") &&
-    // 総合科目(ファーストイヤーセミナー・学問への誘い)
-    ["27", "28"].includes(id)
-  );
-}
-
-/**
- * @param {string} id
- * @returns {boolean}
- */
-function isE2(id) {
-  return false; // 体育
-}
-
-/**
- * @param {string} id
- * @returns {boolean}
- */
-function isE3(id) {
-  return false; // 外国語(英語)
-}
-
-/**
- * @param {string} id
- * @returns {boolean}
- */
-function isE4(id) {
-  return id.startsWith("6"); // 情報
-}
-
-/**
- * @param {string} id
- * @returns {boolean}
- */
 function isF1(id) {
   return (
     (id.startsWith("12") || id.startsWith("14")) &&
@@ -103,13 +69,13 @@ function isF1(id) {
  */
 function isF2(id) {
   return (
-    id.match(/^[2-5]/) && // 体育・外国語・国語・芸術
-    // 必修を除外
-    // 応急処置として「基礎...」「応用...」みたいな体育はF2に入れない
+    // 体育（自由科目）、外国語、国語、芸術
+    (id.startsWith("28") ||
+      id.startsWith("3") ||
+      id.startsWith("4") ||
+      id.startsWith("5")) &&
+    // 必修の外国語を除外
     !(
-      id.startsWith("21") ||
-      id.startsWith("22") ||
-      id.startsWith("23") ||
       id.startsWith("31H") ||
       id.startsWith("31J") ||
       id.startsWith("31K") ||
@@ -144,6 +110,8 @@ function isH2(id) {
 setup(
   2023,
   courses,
+  2024,
+  "klis-system",
   {
     b1: { filter: isB1, creditMin: 16, creditMax: undefined },
     b2: { filter: isB2, creditMin: 8, creditMax: undefined },

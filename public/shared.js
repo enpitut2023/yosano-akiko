@@ -92,6 +92,46 @@ import { parse } from "./vendor/csv-parse.js";
  * }} MaybeImportedCourse
  */
 
+/**
+ * @typedef {{
+ *   courseYearToMightTakeCourseIds: Map<number, string[]>;
+ *   importedCourses: ImportedCourse[];
+ * }} AkikoLocalData
+ */
+
+/**
+ * @param {string} localDataAsJsonString
+ * @returns {AkikoLocalData | undefined}
+ */
+function parseLocalData(localDataAsJsonString) {
+  // FIXME:
+  const localData = JSON.parse(localDataAsJsonString);
+  return {
+    courseYearToMightTakeCourseIds: new Map(
+      map(
+        Object.entries(localData.courseYearToMightTakeCourseIds),
+        ([year, x]) => {
+          return [parseInt(year), x];
+        },
+      ),
+    ),
+    importedCourses: localData.importedCourses,
+  };
+}
+
+/**
+ * @param {AkikoLocalData} localData
+ * @returns {string}
+ */
+function stringifyLocalData(localData) {
+  return JSON.stringify({
+    courseYearToMightTakeCourseIds: Object.fromEntries(
+      localData.courseYearToMightTakeCourseIds.entries(),
+    ),
+    importedCourses: localData.importedCourses,
+  });
+}
+
 class CreditSumView extends HTMLElement {
   /** @private @type {HTMLSpanElement | undefined} */
   cellWiseTakenSumSpan = undefined;
@@ -363,13 +403,11 @@ class Akiko {
   }
 
   /**
-   * @returns {string[]}
+   * @returns {Iterable<string>}
    */
   mightTakeCourseIds() {
-    return Array.from(
-      flatMap(this.cellIdToCell.values(), (cell) =>
-        map(cell.courseIdToMightTakeCourse.values(), ([course]) => course.id),
-      ),
+    return flatMap(this.cellIdToCell.values(), (cell) =>
+      map(cell.courseIdToMightTakeCourse.values(), ([{ id }]) => id),
     );
   }
 
@@ -386,6 +424,11 @@ class Akiko {
     courses,
     importedCourses,
   ) {
+    // 同じ授業を複数回履修している場合最新の授業の成績を使う。
+    // 一度落単した授業を取り直して単位を取った場合など。
+    importedCourses = Array.from(importedCourses);
+    importedCourses.sort((a, b) => a.takenYear - b.takenYear);
+
     /** @type {Map<string, MaybeImportedCourse>} */
     const courseIdToMaybeImportedCourse = new Map(
       map(courses.values(), (course) => [
@@ -853,8 +896,9 @@ function lfToBr(s) {
 /**
  * @param {Akiko} akiko
  * @param {Map<string, CellTbodys>} cellIdToCellTbodys
+ * @param {number} courseYear
  */
-function initializeCourseElements(akiko, cellIdToCellTbodys) {
+function initializeCourseElements(akiko, cellIdToCellTbodys, courseYear) {
   /** @type {{ [key in ImportedCourseGrade]: string }} */
   const gradeToString = {
     wip: "履修中",
@@ -880,13 +924,12 @@ function initializeCourseElements(akiko, cellIdToCellTbodys) {
           importedCourse === undefined
             ? ""
             : `（${gradeToString[importedCourse.grade]}）`;
-        // FIXME: year in the url
         const element = stringToHtmlElement(`
 <tr class="course" draggable="true" data-course-id="${course.id}">
   <td class="id-name">${course.id}<br>
-    <a href="https://kdb.tsukuba.ac.jp/syllabi/2023/${
+    <a href="https://kdb.tsukuba.ac.jp/syllabi/${courseYear}/${
       course.id
-    }/jpn" target="_blank">${course.name}</a>
+    }/jpn" target="_blank" draggable="false">${course.name}</a>
     <span>${grade}</span>
   </td>
   <td class="credit">${course.credit ?? "-"}</td>
@@ -915,13 +958,12 @@ function initializeCourseElements(akiko, cellIdToCellTbodys) {
           importedCourse === undefined
             ? ""
             : `（${gradeToString[importedCourse.grade]}）`;
-        // FIXME: year in the url
         const element = stringToHtmlElement(`
 <tr class="course" draggable="true" data-course-id="${course.id}">
   <td class="id-name">${course.id}<br>
-    <a href="https://kdb.tsukuba.ac.jp/syllabi/2023/${
+    <a href="https://kdb.tsukuba.ac.jp/syllabi/${courseYear}/${
       course.id
-    }/jpn" target="_blank">${course.name}</a>
+    }/jpn" target="_blank" draggable="false">${course.name}</a>
     <span>${grade}</span>
   </td>
   <td class="credit">${course.credit ?? "-"}</td>
@@ -948,7 +990,9 @@ function initializeCourseElements(akiko, cellIdToCellTbodys) {
   <td class="id-name">${escapeHtml(importedCourse.id)}<br>
     <a href="https://kdb.tsukuba.ac.jp/syllabi/${importedCourse.takenYear}/${
       importedCourse.id
-    }/jpn" target="_blank">${escapeHtml(importedCourse.name)}</a>
+    }/jpn" target="_blank" draggable="false">${escapeHtml(
+      importedCourse.name,
+    )}</a>
     <span>(${escapeHtml(importedCourse.takenYear.toString())})</span><br>
     <span>評価：${escapeHtml(gradeToString[importedCourse.grade])}</span>
   </td>
@@ -1021,6 +1065,8 @@ function updateCellGauge(cellIdToCellElement, cellIdToCellCredit) {
 /**
  * @param {number} requirementsTableYear
  * @param {Course[]} courses
+ * @param {number} courseYear
+ * @param {string} department
  * @param {Record<string, CellMetadata>} cellIdToCellMetadataRecord
  * @param {Record<string, ColumnCreditRequirements>} columnIdToColumnCreditRequirements
  * @param {number} netRequired
@@ -1028,6 +1074,8 @@ function updateCellGauge(cellIdToCellElement, cellIdToCellCredit) {
 export function setup(
   requirementsTableYear,
   courses,
+  courseYear,
+  department,
   cellIdToCellMetadataRecord,
   columnIdToColumnCreditRequirements,
   netRequired,
@@ -1076,12 +1124,28 @@ export function setup(
     throw new Error();
   }
 
+  const localDataKey = `${department}_${requirementsTableYear}_v1`;
+  const localDataAsJson = localStorage.getItem(localDataKey);
+  /** @type {AkikoLocalData} */
+  const localData =
+    localDataAsJson === null
+      ? { courseYearToMightTakeCourseIds: new Map(), importedCourses: [] }
+      : parseLocalData(localDataAsJson) ?? {
+          courseYearToMightTakeCourseIds: new Map(),
+          importedCourses: [],
+        };
+
   let akiko = Akiko.fromCellIdToCourses(
     cellIdToCellMetadata,
     requirementsTableYear,
     courses,
-    [],
+    localData.importedCourses,
   );
+  for (const courseId of localData.courseYearToMightTakeCourseIds.get(
+    courseYear,
+  ) ?? []) {
+    akiko.moveCourse("wont-take-to-might-take", courseId);
+  }
 
   /** @type {CourseTables} */
   const courseTables = {
@@ -1143,7 +1207,7 @@ export function setup(
       creditSumOverlay.update(columnIdToColumnCredit, netCredit);
     });
   }
-  initializeCourseElements(akiko, cellIdToCellTbodys);
+  initializeCourseElements(akiko, cellIdToCellTbodys, courseYear);
   updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
 
   const csvInput = mustGetElementByIdOfType("csv", HTMLInputElement);
@@ -1183,7 +1247,15 @@ export function setup(
       netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
       creditSumOverlay.update(columnIdToColumnCredit, netCredit);
 
-      initializeCourseElements(akiko, cellIdToCellTbodys);
+      // FIXME:
+      localData.courseYearToMightTakeCourseIds.set(
+        courseYear,
+        Array.from(akiko.mightTakeCourseIds()),
+      );
+      localData.importedCourses = result.importedCourses;
+      localStorage.setItem(localDataKey, stringifyLocalData(localData));
+
+      initializeCourseElements(akiko, cellIdToCellTbodys, courseYear);
       updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
 
       if (selectedCellId !== undefined) {
@@ -1266,11 +1338,22 @@ export function setup(
     );
     netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
 
-    const cellMetadata = cellIdToCellMetadata[selectedCellId];
+    const courseElements = Array.from(
+      document.querySelectorAll(`[data-course-id="${courseId}"]`),
+    );
+    if (courseElements.length !== 1) {
+      throw new Error(
+        `${courseElements.length} elements for course ${courseId} exist`,
+      );
+    }
+    const courseElement = courseElements[0];
+    if (!(courseElement instanceof HTMLElement)) {
+      throw new Error(`element for course ${courseId} is not html element`);
+    }
     insertCourseElement(
       droppedOn === "wont-take" ? cellTbodys.notTaken : cellTbodys.mightTake,
       courseId,
-      document.querySelectorAll(`[data-course-id="${courseId}"]`)[0],
+      courseElement,
     );
     updateCourseContainers(courseContainers, cellTbodys);
     updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
@@ -1284,6 +1367,13 @@ export function setup(
       creditSumView.update(selectedCredits);
     }
     creditSumOverlay.update(columnIdToColumnCredit, netCredit);
+
+    // FIXME:
+    localData.courseYearToMightTakeCourseIds.set(
+      courseYear,
+      Array.from(akiko.mightTakeCourseIds()),
+    );
+    localStorage.setItem(localDataKey, stringifyLocalData(localData));
   };
   leftBar.addEventListener("drop", (event) => {
     handleDrop(event, "wont-take");
