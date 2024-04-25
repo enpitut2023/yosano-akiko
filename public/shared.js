@@ -1255,7 +1255,7 @@ export function setup(
       localData.importedCourses = result.importedCourses;
       localStorage.setItem(localDataKey, stringifyLocalData(localData));
 
-      initializeCourseElements(akiko, cellIdToCellTbodys);
+      initializeCourseElements(akiko, cellIdToCellTbodys, courseYear);
       updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
 
       if (selectedCellId !== undefined) {
