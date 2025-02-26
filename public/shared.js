@@ -1,5 +1,4 @@
 // @ts-check
-
 import { parse } from "./vendor/csv-parse.js";
 
 /**
@@ -1130,10 +1129,10 @@ export function setup(
   const localData =
     localDataAsJson === null
       ? { courseYearToMightTakeCourseIds: new Map(), importedCourses: [] }
-      : parseLocalData(localDataAsJson) ?? {
+      : (parseLocalData(localDataAsJson) ?? {
           courseYearToMightTakeCourseIds: new Map(),
           importedCourses: [],
-        };
+        });
 
   let akiko = Akiko.fromCellIdToCourses(
     cellIdToCellMetadata,
