@@ -1,4 +1,4 @@
-name: Deploy onto Github Pages
+name: Build and deploy on github pages
 on:
   push:
     branches:
@@ -14,8 +14,8 @@ jobs:
       url: ${{ steps.deploy-pages-step.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/upload-pages-artifact@v2
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: "public"
-      - uses: actions/deploy-pages@v3
+      - uses: actions/deploy-pages@v4
         id: deploy-pages-step
