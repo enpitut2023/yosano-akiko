@@ -1130,10 +1130,10 @@ export function setup(
   const localData =
     localDataAsJson === null
       ? { courseYearToMightTakeCourseIds: new Map(), importedCourses: [] }
-      : parseLocalData(localDataAsJson) ?? {
+      : (parseLocalData(localDataAsJson) ?? {
           courseYearToMightTakeCourseIds: new Map(),
           importedCourses: [],
-        };
+        });
 
   let akiko = Akiko.fromCellIdToCourses(
     cellIdToCellMetadata,
@@ -1364,4 +1364,42 @@ export function setup(
   rightBar.addEventListener("drop", (event) => {
     handleDrop(event, "might-take");
   });
+
+  let barsVisible = true;
+  const barsToggleButton = document.createElement("button");
+  barsToggleButton.id = "bars-toggle";
+  document.body.appendChild(barsToggleButton);
+
+  const mainElement = document.querySelector("main");
+  assert(mainElement !== null);
+
+  const requirementsElement = mustGetElementById("requirements");
+  const updateBarsToggleButtonPosition = () => {
+    if (barsVisible) {
+      barsToggleButton.textContent = "⏵";
+    } else {
+      barsToggleButton.textContent = "⏴";
+    }
+    mainElement.classList.toggle("bars-hidden", !barsVisible);
+    const left =
+      requirementsElement.clientWidth -
+      barsToggleButton.getBoundingClientRect().width;
+    barsToggleButton.style.left = `${left}px`;
+  };
+  updateBarsToggleButtonPosition();
+
+  barsToggleButton.addEventListener("click", () => {
+    barsVisible = !barsVisible;
+    updateBarsToggleButtonPosition();
+  });
+}
+
+/**
+ * @param {boolean} b
+ * @returns {asserts b}
+ */
+function assert(b) {
+  if (!b) {
+    throw new Error("assertion failed");
+  }
 }
