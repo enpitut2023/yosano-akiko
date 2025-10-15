@@ -403,12 +403,23 @@ class Akiko {
   }
 
   /**
-   * @returns {Iterable<string>}
+   * @returns {Generator<Course>}
    */
-  mightTakeCourseIds() {
-    return flatMap(this.cellIdToCell.values(), (cell) =>
-      map(cell.courseIdToMightTakeCourse.values(), ([{ id }]) => id),
-    );
+  *nonImportedMightTakeCourses() {
+    for (const cell of this.cellIdToCell.values()) {
+      for (const [
+        course,
+        importedCourse,
+      ] of cell.courseIdToMightTakeCourse.values()) {
+        if (
+          importedCourse === undefined ||
+          importedCourse.grade === "d" ||
+          importedCourse.grade === "fail"
+        ) {
+          yield course;
+        }
+      }
+    }
   }
 
   /**
@@ -522,20 +533,6 @@ class Akiko {
 function* map(ts, f) {
   for (const t of ts) {
     yield f(t);
-  }
-}
-
-/**
- * @template T, U
- * @param {Iterable<T>} ts
- * @param {(t: T) => Iterable<U>} f
- * @returns {Generator<U>}
- */
-function* flatMap(ts, f) {
-  for (const t of ts) {
-    for (const u of f(t)) {
-      yield u;
-    }
   }
 }
 
@@ -1250,7 +1247,7 @@ export function setup(
       // FIXME:
       localData.courseYearToMightTakeCourseIds.set(
         courseYear,
-        Array.from(akiko.mightTakeCourseIds()),
+        Array.from(map(akiko.nonImportedMightTakeCourses(), ({ id }) => id)),
       );
       localData.importedCourses = result.importedCourses;
       localStorage.setItem(localDataKey, stringifyLocalData(localData));
@@ -1277,6 +1274,25 @@ export function setup(
     });
     reader.readAsText(csvFile);
   });
+
+  mustGetElementById("export-might-take-course-ids").addEventListener(
+    "click",
+    () => {
+      const content = Array.from(
+        map(akiko.nonImportedMightTakeCourses(), ({ id }) => id + "\n"),
+      ).join("");
+      const e = document.createElement("a");
+      e.setAttribute(
+        "href",
+        "data:text/csv;charset=utf-8," + encodeURIComponent(content),
+      );
+      e.setAttribute("download", "科目番号一覧.csv");
+      e.style.display = "none";
+      document.body.appendChild(e);
+      e.click();
+      e.remove();
+    },
+  );
 
   leftBar.addEventListener("dragover", (event) => {
     event.preventDefault();
@@ -1354,7 +1370,7 @@ export function setup(
     // FIXME:
     localData.courseYearToMightTakeCourseIds.set(
       courseYear,
-      Array.from(akiko.mightTakeCourseIds()),
+      Array.from(map(akiko.nonImportedMightTakeCourses(), ({ id }) => id)),
     );
     localStorage.setItem(localDataKey, stringifyLocalData(localData));
   };
