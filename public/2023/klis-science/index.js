@@ -113,7 +113,7 @@ function isH2(id) {
 setup(
   2023,
   courses,
-  2024,
+  2025,
   "klis-science",
   {
     b1: { filter: isB1, creditMin: 16, creditMax: undefined },

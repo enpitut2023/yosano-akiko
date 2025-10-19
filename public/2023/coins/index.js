@@ -7,6 +7,47 @@ import { setup } from "../../shared.js";
  * @param {string} id
  * @returns {boolean}
  */
+function isA1(id) {
+  return (
+    id === "GB26403" || // ソフトウェアサイエンス実験A
+    id === "GB26503" // ソフトウェアサイエンス実験B
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isA2(id) {
+  return (
+    id === "GB19848" || // 特別卒業研究A
+    id === "GB19948" || // 卒業研究A
+    id === "GB19988" || // 卒業研究A 秋
+    id === "GB19858" || // 特別卒業研究B
+    id === "GB19958" || // 卒業研究B
+    id === "GB19998" // 卒業研究B　春
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isA3(id) {
+  return (
+    id === "GB19141" || // 特別専門語学A
+    id === "GB19091" || // 専門語学A
+    id === "GB19111" || // 専門語学A 秋
+    id === "GB19151" || // 特別専門語学B
+    id === "GB19101" || // 専門語学B
+    id === "GB19121" // 専門語学B 春
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
 function isB1(id) {
   return (
     id.startsWith("GB20") || id.startsWith("GB30") || id.startsWith("GB40")
@@ -26,6 +67,128 @@ function isB2(id) {
       id[3] !== "0" &&
       id[3] !== "6")
   );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC1(id) {
+  return (
+    id === "GA15211" || //1・2クラス
+    id === "GA15221" //3・4クラス
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC2(id) {
+  return (
+    id === "GB10234" || //1・2クラス
+    id === "GB10244" //3・4クラス
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC3(id) {
+  return (
+    id === "GA15311" || //1・2クラス
+    id === "GA15321" //3・4クラス
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC4(id) {
+  return (
+    id === "GB10444" || //1・2クラス
+    id === "GB10454" //3・4クラス
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC5(id) {
+  return (
+    id === "GA15111" || //1・2クラス
+    id === "GA15121" //3・4クラス
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC6(id) {
+  return id === "GB19061";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC7(id) {
+  return id === "GA18212";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC8(id) {
+  return id === "GA18312";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC9(id) {
+  return id === "GB11964";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC10(id) {
+  return id === "GB11931";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC11(id) {
+  return (
+    id === "GB11956" || //1・2クラス
+    id === "GB11966" //3・4クラス
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC12(id) {
+  return id === "GB10804";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC13(id) {
+  return id === "GB12017";
 }
 
 /**
@@ -97,9 +260,64 @@ function isD4(id) {
  */
 function isE1(id) {
   return (
-    id.startsWith("11") &&
-    // 総合科目(ファーストイヤーセミナー・学問への誘い)
-    ["27", "28"].includes(id)
+    //学問への誘い
+    id === "1227571" || //1クラス
+    id === "1227581" || //2クラス
+    id === "1227591" || //3クラス
+    id === "1227601" || //4クラス
+    //ファーストイヤーセミナー
+    id === "1118102" || //1クラス
+    id === "1118202" || //2クラス
+    id === "1118302" || //3クラス
+    id === "1118402" //4クラス
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isE2(id) {
+  return (
+    // TODO: 基礎体育の時に種目が違うか、応用の時に種目が同じかチェック
+    id.startsWith("21") || // 基礎体育
+    id.startsWith("22") // 応用体育
+  );
+}
+
+/**
+ * @param {string} _id
+ * @param {string} name
+ * @returns {boolean}
+ */
+function isE3(_id, name) {
+  // TODO:
+  // 編入とかで英語を認定された人は「英語」という名前の4単位の授業を与えられる
+  name = name.trim();
+  name = name.replaceAll(/\s+/g, " ");
+  name = name.toLowerCase();
+  return (
+    name === "english reading skills i" ||
+    name === "english reading skills ii" ||
+    name === "english presentation skills i" ||
+    name === "english presentation skills ii"
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isE4(id) {
+  // TODO:
+  // 編入とかで情報を認定された人は「情報」という名前の4単位の授業を与えられる
+  return (
+    // 情報リテラシー講義
+    id.startsWith("61") ||
+    // 情報リテラシー演習
+    id.startsWith("64") ||
+    // データサイエンス
+    id.startsWith("65")
   );
 }
 
@@ -141,13 +359,20 @@ function isF2(id) {
  * @returns {boolean}
  */
 function isH1(id) {
-  return !(
-    id.startsWith("E") ||
-    id.startsWith("F") ||
-    id.startsWith("G") ||
-    id.startsWith("H") ||
-    // 共通科目及び教職に関する科目
-    id.match(/^\d/)
+  if (id.startsWith("__")) {
+    return false;
+  }
+  return (
+    !(
+      id.startsWith("E") ||
+      id.startsWith("F") ||
+      id.startsWith("G") ||
+      id.startsWith("H") ||
+      // 共通科目及び教職に関する科目
+      id.match(/^\d/)
+    ) ||
+    id.startsWith("8") ||
+    id.startsWith("99")
   );
 }
 
@@ -168,23 +393,52 @@ function isH2(id) {
 setup(
   2023,
   courses,
-  2024,
+  2025,
   "coins",
   {
+    a1: { filter: isA1, creditMin: 6, creditMax: 6 },
+    a2: { filter: isA2, creditMin: 6, creditMax: 6 },
+    a3: { filter: isA3, creditMin: 4, creditMax: 4 },
+
     b1: { filter: isB1, creditMin: 16, creditMax: undefined },
     b2: { filter: isB2, creditMin: 0, creditMax: 18 },
+
+    c1: { filter: isC1, creditMin: 2, creditMax: 2 },
+    c2: { filter: isC2, creditMin: 2, creditMax: 2 },
+    c3: { filter: isC3, creditMin: 2, creditMax: 2 },
+    c4: { filter: isC4, creditMin: 2, creditMax: 2 },
+    c5: { filter: isC5, creditMin: 2, creditMax: 2 },
+    c6: { filter: isC6, creditMin: 1, creditMax: 1 },
+    c7: { filter: isC7, creditMin: 2, creditMax: 2 },
+    c8: { filter: isC8, creditMin: 1, creditMax: 1 },
+    c9: { filter: isC9, creditMin: 3, creditMax: 3 },
+    c10: { filter: isC10, creditMin: 3, creditMax: 3 },
+    c11: { filter: isC11, creditMin: 2, creditMax: 2 },
+    c12: { filter: isC12, creditMin: 2, creditMax: 2 },
+    c13: { filter: isC13, creditMin: 2, creditMax: 2 },
+
     d1: { filter: isD1, creditMin: 8, creditMax: undefined },
     d2: { filter: isD2, creditMin: 2, creditMax: undefined },
     d3: { filter: isD3, creditMin: 4, creditMax: undefined },
     d4: { filter: isD4, creditMin: 8, creditMax: undefined },
+
+    e1: { filter: isE1, creditMin: 2, creditMax: 2 },
+    e2: { filter: isE2, creditMin: 2, creditMax: 2 },
+    e3: { filter: isE3, creditMin: 4, creditMax: 4 },
+    e4: { filter: isE4, creditMin: 4, creditMax: 4 },
+
     f1: { filter: isF1, creditMin: 1, creditMax: undefined },
     f2: { filter: isF2, creditMin: 0, creditMax: 4 },
+
     h1: { filter: isH1, creditMin: 6, creditMax: undefined },
     h2: { filter: isH2, creditMin: 0, creditMax: 4 },
   },
   {
+    a: { creditMin: 16, creditMax: 16 },
     b: { creditMin: 34, creditMax: 34 },
+    c: { creditMin: 26, creditMax: 26 },
     d: { creditMin: 26, creditMax: 26 },
+    e: { creditMin: 12, creditMax: 12 },
     f: { creditMin: 1, creditMax: 5 },
     h: { creditMin: 6, creditMax: 10 },
   },

@@ -1,5 +1,6 @@
 body {
   font-family: sans-serif;
+  font-size: 14px;
   margin: 0;
   padding: 0;
 }
@@ -60,7 +61,7 @@ credit-sum-view {
 }
 
 .cell {
-  --border-width: 4px;
+  --border-width: 3px;
   --green-percentage: 0%;
   --yellow-percentage: 0%;
   position: absolute;
@@ -104,7 +105,7 @@ credit-sum-overlay > .column,
   box-sizing: border-box;
   display: grid;
   justify-content: right;
-  font-size: 1.5rem;
+  font-size: 1.2em;
   border-bottom: var(--border-width) dotted black;
 }
 credit-sum-overlay > .column {

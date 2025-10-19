@@ -10,7 +10,6 @@
     "noEmit": true,
     "skipLibCheck": true,
     "strict": true,
-    "noUnusedLocals": true,
     "target": "ES6"
   },
   "include": ["public"]

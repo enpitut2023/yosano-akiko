@@ -38,7 +38,7 @@ import { parse } from "./vendor/csv-parse.js";
  * }} CourseContainers
  *
  * @typedef {{
- *   filter: (id: string) => boolean;
+ *   filter: (id: string, name: string) => boolean;
  *   creditMin: number;
  *   creditMax: number | undefined;
  * }} CellMetadata
@@ -91,6 +91,18 @@ import { parse } from "./vendor/csv-parse.js";
  *   importedCourse: ImportedCourse;
  * }} MaybeImportedCourse
  */
+
+/**
+ * @param {MaybeImportedCourse} c
+ * @returns {string}
+ */
+function maybeImportedCourseGetName(c) {
+  if (c.course !== undefined) {
+    return c.course.name;
+  } else {
+    return c.importedCourse.name;
+  }
+}
 
 /**
  * @typedef {{
@@ -282,15 +294,16 @@ class CreditSumOverlay extends HTMLElement {
   static columnCreditToMessage(columnCredit) {
     const { takenSum, mightTakeSum, requirements } = columnCredit;
     const takenAndMightTakeSum = takenSum + mightTakeSum;
+    let message = "計 ";
     if (takenSum === takenAndMightTakeSum) {
-      return takenSum.toString();
+      message += takenSum.toString();
     } else {
-      let message = `${takenSum} → ${takenAndMightTakeSum}`;
-      if (takenAndMightTakeSum > requirements.creditMax) {
-        message = "⚠️ " + message;
-      }
-      return message;
+      message += `${takenSum} → ${takenAndMightTakeSum}`;
     }
+    if (Math.max(takenSum, takenAndMightTakeSum) > requirements.creditMax) {
+      message = "⚠️" + message;
+    }
+    return message;
   }
 
   /**
@@ -301,11 +314,13 @@ class CreditSumOverlay extends HTMLElement {
   static netCreditToMessage(netCredit) {
     const { takenSum, mightTakeSum, required } = netCredit;
     const takenAndMightTakeSum = takenSum + mightTakeSum;
+    let message = "選択科目計 ";
     if (takenSum === takenAndMightTakeSum) {
-      return `${takenSum}/${required}`;
+      message += `${takenSum}/${required}`;
+    } else {
+      message += `${takenSum} → ${takenAndMightTakeSum}/${required}`;
     }
-    let message = `${takenSum} → ${takenAndMightTakeSum}/${required}`;
-    if (takenAndMightTakeSum > required) {
+    if (Math.max(takenSum, takenAndMightTakeSum) > required) {
       message = "⚠️ " + message;
     }
     return message;
@@ -447,10 +462,11 @@ class Akiko {
         { id: course.id, course, importedCourse: undefined },
       ]),
     );
+    let freeCount = 0;
     for (const importedCourse of importedCourses) {
       if (importedCourse.id === "") {
-        // TODO: 認可された授業がインポートされた
-        continue;
+        // 認可された授業がインポートされた
+        importedCourse.id = `__free${freeCount}`;
       }
       // TODO: requirementsTableYearより過去の授業が来た場合対応
       const maybeImportedCourse = courseIdToMaybeImportedCourse.get(
@@ -471,7 +487,7 @@ class Akiko {
     for (const [cellId, cellMetadata] of cellIdToCellMetadata.entries()) {
       const maybeImportedCourses = Array.from(
         filter(courseIdToMaybeImportedCourse.values(), (c) =>
-          cellMetadata.filter(c.id),
+          cellMetadata.filter(c.id, maybeImportedCourseGetName(c)),
         ),
       );
       /** @type {Cell} */
@@ -484,8 +500,14 @@ class Akiko {
         courseIdToMightTakeCourse: new Map(),
         courseIdToTakenCourse: new Map(),
       };
-      for (const { id, course, importedCourse } of maybeImportedCourses) {
-        if (!cellMetadata.filter(id)) {
+      for (const maybeImportedCourse of maybeImportedCourses) {
+        const { id, course, importedCourse } = maybeImportedCourse;
+        if (
+          !cellMetadata.filter(
+            id,
+            maybeImportedCourseGetName(maybeImportedCourse),
+          )
+        ) {
           continue;
         }
         if (course !== undefined && importedCourse !== undefined) {
@@ -844,7 +866,13 @@ function calculateColumnIdToColumnCredit(
  * @returns {NetCredit}
  */
 function calculateNetCredit(columnIdToColumnCredit, netRequired) {
-  const columnCredits = Array.from(columnIdToColumnCredit.values());
+  /** @type {ColumnCredit[]} */
+  const columnCredits = [];
+  for (const [id, c] of columnIdToColumnCredit.entries()) {
+    if (id === "b" || id === "d" || id === "f" || id === "h") {
+      columnCredits.push(c);
+    }
+  }
   const takenSum = mapSum(columnCredits, (c) =>
     Math.min(c.takenSum, c.requirements.creditMax),
   );
@@ -982,9 +1010,12 @@ function initializeCourseElements(akiko, cellIdToCellTbodys, courseYear) {
     const takenCourses = Array.from(cell.courseIdToTakenCourse.values());
     takenCourses.sort(([, a], [, b]) => compareStrings(a.id, b.id));
     const takenCourseElements = takenCourses.map(([course, importedCourse]) => {
+      const id = importedCourse.id.startsWith("__free")
+        ? ""
+        : importedCourse.id;
       const element = stringToHtmlElement(`
 <tr class="course">
-  <td class="id-name">${escapeHtml(importedCourse.id)}<br>
+  <td class="id-name">${escapeHtml(id)}<br>
     <a href="https://kdb.tsukuba.ac.jp/syllabi/${importedCourse.takenYear}/${
       importedCourse.id
     }/jpn" target="_blank" draggable="false">${escapeHtml(
@@ -1403,6 +1434,9 @@ export function setup(
     barsToggleButton.style.left = `${left}px`;
   };
   updateBarsToggleButtonPosition();
+  new ResizeObserver(updateBarsToggleButtonPosition).observe(
+    requirementsElement,
+  );
 
   barsToggleButton.addEventListener("click", () => {
     barsVisible = !barsVisible;
