@@ -260,10 +260,13 @@ class CreditSumOverlay extends HTMLElement {
    * @protected
    */
   connectedCallback() {
-    for (const div of this.getElementsByTagName("div")) {
-      if (div.classList.contains("column")) {
-        this.columnIdToColumnDiv.set(div.id, div);
-      }
+    // FIXME
+    for (const id of ["b", "d", "f", "h"]) {
+      const div = document.createElement("div");
+      div.id = id;
+      div.classList.add("column");
+      this.appendChild(div);
+      this.columnIdToColumnDiv.set(id, div);
     }
 
     this.netDiv.id = "net";
@@ -1114,6 +1117,14 @@ export function setup(
   );
   const cellIds = Array.from(cellIdToCellMetadata.keys());
 
+  const requirementsElement = mustGetElementById("requirements");
+  for (const cellId of cellIds) {
+    const div = document.createElement("div");
+    div.id = cellId;
+    div.classList.add("cell");
+    requirementsElement.appendChild(div);
+  }
+
   /** @type {Map<string, CellTbodys>} */
   const cellIdToCellTbodys = new Map(
     cellIds.map((id) => [
@@ -1421,7 +1432,6 @@ export function setup(
   const mainElement = document.querySelector("main");
   assert(mainElement !== null);
 
-  const requirementsElement = mustGetElementById("requirements");
   const updateBarsToggleButtonPosition = () => {
     if (barsVisible) {
       barsToggleButton.textContent = "⏵";
