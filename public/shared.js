@@ -869,6 +869,7 @@ function calculateNetCredit(columnIdToColumnCredit, netRequired) {
   /** @type {ColumnCredit[]} */
   const columnCredits = [];
   for (const [id, c] of columnIdToColumnCredit.entries()) {
+    // FIXME
     if (id === "b" || id === "d" || id === "f" || id === "h") {
       columnCredits.push(c);
     }
