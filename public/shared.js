@@ -3,6 +3,16 @@
 import { parse } from "./vendor/csv-parse.js";
 
 /**
+ * @param {boolean} b
+ * @returns {asserts b}
+ */
+function assert(b) {
+  if (!b) {
+    throw new Error("assertion failed");
+  }
+}
+
+/**
  * @typedef {{
  *   id: string;
  *   name: string;
@@ -37,8 +47,9 @@ import { parse } from "./vendor/csv-parse.js";
  *   taken: HTMLElement;
  * }} CourseContainers
  *
+ * @typedef {{ name: string, native: boolean }} CellFilterArgs
  * @typedef {{
- *   filter: (id: string, name: string) => boolean;
+ *   filter: (id: string, args: CellFilterArgs) => boolean;
  *   creditMin: number;
  *   creditMax: number | undefined;
  * }} CellMetadata
@@ -108,6 +119,7 @@ function maybeImportedCourseGetName(c) {
  * @typedef {{
  *   courseYearToMightTakeCourseIds: Map<number, string[]>;
  *   importedCourses: ImportedCourse[];
+ *   native: boolean;
  * }} AkikoLocalData
  */
 
@@ -128,6 +140,7 @@ function parseLocalData(localDataAsJsonString) {
       ),
     ),
     importedCourses: localData.importedCourses,
+    native: localData.native,
   };
 }
 
@@ -141,6 +154,7 @@ function stringifyLocalData(localData) {
       localData.courseYearToMightTakeCourseIds.entries(),
     ),
     importedCourses: localData.importedCourses,
+    native: localData.native,
   });
 }
 
@@ -445,6 +459,7 @@ class Akiko {
    * @param {number} requirementsTableYear
    * @param {Course[]} courses
    * @param {ImportedCourse[]} importedCourses
+   * @param {boolean} native
    * @returns {Akiko}
    */
   static fromCellIdToCourses(
@@ -452,6 +467,7 @@ class Akiko {
     requirementsTableYear,
     courses,
     importedCourses,
+    native,
   ) {
     // 同じ授業を複数回履修している場合最新の授業の成績を使う。
     // 一度落単した授業を取り直して単位を取った場合など。
@@ -490,7 +506,10 @@ class Akiko {
     for (const [cellId, cellMetadata] of cellIdToCellMetadata.entries()) {
       const maybeImportedCourses = Array.from(
         filter(courseIdToMaybeImportedCourse.values(), (c) =>
-          cellMetadata.filter(c.id, maybeImportedCourseGetName(c)),
+          cellMetadata.filter(c.id, {
+            name: maybeImportedCourseGetName(c),
+            native,
+          }),
         ),
       );
       /** @type {Cell} */
@@ -506,10 +525,10 @@ class Akiko {
       for (const maybeImportedCourse of maybeImportedCourses) {
         const { id, course, importedCourse } = maybeImportedCourse;
         if (
-          !cellMetadata.filter(
-            id,
-            maybeImportedCourseGetName(maybeImportedCourse),
-          )
+          !cellMetadata.filter(id, {
+            name: maybeImportedCourseGetName(maybeImportedCourse),
+            native,
+          })
         ) {
           continue;
         }
@@ -624,7 +643,7 @@ function isArrayOfInstanceOf(array, constructor) {
  * @param {string} s
  * @return {HTMLElement}
  */
-export function stringToHtmlElement(s) {
+function stringToHtmlElement(s) {
   const t = document.createElement("template");
   t.innerHTML = s;
   const child = t.content.firstElementChild;
@@ -638,7 +657,7 @@ export function stringToHtmlElement(s) {
  * @param {string} html
  * @return {string}
  */
-export function escapeHtml(html) {
+function escapeHtml(html) {
   return html
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -706,6 +725,20 @@ function mustGetElementByIdOfType(id, type) {
   const e = document.getElementById(id);
   if (!(e !== null && e instanceof type)) {
     throw new Error(`cannot find "#${id}"`);
+  }
+  return e;
+}
+
+/**
+ * @template {HTMLElement} T
+ * @param {string} selector
+ * @param {new (...args: unknown[]) => T} type
+ * @returns {T}
+ */
+function mustQuerySelectorOfType(selector, type) {
+  const e = document.querySelector(selector);
+  if (!(e !== null && e instanceof type)) {
+    throw new Error(`cannot find "${selector}"`);
   }
   return e;
 }
@@ -1095,6 +1128,22 @@ function updateCellGauge(cellIdToCellElement, cellIdToCellCredit) {
 }
 
 /**
+ * @param {File} file
+ * @returns {Promise<string>}
+ */
+async function readFileAsString(file) {
+  const reader = new FileReader();
+  const result = new Promise((resolve) => {
+    reader.addEventListener("load", () => {
+      assert(typeof reader.result === "string");
+      resolve(reader.result);
+    });
+  });
+  reader.readAsText(file);
+  return await result;
+}
+
+/**
  * @param {number} requirementsTableYear
  * @param {Course[]} courses
  * @param {number} courseYear
@@ -1155,24 +1204,45 @@ export function setup(
     HTMLTableElement,
   );
   const creditSumView = document.getElementsByTagName("credit-sum-view")?.[0];
-  if (!(creditSumView instanceof CreditSumView)) {
-    throw new Error();
-  }
+  assert(creditSumView instanceof CreditSumView);
   const creditSumOverlay =
     document.getElementsByTagName("credit-sum-overlay")?.[0];
-  if (!(creditSumOverlay instanceof CreditSumOverlay)) {
-    throw new Error();
-  }
+  assert(creditSumOverlay instanceof CreditSumOverlay);
+
+  const studentTypeRadioNative = mustQuerySelectorOfType(
+    'input[name="student-type"][value="native"]',
+    HTMLInputElement,
+  );
+  const studentTypeRadioTransfer = mustQuerySelectorOfType(
+    'input[name="student-type"][value="transfer"]',
+    HTMLInputElement,
+  );
+  /**
+   * @returns {boolean}
+   */
+  const isNative = () => {
+    const n = studentTypeRadioNative.checked;
+    const t = studentTypeRadioTransfer.checked;
+    if (!n && !t) {
+      return true;
+    }
+    return n;
+  };
 
   const localDataKey = `${department}_${requirementsTableYear}_v1`;
   const localDataAsJson = localStorage.getItem(localDataKey);
   /** @type {AkikoLocalData} */
   const localData =
     localDataAsJson === null
-      ? { courseYearToMightTakeCourseIds: new Map(), importedCourses: [] }
+      ? {
+          courseYearToMightTakeCourseIds: new Map(),
+          importedCourses: [],
+          native: isNative(),
+        }
       : (parseLocalData(localDataAsJson) ?? {
           courseYearToMightTakeCourseIds: new Map(),
           importedCourses: [],
+          native: isNative(),
         });
 
   let akiko = Akiko.fromCellIdToCourses(
@@ -1180,6 +1250,7 @@ export function setup(
     requirementsTableYear,
     courses,
     localData.importedCourses,
+    isNative(),
   );
   for (const courseId of localData.courseYearToMightTakeCourseIds.get(
     courseYear,
@@ -1250,72 +1321,89 @@ export function setup(
   initializeCourseElements(akiko, cellIdToCellTbodys, courseYear);
   updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
 
+  /**
+   * @param {Akiko} newAkiko
+   */
+  const updateAkiko = (newAkiko) => {
+    akiko = newAkiko;
+    cellIdToCellCredit = akiko.calculateCellIdToCellCredit();
+    columnIdToColumnCredit = calculateColumnIdToColumnCredit(
+      cellIdToCellCredit,
+      columnIdToColumnCreditRequirements,
+    );
+    netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
+    creditSumOverlay.update(columnIdToColumnCredit, netCredit);
+
+    initializeCourseElements(akiko, cellIdToCellTbodys, courseYear);
+    updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
+
+    if (selectedCellId !== undefined) {
+      const cellTbodys = cellIdToCellTbodys.get(selectedCellId);
+      assert(cellTbodys !== undefined);
+      updateCourseContainers(courseContainers, cellTbodys);
+
+      const selectedCredits = selectedCellCreditAndColumnCredit(
+        selectedCellId,
+        cellIdToCellCredit,
+        columnIdToColumnCredit,
+      );
+      if (selectedCredits !== undefined) {
+        creditSumView.update(selectedCredits);
+      }
+    }
+  };
+
+  const handleStudentTypeRadioChange = () => {
+    const native = isNative();
+    updateAkiko(
+      Akiko.fromCellIdToCourses(
+        cellIdToCellMetadata,
+        requirementsTableYear,
+        courses,
+        localData.importedCourses,
+        native,
+      ),
+    );
+    localData.native = native;
+    localStorage.setItem(localDataKey, stringifyLocalData(localData));
+  };
+  studentTypeRadioNative.addEventListener(
+    "change",
+    handleStudentTypeRadioChange,
+  );
+  studentTypeRadioTransfer.addEventListener(
+    "change",
+    handleStudentTypeRadioChange,
+  );
+
   const csvInput = mustGetElementByIdOfType("csv", HTMLInputElement);
-  if (!(csvInput.type === "file")) {
-    throw new Error('"#csv" must be a file input element');
-  }
-  csvInput.addEventListener("change", () => {
+  assert(csvInput.type === "file");
+  csvInput.addEventListener("change", async () => {
     const csvFile = csvInput.files?.[0];
     if (csvFile === undefined) {
       return;
     }
-    const reader = new FileReader();
-    reader.addEventListener("load", () => {
-      const csv = reader.result;
-      if (typeof csv !== "string") {
-        throw new Error("readAsText() must produce string");
-      }
-      const result = csvToImportedCourses(csv);
-      if (result.kind === "failed-to-parse-as-csv") {
-        alert("CSVファイルを正しく読み込めませんでした。");
-        return;
-      } else if (result.kind === "unexpected-csv-content") {
-        alert("CSVファイルを成績データとして読み込めませんでした。");
-        return;
-      }
-      akiko = Akiko.fromCellIdToCourses(
+    const csv = await readFileAsString(csvFile);
+    const result = csvToImportedCourses(csv);
+    if (result.kind === "failed-to-parse-as-csv") {
+      alert("CSVファイルを正しく読み込めませんでした。");
+      return;
+    } else if (result.kind === "unexpected-csv-content") {
+      alert("CSVファイルを成績データとして読み込めませんでした。");
+      return;
+    }
+
+    updateAkiko(
+      Akiko.fromCellIdToCourses(
         cellIdToCellMetadata,
         requirementsTableYear,
         courses,
         result.importedCourses,
-      );
-      cellIdToCellCredit = akiko.calculateCellIdToCellCredit();
-      columnIdToColumnCredit = calculateColumnIdToColumnCredit(
-        cellIdToCellCredit,
-        columnIdToColumnCreditRequirements,
-      );
-      netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
-      creditSumOverlay.update(columnIdToColumnCredit, netCredit);
-
-      // FIXME:
-      localData.courseYearToMightTakeCourseIds.set(
-        courseYear,
-        Array.from(map(akiko.nonImportedMightTakeCourses(), ({ id }) => id)),
-      );
-      localData.importedCourses = result.importedCourses;
-      localStorage.setItem(localDataKey, stringifyLocalData(localData));
-
-      initializeCourseElements(akiko, cellIdToCellTbodys, courseYear);
-      updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
-
-      if (selectedCellId !== undefined) {
-        const cellTbodys = cellIdToCellTbodys.get(selectedCellId);
-        if (cellTbodys === undefined) {
-          throw new Error(`no such cell: '${selectedCellId}'`);
-        }
-        updateCourseContainers(courseContainers, cellTbodys);
-
-        const selectedCredits = selectedCellCreditAndColumnCredit(
-          selectedCellId,
-          cellIdToCellCredit,
-          columnIdToColumnCredit,
-        );
-        if (selectedCredits !== undefined) {
-          creditSumView.update(selectedCredits);
-        }
-      }
-    });
-    reader.readAsText(csvFile);
+        isNative(),
+      ),
+    );
+    localData.importedCourses = result.importedCourses;
+    localStorage.setItem(localDataKey, stringifyLocalData(localData));
   });
 
   mustGetElementById("export-might-take-course-ids").addEventListener(
@@ -1453,14 +1541,4 @@ export function setup(
     barsVisible = !barsVisible;
     updateBarsToggleButtonPosition();
   });
-}
-
-/**
- * @param {boolean} b
- * @returns {asserts b}
- */
-function assert(b) {
-  if (!b) {
-    throw new Error("assertion failed");
-  }
 }

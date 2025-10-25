@@ -21,26 +21,25 @@ main.bars-hidden {
   grid-template-columns: auto 0 0;
 }
 
-main > * {
-  overflow: scroll;
-}
-
 #requirements {
   grid-column: 1/2;
   grid-row: 1/3;
   position: relative;
+  overflow: scroll;
 }
 
 #left-bar {
   grid-column: 2/3;
   grid-row: 1/2;
   border-left: 1px dashed black;
+  overflow-y: scroll;
 }
 
 #right-bar {
   grid-column: 3/4;
   grid-row: 1/3;
   border-left: 1px dashed black;
+  overflow-y: scroll;
 }
 
 credit-sum-view {
@@ -114,14 +113,6 @@ credit-sum-overlay > .column {
 #net {
   align-content: end;
   border-right: var(--border-width) dotted black;
-}
-
-.gage {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 0%;
-  background-color: rgba(0, 0, 255, 0.4);
 }
 
 .sum {
@@ -224,4 +215,8 @@ credit-sum-view.no-cell-selected > div > p {
 
 #bars-toggle:hover {
   background-color: #eee;
+}
+
+input[name="student-type"]:checked + span {
+  font-weight: bold;
 }

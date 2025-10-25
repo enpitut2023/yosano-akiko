@@ -4,6 +4,10 @@ import { courses } from "../../current-courses.js";
 import { setup } from "../../shared.js";
 
 /**
+ * @typedef {import("../../shared.js").CellFilterArgs} CellFilterArgs
+ */
+
+/**
  * @param {string} id
  * @returns {boolean}
  */
@@ -71,12 +75,29 @@ function isB2(id) {
 
 /**
  * @param {string} id
+ * @param {CellFilterArgs} args
  * @returns {boolean}
  */
-function isC1(id) {
+function isC1(id, args) {
   return (
     id === "GA15211" || //1・2クラス
-    id === "GA15221" //3・4クラス
+    id === "GA15221" || //3・4クラス
+    // 移行生はFAから始まる線形代数1をcoinsの線形代数Aとして使える
+    // TODO: 1年の時にFA...を取らなかった移行生がこれを見ると、2年になってから
+    // FA...を取ることができると勘違いするかも？
+    (!args.native &&
+      (id === "FA01611" ||
+        id === "FA01621" ||
+        id === "FA01631" ||
+        id === "FA01641" ||
+        id === "FA01651" ||
+        id === "FA01661" ||
+        id === "FA01671" ||
+        id === "FA01681" ||
+        id === "FA01691" ||
+        id === "FA016A1" ||
+        id === "FA016C1" ||
+        id === "FA016D1"))
   );
 }
 
@@ -93,12 +114,28 @@ function isC2(id) {
 
 /**
  * @param {string} id
+ * @param {CellFilterArgs} args
  * @returns {boolean}
  */
-function isC3(id) {
+function isC3(id, args) {
   return (
     id === "GA15311" || //1・2クラス
-    id === "GA15321" //3・4クラス
+    id === "GA15321" || //3・4クラス
+    // 移行生はFAから始まる微積分1をcoinsの微分積分Aとして使える
+    // TODO: C1と同じ懸念
+    (!args.native &&
+      (id === "FA01311" ||
+        id === "FA01321" ||
+        id === "FA01331" ||
+        id === "FA01341" ||
+        id === "FA01351" ||
+        id === "FA01361" ||
+        id === "FA01371" ||
+        id === "FA01381" ||
+        id === "FA01391" ||
+        id === "FA013A1" ||
+        id === "FA013C1" ||
+        id === "FA013D1"))
   );
 }
 
@@ -134,18 +171,30 @@ function isC6(id) {
 
 /**
  * @param {string} id
+ * @param {CellFilterArgs} args
  * @returns {boolean}
  */
-function isC7(id) {
-  return id === "GA18212";
+function isC7(id, args) {
+  return (
+    id === "GA18212" ||
+    // 移行生はFHから始まるプロ入Aをcoinsのプロ入Aとして使える
+    // TODO: C1と同じ懸念
+    (!args.native && (id === "FH60474" || id === "FH60484" || id === "FH60494"))
+  );
 }
 
 /**
  * @param {string} id
+ * @param {CellFilterArgs} args
  * @returns {boolean}
  */
-function isC8(id) {
-  return id === "GA18312";
+function isC8(id, args) {
+  return (
+    id === "GA18312" ||
+    // 移行生はFHから始まるプロ入Bをcoinsのプロ入Bとして使える
+    // TODO: C1と同じ懸念
+    (!args.native && (id === "FH60574" || id === "FH60584" || id === "FH60594"))
+  );
 }
 
 /**
@@ -287,12 +336,13 @@ function isE2(id) {
 
 /**
  * @param {string} _id
- * @param {string} name
+ * @param {CellFilterArgs} args
  * @returns {boolean}
  */
-function isE3(_id, name) {
+function isE3(_id, args) {
   // TODO:
   // 編入とかで英語を認定された人は「英語」という名前の4単位の授業を与えられる
+  let name = args.name;
   name = name.trim();
   name = name.replaceAll(/\s+/g, " ");
   name = name.toLowerCase();
