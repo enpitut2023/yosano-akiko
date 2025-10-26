@@ -1212,6 +1212,24 @@ export function setup(
     document.getElementsByTagName("credit-sum-overlay")?.[0];
   assert(creditSumOverlay instanceof CreditSumOverlay);
 
+  const localDataKey = `${department}_${requirementsTableYear}`;
+  const localDataAsJson = localStorage.getItem(localDataKey);
+  /** @type {AkikoLocalData} */
+  const localData =
+    localDataAsJson === null
+      ? {
+          version: 1,
+          courseYearToMightTakeCourseIds: new Map(),
+          importedCourses: [],
+          native: true,
+        }
+      : (parseLocalData(localDataAsJson) ?? {
+          version: 1,
+          courseYearToMightTakeCourseIds: new Map(),
+          importedCourses: [],
+          native: true,
+        });
+
   const studentTypeRadioNative = mustQuerySelectorOfType(
     'input[name="student-type"][value="native"]',
     HTMLInputElement,
@@ -1220,6 +1238,8 @@ export function setup(
     'input[name="student-type"][value="transfer"]',
     HTMLInputElement,
   );
+  studentTypeRadioNative.checked = localData.native;
+  studentTypeRadioTransfer.checked = !localData.native;
   /**
    * @returns {boolean}
    */
@@ -1231,24 +1251,6 @@ export function setup(
     }
     return n;
   };
-
-  const localDataKey = `${department}_${requirementsTableYear}`;
-  const localDataAsJson = localStorage.getItem(localDataKey);
-  /** @type {AkikoLocalData} */
-  const localData =
-    localDataAsJson === null
-      ? {
-          version: 1,
-          courseYearToMightTakeCourseIds: new Map(),
-          importedCourses: [],
-          native: isNative(),
-        }
-      : (parseLocalData(localDataAsJson) ?? {
-          version: 1,
-          courseYearToMightTakeCourseIds: new Map(),
-          importedCourses: [],
-          native: isNative(),
-        });
 
   let akiko = Akiko.fromCellIdToCourses(
     cellIdToCellMetadata,
