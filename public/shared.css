@@ -210,7 +210,6 @@ credit-sum-view.no-cell-selected > div > p {
   border: unset;
   border-left: 1px solid black;
   border-bottom: 1px solid black;
-  cursor: pointer;
 }
 
 #bars-toggle:hover {
@@ -219,4 +218,50 @@ credit-sum-view.no-cell-selected > div > p {
 
 input[name="student-type"]:checked + span {
   font-weight: bold;
+}
+
+#control {
+  margin-top: 15px;
+  margin-bottom: 30px;
+}
+#control > * + * {
+  margin-top: 10px;
+}
+
+#control .button {
+  --fill: hsl(0, 0%, 92%);
+  --outline: hsl(0, 0%, 85%);
+  display: grid;
+  place-content: center;
+  place-items: center;
+  gap: 10px;
+  grid-template-columns: auto auto;
+  width: 100%;
+  height: 40px;
+  background-color: var(--fill);
+  border: 1px solid var(--outline);
+  border-radius: 10px;
+}
+#control .button:hover {
+  background-color: var(--outline);
+}
+
+#control > #import-grades-button {
+  --fill: #e3ecfd;
+  --outline: #b8cff9;
+}
+#csv {
+  display: none;
+}
+
+#student-type-container {
+  padding: 10px;
+  background-color: hsl(0, 0%, 97%);
+  border-radius: 10px;
+}
+
+#control > #reset {
+  --fill: #fce3eb;
+  --outline: #f9b8ce;
+  height: 30px;
 }

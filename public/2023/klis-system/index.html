@@ -42,34 +42,38 @@
       <credit-sum-view class="no-cell-selected"></credit-sum-view>
 
       <div id="right-bar">
-        <p>
-          <label for="csv">TWINSの成績データをインポート：</label>
-          <input type="file" id="csv" name="csv" accept=".csv" />
-        </p>
-        <p>
-          <label>
-            <input type="radio" name="student-type" value="native" checked />
-            <span>1年生からこの学類に所属している</span>
+        <div id="control">
+          <label id="import-grades-button" for="csv" class="button">
+            <img src="/icons/import.svg" width="15px" />
+            <span>TWINSの成績データをインポート</span>
+            <input type="file" id="csv" name="csv" accept=".csv" />
           </label>
-          <br />
-          <label>
-            <input type="radio" name="student-type" value="transfer" />
-            <span>総合学域群からこの学類に移行した</span>
-          </label>
-        </p>
-        <p>
-          <a
-            href="../../docs/help.html#取るかもしれない授業一覧ファイルの使い方"
-            target="_blank"
-            rel="noreferrer"
-            >取るかもしれない授業一覧をTWINSにまとめて履修登録できます</a
-          ><br />
-          <label for="export-might-take-course-ids"
-            >取るかもしれない授業一覧を出力：</label
-          >
-          <button id="export-might-take-course-ids">出力</button>
-        </p>
+
+          <div id="student-type-container">
+            <label>
+              <input type="radio" name="student-type" value="native" checked />
+              <span>1年生からこの学類に所属している</span>
+            </label>
+            <br />
+            <label>
+              <input type="radio" name="student-type" value="transfer" />
+              <span>総合学域群からこの学類に移行した</span>
+            </label>
+          </div>
+
+          <button id="export-might-take-course-ids" class="button">
+            <img src="/icons/export.svg" width="15px" />
+            <span>取るかもしれない授業一覧を出力</span>
+          </button>
+
+          <button id="reset" class="button">
+            <img src="/icons/trash.svg" width="15px" />
+            <span>リセット</span>
+          </button>
+        </div>
+
         <div class="separator"></div>
+
         <h2>取るかもしれない授業</h2>
         <div
           id="might-take-course-container"

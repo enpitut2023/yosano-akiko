@@ -117,6 +117,7 @@ function maybeImportedCourseGetName(c) {
 
 /**
  * @typedef {{
+ *   version: number;
  *   courseYearToMightTakeCourseIds: Map<number, string[]>;
  *   importedCourses: ImportedCourse[];
  *   native: boolean;
@@ -131,6 +132,7 @@ function parseLocalData(localDataAsJsonString) {
   // FIXME:
   const localData = JSON.parse(localDataAsJsonString);
   return {
+    version: localData.version,
     courseYearToMightTakeCourseIds: new Map(
       map(
         Object.entries(localData.courseYearToMightTakeCourseIds),
@@ -150,6 +152,7 @@ function parseLocalData(localDataAsJsonString) {
  */
 function stringifyLocalData(localData) {
   return JSON.stringify({
+    version: localData.version,
     courseYearToMightTakeCourseIds: Object.fromEntries(
       localData.courseYearToMightTakeCourseIds.entries(),
     ),
@@ -1229,17 +1232,19 @@ export function setup(
     return n;
   };
 
-  const localDataKey = `${department}_${requirementsTableYear}_v1`;
+  const localDataKey = `${department}_${requirementsTableYear}`;
   const localDataAsJson = localStorage.getItem(localDataKey);
   /** @type {AkikoLocalData} */
   const localData =
     localDataAsJson === null
       ? {
+          version: 1,
           courseYearToMightTakeCourseIds: new Map(),
           importedCourses: [],
           native: isNative(),
         }
       : (parseLocalData(localDataAsJson) ?? {
+          version: 1,
           courseYearToMightTakeCourseIds: new Map(),
           importedCourses: [],
           native: isNative(),
@@ -1326,6 +1331,12 @@ export function setup(
    */
   const updateAkiko = (newAkiko) => {
     akiko = newAkiko;
+    for (const courseId of localData.courseYearToMightTakeCourseIds.get(
+      courseYear,
+    ) ?? []) {
+      akiko.moveCourse("wont-take-to-might-take", courseId);
+    }
+
     cellIdToCellCredit = akiko.calculateCellIdToCellCredit();
     columnIdToColumnCredit = calculateColumnIdToColumnCredit(
       cellIdToCellCredit,
@@ -1540,5 +1551,15 @@ export function setup(
   barsToggleButton.addEventListener("click", () => {
     barsVisible = !barsVisible;
     updateBarsToggleButtonPosition();
+  });
+
+  mustGetElementById("reset").addEventListener("click", () => {
+    const yes = window.confirm(
+      "インポートした成績データや「取るかもしれない授業」に移動した授業などが全てリセットされます。本当にリセットしますか？",
+    );
+    if (yes) {
+      localStorage.removeItem(localDataKey);
+      window.location.reload();
+    }
   });
 }
