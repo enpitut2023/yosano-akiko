@@ -40,6 +40,7 @@ main.bars-hidden {
   grid-row: 1/3;
   border-left: 1px dashed black;
   overflow-y: scroll;
+  padding-top: 20px;
 }
 
 credit-sum-view {
@@ -52,7 +53,8 @@ credit-sum-view {
 #left-bar,
 #right-bar,
 credit-sum-view {
-  padding: 0 1em;
+  padding-left: 1em;
+  padding-right: 1em;
 }
 
 #right-bar > .separator {
@@ -220,8 +222,25 @@ input[name="student-type"]:checked + span {
   font-weight: bold;
 }
 
+#help {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  margin: auto;
+}
+#help > span {
+  display: grid;
+  place-content: center;
+  width: 25px;
+  height: 25px;
+  border: 1px solid black;
+  border-radius: 50%;
+}
+
 #control {
-  margin-top: 15px;
+  margin-top: 30px;
   margin-bottom: 30px;
 }
 #control > * + * {
