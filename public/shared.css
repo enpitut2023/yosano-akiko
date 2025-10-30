@@ -222,21 +222,14 @@ input[name="student-type"]:checked + span {
   font-weight: bold;
 }
 
-#help {
+nav {
+  width: fit-content;
+  margin: 0 auto;
+}
+nav a {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 5px;
-  width: fit-content;
-  margin: auto;
-}
-#help > span {
-  display: grid;
-  place-content: center;
-  width: 25px;
-  height: 25px;
-  border: 1px solid black;
-  border-radius: 50%;
 }
 
 #control {
