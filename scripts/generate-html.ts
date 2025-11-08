@@ -7,6 +7,7 @@ type Instance = { directory: string; title: string };
 
 function main(): void {
   const instances: Instance[] = [
+    // 2021
     {
       directory: "public/2021/coins",
       title: "あきこ（情報科学類 2021年度生）",
@@ -16,11 +17,13 @@ function main(): void {
       title: "あきこ（情報メディア創成学類 2021年度生）",
     },
 
+    // 2022
     {
       directory: "public/2022/coins",
       title: "あきこ（情報科学類 2022年度生）",
     },
 
+    // 2023
     {
       directory: "public/2023/coins",
       title: "あきこ（情報科学類 2023年度生）",
@@ -36,6 +39,18 @@ function main(): void {
     {
       directory: "public/2023/mast",
       title: "あきこ（情報メディア創成学類 2023年度生）",
+    },
+
+    // 2024
+    {
+      directory: "public/2024/coins",
+      title: "あきこ（情報科学類 2024年度生）",
+    },
+
+    // 2025
+    {
+      directory: "public/2025/coins",
+      title: "あきこ（情報科学類 2025年度生）",
     },
   ];
 
