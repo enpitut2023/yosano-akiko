@@ -28,6 +28,34 @@ main.bars-hidden {
   overflow: scroll;
 }
 
+#title {
+  position: absolute;
+  left: 0;
+  top: 0;
+  text-wrap: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background-color: hsl(0, 0%, 97%);
+  border-right: 1px solid hsl(0, 0%, 85%);
+  border-bottom: 1px solid hsl(0, 0%, 85%);
+  border-bottom-right-radius: 10px;
+  padding: 10px 20px;
+}
+
+#title > img {
+  width: 60px;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background-color: hsl(0, 0%, 98%);
+  border: 1px solid hsl(0, 0%, 85%);
+  border-radius: 50%;
+}
+
+#title strong {
+  font-size: 1.2em;
+}
+
 #left-bar {
   grid-column: 2/3;
   grid-row: 1/2;
