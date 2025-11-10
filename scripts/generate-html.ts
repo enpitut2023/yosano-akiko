@@ -9,6 +9,11 @@ function unreachable(_: never): never {
 
 type Major = "coins" | "mast" | "klis-science" | "klis-system";
 
+function majorCompare(a: Major, b: Major): number {
+  // TODO
+  return 0;
+}
+
 function majorToString(m: Major): string {
   switch (m) {
     case "coins":
@@ -34,6 +39,32 @@ function fillInPlaceholders(template: string, i: Instance): string {
   return template;
 }
 
+function createNavigationLinks(is: Instance[]): string {
+  const yearToMajors = new Map<number, Major[]>();
+  for (const i of is) {
+    const majors = yearToMajors.get(i.year);
+    if (majors === undefined) {
+      yearToMajors.set(i.year, [i.major]);
+    } else {
+      majors.push(i.major);
+    }
+  }
+
+  const years = Array.from(yearToMajors.keys());
+  years.sort((a, b) => b - a);
+
+  let result = "";
+  for (const year of years) {
+    result += `<section><h3>${year}年度入学</h3><ul>`;
+    for (const major of yearToMajors.get(year) ?? []) {
+      result += `<li><a href="${year}/${major}">${majorToString(major)}</a></li>`;
+    }
+    result += "</ul></section>";
+  }
+
+  return result;
+}
+
 function main(): void {
   const instances: Instance[] = [
     { year: 2021, major: "coins" },
@@ -51,9 +82,20 @@ function main(): void {
     { year: 2025, major: "coins" },
   ];
 
-  const template = readFileSync("scripts/index-template.html", {
+  const template = readFileSync(path.join(__dirname, "template-index.html"), {
     encoding: "utf8",
   });
+  const appTemplate = readFileSync(
+    path.join(__dirname, "template-app-index.html"),
+    { encoding: "utf8" },
+  );
+
+  console.log("Generating public/index.html");
+  writeFileSync(
+    path.join("public", "index.html"),
+    template.replaceAll("!!links!!", createNavigationLinks(instances)),
+    { encoding: "utf8" },
+  );
 
   for (const instance of instances) {
     const filename = path.join(
@@ -63,7 +105,7 @@ function main(): void {
       "index.html",
     );
     console.log(`Generating ${filename}`);
-    const content = fillInPlaceholders(template, instance);
+    const content = fillInPlaceholders(appTemplate, instance);
     writeFileSync(filename, content, {
       encoding: "utf8",
     });
