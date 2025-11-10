@@ -1,6 +1,8 @@
 body {
   max-width: 800px;
   margin: auto;
+  padding-left: 10px;
+  padding-right: 10px;
   padding-bottom: 50vh;
 }
 
@@ -34,7 +36,7 @@ section > h3 {
   margin-right: auto;
 
   display: grid;
-  --icon-size: 80px;
+  --icon-size: 70px;
   grid-template-columns: var(--icon-size) auto;
   grid-template-rows: var(--icon-size) auto;
   padding: 10px 20px;
