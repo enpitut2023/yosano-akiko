@@ -50,6 +50,7 @@ main.bars-hidden {
   background-color: hsl(0, 0%, 98%);
   border: 1px solid oklch(92% 10% 350);
   border-radius: 50%;
+  overflow: hidden;
 }
 
 #title > .akiko > img {

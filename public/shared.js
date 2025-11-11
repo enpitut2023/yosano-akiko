@@ -186,12 +186,12 @@ class CreditSumView extends HTMLElement {
         <ul>
           <li>選択されているマス<ul>
               <li>取得済み：<span></span></li>
-              <li>取得済み＋取るかもしれない：<span></span></li>
+              <li>取得済み＋取る授業：<span></span></li>
             </ul>
           </li>
           <li>選択されている列の全マス<ul>
               <li>取得済み：<span></span></li>
-              <li>取得済み＋取るかもしれない：<span></span></li>
+              <li>取得済み＋取る授業：<span></span></li>
             </ul>
           </li>
         </ul>
@@ -1557,7 +1557,7 @@ export function setup(
 
   mustGetElementById("reset").addEventListener("click", () => {
     const yes = window.confirm(
-      "インポートした成績データや「取るかもしれない授業」に移動した授業などが全てリセットされます。本当にリセットしますか？",
+      "インポートした成績データや「取る授業」に移動した授業などが全てリセットされます。本当にリセットしますか？",
     );
     if (yes) {
       localStorage.removeItem(localDataKey);
