@@ -29,7 +29,7 @@ function majorToString(m: Major): string {
   }
 }
 
-type Instance = { year: number; major: Major };
+type Instance = { year: number; major: Major; comment?: string };
 
 function fillInPlaceholders(template: string, i: Instance): string {
   const title = `あきこ（${majorToString(i.major)} ${i.year}年度生）`;
@@ -40,24 +40,28 @@ function fillInPlaceholders(template: string, i: Instance): string {
 }
 
 function createNavigationLinks(is: Instance[]): string {
-  const yearToMajors = new Map<number, Major[]>();
+  const yearToInstances = new Map<number, Instance[]>();
   for (const i of is) {
-    const majors = yearToMajors.get(i.year);
+    const majors = yearToInstances.get(i.year);
     if (majors === undefined) {
-      yearToMajors.set(i.year, [i.major]);
+      yearToInstances.set(i.year, [i]);
     } else {
-      majors.push(i.major);
+      majors.push(i);
     }
   }
 
-  const years = Array.from(yearToMajors.keys());
+  const years = Array.from(yearToInstances.keys());
   years.sort((a, b) => b - a);
 
   let result = "";
   for (const year of years) {
     result += `<section><h3>${year}年度入学</h3><ul>`;
-    for (const major of yearToMajors.get(year) ?? []) {
-      result += `<li><a href="${year}/${major}">${majorToString(major)}</a></li>`;
+    for (const i of yearToInstances.get(year) ?? []) {
+      result += `<li><a href="${year}/${i.major}">${majorToString(i.major)}</a>`;
+      if (i.comment !== undefined) {
+        result += " " + i.comment;
+      }
+      result += "</li>";
     }
     result += "</ul></section>";
   }
@@ -67,15 +71,15 @@ function createNavigationLinks(is: Instance[]): string {
 
 function main(): void {
   const instances: Instance[] = [
-    { year: 2021, major: "coins" },
-    { year: 2021, major: "mast" },
+    { year: 2021, major: "coins", comment: "（選択科目のみ対応）" },
+    { year: 2021, major: "mast", comment: "（選択科目のみ対応）" },
 
-    { year: 2022, major: "coins" },
+    { year: 2022, major: "coins", comment: "（選択科目のみ対応）" },
 
     { year: 2023, major: "coins" },
-    { year: 2023, major: "klis-science" },
-    { year: 2023, major: "klis-system" },
-    { year: 2023, major: "mast" },
+    { year: 2023, major: "klis-science", comment: "（選択科目のみ対応）" },
+    { year: 2023, major: "klis-system", comment: "（選択科目のみ対応）" },
+    { year: 2023, major: "mast", comment: "（選択科目のみ対応）" },
 
     { year: 2024, major: "coins" },
 
