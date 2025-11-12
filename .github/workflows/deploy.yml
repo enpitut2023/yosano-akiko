@@ -14,7 +14,9 @@ jobs:
       url: ${{ steps.deploy-pages-step.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - run: npm i -g tsx && ./scripts/build.sh
+      - run: sudo apt install -y pandoc
+      - run: npm i -g tsx
+      - run: ./scripts/build.sh
       - uses: actions/upload-pages-artifact@v3
         with:
           path: "public"
