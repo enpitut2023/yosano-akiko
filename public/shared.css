@@ -312,3 +312,24 @@ nav a {
   --outline: #f9b8ce;
   height: 30px;
 }
+
+#left-bar > search {
+  margin-bottom: 30px;
+  width: 100%;
+  position: relative;
+}
+#left-bar > search > div {
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  display: grid;
+  place-content: center;
+}
+#left-bar > search > input {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid gray;
+  border-radius: 10px;
+  padding: 5px 10px 5px 35px;
+}

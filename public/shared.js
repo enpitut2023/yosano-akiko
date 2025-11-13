@@ -1146,6 +1146,31 @@ async function readFileAsString(file) {
   return await result;
 }
 
+class Debouncer {
+  /** @readonly @type {number} */
+  duration;
+  /** @private @type {() => void} */
+  f;
+  /** @type {number | undefined} */
+  timeoutId;
+
+  /**
+   * @param {number} duration
+   * @param {() => void} f
+   */
+  constructor(duration, f) {
+    this.duration = duration;
+    this.f = f;
+  }
+
+  call() {
+    if (this.timeoutId !== undefined) {
+      window.clearTimeout(this.timeoutId);
+    }
+    this.timeoutId = window.setTimeout(this.f, this.duration);
+  }
+}
+
 /**
  * @param {number} requirementsTableYear
  * @param {Course[]} courses
@@ -1164,6 +1189,8 @@ export function setup(
   columnIdToColumnCreditRequirements,
   netRequired,
 ) {
+  const courseIdToCourse = new Map(map(courses, (c) => [c.id, c]));
+
   const cellIdToCellMetadata = new Map(
     Object.entries(cellIdToCellMetadataRecord),
   );
@@ -1211,6 +1238,35 @@ export function setup(
   const creditSumOverlay =
     document.getElementsByTagName("credit-sum-overlay")?.[0];
   assert(creditSumOverlay instanceof CreditSumOverlay);
+
+  const filterInput = mustGetElementByIdOfType("filter", HTMLInputElement);
+  const filterAction = new Debouncer(500, () => {
+    /**
+     * @param {Element} e
+     */
+    const showOrHide = (e) => {
+      assert(e instanceof HTMLElement && e.dataset.courseId !== undefined);
+      const course = courseIdToCourse.get(e.dataset.courseId);
+      assert(course !== undefined);
+      if (course.id.includes(filter) || course.name.includes(filter)) {
+        e.style.removeProperty("display");
+      } else {
+        e.style.setProperty("display", "none");
+      }
+    };
+    const filter = filterInput.value.trim();
+    for (const tbody of cellIdToCellTbodys.values()) {
+      for (const e of tbody.notTaken.children) {
+        showOrHide(e);
+      }
+      for (const e of tbody.mightTake.children) {
+        showOrHide(e);
+      }
+    }
+  });
+  filterInput.addEventListener("input", () => {
+    filterAction.call();
+  });
 
   const localDataKey = `${department}_${requirementsTableYear}`;
   const localDataAsJson = localStorage.getItem(localDataKey);
