@@ -12,6 +12,7 @@ import { setup } from "../../shared.js";
  * @returns {string}
  */
 function convertToGb(id) {
+  return id; // FIXME
   switch (id) {
     case "BC12624": // コンピュータグラフィックス基礎
     case "GC23304": // CG基礎
