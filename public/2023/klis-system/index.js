@@ -24,7 +24,12 @@ function isA2(id) {
  * @returns {boolean}
  */
 function isA3(id) {
-  return id === "GE50712"; //専門英語B
+  //専門英語B
+  return (
+    id === "GE50712" || // 知識科学全員と情報システムの一部
+    id === "GE50722" || // 2025年開講せず。2024までは情報システムの全員
+    id === "GE50732" //情報資源経営全員と情報システムの一部
+  );
 }
 
 /**
@@ -32,7 +37,7 @@ function isA3(id) {
  * @returns {boolean}
  */
 function isA4(id) {
-  return id === "GE50812"; // 専門英語C
+  return id === "GE50822"; // 専門英語C
 }
 
 /**
@@ -102,7 +107,7 @@ function isC2(id) {
  * @returns {boolean}
  */
 function isC3(id) {
-  return id === "GA18232"; // プログラミング入門A
+  return id === "GA18212"; // プログラミング入門A
 }
 
 /**
@@ -110,7 +115,7 @@ function isC3(id) {
  * @returns {boolean}
  */
 function isC4(id) {
-  return id === "GA18332"; // プログラミング入門B
+  return id === "GA18312"; // プログラミング入門B
 }
 
 /**
@@ -220,7 +225,7 @@ function isE1(id) {
  * @param {string} id
  * @returns {boolean}
  */
-function isE1(id) {
+function isE2(id) {
   return (
     // データサイエンス
     id === "6526102" ||
@@ -294,17 +299,40 @@ setup(
   2025,
   "klis-system",
   {
+    a1: { filter: isA1, creditMin: 3, creditMax: 3 },
+    a2: { filter: isA2, creditMin: 3, creditMax: 3 },
+    a3: { filter: isA3, creditMin: 1, creditMax: 1 },
+    a4: { filter: isA4, creditMin: 1, creditMax: 1 },
+    a5: { filter: isA5, creditMin: 1, creditMax: 1 },
+    a6: { filter: isA6, creditMin: 1, creditMax: 1 },
     b1: { filter: isB1, creditMin: 16, creditMax: undefined },
     b2: { filter: isB2, creditMin: 8, creditMax: undefined },
+    c1: { filter: isC1, creditMin: 1, creditMax: 1 },
+    c2: { filter: isC2, creditMin: 1, creditMax: 1 },
+    c3: { filter: isC3, creditMin: 2, creditMax: 2 },
+    c4: { filter: isC4, creditMin: 1, creditMax: 1 },
+    c5: { filter: isC5, creditMin: 2, creditMax: 2 },
+    c6: { filter: isC6, creditMin: 2, creditMax: 2 },
+    c7: { filter: isC7, creditMin: 2, creditMax: 2 },
+    c8: { filter: isC8, creditMin: 1, creditMax: 1 },
+    c9: { filter: isC9, creditMin: 1, creditMax: 1 },
+    c10: { filter: isC10, creditMin: 2, creditMax: 2 },
+    c11: { filter: isC11, creditMin: 2, creditMax: 2 },
+    c12: { filter: isC12, creditMin: 2, creditMax: 2 },
     d1: { filter: isD1, creditMin: 32, creditMax: 52 },
+    e1: { filter: isE1, creditMin: 2, creditMax: 2 },
+    e2: { filter: isE2, creditMin: 4, creditMax: 4 },
     f1: { filter: isF1, creditMin: 1, creditMax: undefined },
     f2: { filter: isF2, creditMin: 0, creditMax: undefined },
     h1: { filter: isH1, creditMin: 6, creditMax: undefined },
     h2: { filter: isH2, creditMin: 0, creditMax: undefined },
   },
   {
+    a: { creditMin: 10, creditMax: 10 },
     b: { creditMin: 24, creditMax: 44 },
+    c: { creditMin: 19, creditMax: 19 },
     d: { creditMin: 32, creditMax: 52 },
+    e: { creditMin: 12, creditMax: 12 },
     f: { creditMin: 1, creditMax: 21 },
     h: { creditMin: 6, creditMax: 26 },
   },
