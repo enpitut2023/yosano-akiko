@@ -1130,22 +1130,6 @@ function updateCellGauge(cellIdToCellElement, cellIdToCellCredit) {
   }
 }
 
-/**
- * @param {File} file
- * @returns {Promise<string>}
- */
-async function readFileAsString(file) {
-  const reader = new FileReader();
-  const result = new Promise((resolve) => {
-    reader.addEventListener("load", () => {
-      assert(typeof reader.result === "string");
-      resolve(reader.result);
-    });
-  });
-  reader.readAsText(file);
-  return await result;
-}
-
 class Debouncer {
   /** @readonly @type {number} */
   duration;
@@ -1169,6 +1153,36 @@ class Debouncer {
     }
     this.timeoutId = window.setTimeout(this.f, this.duration);
   }
+}
+
+/**
+ * @param {ColumnCredit} c
+ * @returns {string}
+ */
+function columnCreditToString(c) {
+  let res = "計 ";
+  if (c.mightTakeSum === 0) {
+    res += c.takenSum.toString();
+  } else {
+    res += `${c.takenSum} → ${c.takenSum + c.mightTakeSum}`;
+  }
+  res += " 単位";
+  return res;
+}
+
+/**
+ * @param {NetCredit} c
+ * @returns {string}
+ */
+function netCreditToString(c) {
+  let res = "選択科目計 ";
+  if (c.mightTakeSum === 0) {
+    res += `${c.takenSum}/${c.required}`;
+  } else {
+    res += `${c.takenSum} → ${c.takenSum + c.mightTakeSum}/${c.required}`;
+  }
+  res += " 単位";
+  return res;
 }
 
 /**
@@ -1235,9 +1249,6 @@ export function setup(
   );
   const creditSumView = document.getElementsByTagName("credit-sum-view")?.[0];
   assert(creditSumView instanceof CreditSumView);
-  const creditSumOverlay =
-    document.getElementsByTagName("credit-sum-overlay")?.[0];
-  assert(creditSumOverlay instanceof CreditSumOverlay);
 
   const filterInput = mustGetElementByIdOfType("filter", HTMLInputElement);
   const filterAction = new Debouncer(500, () => {
@@ -1343,8 +1354,6 @@ export function setup(
   );
   let netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
 
-  creditSumOverlay.update(columnIdToColumnCredit, netCredit);
-
   for (const cellElement of cellElements) {
     cellElement.addEventListener("click", (event) => {
       event.preventDefault();
@@ -1378,7 +1387,6 @@ export function setup(
       if (selectedCredits !== undefined) {
         creditSumView.update(selectedCredits);
       }
-      creditSumOverlay.update(columnIdToColumnCredit, netCredit);
     });
   }
   initializeCourseElements(akiko, cellIdToCellTbodys, courseYear);
@@ -1401,7 +1409,6 @@ export function setup(
       columnIdToColumnCreditRequirements,
     );
     netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
-    creditSumOverlay.update(columnIdToColumnCredit, netCredit);
 
     initializeCourseElements(akiko, cellIdToCellTbodys, courseYear);
     updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
@@ -1452,7 +1459,7 @@ export function setup(
     if (csvFile === undefined) {
       return;
     }
-    const csv = await readFileAsString(csvFile);
+    const csv = await csvFile.text();
     const result = csvToImportedCourses(csv);
     if (result.kind === "failed-to-parse-as-csv") {
       alert("CSVファイルを正しく読み込めませんでした。");
@@ -1473,6 +1480,7 @@ export function setup(
     );
     localData.importedCourses = result.importedCourses;
     localStorage.setItem(localDataKey, stringifyLocalData(localData));
+    render();
   });
 
   mustGetElementById("export-might-take-course-ids").addEventListener(
@@ -1565,7 +1573,6 @@ export function setup(
     if (selectedCredits !== undefined) {
       creditSumView.update(selectedCredits);
     }
-    creditSumOverlay.update(columnIdToColumnCredit, netCredit);
 
     // FIXME:
     localData.courseYearToMightTakeCourseIds.set(
@@ -1573,6 +1580,7 @@ export function setup(
       Array.from(map(akiko.nonImportedMightTakeCourses(), ({ id }) => id)),
     );
     localStorage.setItem(localDataKey, stringifyLocalData(localData));
+    render();
   };
   leftBar.addEventListener("drop", (event) => {
     handleDrop(event, "wont-take");
@@ -1620,4 +1628,46 @@ export function setup(
       window.location.reload();
     }
   });
+
+  const requirementTableElement = mustGetElementById("requirement-table");
+  const columnCreditSumsElement = mustGetElementById("column-credit-sums");
+  const overallCreditSumElement = mustGetElementById("overall-credit-sum");
+  /** @type {Map<string, HTMLElement>} */
+  const columnToCreditSumElement = new Map();
+
+  // TODO
+  for (const column of ["b", "d", "f", "h"]) {
+    const div = document.createElement("div");
+    div.classList.add("column");
+    columnCreditSumsElement.appendChild(div);
+    columnToCreditSumElement.set(column, div);
+  }
+
+  const render = () => {
+    // 単位合計
+    {
+      const tableRect = requirementTableElement.getBoundingClientRect();
+      for (const [column, element] of columnToCreditSumElement.entries()) {
+        const cellId = column + "1";
+        const cellElement = cellIdToCellElement.get(cellId);
+        assert(cellElement !== undefined);
+        const cellRect = cellElement.getBoundingClientRect();
+        const columnCredit = columnIdToColumnCredit.get(column);
+        assert(columnCredit !== undefined);
+        element.textContent = columnCreditToString(columnCredit);
+        element.style.left = `${cellRect.x - tableRect.x}px`;
+        element.style.width = `${cellRect.width}px`;
+      }
+      overallCreditSumElement.textContent = netCreditToString(netCredit);
+    }
+  };
+
+  requirementsElement.addEventListener("scroll", () => {
+    columnCreditSumsElement.style.setProperty(
+      "--x",
+      `${-requirementsElement.scrollLeft}px`,
+    );
+  });
+
+  render();
 }
