@@ -9,10 +9,10 @@ function unreachable(_: never): never {
 
 type Major = "coins" | "mast" | "klis-science" | "klis-system";
 
-function majorCompare(a: Major, b: Major): number {
-  // TODO
-  return 0;
-}
+// TODO
+// function majorCompare(a: Major, b: Major): number {
+//   return 0;
+// }
 
 function majorToString(m: Major): string {
   switch (m) {
@@ -78,7 +78,7 @@ function main(): void {
 
     { year: 2023, major: "coins" },
     { year: 2023, major: "klis-science", comment: "（選択科目のみ対応）" },
-    { year: 2023, major: "klis-system", comment: "（選択科目のみ対応）" },
+    { year: 2023, major: "klis-system", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "mast", comment: "（選択科目のみ対応）" },
 
     { year: 2024, major: "coins" },
