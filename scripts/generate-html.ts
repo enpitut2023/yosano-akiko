@@ -7,6 +7,10 @@ function unreachable(_: never): never {
   throw new Error("Should be unreachable");
 }
 
+function fillInDescription(template: string, description: string): string {
+  return template.replace("!!description!!", description);
+}
+
 type Major = "coins" | "mast" | "klis-science" | "klis-system";
 
 // TODO
@@ -70,6 +74,8 @@ function createNavigationLinks(is: Instance[]): string {
 }
 
 function main(): void {
+  const description =
+    "筑波大生向けの履修サポートWebツールです。単位の計算・授業探し・Twinsへの登録を楽に終わらせましょう！";
   const instances: Instance[] = [
     { year: 2021, major: "coins", comment: "（選択科目のみ対応）" },
     { year: 2021, major: "mast", comment: "（選択科目のみ対応）" },
@@ -97,7 +103,10 @@ function main(): void {
   console.log("Generating public/index.html");
   writeFileSync(
     path.join("public", "index.html"),
-    template.replaceAll("!!links!!", createNavigationLinks(instances)),
+    fillInDescription(
+      template.replaceAll("!!links!!", createNavigationLinks(instances)),
+      description,
+    ),
     { encoding: "utf8" },
   );
 
@@ -109,7 +118,10 @@ function main(): void {
       "index.html",
     );
     console.log(`Generating ${filename}`);
-    const content = fillInPlaceholders(appTemplate, instance);
+    const content = fillInDescription(
+      fillInPlaceholders(appTemplate, instance),
+      description,
+    );
     writeFileSync(filename, content, {
       encoding: "utf8",
     });
