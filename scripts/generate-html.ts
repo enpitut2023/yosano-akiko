@@ -8,7 +8,7 @@ function unreachable(_: never): never {
 }
 
 function fillInDescription(template: string, description: string): string {
-  return template.replace("!!description!!", description);
+  return template.replaceAll("!!description!!", description);
 }
 
 type Major = "coins" | "mast" | "klis-science" | "klis-system";
