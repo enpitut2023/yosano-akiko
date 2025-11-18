@@ -7,8 +7,166 @@ import { setup } from "../../shared.js";
  * @param {string} id
  * @returns {boolean}
  */
+function isA1(id) {
+  return (
+    id === "GC48708" || // こっちは特別っぽい
+    id === "GC48808"
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isA2(id) {
+  return (
+    id === "GC48608" || // こっちは特別っぽい
+    id === "GC48908"
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isA3(id) {
+  return id === "GC41103";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isA4(id) {
+  return id === "GC41203";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isA5(id) {
+  return id === "GC42102";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isA6(id) {
+  return id === "GC42202";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
 function isB1(id) {
   return id.startsWith("GC5") || id.startsWith("GA4");
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC1(id) {
+  return id === "GA15331";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC2(id) {
+  return id === "GC11701";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC3(id) {
+  return id === "GA15231";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC4(id) {
+  return id === "GC11801";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC5(id) {
+  return id === "GA15131";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC6(id) {
+  return id === "GC11601";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC7(id) {
+  return id === "GA18222";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC8(id) {
+  return id === "GA18312";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC9(id) {
+  return id === "GC12701";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC10(id) {
+  return id === "GC13101";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC11(id) {
+  return id === "GC12401";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC12(id) {
+  return id === "GC12403";
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isC13(id) {
+  return id === "GC13201";
 }
 
 /**
@@ -36,6 +194,30 @@ function isD1(id) {
     id !== "GA18322" &&
     id !== "GA18332" &&
     (id.startsWith("GC2") || id.startsWith("GA1"))
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isE1(id) {
+  return (
+    id === "1119102" || // ファーストイヤーセミナー
+    id === "1227611" //学問への誘い
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isE2(id) {
+  return (
+    id === "6525102" || // データサイエンス
+    id === "6425102" || // 情報リテラシー(演習)
+    id === "6114101" || // 情報リテラシー(講義) 2023
+    id === "6125101" // 情報リテラシー(講義) 2024, 2025
   );
 }
 
@@ -161,8 +343,29 @@ setup(
   2025,
   "mast",
   {
+    a1: { filter: isA1, creditMin: 3, creditMax: 3 },
+    a2: { filter: isA2, creditMin: 3, creditMax: 3 },
+    a3: { filter: isA3, creditMin: 3, creditMax: 3 },
+    a4: { filter: isA4, creditMin: 3, creditMax: 3 },
+    a5: { filter: isA5, creditMin: 1, creditMax: 1 },
+    a6: { filter: isA6, creditMin: 1, creditMax: 1 },
     b1: { filter: isB1, creditMin: 20, creditMax: 35 },
+    c1: { filter: isC1, creditMin: 2, creditMax: 2 },
+    c2: { filter: isC2, creditMin: 2, creditMax: 2 },
+    c3: { filter: isC3, creditMin: 2, creditMax: 2 },
+    c4: { filter: isC4, creditMin: 2, creditMax: 2 },
+    c5: { filter: isC5, creditMin: 2, creditMax: 2 },
+    c6: { filter: isC6, creditMin: 2, creditMax: 2 },
+    c7: { filter: isC7, creditMin: 2, creditMax: 2 },
+    c8: { filter: isC8, creditMin: 1, creditMax: 1 },
+    c9: { filter: isC9, creditMin: 2, creditMax: 2 },
+    c10: { filter: isC10, creditMin: 2, creditMax: 2 },
+    c11: { filter: isC11, creditMin: 2, creditMax: 2 },
+    c12: { filter: isC12, creditMin: 1, creditMax: 1 },
+    c13: { filter: isC13, creditMin: 2, creditMax: 2 },
     d1: { filter: isD1, creditMin: 32, creditMax: 47 },
+    e1: { filter: isE1, creditMin: 2, creditMax: 2 },
+    e2: { filter: isE2, creditMin: 4, creditMax: 4 },
     f1: { filter: isF1, creditMin: 1, creditMax: 4 },
     f2: { filter: isF2, creditMin: 0, creditMax: 2 },
     f3: { filter: isF3, creditMin: 0, creditMax: 6 },
@@ -173,10 +376,13 @@ setup(
     h3: { filter: isH3, creditMin: 0, creditMax: 9 },
   },
   {
+    a: { creditMin: 14, creditMax: 14 },
     b: { creditMin: 20, creditMax: 35 },
+    c: { creditMin: 24, creditMax: 24 },
     d: { creditMin: 32, creditMax: 47 },
+    e: { creditMin: 12, creditMax: 12 },
     f: { creditMin: 1, creditMax: 10 },
     h: { creditMin: 6, creditMax: 15 },
   },
-  74,
+  74
 );
