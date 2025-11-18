@@ -13,7 +13,7 @@ main {
 
   display: grid;
   grid-template-columns: auto 370px 370px;
-  grid-template-rows: 1fr auto 80px;
+  grid-template-rows: 1fr auto 85px;
 }
 
 main.bars-hidden {
@@ -131,33 +131,6 @@ credit-sum-view {
 .cell.selected {
   outline: 6px solid #0066ff;
   outline-offset: 4px;
-}
-
-credit-sum-overlay > .column,
-#net {
-  --border-width: 2px;
-  position: absolute;
-  padding-right: 0.5ch;
-  box-sizing: border-box;
-  display: grid;
-  justify-content: right;
-  font-size: 1.2em;
-  border-bottom: var(--border-width) dotted black;
-}
-credit-sum-overlay > .column {
-  align-content: center;
-}
-#net {
-  align-content: end;
-  border-right: var(--border-width) dotted black;
-}
-
-.sum {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 50px;
-  height: 75px;
 }
 
 .course-container > * {
@@ -346,21 +319,58 @@ nav a {
   transform: translateX(var(--x, 0));
 }
 
-#column-credit-sums > .column {
+#column-credit-sums > div,
+#overall-credit-sum {
+  --green-percentage: 0%;
+  --yellow-percentage: 0%;
   position: absolute;
   box-sizing: border-box;
-  border-bottom: 3px dotted black;
-  text-align: right;
+  border: 1px solid black;
   padding: 5px;
+  height: 35px;
+  display: grid;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#column-credit-sums > div > img,
+#overall-credit-sum > img {
+  position: absolute;
+  left: 8px;
+  top: 5.5px;
+}
+
+#column-credit-sums > div > span,
+#overall-credit-sum > span {
+  align-self: center;
+  justify-self: right;
+}
+
+#column-credit-sums > div,
+#overall-credit-sum {
+  --alpha: 0.4;
+  background: linear-gradient(
+    90deg,
+    rgba(51, 204, 51, var(--alpha)) 0%,
+    rgba(51, 204, 51, var(--alpha)) var(--green-percentage),
+    rgba(255, 204, 0, var(--alpha)) var(--green-percentage),
+    rgba(255, 204, 0, var(--alpha)) var(--yellow-percentage),
+    transparent var(--yellow-percentage),
+    transparent 100%
+  );
+}
+
+#column-credit-sums > div[data-message-on-click]:hover,
+#overall-credit-sum[data-message-on-click]:hover {
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+#column-credit-sums > div {
+  top: 5px;
 }
 
 #overall-credit-sum {
-  position: absolute;
-  box-sizing: border-box;
-  border-bottom: 3px dotted black;
-  text-align: right;
-  padding: 5px;
-  right: 20px;
+  right: 5px;
   bottom: 5px;
   width: 300px;
 }

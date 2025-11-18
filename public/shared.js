@@ -263,91 +263,6 @@ class CreditSumView extends HTMLElement {
 }
 window.customElements.define("credit-sum-view", CreditSumView);
 
-class CreditSumOverlay extends HTMLElement {
-  /** @private @type {Map<string, HTMLDivElement>} */
-  columnIdToColumnDiv = new Map();
-  /** @private */
-  netDiv = document.createElement("div");
-
-  constructor() {
-    super();
-  }
-
-  /**
-   * @protected
-   */
-  connectedCallback() {
-    // FIXME
-    for (const id of ["b", "d", "f", "h"]) {
-      const div = document.createElement("div");
-      div.id = id;
-      div.classList.add("column");
-      this.appendChild(div);
-      this.columnIdToColumnDiv.set(id, div);
-    }
-
-    this.netDiv.id = "net";
-    this.appendChild(this.netDiv);
-  }
-
-  /**
-   * @public
-   * @param {Map<string, ColumnCredit>} columnIdToColumnCredit
-   * @param {NetCredit} netCredit
-   */
-  update(columnIdToColumnCredit, netCredit) {
-    for (const [_, columnCredit, columnDiv] of zipMapIntersection(
-      columnIdToColumnCredit,
-      this.columnIdToColumnDiv,
-    )) {
-      columnDiv.textContent =
-        CreditSumOverlay.columnCreditToMessage(columnCredit);
-    }
-    this.netDiv.textContent = CreditSumOverlay.netCreditToMessage(netCredit);
-  }
-
-  /**
-   * @private
-   * @param {ColumnCredit} columnCredit
-   * @returns {string}
-   */
-  static columnCreditToMessage(columnCredit) {
-    const { takenSum, mightTakeSum, requirements } = columnCredit;
-    const takenAndMightTakeSum = takenSum + mightTakeSum;
-    let message = "計 ";
-    if (takenSum === takenAndMightTakeSum) {
-      message += takenSum.toString();
-    } else {
-      message += `${takenSum} → ${takenAndMightTakeSum}`;
-    }
-    if (Math.max(takenSum, takenAndMightTakeSum) > requirements.creditMax) {
-      message = "⚠️" + message;
-    }
-    return message;
-  }
-
-  /**
-   * @private
-   * @param {NetCredit} netCredit
-   * @returns {string}
-   */
-  static netCreditToMessage(netCredit) {
-    const { takenSum, mightTakeSum, required } = netCredit;
-    const takenAndMightTakeSum = takenSum + mightTakeSum;
-    let message = "選択科目計 ";
-    if (takenSum === takenAndMightTakeSum) {
-      message += `${takenSum}/${required}`;
-    } else {
-      message += `${takenSum} → ${takenAndMightTakeSum}/${required}`;
-    }
-    if (Math.max(takenSum, takenAndMightTakeSum) > required) {
-      message = "⚠️ " + message;
-    }
-    return message;
-  }
-}
-window.customElements.define("credit-sum-overlay", CreditSumOverlay);
-
 class Akiko {
   /**
    * @typedef {{
@@ -393,20 +308,15 @@ class Akiko {
       return { kind: "unknown-course-id", courseId };
     }
     const cell = this.cellIdToCell.get(cellId);
-    if (cell === undefined) {
-      throw new Error(`bad cell id: '${cellId}'`);
-    }
+    assert(cell !== undefined);
     const [from, to] =
       direction === "wont-take-to-might-take"
         ? [cell.courseIdToWontTakeCourse, cell.courseIdToMightTakeCourse]
         : [cell.courseIdToMightTakeCourse, cell.courseIdToWontTakeCourse];
     const course = from.get(courseId);
     if (course === undefined) {
-      if (to.has(courseId)) {
-        return { kind: "already-moved", courseId };
-      } else {
-        throw new Error(`lost track of course '${courseId}'`);
-      }
+      assert(to.has(courseId) || cell.courseIdToTakenCourse.has(courseId));
+      return { kind: "already-moved", courseId };
     }
     from.delete(courseId);
     to.set(courseId, course);
@@ -650,9 +560,7 @@ function stringToHtmlElement(s) {
   const t = document.createElement("template");
   t.innerHTML = s;
   const child = t.content.firstElementChild;
-  if (!(child instanceof HTMLElement)) {
-    throw new Error();
-  }
+  assert(child instanceof HTMLElement);
   return child;
 }
 
@@ -733,13 +641,25 @@ function mustGetElementByIdOfType(id, type) {
 }
 
 /**
+ * @param {Element} parent
+ * @param {string} selector
+ * @returns {HTMLElement}
+ */
+function mustQuerySelector(parent, selector) {
+  const e = parent.querySelector(selector);
+  assert(e !== null && e instanceof HTMLElement);
+  return e;
+}
+
+/**
  * @template {HTMLElement} T
+ * @param {Element} parent
  * @param {string} selector
  * @param {new (...args: unknown[]) => T} type
  * @returns {T}
  */
-function mustQuerySelectorOfType(selector, type) {
-  const e = document.querySelector(selector);
+function mustQuerySelectorOfType(parent, selector, type) {
+  const e = parent.querySelector(selector);
   if (!(e !== null && e instanceof type)) {
     throw new Error(`cannot find "${selector}"`);
   }
@@ -1088,13 +1008,9 @@ function initializeCourseElements(akiko, cellIdToCellTbodys, courseYear) {
  */
 function insertCourseElement(tbody, courseId, courseElement) {
   for (const child of tbody.children) {
-    if (!(child instanceof HTMLTableRowElement)) {
-      throw new Error("cell tbody should only contain <tr>s");
-    }
+    assert(child instanceof HTMLTableRowElement);
     const childCourseId = child.dataset.courseId;
-    if (childCourseId === undefined) {
-      throw new Error("'data-course-id' not set");
-    }
+    assert(childCourseId !== undefined);
     if (courseId < childCourseId) {
       child.insertAdjacentElement("beforebegin", courseElement);
       return;
@@ -1171,6 +1087,26 @@ function columnCreditToString(c) {
 }
 
 /**
+ * @param {ColumnCredit} c
+ * @returns {boolean}
+ */
+function columnCreditIsExcessive(c) {
+  return c.takenSum + c.mightTakeSum > c.requirements.creditMax;
+}
+
+/**
+ * @param {ColumnCredit} c
+ * @returns {string | undefined}
+ */
+function columnCreditToWarning(c) {
+  if (!columnCreditIsExcessive(c)) {
+    return undefined;
+  }
+  const sum = c.takenSum + c.mightTakeSum;
+  return `この列は合計で${c.requirements.creditMax}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${sum}単位なので、${sum - c.requirements.creditMax}単位無駄になります。`;
+}
+
+/**
  * @param {NetCredit} c
  * @returns {string}
  */
@@ -1183,6 +1119,49 @@ function netCreditToString(c) {
   }
   res += " 単位";
   return res;
+}
+
+/**
+ * @param {NetCredit} c
+ * @returns {boolean}
+ */
+function netCreditIsExcessive(c) {
+  return c.takenSum + c.mightTakeSum > c.required;
+}
+
+/**
+ * @param {NetCredit} c
+ * @returns {string | undefined}
+ */
+function netCreditToWarning(c) {
+  if (!netCreditIsExcessive(c)) {
+    return undefined;
+  }
+  const sum = c.takenSum + c.mightTakeSum;
+  return `全体の合計で${c.required}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${sum}単位なので、${sum - c.required}単位無駄になります。`;
+}
+
+/**
+ * @param {CellCredit | ColumnCredit} c
+ * @returns {[number, number]}
+ */
+function creditToGreenYellowPercentages(c) {
+  if (c.requirements.creditMin === 0) {
+    return [100, 100];
+  }
+  const green = c.takenSum / c.requirements.creditMin;
+  const yellow = (c.takenSum + c.mightTakeSum) / c.requirements.creditMin;
+  return [100 * Math.min(green, 1), 100 * Math.min(yellow, 1)];
+}
+
+/**
+ * @param {NetCredit} c
+ * @returns {[number, number]}
+ */
+function netCreditToGreenYellowPercentages(c) {
+  const green = c.takenSum / c.required;
+  const yellow = (c.takenSum + c.mightTakeSum) / c.required;
+  return [100 * Math.min(green, 1), 100 * Math.min(yellow, 1)];
 }
 
 /**
@@ -1231,9 +1210,7 @@ export function setup(
   );
 
   const cellElements = [...document.querySelectorAll(".cell")];
-  if (!isArrayOfInstanceOf(cellElements, HTMLElement)) {
-    throw new Error("cell elements must be HTMLElements");
-  }
+  assert(isArrayOfInstanceOf(cellElements, HTMLElement));
   const cellIdToCellElement = new Map(map(cellElements, (e) => [e.id, e]));
 
   const leftBar = mustGetElementById("left-bar");
@@ -1298,10 +1275,12 @@ export function setup(
         });
 
   const studentTypeRadioNative = mustQuerySelectorOfType(
+    document.body,
     'input[name="student-type"][value="native"]',
     HTMLInputElement,
   );
   const studentTypeRadioTransfer = mustQuerySelectorOfType(
+    document.body,
     'input[name="student-type"][value="transfer"]',
     HTMLInputElement,
   );
@@ -1373,9 +1352,7 @@ export function setup(
       }
       selectedCellId = cellElement.id;
       const cellTbodys = cellIdToCellTbodys.get(selectedCellId);
-      if (cellTbodys === undefined) {
-        throw new Error(`no such cell: '${selectedCellId}'`);
-      }
+      assert(cellTbodys !== undefined);
       updateCourseTables(courseTables, cellTbodys);
       updateCourseContainers(courseContainers, cellTbodys);
 
@@ -1529,9 +1506,7 @@ export function setup(
       return;
     }
     const cellTbodys = cellIdToCellTbodys.get(selectedCellId);
-    if (cellTbodys === undefined) {
-      throw new Error(`no such cell: '${selectedCellId}'`);
-    }
+    assert(cellTbodys !== undefined);
     akiko.moveCourse(
       droppedOn === "wont-take"
         ? "might-take-to-wont-take"
@@ -1548,15 +1523,9 @@ export function setup(
     const courseElements = Array.from(
       document.querySelectorAll(`[data-course-id="${courseId}"]`),
     );
-    if (courseElements.length !== 1) {
-      throw new Error(
-        `${courseElements.length} elements for course ${courseId} exist`,
-      );
-    }
+    assert(courseElements.length === 1);
     const courseElement = courseElements[0];
-    if (!(courseElement instanceof HTMLElement)) {
-      throw new Error(`element for course ${courseId} is not html element`);
-    }
+    assert(courseElement instanceof HTMLElement);
     insertCourseElement(
       droppedOn === "wont-take" ? cellTbodys.notTaken : cellTbodys.mightTake,
       courseId,
@@ -1632,33 +1601,76 @@ export function setup(
   const requirementTableElement = mustGetElementById("requirement-table");
   const columnCreditSumsElement = mustGetElementById("column-credit-sums");
   const overallCreditSumElement = mustGetElementById("overall-credit-sum");
-  /** @type {Map<string, HTMLElement>} */
-  const columnToCreditSumElement = new Map();
+  const overallCreditSumSpan = mustQuerySelector(
+    overallCreditSumElement,
+    "span",
+  );
+  const overallCreditSumIcon = mustQuerySelector(
+    overallCreditSumElement,
+    "img",
+  );
+  /** @type {Map<string, { root: HTMLDivElement, span: HTMLSpanElement, icon: HTMLImageElement}>} */
+  const columnToCreditSumElements = new Map();
 
-  // TODO
-  for (const column of ["b", "d", "f", "h"]) {
-    const div = document.createElement("div");
-    div.classList.add("column");
-    columnCreditSumsElement.appendChild(div);
-    columnToCreditSumElement.set(column, div);
+  for (const column of ["b", "d", "f", "h"] /* TODO */) {
+    const root = document.createElement("div");
+    const icon = document.createElement("img");
+    const span = document.createElement("span");
+    icon.src = "../../icons/warning.svg";
+    icon.width = 20;
+    icon.style.display = "none";
+    root.appendChild(icon);
+    root.appendChild(span);
+    root.addEventListener("click", () => {
+      const message = root.dataset.messageOnClick;
+      if (message !== undefined) {
+        window.alert(message);
+      }
+    });
+    columnCreditSumsElement.appendChild(root);
+    columnToCreditSumElements.set(column, { root, span, icon });
   }
+  overallCreditSumElement.addEventListener("click", () => {
+    const message = overallCreditSumElement.dataset.messageOnClick;
+    if (message !== undefined) {
+      window.alert(message);
+    }
+  });
 
   const render = () => {
     // 単位合計
     {
       const tableRect = requirementTableElement.getBoundingClientRect();
-      for (const [column, element] of columnToCreditSumElement.entries()) {
-        const cellId = column + "1";
+      for (const [
+        column,
+        { root, span, icon },
+      ] of columnToCreditSumElements.entries()) {
+        const cellId = column + "1"; // TODO
         const cellElement = cellIdToCellElement.get(cellId);
         assert(cellElement !== undefined);
         const cellRect = cellElement.getBoundingClientRect();
         const columnCredit = columnIdToColumnCredit.get(column);
         assert(columnCredit !== undefined);
-        element.textContent = columnCreditToString(columnCredit);
-        element.style.left = `${cellRect.x - tableRect.x}px`;
-        element.style.width = `${cellRect.width}px`;
+        root.dataset.messageOnClick = columnCreditToWarning(columnCredit);
+        span.textContent = columnCreditToString(columnCredit);
+        icon.style.display = columnCreditIsExcessive(columnCredit)
+          ? "initial"
+          : "none";
+        root.style.left = `${cellRect.x - tableRect.x}px`;
+        root.style.width = `${cellRect.width}px`;
+        const [green, yellow] = creditToGreenYellowPercentages(columnCredit);
+        root.style.setProperty("--green-percentage", `${green}%`);
+        root.style.setProperty("--yellow-percentage", `${yellow}%`);
       }
-      overallCreditSumElement.textContent = netCreditToString(netCredit);
+      const [g, y] = netCreditToGreenYellowPercentages(netCredit);
+      overallCreditSumElement.dataset.messageOnClick =
+        netCreditToWarning(netCredit);
+      overallCreditSumSpan.textContent = netCreditToString(netCredit);
+      overallCreditSumIcon.style.display = netCreditIsExcessive(netCredit)
+        ? "initial"
+        : "none";
+      overallCreditSumElement.style.setProperty("--green-percentage", `${g}%`);
+      overallCreditSumElement.style.setProperty("--yellow-percentage", `${y}%`);
     }
   };
 
