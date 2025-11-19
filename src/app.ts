@@ -1,4 +1,4 @@
-import { parse } from "csv-parse/sync";
+import { parse } from "csv-parse/browser/esm/sync";
 
 function assert(b: boolean): asserts b {
   if (!b) {
@@ -13,13 +13,6 @@ type Course = {
   expects: string;
   term: string;
   when: string;
-};
-
-type CourseElementState = "not-taken" | "might-take" | "taken";
-type CourseElement = {
-  state: CourseElementState;
-  course: Course;
-  element: HTMLElement;
 };
 
 type CellTbodys = {
@@ -1428,7 +1421,7 @@ export function setup(
     root.appendChild(span);
     root.addEventListener("click", () => {
       const message = root.dataset.messageOnClick;
-      if (message !== undefined) {
+      if (message !== undefined && message !== "") {
         window.alert(message);
       }
     });
@@ -1437,7 +1430,7 @@ export function setup(
   }
   overallCreditSumElement.addEventListener("click", () => {
     const message = overallCreditSumElement.dataset.messageOnClick;
-    if (message !== undefined) {
+    if (message !== undefined && message !== "") {
       window.alert(message);
     }
   });
@@ -1456,7 +1449,7 @@ export function setup(
         const cellRect = cellElement.getBoundingClientRect();
         const columnCredit = columnIdToColumnCredit.get(column);
         assert(columnCredit !== undefined);
-        root.dataset.messageOnClick = columnCreditToWarning(columnCredit);
+        root.dataset.messageOnClick = columnCreditToWarning(columnCredit) ?? "";
         span.textContent = columnCreditToString(columnCredit);
         icon.style.display = columnCreditIsExcessive(columnCredit)
           ? "initial"
@@ -1469,7 +1462,7 @@ export function setup(
       }
       const [g, y] = netCreditToGreenYellowPercentages(netCredit);
       overallCreditSumElement.dataset.messageOnClick =
-        netCreditToWarning(netCredit);
+        netCreditToWarning(netCredit) ?? "";
       overallCreditSumSpan.textContent = netCreditToString(netCredit);
       overallCreditSumIcon.style.display = netCreditIsExcessive(netCredit)
         ? "initial"
