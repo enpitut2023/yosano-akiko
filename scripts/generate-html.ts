@@ -27,7 +27,7 @@ function majorToString(m: Major): string {
     case "klis-science":
       return "知識情報・図書館学類 知識科学専攻";
     case "klis-system":
-      return "知識情報・図書館学類 知識情報システム";
+      return "知識情報・図書館学類 知識情報システム専攻";
     default:
       unreachable(m);
   }
