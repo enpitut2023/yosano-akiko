@@ -20,6 +20,6 @@ jobs:
       - run: AKIKO_RELEASE=1 ./scripts/build.sh
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: "public"
+          path: "dist"
       - uses: actions/deploy-pages@v4
         id: deploy-pages-step
