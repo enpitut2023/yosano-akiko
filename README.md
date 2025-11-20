@@ -38,23 +38,23 @@
 ## 対応ユーザ
 
 - 2025年度入学\
-情報科学類
+[情報科学類](https://enpitut2023.github.io/yosano-akiko/2025/coins/)
 
 - 2024年度入学\
-情報科学類
+[情報科学類](https://enpitut2023.github.io/yosano-akiko/2024/coins/)
 
 - 2023年度入学\
-情報科学類\
-知識情報・図書館学類 知識科学専攻 （選択科目のみ対応）\
-知識情報・図書館学類 知識情報システム （選択科目のみ対応）\
-情報メディア創成学類 （選択科目のみ対応）
+[情報科学類](https://enpitut2023.github.io/yosano-akiko/2023/coins)\
+[知識情報・図書館学類 知識科学専攻](https://enpitut2023.github.io/yosano-akiko/2023/klis-science) （ほぼ全て対応）\
+[知識情報・図書館学類 知識情報システム専攻](https://enpitut2023.github.io/yosano-akiko/2023/klis-system) （ほぼ全て対応）\
+[情報メディア創成学類](https://enpitut2023.github.io/yosano-akiko/2023/mast) （選択科目のみ対応）
 
 - 2022年度入学\
-情報科学類 （選択科目のみ対応）
+[情報科学類](https://enpitut2023.github.io/yosano-akiko/2022/coins) （選択科目のみ対応）
 
 - 2021年度入学\
-情報科学類 （選択科目のみ対応）\
-情報メディア創成学類 （選択科目のみ対応）
+[情報科学類](https://enpitut2023.github.io/yosano-akiko/2021/coins) （選択科目のみ対応）\
+[情報メディア創成学類](https://enpitut2023.github.io/yosano-akiko/2021/mast) （選択科目のみ対応）
 
 ## 開発メンバー
 
