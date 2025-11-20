@@ -3,7 +3,7 @@
 > 履修を楽にしてくれる筑波大生向けのWebアプリ！\
 単位の計算・授業探し・Twinsへの登録があっという間におわります。
 
-<img width="2233" height="1229" alt="screenshot" src="https://github.com/user-attachments/assets/b4d21f91-6cee-430b-9c87-b511ff0c8df0" />
+<img width="2238" height="1231" alt="screenshot" src="https://github.com/user-attachments/assets/9c523aa9-3797-4725-9eb0-204daa1cfb33" />
 
 **「あきこ」はこちら**: https://enpitut2023.github.io/yosano-akiko/
 
