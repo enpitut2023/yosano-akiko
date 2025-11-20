@@ -9,7 +9,9 @@ if (argv.length < 3) {
 }
 const filenames = argv.slice(2);
 
+const MARKER = "matomo_F86CUHuMokQeLdup5Bt7AyqrECb6LPwS";
 const TRACKER = `
+<!-- ${MARKER} -->
 <script>
   var _paq = (window._paq = window._paq || []);
   /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
@@ -32,10 +34,15 @@ const TRACKER = `
 let ok = true;
 
 for (const filename of filenames) {
-  console.log(`Processing ${filename}`);
+  console.log(`Injecting matomo tracker into ${filename}`);
   let html = readFileSync(filename, { encoding: "utf8" });
   if (!html.includes("<head>")) {
     console.log("<head> was not found");
+    ok = false;
+    continue;
+  }
+  if (html.includes(MARKER)) {
+    console.log("Tracker already in the file");
     ok = false;
     continue;
   }

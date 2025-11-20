@@ -74,6 +74,8 @@ function createNavigationLinks(is: Instance[]): string {
 }
 
 function main(): void {
+  const dstDir = "dist";
+
   const description =
     "筑波大生向けの履修サポートWebツールです。単位の計算・授業探し・Twinsへの登録を楽に終わらせましょう！";
   const instances: Instance[] = [
@@ -92,17 +94,17 @@ function main(): void {
     { year: 2025, major: "coins" },
   ];
 
-  const template = readFileSync(path.join(__dirname, "template-index.html"), {
+  const template = readFileSync("src/index.html", {
     encoding: "utf8",
   });
-  const appTemplate = readFileSync(
-    path.join(__dirname, "template-app-index.html"),
-    { encoding: "utf8" },
-  );
+  const appTemplate = readFileSync("src/app-index.html", {
+    encoding: "utf8",
+  });
 
-  console.log("Generating public/index.html");
+  const indexPath = path.join(dstDir, "index.html");
+  console.log(`Generating ${indexPath}`);
   writeFileSync(
-    path.join("public", "index.html"),
+    indexPath,
     fillInDescription(
       template.replaceAll("!!links!!", createNavigationLinks(instances)),
       description,
@@ -112,7 +114,7 @@ function main(): void {
 
   for (const instance of instances) {
     const filename = path.join(
-      "public",
+      dstDir,
       instance.year.toString(),
       instance.major,
       "index.html",

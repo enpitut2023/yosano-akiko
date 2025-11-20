@@ -2,9 +2,17 @@
   "name": "akiko",
   "version": "1.0.0",
   "scripts": {
-    "live-server": "live-server --port=42263 public"
+    "live-server": "live-server --port=42263 dist",
+    "esbuild": "node esbuild.mjs",
+    "esbuild-release": "AKIKO_RELEASE=1 node esbuild.mjs"
   },
   "devDependencies": {
-    "@types/node": "^24.9.1"
+    "@trivago/prettier-plugin-sort-imports": "^6.0.0",
+    "@types/node": "^24.10.1",
+    "esbuild": "^0.27.0",
+    "esbuild-sass-plugin": "^3.3.1"
+  },
+  "dependencies": {
+    "csv-parse": "^6.1.0"
   }
 }
