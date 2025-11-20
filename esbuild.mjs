@@ -1,8 +1,8 @@
 import * as esbuild from "esbuild";
 import { sassPlugin } from "esbuild-sass-plugin";
-import { argv } from "node:process";
+import { env } from "node:process";
 
-const release = argv[2] === "--release";
+const release = (env.AKIKO_RELEASE ?? "") !== "";
 
 await esbuild.build({
   entryPoints: [

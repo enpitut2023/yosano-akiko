@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "live-server": "live-server --port=42263 dist",
-    "build": "node esbuild.mjs",
-    "build-release": "node esbuild.mjs --release"
+    "esbuild": "node esbuild.mjs",
+    "esbuild-release": "AKIKO_RELEASE=1 node esbuild.mjs"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^6.0.0",
