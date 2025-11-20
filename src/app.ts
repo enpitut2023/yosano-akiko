@@ -360,6 +360,21 @@ class Akiko {
       }
     }
 
+    const lostCourseIds = new Set(importedCourses.map((c) => c.id));
+    for (const course of importedCourses) {
+      for (const meta of cellIdToCellMetadata.values()) {
+        if (meta.filter(course.id, { name: course.name, native })) {
+          lostCourseIds.delete(course.id);
+          break;
+        }
+      }
+    }
+    console.debug("どのマスにも振り分けられなかった授業");
+    for (const id of lostCourseIds.values()) {
+      const c = courses.find((c) => c.id === id);
+      console.debug(id, c?.name);
+    }
+
     const akiko = new Akiko(requirementsTableYear, new Map(), new Map());
     for (const [cellId, cellMetadata] of cellIdToCellMetadata.entries()) {
       const maybeImportedCourses = Array.from(
