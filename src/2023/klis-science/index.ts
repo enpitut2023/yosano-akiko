@@ -1,5 +1,6 @@
 import { setup } from "../../app";
 import { courses } from "../../current-courses.js";
+import cellIdToRect from "./cell-id-to-rect.json";
 
 function isA1(id: string): boolean {
   return id === "GE51118"; // 卒業研究A
@@ -222,4 +223,5 @@ setup(
     h: { creditMin: 6, creditMax: 26 },
   },
   83,
+  cellIdToRect,
 );

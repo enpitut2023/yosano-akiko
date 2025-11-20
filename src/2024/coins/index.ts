@@ -1,5 +1,6 @@
 import { CellFilterArgs, setup } from "../../app";
 import { courses } from "../../current-courses.js";
+import cellIdToRect from "./cell-id-to-rect.json";
 
 function convertToGb(id: string): string {
   return id; // FIXME
@@ -441,4 +442,5 @@ setup(
     h: { creditMin: 6, creditMax: 10 },
   },
   71,
+  cellIdToRect,
 );

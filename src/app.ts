@@ -486,18 +486,6 @@ function compareStrings(a: string, b: string): number {
   }
 }
 
-function isArrayOfInstanceOf<T>(
-  array: unknown[],
-  constructor: new (...args: unknown[]) => T,
-): array is T[] {
-  for (const e of array) {
-    if (!(e instanceof constructor)) {
-      return false;
-    }
-  }
-  return true;
-}
-
 function stringToHtmlElement(s: string): HTMLElement {
   const t = document.createElement("template");
   t.innerHTML = s;
@@ -999,6 +987,8 @@ function netCreditToGreenYellowPercentages(c: NetCredit): [number, number] {
   return [100 * Math.min(green, 1), 100 * Math.min(yellow, 1)];
 }
 
+type Rect = { x: number; y: number; width: number; height: number };
+
 export function setup(
   requirementsTableYear: number,
   courses: Course[],
@@ -1007,6 +997,7 @@ export function setup(
   cellIdToCellMetadataRecord: Record<string, CellMetadata>,
   columnIdToColumnCreditRequirements: Record<string, ColumnCreditRequirements>,
   netRequired: number,
+  cellIdToRectRecord: Record<string, Rect>,
 ): void {
   const courseIdToCourse = new Map(map(courses, (c) => [c.id, c]));
 
@@ -1014,14 +1005,6 @@ export function setup(
     Object.entries(cellIdToCellMetadataRecord),
   );
   const cellIds = Array.from(cellIdToCellMetadata.keys());
-
-  const requirementsElement = mustGetElementById("requirements");
-  for (const cellId of cellIds) {
-    const div = document.createElement("div");
-    div.id = cellId;
-    div.classList.add("cell");
-    requirementsElement.appendChild(div);
-  }
 
   const cellIdToCellTbodys = new Map<string, CellTbodys>(
     cellIds.map((id) => [
@@ -1034,9 +1017,25 @@ export function setup(
     ]),
   );
 
-  const cellElements = [...document.querySelectorAll(".cell")];
-  assert(isArrayOfInstanceOf(cellElements, HTMLElement));
-  const cellIdToCellElement = new Map(map(cellElements, (e) => [e.id, e]));
+  const cellIdToRect = new Map(Object.entries(cellIdToRectRecord));
+
+  const requirementsElement = mustGetElementById("requirements");
+  const cellIdToCellElement = new Map<string, HTMLDivElement>();
+  for (const [id, rect] of cellIdToRect.entries()) {
+    if (!cellIdToCellMetadata.has(id)) {
+      continue;
+    }
+    const div = document.createElement("div");
+    div.id = id;
+    div.classList.add("cell");
+    div.style.left = `${rect.x}px`;
+    div.style.top = `${rect.y}px`;
+    div.style.width = `${rect.width}px`;
+    div.style.height = `${rect.height}px`;
+    requirementsElement.appendChild(div);
+    cellIdToCellElement.set(id, div);
+  }
+  const cellElements = Array.from(cellIdToCellElement.values());
 
   const leftBar = mustGetElementById("left-bar");
   const leftTable = mustGetElementByIdOfType(
@@ -1409,7 +1408,6 @@ export function setup(
     }
   });
 
-  const requirementTableElement = mustGetElementById("requirement-table");
   const columnCreditSumsElement = mustGetElementById("column-credit-sums");
   const overallCreditSumElement = mustGetElementById("overall-credit-sum");
   const overallCreditSumSpan = mustQuerySelector(
@@ -1453,23 +1451,21 @@ export function setup(
   const render = () => {
     // 単位合計
     {
-      const tableRect = requirementTableElement.getBoundingClientRect();
       for (const [
         column,
         { root, span, icon },
       ] of columnToCreditSumElements.entries()) {
         const cellId = column + "1"; // TODO
-        const cellElement = cellIdToCellElement.get(cellId);
-        assert(cellElement !== undefined);
-        const cellRect = cellElement.getBoundingClientRect();
+        const cellRect = cellIdToRect.get(cellId);
         const columnCredit = columnIdToColumnCredit.get(column);
+        assert(cellRect !== undefined);
         assert(columnCredit !== undefined);
         root.dataset.messageOnClick = columnCreditToWarning(columnCredit) ?? "";
         span.textContent = columnCreditToString(columnCredit);
         icon.style.display = columnCreditIsExcessive(columnCredit)
           ? "initial"
           : "none";
-        root.style.left = `${cellRect.x - tableRect.x}px`;
+        root.style.left = `${cellRect.x}px`;
         root.style.width = `${cellRect.width}px`;
         const [green, yellow] = creditToGreenYellowPercentages(columnCredit);
         root.style.setProperty("--green-percentage", `${green}%`);
