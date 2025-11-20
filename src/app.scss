@@ -1,4 +1,4 @@
-@import "fonts.css";
+@use "fonts.scss";
 
 body {
   font-size: 14px;
@@ -8,18 +8,15 @@ body {
 
 main {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
 
   display: grid;
   grid-template-columns: auto 370px 370px;
   grid-template-rows: 1fr auto 85px;
-}
 
-main.bars-hidden {
-  grid-template-columns: auto 0 0;
+  &.bars-hidden {
+    grid-template-columns: auto 0 0;
+  }
 }
 
 #requirements {
@@ -44,25 +41,25 @@ main.bars-hidden {
   border-color: oklch(92% 10% 350);
   border-bottom-right-radius: 10px;
   padding: 10px 20px;
-}
 
-#title > .akiko {
-  width: 60px;
-  height: 60px;
-  background-color: hsl(0, 0%, 98%);
-  border: 1px solid oklch(92% 10% 350);
-  border-radius: 50%;
-  overflow: hidden;
-}
+  & > .akiko {
+    width: 60px;
+    height: 60px;
+    background-color: hsl(0, 0%, 98%);
+    border: 1px solid oklch(92% 10% 350);
+    border-radius: 50%;
+    overflow: hidden;
+  }
 
-#title > .akiko > img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
+  & > .akiko > img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 
-#title strong {
-  font-size: 1.2em;
+  & strong {
+    font-size: 1.2em;
+  }
 }
 
 #left-bar {
@@ -222,10 +219,10 @@ credit-sum-view.no-cell-selected > div > p {
   border: unset;
   border-left: 1px solid black;
   border-bottom: 1px solid black;
-}
 
-#bars-toggle:hover {
-  background-color: #ddd;
+  &:hover {
+    background-color: #ddd;
+  }
 }
 
 input[name="student-type"]:checked + span {
@@ -263,9 +260,10 @@ nav a {
   background-color: var(--fill);
   border: 1px solid var(--outline);
   border-radius: 10px;
-}
-#control .button:hover {
-  background-color: var(--outline);
+
+  &:hover {
+    background-color: var(--outline);
+  }
 }
 
 #control > #import-grades-button {
@@ -292,21 +290,23 @@ nav a {
   margin-bottom: 30px;
   width: 100%;
   position: relative;
-}
-#left-bar > search > div {
-  position: absolute;
-  left: 10px;
-  top: 0;
-  bottom: 0;
-  display: grid;
-  place-content: center;
-}
-#left-bar > search > input {
-  box-sizing: border-box;
-  width: 100%;
-  border: 1px solid gray;
-  border-radius: 10px;
-  padding: 5px 10px 5px 35px;
+
+  & > div {
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    display: grid;
+    place-content: center;
+  }
+
+  & > input {
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid gray;
+    border-radius: 10px;
+    padding: 5px 10px 5px 35px;
+  }
 }
 
 #credit-sums-container {
@@ -333,41 +333,32 @@ nav a {
   display: grid;
   user-select: none;
   -webkit-user-select: none;
-}
 
-#column-credit-sums > div > img,
-#overall-credit-sum > img {
-  position: absolute;
-  left: 8px;
-  top: 5.5px;
-}
-
-#column-credit-sums > div > span,
-#overall-credit-sum > span {
-  align-self: center;
-  justify-self: right;
-}
-
-#column-credit-sums > div,
-#overall-credit-sum {
-  --alpha: 0.4;
+  $alpha: 0.4;
   background: linear-gradient(
     90deg,
-    rgba(51, 204, 51, var(--alpha)) 0%,
-    rgba(51, 204, 51, var(--alpha)) var(--green-percentage),
-    rgba(255, 204, 0, var(--alpha)) var(--green-percentage),
-    rgba(255, 204, 0, var(--alpha)) var(--yellow-percentage),
+    rgba(51, 204, 51, $alpha) 0%,
+    rgba(51, 204, 51, $alpha) var(--green-percentage),
+    rgba(255, 204, 0, $alpha) var(--green-percentage),
+    rgba(255, 204, 0, $alpha) var(--yellow-percentage),
     transparent var(--yellow-percentage),
     transparent 100%
   );
-}
 
-#column-credit-sums
-  > div[data-message-on-click]:not([data-message-on-click=""]):hover,
-#overall-credit-sum[data-message-on-click]:not(
-    [data-message-on-click=""]
-  ):hover {
-  background-color: rgba(0, 0, 0, 0.25);
+  &[data-message-on-click]:not([data-message-on-click=""]):hover {
+    background-color: rgba(0, 0, 0, 0.25);
+  }
+
+  & > img {
+    position: absolute;
+    left: 8px;
+    top: 5.5px;
+  }
+
+  & > span {
+    align-self: center;
+    justify-self: right;
+  }
 }
 
 #column-credit-sums > div {

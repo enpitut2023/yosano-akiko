@@ -1,4 +1,4 @@
-@import "fonts.css";
+@use "fonts.scss";
 
 body {
   max-width: 800px;
@@ -38,9 +38,9 @@ section > h3 {
   margin-right: auto;
 
   display: grid;
-  --icon-size: 70px;
-  grid-template-columns: var(--icon-size) auto;
-  grid-template-rows: var(--icon-size) auto;
+  $icon-size: 70px;
+  grid-template-columns: $icon-size auto;
+  grid-template-rows: $icon-size auto;
   padding: 10px 20px;
 
   --fill-l: 98%;

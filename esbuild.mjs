@@ -1,4 +1,5 @@
 import * as esbuild from "esbuild";
+import { sassPlugin } from "esbuild-sass-plugin";
 import { argv } from "node:process";
 
 const release = argv[2] === "--release";
@@ -15,8 +16,8 @@ await esbuild.build({
     "src/2024/coins/index.ts",
     "src/2025/coins/index.ts",
 
-    "src/app.css",
-    "src/styles.css",
+    "src/app.scss",
+    "src/styles.scss",
     "src/2021/coins/styles.css",
     "src/2021/mast/styles.css",
     "src/2022/coins/styles.css",
@@ -35,6 +36,7 @@ await esbuild.build({
   charset: "utf8",
   logLevel: "info",
   external: ["fonts/*"],
+  plugins: [sassPlugin()],
   sourcemap: release ? undefined : "inline",
   minify: release,
 });
