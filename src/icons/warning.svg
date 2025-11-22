@@ -1,6 +1,1 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="800px" height="800px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-    <path d="M398.071,155.082L718.894,715.882L80.824,715.882L398.071,155.082Z" style="fill:#f2bf49;fill-rule:nonzero;"/>
-    <path d="M397.835,70.212L9.976,752.941L790.259,752.941L397.835,70.212ZM398.071,165.082L708.894,705.882L90.824,705.882L398.071,165.082ZM423.529,514.729L376.471,514.729L376.471,329.412L423.529,329.412L423.529,514.729ZM447.059,613.224C447.059,639.2 426.024,660.282 400,660.282C373.976,660.282 352.941,639.2 352.941,613.224C352.941,587.247 373.976,566.165 400,566.165C426.024,566.165 447.059,587.247 447.059,613.224Z" style="fill-rule:nonzero;"/>
-</svg>
+<svg clip-rule="evenodd" fill-rule="evenodd" height="800" stroke-linejoin="round" stroke-miterlimit="2" width="800" xmlns="http://www.w3.org/2000/svg"><g fill-rule="nonzero"><path d="m398.071 155.082 320.823 560.8h-638.07z" fill="#f2bf49"/><path d="m397.835 70.212-387.859 682.729h780.283zm.236 94.87 310.823 540.8h-618.07zm25.458 349.647h-47.058v-185.317h47.058zm23.53 98.495c0 25.976-21.035 47.058-47.059 47.058s-47.059-21.082-47.059-47.058c0-25.977 21.035-47.059 47.059-47.059s47.059 21.082 47.059 47.059z"/></g></svg>
