@@ -1,3 +1,4 @@
+import warningIcon from "./icons/warning.svg";
 import { parse } from "csv-parse/browser/esm/sync";
 
 function assert(b: boolean): asserts b {
@@ -1427,7 +1428,7 @@ export function setup(
     const root = document.createElement("div");
     const icon = document.createElement("img");
     const span = document.createElement("span");
-    icon.src = "../../icons/warning.svg";
+    icon.src = warningIcon;
     icon.width = 20;
     icon.style.display = "none";
     root.appendChild(icon);

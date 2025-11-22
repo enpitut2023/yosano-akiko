@@ -21,6 +21,7 @@ await esbuild.build({
   ],
   outbase: "src",
   bundle: true,
+  loader: { ".svg": "dataurl" },
   outdir: "dist",
   target: "es6",
   format: "iife",
