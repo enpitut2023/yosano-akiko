@@ -3,11 +3,19 @@ import { courses } from "../../current-courses.js";
 import cellIdToRect from "./cell-id-to-rect.json";
 
 function isA1(id: string): boolean {
-  return id === "GE51118"; // 卒業研究A
+  // 卒業研究A
+  return (
+    id === "GE51118" || // 春開始
+    id === "GE51128" // 秋開始
+  );
 }
 
 function isA2(id: string): boolean {
-  return id === "GE51218"; //卒業研究B
+  // 卒業研究B
+  return (
+    id === "GE51218" || // 秋開始
+    id === "GE51228" // 春開始
+  );
 }
 
 function isA3(id: string): boolean {
@@ -19,13 +27,11 @@ function isA4(id: string): boolean {
 }
 
 function isA5(id: string): boolean {
-  // TODO:
-  return false;
+  return id === "GE60113"; // 知識科学実習A
 }
 
 function isA6(id: string): boolean {
-  // TODO:
-  return false;
+  return id === "GE60123"; // 知識科学実習B
 }
 
 function isB1(id: string): boolean {
@@ -60,11 +66,19 @@ function isC2(id: string): boolean {
 }
 
 function isC3(id: string): boolean {
-  return id === "GA18232"; // プログラミング入門A
+  // プログラミング入門A
+  return (
+    id === "GA18232" || // 知識学類開設
+    id === "GA18212" // 情報科学類開設
+  );
 }
 
 function isC4(id: string): boolean {
-  return id === "GA18332"; // プログラミング入門B
+  // プログラミング入門B
+  return (
+    id === "GA18332" || // 知識学類開設
+    id === "GA18312" // 情報科学類開設
+  );
 }
 
 function isC5(id: string): boolean {
@@ -136,7 +150,7 @@ function isE2(id: string): boolean {
     id === "6526102" ||
     //情報リテラシー(演習)
     id === "6426102" || // 2025 統一　2024以前 1班
-    // id === "6426202" || // 2024以前 2班
+    id === "6426202" || // 2024以前 2班
     // 情報リテラシー(講義)
     id === "6126101" // 2クラス
   );
@@ -168,13 +182,20 @@ function isF2(id: string): boolean {
 }
 
 function isH1(id: string): boolean {
-  return !(
-    id.startsWith("GA") ||
-    id.startsWith("GB") ||
-    id.startsWith("GC") ||
-    id.startsWith("GE") ||
-    // 共通科目及び教職に関する科目
-    id.match(/^\d/)
+  if (id.startsWith("__")) {
+    return false;
+  }
+  return (
+    !(
+      id.startsWith("GA") ||
+      id.startsWith("GB") ||
+      id.startsWith("GC") ||
+      id.startsWith("GE") ||
+      // 共通科目及び教職に関する科目
+      id.match(/^\d/)
+    ) ||
+    id.startsWith("8") ||
+    id.startsWith("99")
   );
 }
 

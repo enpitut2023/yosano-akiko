@@ -3,11 +3,19 @@ import { courses } from "../../current-courses.js";
 import cellIdToRect from "./cell-id-to-rect.json";
 
 function isA1(id: string): boolean {
-  return id === "GE51118"; // 卒業研究A
+  // 卒業研究A
+  return (
+    id === "GE51118" || // 春開始
+    id === "GE51128" // 秋開始
+  );
 }
 
 function isA2(id: string): boolean {
-  return id === "GE51218"; //卒業研究B
+  // 卒業研究B
+  return (
+    id === "GE51218" || // 秋開始
+    id === "GE51228" // 春開始
+  );
 }
 
 function isA3(id: string): boolean {
