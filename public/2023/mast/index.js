@@ -3,6 +3,11 @@
 import { courses } from "../../current-courses.js";
 import { setup } from "../../shared.js";
 
+
+/**
+ * @typedef {import("../../shared.js").CellFilterArgs} CellFilterArgs
+ */
+
 /**
  * @param {string} id
  * @returns {boolean}
@@ -126,7 +131,7 @@ function isC7(id) {
  * @returns {boolean}
  */
 function isC8(id) {
-  return id === "GA18312";
+  return id === "GA18322";
 }
 
 /**
@@ -225,6 +230,38 @@ function isE2(id) {
  * @param {string} id
  * @returns {boolean}
  */
+function isE3(id) {
+  return (
+    // TODO: 基礎体育の時に種目が違うか、応用の時に種目が同じかチェック
+    id.startsWith("21") || // 基礎体育
+    id.startsWith("22") // 応用体育
+  );
+}
+
+/**
+ * @param {string} id
+ * @param {CellFilterArgs} args
+ * @returns {boolean}
+ */
+function isE4(id, args) {
+  // TODO:
+  // 編入とかで英語を認定された人は「英語」という名前の4単位の授業を与えられる
+  let name = args.name;
+  name = name.trim();
+  name = name.replaceAll(/\s+/g, " ");
+  name = name.toLowerCase();
+  return (
+    name === "english reading skills i" ||
+    name === "english reading skills ii" ||
+    name === "english presentation skills i" ||
+    name === "english presentation skills ii"
+  );
+}
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
 function isF1(id) {
   return (
     (id.startsWith("12") || id.startsWith("14")) &&
@@ -278,13 +315,20 @@ function isF5(id) {
  * @returns {boolean}
  */
 function isH1(id) {
-  return !(
-    id.startsWith("GA") ||
-    id.startsWith("GB") ||
-    id.startsWith("GC") ||
-    id.startsWith("GE") ||
-    // 共通科目及び教職に関する科目
-    id.match(/^\d/)
+  if (id.startsWith("__")) {
+    return false;
+  }
+  return (
+    !(
+      id.startsWith("GA") ||
+      id.startsWith("GB") ||
+      id.startsWith("GC") ||
+      id.startsWith("GE") ||
+      // 共通科目及び教職に関する科目
+      id.match(/^\d/)
+    ) ||
+    id.startsWith("8") ||
+    id.startsWith("99")
   );
 }
 
@@ -366,6 +410,8 @@ setup(
     d1: { filter: isD1, creditMin: 32, creditMax: 47 },
     e1: { filter: isE1, creditMin: 2, creditMax: 2 },
     e2: { filter: isE2, creditMin: 4, creditMax: 4 },
+    e3: { filter: isE3, creditMin: 2, creditMax: 2 },
+    e4: { filter: isE4, creditMin: 4, creditMax: 4 },
     f1: { filter: isF1, creditMin: 1, creditMax: 4 },
     f2: { filter: isF2, creditMin: 0, creditMax: 2 },
     f3: { filter: isF3, creditMin: 0, creditMax: 6 },
