@@ -345,6 +345,7 @@ class Akiko {
       if (importedCourse.id === "") {
         // 認可された授業がインポートされた
         importedCourse.id = `__free${freeCount}`;
+        freeCount++;
       }
       // TODO: requirementsTableYearより過去の授業が来た場合対応
       const maybeImportedCourse = courseIdToMaybeImportedCourse.get(
