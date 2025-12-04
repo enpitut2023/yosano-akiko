@@ -96,13 +96,20 @@ function isF2(id: string): boolean {
 }
 
 function isH1(id: string): boolean {
-  return !(
-    id.startsWith("E") ||
-    id.startsWith("F") ||
-    id.startsWith("G") ||
-    id.startsWith("H") ||
-    // 共通科目及び教職に関する科目
-    id.match(/^\d/)
+  if (id.startsWith("__")) {
+    return false;
+  }
+  return (
+    !(
+      id.startsWith("E") ||
+      id.startsWith("F") ||
+      id.startsWith("G") ||
+      id.startsWith("H") ||
+      // 共通科目及び教職に関する科目
+      id.match(/^\d/)
+    ) ||
+    id.startsWith("8") ||
+    id.startsWith("99")
   );
 }
 
