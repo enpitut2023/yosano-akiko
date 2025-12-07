@@ -10,7 +10,8 @@
     "@trivago/prettier-plugin-sort-imports": "^6.0.0",
     "@types/node": "^24.10.1",
     "esbuild": "^0.27.0",
-    "esbuild-sass-plugin": "^3.3.1"
+    "esbuild-sass-plugin": "^3.3.1",
+    "tsx": "^4.21.0"
   },
   "dependencies": {
     "csv-parse": "^6.1.0",
