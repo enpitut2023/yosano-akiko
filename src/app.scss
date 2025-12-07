@@ -16,6 +16,10 @@ main {
 
   &.bars-hidden {
     grid-template-columns: auto 0 0;
+
+    & > credit-sum-view {
+      display: none;
+    }
   }
 }
 
@@ -132,25 +136,34 @@ credit-sum-view {
   outline-offset: 4px;
 }
 
-.course-container > * {
-  display: none;
-}
-.course-container > table {
-  display: revert;
+.course-container > p {
+  margin-bottom: 40px;
 }
 
-.course-container.contains-no-courses > * {
-  display: none;
-}
-.course-container.contains-no-courses > .hint-when-contains-no-courses {
-  display: revert;
+.course-container {
+  & > * {
+    display: none;
+  }
+
+  &[data-state="no-cell-selected"] > p.select-cell {
+    display: revert;
+  }
+
+  &[data-state="no-courses"] > p.no-courses {
+    display: revert;
+  }
+
+  &[data-state="contains-courses"] > table {
+    display: revert;
+  }
 }
 
-.course-container.no-cell-selected > * {
+#fake-course-section {
   display: none;
-}
-.course-container.no-cell-selected > .hint-when-no-cells-selected {
-  display: revert;
+
+  &:has(> .course-container[data-state="contains-courses"]) {
+    display: revert;
+  }
 }
 
 table,
@@ -162,7 +175,7 @@ td {
 
 table {
   width: 100%;
-  margin-bottom: 2rem; /* FIXME */
+  margin-bottom: 2rem;
 }
 
 th {
@@ -298,6 +311,7 @@ nav a {
     bottom: 0;
     display: grid;
     place-content: center;
+    pointer-events: none;
   }
 
   & > input {
@@ -345,11 +359,18 @@ nav a {
     transparent 100%
   );
 
-  &[data-message-on-click]:not([data-message-on-click=""]):hover {
-    background-color: rgba(0, 0, 0, 0.25);
+  &[data-message-on-click]:not([data-message-on-click=""]) {
+    & > img {
+      display: unset;
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.25);
+    }
   }
 
   & > img {
+    display: none;
     position: absolute;
     left: 8px;
     top: 5.5px;
