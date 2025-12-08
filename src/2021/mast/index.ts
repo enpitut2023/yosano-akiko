@@ -1,3 +1,4 @@
+import { KnownCourse, CourseId, RealCourse, FakeCourseId } from "../../akiko";
 import { setup } from "../../app";
 import { courses } from "../../current-courses.js";
 import cellIdToRect from "./cell-id-to-rect.json";
@@ -113,29 +114,98 @@ function isH3(id: string): boolean {
   return id.startsWith("99"); //博物館に関する科目　自由科目（特設）
 }
 
-setup(
-  2021,
-  courses,
-  2025,
-  "mast",
-  {
-    b1: { filter: isB1, creditMin: 20, creditMax: 35 },
-    d1: { filter: isD1, creditMin: 32, creditMax: 47 },
-    f1: { filter: isF1, creditMin: 1, creditMax: 4 },
-    f2: { filter: isF2, creditMin: 0, creditMax: 2 },
-    f3: { filter: isF3, creditMin: 0, creditMax: 6 },
-    f4: { filter: isF4, creditMin: 0, creditMax: 2 },
-    f5: { filter: isF5, creditMin: 0, creditMax: 6 },
-    h1: { filter: isH1, creditMin: 6, creditMax: 15 },
-    h2: { filter: isH2, creditMin: 0, creditMax: 9 },
-    h3: { filter: isH3, creditMin: 0, creditMax: 9 },
+function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
+  const courseIdToCellId = new Map<CourseId, string>();
+  for (const c of cs) {
+    // 選択
+    if (isB1(c.id)) {
+      courseIdToCellId.set(c.id, "b1");
+    } else if (isD1(c.id)) {
+      courseIdToCellId.set(c.id, "d1");
+    } else if (isF1(c.id)) {
+      courseIdToCellId.set(c.id, "f1");
+    } else if (isF2(c.id)) {
+      courseIdToCellId.set(c.id, "f2");
+    } else if (isF3(c.id)) {
+      courseIdToCellId.set(c.id, "f3");
+    } else if (isF4(c.id)) {
+      courseIdToCellId.set(c.id, "f4");
+    } else if (isF5(c.id)) {
+      courseIdToCellId.set(c.id, "f5");
+    } else if (isH1(c.id)) {
+      courseIdToCellId.set(c.id, "h1");
+    } else if (isH2(c.id)) {
+      courseIdToCellId.set(c.id, "h2");
+    } else if (isH3(c.id)) {
+      courseIdToCellId.set(c.id, "h3");
+    }
+  }
+  return courseIdToCellId;
+}
+
+function classifyRealCourses(cs: RealCourse[]): Map<CourseId, string> {
+  const courseIdToCellId = new Map<CourseId, string>();
+  for (const c of cs) {
+    // 選択
+    if (isB1(c.id)) {
+      courseIdToCellId.set(c.id, "b1");
+    } else if (isD1(c.id)) {
+      courseIdToCellId.set(c.id, "d1");
+    } else if (isF1(c.id)) {
+      courseIdToCellId.set(c.id, "f1");
+    } else if (isF2(c.id)) {
+      courseIdToCellId.set(c.id, "f2");
+    } else if (isF3(c.id)) {
+      courseIdToCellId.set(c.id, "f3");
+    } else if (isF4(c.id)) {
+      courseIdToCellId.set(c.id, "f4");
+    } else if (isF5(c.id)) {
+      courseIdToCellId.set(c.id, "f5");
+    } else if (isH1(c.id)) {
+      courseIdToCellId.set(c.id, "h1");
+    } else if (isH2(c.id)) {
+      courseIdToCellId.set(c.id, "h2");
+    } else if (isH3(c.id)) {
+      courseIdToCellId.set(c.id, "h3");
+    }
+  }
+  return courseIdToCellId;
+}
+
+function classifyFakeCourses(): Map<FakeCourseId, string> {
+  const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
+  return fakeCourseIdToCellId;
+}
+
+setup({
+  knownCourses: courses as KnownCourse[],
+  knownCourseYear: 2025,
+  creditRequirements: {
+    cells: {
+      b1: { min: 20, max: 35 },
+      d1: { min: 32, max: 47 },
+      f1: { min: 1, max: 4 },
+      f2: { min: 0, max: 2 },
+      f3: { min: 0, max: 6 },
+      f4: { min: 0, max: 2 },
+      f5: { min: 0, max: 6 },
+      h1: { min: 6, max: 15 },
+      h2: { min: 0, max: 9 },
+      h3: { min: 0, max: 9 },
+    },
+    columns: {
+      b: { min: 20, max: 35 },
+      d: { min: 32, max: 47 },
+      f: { min: 1, max: 10 },
+      h: { min: 6, max: 15 },
+    },
+    compulsory: 50,
+    elective: 74,
   },
-  {
-    b: { creditMin: 20, creditMax: 35 },
-    d: { creditMin: 32, creditMax: 47 },
-    f: { creditMin: 1, creditMax: 10 },
-    h: { creditMin: 6, creditMax: 15 },
-  },
-  74,
-  cellIdToRect,
-);
+  major: "mast",
+  requirementsTableYear: 2021,
+  cellIdToRectRecord: cellIdToRect,
+  classifyKnownCourses,
+  classifyRealCourses,
+  classifyFakeCourses,
+});

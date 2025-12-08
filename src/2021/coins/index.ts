@@ -1,6 +1,80 @@
+import { KnownCourse, CourseId, RealCourse, FakeCourseId } from "../../akiko";
 import { setup } from "../../app";
 import { courses } from "../../current-courses.js";
 import cellIdToRect from "./cell-id-to-rect.json";
+
+function convertToGb(id: string): string {
+  switch (id) {
+    case "BC12624": // コンピュータグラフィックス基礎
+    case "GC23304": // CG基礎
+      return "GB13704"; // コンピュータグラフィックス基礎
+
+    case "GC50291": // オートマトンと形式言語
+      return "GB20401"; // オートマトンと形式言語
+
+    case "GC53701": // システム数理I
+      return "GB22011"; // システム数理I
+
+    case "GC53801": // システム数理II
+      return "GB22021"; // システム数理II
+
+    case "GC54301": // システム数理III
+      return "GB22031"; // システム数理III
+
+    case "BC12631": // インタラクティブCG
+      return "GB22401"; // インタラクティブCG
+
+    case "GC54601": // 情報線形代数
+      return "GB22501"; // 情報線形代数
+
+    case "GC54091": // 情報可視化
+      return "GB22621"; // 情報可視化
+
+    case "BC12871": // コンピュータネットワーク
+    case "GC25301": // コンピュータネットワーク
+      return "GB30101"; // コンピュータネットワーク
+
+    case "BC12681": // 人工生命概論
+      return "GB32301"; // 人工生命概論
+
+    case "BC12651": // 情報セキュリティ
+      return "GB40111"; // 情報セキュリティ
+
+    case "BC12671": // ヒューマンインタフェース
+    case "GE71101": // ヒューマンインタフェース
+      return "GB40301"; // ヒューマンインタフェース
+
+    case "BC12621": // 信号処理
+      return "GB40411"; // 信号処理
+
+    case "BC12881": // 機械学習
+      return "GB40501"; // 機械学習
+
+    case "GC54904": // アドバンストCG
+      return "GB41104"; // アドバンストCG
+
+    case "BC12601": // 音声聴覚情報処理
+      return "GB41511"; // 音声聴覚情報処理
+
+    case "GC53901": // 自然言語処理
+      return "GB41611"; // 自然言語処理
+
+    case "GC53601": // 視覚情報科学
+      return "GB41711"; // 視覚情報科学
+
+    case "BC12883": // 知能情報メディア実験A
+      return "GB46403"; // 知能情報メディア実験A
+
+    case "BC12893": // 知能情報メディア実験B
+      return "GB46503"; // 知能情報メディア実験B
+
+    case "GC59301": // 情報メディア創成特別講義C
+      return "GB47001"; // 知能情報メディア特別講義A
+
+    default:
+      return id;
+  }
+}
 
 function isB1(id: string): boolean {
   return (
@@ -96,9 +170,6 @@ function isF2(id: string): boolean {
 }
 
 function isH1(id: string): boolean {
-  if (id.startsWith("__")) {
-    return false;
-  }
   return (
     !(
       id.startsWith("E") ||
@@ -123,29 +194,99 @@ function isH2(id: string): boolean {
   );
 }
 
-setup(
-  2021,
-  courses,
-  2025,
-  "coins",
-  {
-    b1: { filter: isB1, creditMin: 18, creditMax: undefined },
-    b2: { filter: isB2, creditMin: 0, creditMax: 18 },
-    d1: { filter: isD1, creditMin: 10, creditMax: undefined },
-    d2: { filter: isD2, creditMin: 2, creditMax: undefined },
-    d3: { filter: isD3, creditMin: 0, creditMax: undefined },
-    d4: { filter: isD4, creditMin: 8, creditMax: undefined },
-    f1: { filter: isF1, creditMin: 1, creditMax: undefined },
-    f2: { filter: isF2, creditMin: 0, creditMax: 4 },
-    h1: { filter: isH1, creditMin: 6, creditMax: undefined },
-    h2: { filter: isH2, creditMin: 0, creditMax: 4 },
+function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
+  const courseIdToCellId = new Map<CourseId, string>();
+  for (const c of cs) {
+    // 選択
+    if (isB1(c.id)) {
+      courseIdToCellId.set(c.id, "b1");
+    } else if (isB2(c.id)) {
+      courseIdToCellId.set(c.id, "b2");
+    } else if (isD1(c.id)) {
+      courseIdToCellId.set(c.id, "d1");
+    } else if (isD2(c.id)) {
+      courseIdToCellId.set(c.id, "d2");
+    } else if (isD3(c.id)) {
+      courseIdToCellId.set(c.id, "d3");
+    } else if (isD4(c.id)) {
+      courseIdToCellId.set(c.id, "d4");
+    } else if (isF1(c.id)) {
+      courseIdToCellId.set(c.id, "f1");
+    } else if (isF2(c.id)) {
+      courseIdToCellId.set(c.id, "f2");
+    } else if (isH1(c.id)) {
+      courseIdToCellId.set(c.id, "h1");
+    } else if (isH2(c.id)) {
+      courseIdToCellId.set(c.id, "h2");
+    }
+  }
+  return courseIdToCellId;
+}
+
+function classifyRealCourses(cs: RealCourse[]): Map<CourseId, string> {
+  const courseIdToCellId = new Map<CourseId, string>();
+  for (const c of cs) {
+    const id = convertToGb(c.id);
+    // 選択
+    if (isB1(id)) {
+      courseIdToCellId.set(c.id, "b1");
+    } else if (isB2(id)) {
+      courseIdToCellId.set(c.id, "b2");
+    } else if (isD1(id)) {
+      courseIdToCellId.set(c.id, "d1");
+    } else if (isD2(id)) {
+      courseIdToCellId.set(c.id, "d2");
+    } else if (isD3(id)) {
+      courseIdToCellId.set(c.id, "d3");
+    } else if (isD4(id)) {
+      courseIdToCellId.set(c.id, "d4");
+    } else if (isF1(id)) {
+      courseIdToCellId.set(c.id, "f1");
+    } else if (isF2(id)) {
+      courseIdToCellId.set(c.id, "f2");
+    } else if (isH1(id)) {
+      courseIdToCellId.set(c.id, "h1");
+    } else if (isH2(id)) {
+      courseIdToCellId.set(c.id, "h2");
+    }
+  }
+  return courseIdToCellId;
+}
+
+function classifyFakeCourses(): Map<FakeCourseId, string> {
+  const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
+  return fakeCourseIdToCellId;
+}
+
+setup({
+  knownCourses: courses as KnownCourse[],
+  knownCourseYear: 2025,
+  creditRequirements: {
+    cells: {
+      b1: { min: 18, max: undefined },
+      b2: { min: 0, max: 18 },
+      d1: { min: 10, max: undefined },
+      d2: { min: 2, max: undefined },
+      d3: { min: 0, max: undefined },
+      d4: { min: 8, max: undefined },
+      f1: { min: 1, max: undefined },
+      f2: { min: 0, max: 4 },
+      h1: { min: 6, max: undefined },
+      h2: { min: 0, max: 4 },
+    },
+    columns: {
+      b: { min: 36, max: 36 },
+      d: { min: 24, max: 24 },
+      f: { min: 1, max: 5 },
+      h: { min: 6, max: 10 },
+    },
+    compulsory: 54,
+    elective: 71,
   },
-  {
-    b: { creditMin: 36, creditMax: 36 },
-    d: { creditMin: 24, creditMax: 24 },
-    f: { creditMin: 1, creditMax: 5 },
-    h: { creditMin: 6, creditMax: 10 },
-  },
-  71,
-  cellIdToRect,
-);
+  major: "coins",
+  requirementsTableYear: 2021,
+  cellIdToRectRecord: cellIdToRect,
+  classifyKnownCourses,
+  classifyRealCourses,
+  classifyFakeCourses,
+});

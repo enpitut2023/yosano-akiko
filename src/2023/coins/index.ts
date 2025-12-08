@@ -553,10 +553,8 @@ setup({
       a1: { min: 6, max: 6 },
       a2: { min: 6, max: 6 },
       a3: { min: 4, max: 4 },
-
       b1: { min: 16, max: undefined },
       b2: { min: 0, max: 18 },
-
       c1: { min: 2, max: 2 },
       c2: { min: 2, max: 2 },
       c3: { min: 2, max: 2 },
@@ -570,20 +568,16 @@ setup({
       c11: { min: 2, max: 2 },
       c12: { min: 2, max: 2 },
       c13: { min: 2, max: 2 },
-
       d1: { min: 8, max: undefined },
       d2: { min: 2, max: undefined },
       d3: { min: 4, max: undefined },
       d4: { min: 8, max: undefined },
-
       e1: { min: 2, max: 2 },
       e2: { min: 2, max: 2 },
       e3: { min: 4, max: 4 },
       e4: { min: 4, max: 4 },
-
       f1: { min: 1, max: undefined },
       f2: { min: 0, max: 4 },
-
       h1: { min: 6, max: undefined },
       h2: { min: 0, max: 4 },
     },
@@ -596,7 +590,7 @@ setup({
       f: { min: 1, max: 5 },
       h: { min: 6, max: 10 },
     },
-    compulsory: 0, // TODO
+    compulsory: 54,
     elective: 71,
   },
   major: "coins",
