@@ -347,7 +347,7 @@ export function akikoGetMightTakeCourseIds(akiko: Akiko): CourseId[] {
   return res;
 }
 
-export function akikoFilter(
+export function akikoIsCourseVisible(
   akiko: Akiko,
   id: CourseId,
   idOrName: string,

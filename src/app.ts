@@ -22,31 +22,13 @@ import {
   fakeCourseIdNewUnique,
   Akiko,
   CellCreditStats,
+  columnIdIsCompulsory,
 } from "./akiko";
 import { CourseLists } from "./course-lists";
 import warningIcon from "./icons/warning.svg";
 import { assert, tryParseFloat, tryParseInt } from "./util";
 import { parse as parseCsv } from "csv-parse/browser/esm/sync";
 import z from "zod";
-
-type CellCreditRequirements = {
-  creditMin: number;
-  creditMax: number | undefined;
-};
-type ColumnCreditRequirements = {
-  creditMin: number;
-  creditMax: number;
-};
-type CellCredit = {
-  takenSum: number;
-  mightTakeSum: number;
-  requirements: CellCreditRequirements;
-};
-type ColumnCredit = {
-  takenSum: number;
-  mightTakeSum: number;
-  requirements: ColumnCreditRequirements;
-};
 
 type LocalDataV1ImportedCourse = {
   id: string;
@@ -807,8 +789,10 @@ export function setup(params: {
     handleMoveToMightTake,
   );
 
-  for (const column of ["b", "d", "f", "h"] /* TODO */) {
-    assert(isColumnId(column)); // TODO
+  for (const column of creditRequirements.columns.keys()) {
+    if (columnIdIsCompulsory(column)) {
+      continue;
+    }
     const root = document.createElement("div");
     const icon = document.createElement("img");
     const span = document.createElement("span");
@@ -861,11 +845,7 @@ export function setup(params: {
     // 授業一覧
     courseLists.setAkiko(akiko);
     courseLists.filter(filterString);
-    if (selectedCellId === undefined) {
-      courseLists.unselectCell();
-    } else {
-      courseLists.selectCell(selectedCellId);
-    }
+    courseLists.setSelectedCellId(selectedCellId);
 
     // 単位合計
     {

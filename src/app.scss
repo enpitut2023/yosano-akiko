@@ -105,35 +105,35 @@ credit-sum-view {
   --yellow-percentage: 0%;
   position: absolute;
   box-sizing: border-box;
-  border: var(--border-width) dashed #888;
+  border: var(--border-width) dashed rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  mix-blend-mode: multiply;
-}
 
-.cell::before {
-  content: "";
-  display: block;
-  position: absolute;
-  inset: calc(-1 * var(--border-width));
-  background: linear-gradient(
-    90deg,
-    rgba(51, 204, 51) 0%,
-    rgba(51, 204, 51) var(--green-percentage),
-    rgba(255, 204, 0) var(--green-percentage),
-    rgba(255, 204, 0) var(--yellow-percentage),
-    transparent var(--yellow-percentage),
-    transparent 100%
-  );
-  opacity: 0.4;
-}
+  &::before {
+    content: "";
+    display: block;
+    position: absolute;
+    inset: calc(-1 * var(--border-width));
+    background: linear-gradient(
+      90deg,
+      rgba(51, 204, 51) 0%,
+      rgba(51, 204, 51) var(--green-percentage),
+      rgba(255, 204, 0) var(--green-percentage),
+      rgba(255, 204, 0) var(--yellow-percentage),
+      transparent var(--yellow-percentage),
+      transparent 100%
+    );
+    opacity: 0.4;
+  }
 
-.cell:hover {
-  background-color: rgba(0, 0, 0, 0.25);
-}
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.25);
+  }
 
-.cell.selected {
-  outline: 6px solid #0066ff;
-  outline-offset: 4px;
+  &.selected {
+    outline: 6px solid #0066ff;
+    outline-offset: 4px;
+    z-index: 1;
+  }
 }
 
 .course-container > p {
@@ -156,6 +156,10 @@ credit-sum-view {
   &[data-state="contains-courses"] > table {
     display: revert;
   }
+}
+
+#wont-take-table .course.hide-in-wont-take {
+  display: none;
 }
 
 #fake-course-section {
@@ -202,20 +206,6 @@ tbody > tr[draggable="true"] {
 .course-container.show-term .course > .term,
 .course-container.show-when .course > .when,
 .course-container.show-expects .course > .expects {
-  display: revert;
-}
-
-credit-sum-view > div > * {
-  display: none;
-}
-credit-sum-view > div > ul {
-  display: revert;
-}
-
-credit-sum-view.no-cell-selected > div > * {
-  display: none;
-}
-credit-sum-view.no-cell-selected > div > p {
   display: revert;
 }
 

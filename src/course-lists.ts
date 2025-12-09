@@ -1,6 +1,6 @@
 import {
   Akiko,
-  akikoFilter,
+  akikoIsCourseVisible,
   CellId,
   CourseId,
   courseIdCompare,
@@ -225,6 +225,34 @@ export class CourseLists {
     this.setAkikoForce(akiko);
   }
 
+  private updateContainers(): void {
+    if (this.selectedCellId === undefined) {
+      this.wontTakeContainer.dataset.state = "no-cell-selected";
+      this.mightTakeContainer.dataset.state = "no-cell-selected";
+      this.takenContainer.dataset.state = "no-cell-selected";
+      this.fakeContainer.dataset.state = "no-cell-selected";
+    } else {
+      const cell = this.cells.get(this.selectedCellId);
+      assert(cell !== undefined);
+      this.wontTakeContainer.dataset.state =
+        cell.wontTakeTbody.childElementCount === 0
+          ? "no-courses"
+          : "contains-courses";
+      this.mightTakeContainer.dataset.state =
+        cell.mightTakeTbody.childElementCount === 0
+          ? "no-courses"
+          : "contains-courses";
+      this.takenContainer.dataset.state =
+        cell.takenTbody.childElementCount === 0
+          ? "no-courses"
+          : "contains-courses";
+      this.fakeContainer.dataset.state =
+        cell.fakeTbody.childElementCount === 0
+          ? "no-courses"
+          : "contains-courses";
+    }
+  }
+
   private handleDrop(event: DragEvent, droppedOnWontTake: boolean): void {
     if (event.dataTransfer === null) {
       return;
@@ -255,6 +283,7 @@ export class CourseLists {
     if (!inserted) {
       dstTbody.appendChild(toMove);
     }
+    this.updateContainers();
 
     if (droppedOnWontTake) {
       this.handleMoveToWontTake(toMoveCourseId);
@@ -270,14 +299,11 @@ export class CourseLists {
     this.mightTakeTable.children.item(1)?.remove();
     this.takenTable.children.item(1)?.remove();
     this.fakeTable.children.item(1)?.remove();
-    this.wontTakeContainer.dataset.state = "no-cell-selected";
-    this.mightTakeContainer.dataset.state = "no-cell-selected";
-    this.takenContainer.dataset.state = "no-cell-selected";
-    this.fakeContainer.dataset.state = "no-cell-selected";
     this.cells.clear();
     this.courseIdToCourseElement.clear();
     this.selectedCellId = undefined;
     this.lastIdOrName = undefined;
+    this.updateContainers();
 
     const cellIdToCourseElements = new Map<
       CellId,
@@ -385,10 +411,11 @@ export class CourseLists {
     this.setAkikoForce(akiko);
   }
 
-  selectCell(id: CellId): boolean {
+  setSelectedCellId(id: CellId | undefined): boolean {
     if (id === this.selectedCellId) {
       return true;
     }
+
     if (this.selectedCellId !== undefined) {
       const oldCell = this.cells.get(this.selectedCellId);
       assert(oldCell !== undefined);
@@ -399,69 +426,32 @@ export class CourseLists {
     }
     this.selectedCellId = id;
 
-    const newCell = this.cells.get(id);
-    if (newCell === undefined) {
-      return false;
+    if (id !== undefined) {
+      const newCell = this.cells.get(id);
+      if (newCell === undefined) {
+        return false;
+      }
+      this.wontTakeTable.appendChild(newCell.wontTakeTbody);
+      this.mightTakeTable.appendChild(newCell.mightTakeTbody);
+      this.takenTable.appendChild(newCell.takenTbody);
+      this.fakeTable.appendChild(newCell.fakeTbody);
     }
-    this.wontTakeTable.appendChild(newCell.wontTakeTbody);
-    this.mightTakeTable.appendChild(newCell.mightTakeTbody);
-    this.takenTable.appendChild(newCell.takenTbody);
-    this.fakeTable.appendChild(newCell.fakeTbody);
-    this.wontTakeContainer.dataset.state =
-      newCell.wontTakeTbody.childElementCount === 0
-        ? "no-courses"
-        : "contains-courses";
-    this.mightTakeContainer.dataset.state =
-      newCell.mightTakeTbody.childElementCount === 0
-        ? "no-courses"
-        : "contains-courses";
-    this.takenContainer.dataset.state =
-      newCell.takenTbody.childElementCount === 0
-        ? "no-courses"
-        : "contains-courses";
-    this.fakeContainer.dataset.state =
-      newCell.fakeTbody.childElementCount === 0
-        ? "no-courses"
-        : "contains-courses";
+    this.updateContainers();
 
     return true;
   }
 
-  unselectCell(): void {
-    if (this.selectedCellId !== undefined) {
-      const cell = this.cells.get(this.selectedCellId);
-      assert(cell !== undefined);
-      cell.wontTakeTbody.remove();
-      cell.mightTakeTbody.remove();
-      cell.takenTbody.remove();
-      cell.fakeTbody.remove();
-      this.wontTakeContainer.dataset.state = "no-cell-selected";
-      this.mightTakeContainer.dataset.state = "no-cell-selected";
-      this.takenContainer.dataset.state = "no-cell-selected";
-      this.fakeContainer.dataset.state = "no-cell-selected";
-    }
-    this.selectedCellId = undefined;
-  }
-
   filter(idOrName: string): void {
-    function showOrHide(akiko: Akiko, e: Element): void {
-      assert(e instanceof HTMLElement);
-      const id = courseElementMustGetCourseId(e);
-      e.style.display = akikoFilter(akiko, id, idOrName) ? "" : "none";
-    }
-
     if (this.lastIdOrName === idOrName) {
       return;
     }
     this.lastIdOrName = idOrName;
 
-    for (const cell of this.cells.values()) {
-      for (const e of cell.wontTakeTbody.children) {
-        showOrHide(this.akiko, e);
-      }
-      for (const e of cell.mightTakeTbody.children) {
-        showOrHide(this.akiko, e);
-      }
+    for (const [courseId, courseElement] of this.courseIdToCourseElement) {
+      const pos = this.akiko.coursePositions.get(courseId);
+      assert(pos !== undefined);
+      const visible = akikoIsCourseVisible(this.akiko, courseId, idOrName);
+      courseElement.classList.toggle("hide-in-wont-take", !visible);
     }
   }
 }
