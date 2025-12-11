@@ -5,6 +5,7 @@ import {
   CourseId,
   courseIdCompare,
   Grade,
+  gradeIsPass,
   isCellId,
   isCourseId,
 } from "./akiko";
@@ -31,41 +32,63 @@ function createSyllabusUrl(year: string, courseId: string): string {
   return `https://kdb.tsukuba.ac.jp/syllabi/${year}/${courseId}/jpn`;
 }
 
-function courseElementNew(
-  courseId: CourseId,
-  params: {
-    name: string;
-    courseYear?: string;
-    takenYear?: string;
-    grade?: string;
-    credit?: string;
-    term?: string;
-    when?: string;
-    expects?: string;
-  },
-): HTMLElement {
-  let name = params.name;
-  if (params.takenYear !== undefined) {
-    name += ` (${params.takenYear})`;
+function courseElementNew(params: {
+  courseId: CourseId;
+  name: string;
+  courseYear: string;
+  takenYear?: string;
+  grade?: Grade;
+  credit?: string;
+  term?: string;
+  when?: string;
+  expects?: string;
+}): HTMLElement {
+  function gradeToString(g: Grade): string {
+    switch (g) {
+      case "wip":
+        return "（履修中）";
+      case "a+":
+        return "評価：A+";
+      case "a":
+        return "評価：A";
+      case "b":
+        return "評価：B";
+      case "c":
+        return "評価：C";
+      case "pass":
+        return "評価：P";
+      case "d":
+      case "fail":
+        return "（落単済み）";
+      default:
+        unreachable(g);
+    }
   }
-  name = escapeHtml(name);
-  if (params.takenYear !== undefined) {
-    const href = createSyllabusUrl(params.takenYear, courseId);
+
+  let name: string;
+  if (
+    params.grade !== undefined &&
+    gradeIsPass(params.grade) &&
+    params.takenYear !== undefined
+  ) {
+    name = escapeHtml(`${params.name} (${params.takenYear})`);
+    const href = createSyllabusUrl(params.takenYear, params.courseId);
     name = `<a href="${href}" target="_blank" draggable="false">${name}</a>`;
-  } else if (params.courseYear !== undefined) {
-    const href = createSyllabusUrl(params.courseYear, courseId);
+  } else {
+    name = escapeHtml(params.name);
+    const href = createSyllabusUrl(params.courseYear, params.courseId);
     name = `<a href="${href}" target="_blank" draggable="false">${name}</a>`;
   }
 
   let grade = "";
   if (params.grade !== undefined) {
-    grade = `<br><span>評価：${params.grade}</span>`;
+    grade = `<br><span>${gradeToString(params.grade)}</span>`;
   }
 
   return stringToHtmlElement(`
-<tr class="course" data-course-id="${courseId}">
+<tr class="course" data-course-id="${params.courseId}">
   <td class="id-name">
-    <span>${courseId}</span><br>
+    <span>${params.courseId}</span><br>
     <span>${name}</span>${grade}
   </td>
   <td class="credit">${params.credit ?? "-"}</td>
@@ -130,31 +153,6 @@ function sortFakeCourseElements(es: HTMLElement[]): void {
       fakeCourseElementMustGetCourseName(b),
     ),
   );
-}
-
-function maybeGradeToString(g: Grade | undefined): string | undefined {
-  switch (g) {
-    case "wip":
-      return "履修中";
-    case "a+":
-      return "A+";
-    case "a":
-      return "A";
-    case "b":
-      return "B";
-    case "c":
-      return "C";
-    case "d":
-      return "D";
-    case "pass":
-      return "P";
-    case "fail":
-      return "F";
-    case undefined:
-      return undefined;
-    default:
-      unreachable(g);
-  }
 }
 
 function setTransferData(
@@ -323,11 +321,12 @@ export class CourseLists {
 
       const kc = akiko.knownCourses.get(courseId);
       const rc = akiko.realCourses.get(courseId);
-      const element = courseElementNew(courseId, {
+      const element = courseElementNew({
+        courseId,
         name: kc?.name ?? rc?.name ?? "（不明）",
         courseYear: this.knownCourseYear.toString(),
         takenYear: rc?.takenYear?.toString(),
-        grade: maybeGradeToString(rc?.grade),
+        grade: rc?.grade,
         credit: kc?.credit?.toString() ?? rc?.credit?.toString(),
         term: kc?.term,
         when: kc?.when,
