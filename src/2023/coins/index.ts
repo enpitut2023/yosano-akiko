@@ -1,9 +1,15 @@
-import { CellFilterArgs, setup } from "../../app";
+import {
+  CourseId,
+  FakeCourse,
+  FakeCourseId,
+  KnownCourse,
+  RealCourse,
+} from "../../akiko";
+import { ClassifyOptions, setup } from "../../app";
 import { courses } from "../../current-courses.js";
 import cellIdToRect from "./cell-id-to-rect.json";
 
 function convertToGb(id: string): string {
-  return id; // FIXME
   switch (id) {
     case "BC12624": // コンピュータグラフィックス基礎
     case "GC23304": // CG基礎
@@ -106,14 +112,12 @@ function isA3(id: string): boolean {
 }
 
 function isB1(id: string): boolean {
-  id = convertToGb(id);
   return (
     id.startsWith("GB20") || id.startsWith("GB30") || id.startsWith("GB40")
   );
 }
 
 function isB2(id: string): boolean {
-  id = convertToGb(id);
   return (
     id === "GB13312" || //情報特別演習I
     id === "GB13322" || //情報特別演習II
@@ -124,14 +128,14 @@ function isB2(id: string): boolean {
   );
 }
 
-function isC1(id: string, args: CellFilterArgs): boolean {
+function isC1(id: string, native: boolean): boolean {
   return (
     id === "GA15211" || //1・2クラス
     id === "GA15221" || //3・4クラス
     // 移行生はFAから始まる線形代数1をcoinsの線形代数Aとして使える
     // TODO: 1年の時にFA...を取らなかった移行生がこれを見ると、2年になってから
     // FA...を取ることができると勘違いするかも？
-    (!args.native &&
+    (!native &&
       (id === "FA01611" ||
         id === "FA01621" ||
         id === "FA01631" ||
@@ -154,13 +158,13 @@ function isC2(id: string): boolean {
   );
 }
 
-function isC3(id: string, args: CellFilterArgs): boolean {
+function isC3(id: string, native: boolean): boolean {
   return (
     id === "GA15311" || //1・2クラス
     id === "GA15321" || //3・4クラス
     // 移行生はFAから始まる微積分1をcoinsの微分積分Aとして使える
     // TODO: C1と同じ懸念
-    (!args.native &&
+    (!native &&
       (id === "FA01311" ||
         id === "FA01321" ||
         id === "FA01331" ||
@@ -194,21 +198,21 @@ function isC6(id: string): boolean {
   return id === "GB19061";
 }
 
-function isC7(id: string, args: CellFilterArgs): boolean {
+function isC7(id: string, native: boolean): boolean {
   return (
     id === "GA18212" ||
     // 移行生はFHから始まるプロ入Aをcoinsのプロ入Aとして使える
     // TODO: C1と同じ懸念
-    (!args.native && (id === "FH60474" || id === "FH60484" || id === "FH60494"))
+    (!native && (id === "FH60474" || id === "FH60484" || id === "FH60494"))
   );
 }
 
-function isC8(id: string, args: CellFilterArgs): boolean {
+function isC8(id: string, native: boolean): boolean {
   return (
     id === "GA18312" ||
     // 移行生はFHから始まるプロ入Bをcoinsのプロ入Bとして使える
     // TODO: C1と同じ懸念
-    (!args.native && (id === "FH60574" || id === "FH60584" || id === "FH60594"))
+    (!native && (id === "FH60574" || id === "FH60584" || id === "FH60594"))
   );
 }
 
@@ -254,7 +258,6 @@ function isD2(id: string): boolean {
 }
 
 function isD3(id: string): boolean {
-  id = convertToGb(id);
   return (
     id !== "GB13312" && //情報特別演習I
     id !== "GB13322" && //情報特別演習II
@@ -306,10 +309,9 @@ function isE2(id: string): boolean {
   );
 }
 
-function isE3(_id: string, args: CellFilterArgs): boolean {
+function isE3(name: string): boolean {
   // TODO:
   // 編入とかで英語を認定された人は「英語」という名前の4単位の授業を与えられる
-  let name = args.name;
   name = name.trim();
   name = name.replaceAll(/\s+/g, " ");
   name = name.toLowerCase();
@@ -360,10 +362,6 @@ function isF2(id: string): boolean {
 }
 
 function isH1(id: string): boolean {
-  id = convertToGb(id);
-  if (id.startsWith("__")) {
-    return false;
-  }
   return (
     !(
       id.startsWith("E") ||
@@ -379,7 +377,6 @@ function isH1(id: string): boolean {
 }
 
 function isH2(id: string): boolean {
-  id = convertToGb(id);
   return (
     id.startsWith("E") ||
     id.startsWith("F") ||
@@ -389,58 +386,217 @@ function isH2(id: string): boolean {
   );
 }
 
-setup(
-  2023,
-  courses,
-  2025,
-  "coins",
-  {
-    a1: { filter: isA1, creditMin: 6, creditMax: 6 },
-    a2: { filter: isA2, creditMin: 6, creditMax: 6 },
-    a3: { filter: isA3, creditMin: 4, creditMax: 4 },
+function classifyKnownCourses(
+  cs: KnownCourse[],
+  opts: ClassifyOptions,
+): Map<CourseId, string> {
+  const courseIdToCellId = new Map<CourseId, string>();
+  for (const c of cs) {
+    // 必修
+    if (isA1(c.id)) {
+      courseIdToCellId.set(c.id, "a1");
+    } else if (isA2(c.id)) {
+      courseIdToCellId.set(c.id, "a2");
+    } else if (isA3(c.id)) {
+      courseIdToCellId.set(c.id, "a3");
+    } else if (isC1(c.id, opts.isNative)) {
+      courseIdToCellId.set(c.id, "c1");
+    } else if (isC2(c.id)) {
+      courseIdToCellId.set(c.id, "c2");
+    } else if (isC3(c.id, opts.isNative)) {
+      courseIdToCellId.set(c.id, "c3");
+    } else if (isC4(c.id)) {
+      courseIdToCellId.set(c.id, "c4");
+    } else if (isC5(c.id)) {
+      courseIdToCellId.set(c.id, "c5");
+    } else if (isC6(c.id)) {
+      courseIdToCellId.set(c.id, "c6");
+    } else if (isC7(c.id, opts.isNative)) {
+      courseIdToCellId.set(c.id, "c7");
+    } else if (isC8(c.id, opts.isNative)) {
+      courseIdToCellId.set(c.id, "c8");
+    } else if (isC9(c.id)) {
+      courseIdToCellId.set(c.id, "c9");
+    } else if (isC10(c.id)) {
+      courseIdToCellId.set(c.id, "c10");
+    } else if (isC11(c.id)) {
+      courseIdToCellId.set(c.id, "c11");
+    } else if (isC12(c.id)) {
+      courseIdToCellId.set(c.id, "c12");
+    } else if (isC13(c.id)) {
+      courseIdToCellId.set(c.id, "c13");
+    } else if (isE1(c.id)) {
+      courseIdToCellId.set(c.id, "e1");
+    } else if (isE2(c.id)) {
+      courseIdToCellId.set(c.id, "e2");
+    } else if (isE3(c.name)) {
+      courseIdToCellId.set(c.id, "e3");
+    } else if (isE4(c.id)) {
+      courseIdToCellId.set(c.id, "e4");
+    }
+    // 選択
+    else if (isB1(c.id)) {
+      courseIdToCellId.set(c.id, "b1");
+    } else if (isB2(c.id)) {
+      courseIdToCellId.set(c.id, "b2");
+    } else if (isD1(c.id)) {
+      courseIdToCellId.set(c.id, "d1");
+    } else if (isD2(c.id)) {
+      courseIdToCellId.set(c.id, "d2");
+    } else if (isD3(c.id)) {
+      courseIdToCellId.set(c.id, "d3");
+    } else if (isD4(c.id)) {
+      courseIdToCellId.set(c.id, "d4");
+    } else if (isF1(c.id)) {
+      courseIdToCellId.set(c.id, "f1");
+    } else if (isF2(c.id)) {
+      courseIdToCellId.set(c.id, "f2");
+    } else if (isH1(c.id)) {
+      courseIdToCellId.set(c.id, "h1");
+    } else if (isH2(c.id)) {
+      courseIdToCellId.set(c.id, "h2");
+    }
+  }
+  return courseIdToCellId;
+}
 
-    b1: { filter: isB1, creditMin: 16, creditMax: undefined },
-    b2: { filter: isB2, creditMin: 0, creditMax: 18 },
+function classifyRealCourses(
+  cs: RealCourse[],
+  opts: ClassifyOptions,
+): Map<CourseId, string> {
+  const courseIdToCellId = new Map<CourseId, string>();
+  for (const c of cs) {
+    const id = convertToGb(c.id);
+    // 必修
+    if (isA1(id)) {
+      courseIdToCellId.set(c.id, "a1");
+    } else if (isA2(id)) {
+      courseIdToCellId.set(c.id, "a2");
+    } else if (isA3(id)) {
+      courseIdToCellId.set(c.id, "a3");
+    } else if (isC1(id, opts.isNative)) {
+      courseIdToCellId.set(c.id, "c1");
+    } else if (isC2(id)) {
+      courseIdToCellId.set(c.id, "c2");
+    } else if (isC3(id, opts.isNative)) {
+      courseIdToCellId.set(c.id, "c3");
+    } else if (isC4(id)) {
+      courseIdToCellId.set(c.id, "c4");
+    } else if (isC5(id)) {
+      courseIdToCellId.set(c.id, "c5");
+    } else if (isC6(id)) {
+      courseIdToCellId.set(c.id, "c6");
+    } else if (isC7(id, opts.isNative)) {
+      courseIdToCellId.set(c.id, "c7");
+    } else if (isC8(id, opts.isNative)) {
+      courseIdToCellId.set(c.id, "c8");
+    } else if (isC9(id)) {
+      courseIdToCellId.set(c.id, "c9");
+    } else if (isC10(id)) {
+      courseIdToCellId.set(c.id, "c10");
+    } else if (isC11(id)) {
+      courseIdToCellId.set(c.id, "c11");
+    } else if (isC12(id)) {
+      courseIdToCellId.set(c.id, "c12");
+    } else if (isC13(id)) {
+      courseIdToCellId.set(c.id, "c13");
+    } else if (isE1(id)) {
+      courseIdToCellId.set(c.id, "e1");
+    } else if (isE2(id)) {
+      courseIdToCellId.set(c.id, "e2");
+    } else if (isE3(c.name)) {
+      courseIdToCellId.set(c.id, "e3");
+    } else if (isE4(id)) {
+      courseIdToCellId.set(c.id, "e4");
+    }
+    // 選択
+    else if (isB1(id)) {
+      courseIdToCellId.set(c.id, "b1");
+    } else if (isB2(id)) {
+      courseIdToCellId.set(c.id, "b2");
+    } else if (isD1(id)) {
+      courseIdToCellId.set(c.id, "d1");
+    } else if (isD2(id)) {
+      courseIdToCellId.set(c.id, "d2");
+    } else if (isD3(id)) {
+      courseIdToCellId.set(c.id, "d3");
+    } else if (isD4(id)) {
+      courseIdToCellId.set(c.id, "d4");
+    } else if (isF1(id)) {
+      courseIdToCellId.set(c.id, "f1");
+    } else if (isF2(id)) {
+      courseIdToCellId.set(c.id, "f2");
+    } else if (isH1(id)) {
+      courseIdToCellId.set(c.id, "h1");
+    } else if (isH2(id)) {
+      courseIdToCellId.set(c.id, "h2");
+    }
+  }
+  return courseIdToCellId;
+}
 
-    c1: { filter: isC1, creditMin: 2, creditMax: 2 },
-    c2: { filter: isC2, creditMin: 2, creditMax: 2 },
-    c3: { filter: isC3, creditMin: 2, creditMax: 2 },
-    c4: { filter: isC4, creditMin: 2, creditMax: 2 },
-    c5: { filter: isC5, creditMin: 2, creditMax: 2 },
-    c6: { filter: isC6, creditMin: 1, creditMax: 1 },
-    c7: { filter: isC7, creditMin: 2, creditMax: 2 },
-    c8: { filter: isC8, creditMin: 1, creditMax: 1 },
-    c9: { filter: isC9, creditMin: 3, creditMax: 3 },
-    c10: { filter: isC10, creditMin: 3, creditMax: 3 },
-    c11: { filter: isC11, creditMin: 2, creditMax: 2 },
-    c12: { filter: isC12, creditMin: 2, creditMax: 2 },
-    c13: { filter: isC13, creditMin: 2, creditMax: 2 },
+function classifyFakeCourses(cs: FakeCourse[]): Map<FakeCourseId, string> {
+  const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
+  for (const c of cs) {
+    if (isE3(c.name)) {
+      fakeCourseIdToCellId.set(c.id, "e3");
+    }
+  }
+  return fakeCourseIdToCellId;
+}
 
-    d1: { filter: isD1, creditMin: 8, creditMax: undefined },
-    d2: { filter: isD2, creditMin: 2, creditMax: undefined },
-    d3: { filter: isD3, creditMin: 4, creditMax: undefined },
-    d4: { filter: isD4, creditMin: 8, creditMax: undefined },
-
-    e1: { filter: isE1, creditMin: 2, creditMax: 2 },
-    e2: { filter: isE2, creditMin: 2, creditMax: 2 },
-    e3: { filter: isE3, creditMin: 4, creditMax: 4 },
-    e4: { filter: isE4, creditMin: 4, creditMax: 4 },
-
-    f1: { filter: isF1, creditMin: 1, creditMax: undefined },
-    f2: { filter: isF2, creditMin: 0, creditMax: 4 },
-
-    h1: { filter: isH1, creditMin: 6, creditMax: undefined },
-    h2: { filter: isH2, creditMin: 0, creditMax: 4 },
+setup({
+  knownCourses: courses as KnownCourse[],
+  knownCourseYear: 2025,
+  creditRequirements: {
+    cells: {
+      a1: { min: 6, max: 6 },
+      a2: { min: 6, max: 6 },
+      a3: { min: 4, max: 4 },
+      b1: { min: 16, max: undefined },
+      b2: { min: 0, max: 18 },
+      c1: { min: 2, max: 2 },
+      c2: { min: 2, max: 2 },
+      c3: { min: 2, max: 2 },
+      c4: { min: 2, max: 2 },
+      c5: { min: 2, max: 2 },
+      c6: { min: 1, max: 1 },
+      c7: { min: 2, max: 2 },
+      c8: { min: 1, max: 1 },
+      c9: { min: 3, max: 3 },
+      c10: { min: 3, max: 3 },
+      c11: { min: 2, max: 2 },
+      c12: { min: 2, max: 2 },
+      c13: { min: 2, max: 2 },
+      d1: { min: 8, max: undefined },
+      d2: { min: 2, max: undefined },
+      d3: { min: 4, max: undefined },
+      d4: { min: 8, max: undefined },
+      e1: { min: 2, max: 2 },
+      e2: { min: 2, max: 2 },
+      e3: { min: 4, max: 4 },
+      e4: { min: 4, max: 4 },
+      f1: { min: 1, max: undefined },
+      f2: { min: 0, max: 4 },
+      h1: { min: 6, max: undefined },
+      h2: { min: 0, max: 4 },
+    },
+    columns: {
+      a: { min: 16, max: 16 },
+      b: { min: 34, max: 34 },
+      c: { min: 26, max: 26 },
+      d: { min: 26, max: 26 },
+      e: { min: 12, max: 12 },
+      f: { min: 1, max: 5 },
+      h: { min: 6, max: 10 },
+    },
+    compulsory: 54,
+    elective: 71,
   },
-  {
-    a: { creditMin: 16, creditMax: 16 },
-    b: { creditMin: 34, creditMax: 34 },
-    c: { creditMin: 26, creditMax: 26 },
-    d: { creditMin: 26, creditMax: 26 },
-    e: { creditMin: 12, creditMax: 12 },
-    f: { creditMin: 1, creditMax: 5 },
-    h: { creditMin: 6, creditMax: 10 },
-  },
-  71,
-  cellIdToRect,
-);
+  major: "coins",
+  requirementsTableYear: 2023,
+  cellIdToRectRecord: cellIdToRect,
+  classifyKnownCourses,
+  classifyRealCourses,
+  classifyFakeCourses,
+});

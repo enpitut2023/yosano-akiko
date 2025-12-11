@@ -1,160 +1,256 @@
+import {
+  akikoGetCreditStats,
+  akikoGetMightTakeCourseIds,
+  CellId,
+  ColumnCreditStats,
+  ColumnId,
+  KnownCourse,
+  CreditRequirements,
+  ElectiveCreditStats,
+  isCellId,
+  isColumnId,
+  CourseId,
+  RealCourse,
+  FakeCourse,
+  isCourseId,
+  isFakeCourseId,
+  isGrade,
+  akikoNew,
+  FakeCourseId,
+  ImportedCourse,
+  Grade,
+  fakeCourseIdNewUnique,
+  Akiko,
+  CellCreditStats,
+  columnIdIsCompulsory,
+} from "./akiko";
+import { CourseLists } from "./course-lists";
 import warningIcon from "./icons/warning.svg";
-import { parse } from "csv-parse/browser/esm/sync";
+import { assert, tryParseFloat, tryParseInt } from "./util";
+import { parse as parseCsv } from "csv-parse/browser/esm/sync";
+import z from "zod";
 
-function assert(b: boolean): asserts b {
-  if (!b) {
-    throw new Error("assertion failed");
-  }
-}
-
-type Course = {
+type LocalDataV1ImportedCourse = {
   id: string;
   name: string;
-  credit: number | undefined;
-  expects: string;
-  term: string;
-  when: string;
-};
-
-type CellTbodys = {
-  notTaken: HTMLTableSectionElement;
-  mightTake: HTMLTableSectionElement;
-  taken: HTMLTableSectionElement;
-};
-
-type CourseTables = {
-  notTaken: HTMLTableElement;
-  mightTake: HTMLTableElement;
-  taken: HTMLTableElement;
-};
-
-type CourseContainers = {
-  notTaken: HTMLElement;
-  mightTake: HTMLElement;
-  taken: HTMLElement;
-};
-
-export type CellFilterArgs = {
-  name: string;
-  native: boolean;
-};
-type CellMetadata = {
-  filter: (id: string, args: CellFilterArgs) => boolean;
-  creditMin: number;
-  creditMax: number | undefined;
-};
-
-type CellCreditRequirements = {
-  creditMin: number;
-  creditMax: number | undefined;
-};
-type ColumnCreditRequirements = {
-  creditMin: number;
-  creditMax: number;
-};
-type CellCredit = {
-  takenSum: number;
-  mightTakeSum: number;
-  requirements: CellCreditRequirements;
-};
-type ColumnCredit = {
-  takenSum: number;
-  mightTakeSum: number;
-  requirements: ColumnCreditRequirements;
-};
-type NetCredit = {
-  takenSum: number;
-  mightTakeSum: number;
-  required: number;
-};
-
-type ImportedCourseGrade =
-  | "wip"
-  | "a+"
-  | "a"
-  | "b"
-  | "c"
-  | "d"
-  | "pass"
-  | "fail"
-  | "free";
-type ImportedCourse = {
-  id: string;
-  name: string;
-  credit: number | undefined;
+  grade: "wip" | "a+" | "a" | "b" | "c" | "d" | "pass" | "fail" | "free";
+  credit: number;
   takenYear: number;
-  grade: ImportedCourseGrade;
 };
-type MaybeImportedCourse =
-  | {
-      id: string;
-      course: Course;
-      importedCourse: undefined;
-    }
-  | {
-      id: string;
-      course: undefined;
-      importedCourse: ImportedCourse;
-    }
-  | {
-      id: string;
-      course: Course;
-      importedCourse: ImportedCourse;
-    };
-
-function maybeImportedCourseGetName(c: MaybeImportedCourse): string {
-  if (c.course !== undefined) {
-    return c.course.name;
-  } else {
-    return c.importedCourse.name;
-  }
-}
-
-type AkikoLocalData = {
-  version: number;
-  courseYearToMightTakeCourseIds: Map<number, string[]>;
-  importedCourses: ImportedCourse[];
+type LocalDataV1 = {
+  version: 1;
+  courseYearToMightTakeCourseIds: Record<string, string[]>;
+  importedCourses: LocalDataV1ImportedCourse[];
+  native: boolean;
+};
+type LocalDataV2 = {
+  version: 2;
+  mightTakeCourseIds: CourseId[];
+  realCourses: RealCourse[];
+  fakeCourses: FakeCourse[];
   native: boolean;
 };
 
-function parseLocalData(
-  localDataAsJsonString: string,
-): AkikoLocalData | undefined {
-  // FIXME:
-  const localData = JSON.parse(localDataAsJsonString);
+function localDataV1ToV2(v1: LocalDataV1): LocalDataV2 {
+  function tryAsFake(ic: LocalDataV1ImportedCourse): FakeCourse | undefined {
+    const match = /^__free(\d+)$/.exec(ic.id);
+    if (match === null) {
+      return undefined;
+    }
+    const id = parseInt(match[1]);
+    if (!isFakeCourseId(id)) {
+      return undefined;
+    }
+    return {
+      id,
+      name: ic.name,
+      credit: ic.credit,
+      takenYear: ic.takenYear,
+      grade: "free",
+    };
+  }
+
+  function tryAsReal(ic: LocalDataV1ImportedCourse): RealCourse | undefined {
+    if (!isCourseId(ic.id) || ic.grade === "free") {
+      return undefined;
+    }
+    return {
+      id: ic.id,
+      name: ic.name,
+      credit: ic.credit,
+      takenYear: ic.takenYear,
+      grade: ic.grade,
+    };
+  }
+
+  const mightTakeCourseIds: CourseId[] = [];
+  for (const ids of Object.values(v1.courseYearToMightTakeCourseIds)) {
+    for (const id of ids) {
+      if (isCourseId(id)) {
+        mightTakeCourseIds.push(id);
+      }
+    }
+  }
+
+  const realCourses: RealCourse[] = [];
+  const fakeCourses: FakeCourse[] = [];
+  for (const ic of v1.importedCourses) {
+    const fake = tryAsFake(ic);
+    if (fake !== undefined) {
+      fakeCourses.push(fake);
+      continue;
+    }
+    const real = tryAsReal(ic);
+    if (real !== undefined) {
+      realCourses.push(real);
+      continue;
+    }
+    console.warn("Bad v1 imported course:", ic);
+  }
+
   return {
-    version: localData.version,
-    courseYearToMightTakeCourseIds: new Map(
-      map(
-        Object.entries(localData.courseYearToMightTakeCourseIds),
-        ([year, x]) => {
-          return [parseInt(year as string), x as string[]];
-        },
-      ),
-    ),
-    importedCourses: localData.importedCourses,
-    native: localData.native,
+    version: 2,
+    mightTakeCourseIds,
+    realCourses,
+    fakeCourses,
+    native: v1.native,
   };
 }
 
-function stringifyLocalData(localData: AkikoLocalData): string {
-  return JSON.stringify({
-    version: localData.version,
-    courseYearToMightTakeCourseIds: Object.fromEntries(
-      localData.courseYearToMightTakeCourseIds.entries(),
-    ),
-    importedCourses: localData.importedCourses,
-    native: localData.native,
-  });
+const localDataV1Parser = z.object({
+  version: z.literal(1),
+  courseYearToMightTakeCourseIds: z.record(z.string(), z.array(z.string())),
+  importedCourses: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      grade: z.union([
+        z.literal("wip"),
+        z.literal("a+"),
+        z.literal("a"),
+        z.literal("b"),
+        z.literal("c"),
+        z.literal("d"),
+        z.literal("pass"),
+        z.literal("fail"),
+      ]),
+      credit: z.number(),
+      takenYear: z.number(),
+    }),
+  ),
+  native: z.boolean(),
+});
+
+const localDataV2Parser = z.object({
+  version: z.literal(2),
+  mightTakeCourseIds: z.array(z.string()),
+  native: z.boolean(),
+  realCourses: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      credit: z.number().optional(),
+      takenYear: z.number(),
+      grade: z.string(),
+    }),
+  ),
+  fakeCourses: z.array(
+    z.object({
+      id: z.number(),
+      name: z.string(),
+      credit: z.number().optional(),
+      takenYear: z.number(),
+      grade: z.literal("free"),
+    }),
+  ),
+});
+
+function localDataV2Parse(x: unknown): LocalDataV2 | undefined {
+  const result = localDataV2Parser.safeParse(x);
+  if (!result.success) {
+    return undefined;
+  }
+
+  const mightTakeCourseIds: CourseId[] = [];
+  for (const id of result.data.mightTakeCourseIds) {
+    if (!isCourseId(id)) {
+      return undefined;
+    }
+    mightTakeCourseIds.push(id);
+  }
+
+  const realCourses: RealCourse[] = [];
+  for (const c of result.data.realCourses) {
+    if (!isCourseId(c.id) || !isGrade(c.grade)) {
+      return undefined;
+    }
+    realCourses.push({
+      id: c.id,
+      name: c.name,
+      credit: c.credit,
+      takenYear: c.takenYear,
+      grade: c.grade,
+    });
+  }
+
+  const fakeCourses: FakeCourse[] = [];
+  for (const c of result.data.fakeCourses) {
+    if (!isFakeCourseId(c.id)) {
+      return undefined;
+    }
+    fakeCourses.push({
+      id: c.id,
+      name: c.name,
+      credit: c.credit,
+      takenYear: c.takenYear,
+      grade: c.grade,
+    });
+  }
+
+  return {
+    version: result.data.version,
+    mightTakeCourseIds,
+    native: result.data.native,
+    realCourses,
+    fakeCourses,
+  };
+}
+
+function localDataFromJson(json: string): LocalDataV2 | undefined {
+  const x: unknown = JSON.parse(json);
+  const v1 = localDataV1Parser.safeParse(x);
+  if (v1.success) {
+    return localDataV1ToV2(v1.data);
+  }
+  const v2 = localDataV2Parse(x);
+  if (v2 !== undefined) {
+    return v2;
+  }
+}
+
+function localDataDefault(): LocalDataV2 {
+  return {
+    version: 2,
+    mightTakeCourseIds: [],
+    realCourses: [],
+    fakeCourses: [],
+    native: true,
+  };
+}
+
+function localDataLoad(key: string): LocalDataV2 | undefined {
+  const json = localStorage.getItem(key);
+  if (json !== null) {
+    return localDataFromJson(json);
+  }
+}
+
+function localDataStore(key: string, l: LocalDataV2): void {
+  localStorage.setItem(key, JSON.stringify(l));
 }
 
 class CreditSumView extends HTMLElement {
-  private cellWiseTakenSumSpan: HTMLSpanElement | undefined = undefined;
-  private cellWiseTakenAndMightTakeSumSpan: HTMLSpanElement | undefined =
-    undefined;
-  private columnWiseTakenSumSpan: HTMLSpanElement | undefined = undefined;
-  private columnWiseTakenAndMightTakeSumSpan: HTMLSpanElement | undefined =
-    undefined;
+  private p: HTMLElement | undefined;
 
   constructor() {
     super();
@@ -163,382 +259,33 @@ class CreditSumView extends HTMLElement {
   protected connectedCallback(): void {
     this.innerHTML = `
       <h2>単位数</h2>
-      <div>
-        <p>マスを選択してください</p>
-        <ul>
-          <li>選択されているマス<ul>
-              <li>取得済み：<span></span></li>
-              <li>取得済み＋取る授業：<span></span></li>
-            </ul>
-          </li>
-          <li>選択されている列の全マス<ul>
-              <li>取得済み：<span></span></li>
-              <li>取得済み＋取る授業：<span></span></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
+      <p></p>
     `;
-    [
-      this.cellWiseTakenSumSpan,
-      this.cellWiseTakenAndMightTakeSumSpan,
-      this.columnWiseTakenSumSpan,
-      this.columnWiseTakenAndMightTakeSumSpan,
-    ] = this.getElementsByTagName("span");
+    const p = this.querySelector("p");
+    assert(p !== null);
+    this.p = p;
   }
 
-  public update(credits: [CellCredit, ColumnCredit] | undefined): void {
-    if (
-      this.cellWiseTakenSumSpan === undefined ||
-      this.cellWiseTakenAndMightTakeSumSpan === undefined ||
-      this.columnWiseTakenSumSpan === undefined ||
-      this.columnWiseTakenAndMightTakeSumSpan === undefined
-    ) {
+  public update(cell: CellCreditStats | undefined): void {
+    if (this.p === undefined) {
       return;
     }
 
-    this.classList.toggle("no-cell-selected", credits === undefined);
-    if (credits !== undefined) {
-      const [cellCredit, columnCredit] = credits;
-      const cellMessage = CreditSumView.cellCreditToMessage(cellCredit);
-      const columnMessage = CreditSumView.columnCreditToMessage(columnCredit);
-      this.cellWiseTakenSumSpan.innerHTML = cellMessage.taken;
-      this.cellWiseTakenAndMightTakeSumSpan.innerHTML =
-        cellMessage.takenAndMightTake;
-      this.columnWiseTakenSumSpan.innerHTML = columnMessage.taken;
-      this.columnWiseTakenAndMightTakeSumSpan.innerHTML =
-        columnMessage.takenAndMightTake;
+    this.classList.toggle("no-cell-selected", cell === undefined);
+    if (cell === undefined) {
+      this.p.textContent = "マスを選択してください";
+    } else {
+      const { brief, warning } = cellCreditStatsDisplay(cell);
+      let content = "選択されたマスの単位：" + brief;
+      if (warning !== undefined) {
+        content += "<br>⚠️ ";
+        content += warning;
+      }
+      this.p.innerHTML = content;
     }
-  }
-
-  private static cellCreditToMessage(cellCredit: CellCredit): {
-    taken: string;
-    takenAndMightTake: string;
-  } {
-    const { takenSum, mightTakeSum, requirements } = cellCredit;
-    const takenAndMightTakeSum = takenSum + mightTakeSum;
-    let taken = `${takenSum}/${requirements.creditMin}`;
-    let takenAndMightTake = `${takenAndMightTakeSum}/${requirements.creditMin}`;
-    if (takenSum > (requirements.creditMax ?? Infinity)) {
-      taken += `（⚠️${requirements.creditMax}単位まで有効）`;
-    }
-    if (takenAndMightTakeSum > (requirements.creditMax ?? Infinity)) {
-      takenAndMightTake += `（⚠️${requirements.creditMax}単位まで有効）`;
-    }
-    return { taken, takenAndMightTake };
-  }
-
-  private static columnCreditToMessage(columnCredit: ColumnCredit): {
-    taken: string;
-    takenAndMightTake: string;
-  } {
-    return CreditSumView.cellCreditToMessage(columnCredit);
   }
 }
 window.customElements.define("credit-sum-view", CreditSumView);
-
-class Akiko {
-  requirementsTableYear: number;
-  cellIdToCell: Map<string, Cell>;
-  courseIdToCellId: Map<string, string>;
-
-  constructor(
-    requirementsTableYear: number,
-    cellIdToCell: Map<string, Cell>,
-    courseIdToCellId: Map<string, string>,
-  ) {
-    this.requirementsTableYear = requirementsTableYear;
-    this.cellIdToCell = cellIdToCell;
-    this.courseIdToCellId = courseIdToCellId;
-  }
-
-  moveCourse(
-    direction: "wont-take-to-might-take" | "might-take-to-wont-take",
-    courseId: string,
-  ):
-    | {
-        kind: "unknown-course-id";
-        courseId: string;
-      }
-    | {
-        kind: "already-moved";
-        courseId: string;
-      }
-    | undefined {
-    const cellId = this.courseIdToCellId.get(courseId);
-    if (cellId === undefined) {
-      return { kind: "unknown-course-id", courseId };
-    }
-    const cell = this.cellIdToCell.get(cellId);
-    assert(cell !== undefined);
-    const [from, to] =
-      direction === "wont-take-to-might-take"
-        ? [cell.courseIdToWontTakeCourse, cell.courseIdToMightTakeCourse]
-        : [cell.courseIdToMightTakeCourse, cell.courseIdToWontTakeCourse];
-    const course = from.get(courseId);
-    if (course === undefined) {
-      assert(to.has(courseId) || cell.courseIdToTakenCourse.has(courseId));
-      return { kind: "already-moved", courseId };
-    }
-    from.delete(courseId);
-    to.set(courseId, course);
-  }
-
-  calculateCellIdToCellCredit(): Map<string, CellCredit> {
-    const cellIdToCellCredit: Map<string, CellCredit> = new Map();
-    for (const [cellId, cell] of this.cellIdToCell.entries()) {
-      cellIdToCellCredit.set(cellId, {
-        takenSum: mapSum(
-          cell.courseIdToTakenCourse.values(),
-          ([_, c]) => c.credit ?? 0,
-        ),
-        mightTakeSum: mapSum(
-          cell.courseIdToMightTakeCourse.values(),
-          ([c, _]) => c.credit ?? 0,
-        ),
-        requirements: {
-          creditMin: cell.creditRequirements.creditMin,
-          creditMax: cell.creditRequirements.creditMax,
-        },
-      });
-    }
-    return cellIdToCellCredit;
-  }
-
-  *nonImportedMightTakeCourses(): Generator<Course> {
-    for (const cell of this.cellIdToCell.values()) {
-      for (const [
-        course,
-        importedCourse,
-      ] of cell.courseIdToMightTakeCourse.values()) {
-        if (
-          importedCourse === undefined ||
-          importedCourse.grade === "d" ||
-          importedCourse.grade === "fail"
-        ) {
-          yield course;
-        }
-      }
-    }
-  }
-
-  static fromCellIdToCourses(
-    cellIdToCellMetadata: Map<string, CellMetadata>,
-    requirementsTableYear: number,
-    courses: Course[],
-    importedCourses: ImportedCourse[],
-    native: boolean,
-  ): Akiko {
-    // 同じ授業を複数回履修している場合最新の授業の成績を使う。
-    // 一度落単した授業を取り直して単位を取った場合など。
-    importedCourses = Array.from(importedCourses);
-    importedCourses.sort((a, b) => a.takenYear - b.takenYear);
-
-    const courseIdToMaybeImportedCourse = new Map<string, MaybeImportedCourse>(
-      map(courses.values(), (course) => [
-        course.id,
-        { id: course.id, course, importedCourse: undefined },
-      ]),
-    );
-    let freeCount = 0;
-    for (const importedCourse of importedCourses) {
-      if (importedCourse.id === "") {
-        // 認可された授業がインポートされた
-        importedCourse.id = `__free${freeCount}`;
-        freeCount++;
-      }
-      // TODO: requirementsTableYearより過去の授業が来た場合対応
-      const maybeImportedCourse = courseIdToMaybeImportedCourse.get(
-        importedCourse.id,
-      );
-      if (maybeImportedCourse === undefined) {
-        courseIdToMaybeImportedCourse.set(importedCourse.id, {
-          id: importedCourse.id,
-          course: undefined,
-          importedCourse,
-        });
-      } else {
-        maybeImportedCourse.importedCourse = importedCourse;
-      }
-    }
-
-    const lostCourseIds = new Set(importedCourses.map((c) => c.id));
-    for (const course of importedCourses) {
-      for (const meta of cellIdToCellMetadata.values()) {
-        if (meta.filter(course.id, { name: course.name, native })) {
-          lostCourseIds.delete(course.id);
-          break;
-        }
-      }
-    }
-    console.debug("どのマスにも振り分けられなかった授業");
-    for (const id of lostCourseIds.values()) {
-      const c = courses.find((c) => c.id === id);
-      console.debug(id, c?.name);
-    }
-
-    const akiko = new Akiko(requirementsTableYear, new Map(), new Map());
-    for (const [cellId, cellMetadata] of cellIdToCellMetadata.entries()) {
-      const maybeImportedCourses = Array.from(
-        filter(courseIdToMaybeImportedCourse.values(), (c) =>
-          cellMetadata.filter(c.id, {
-            name: maybeImportedCourseGetName(c),
-            native,
-          }),
-        ),
-      );
-      const cell: Cell = {
-        creditRequirements: {
-          creditMin: cellMetadata.creditMin,
-          creditMax: cellMetadata.creditMax,
-        },
-        courseIdToWontTakeCourse: new Map(),
-        courseIdToMightTakeCourse: new Map(),
-        courseIdToTakenCourse: new Map(),
-      };
-      for (const maybeImportedCourse of maybeImportedCourses) {
-        const { id, course, importedCourse } = maybeImportedCourse;
-        if (
-          !cellMetadata.filter(id, {
-            name: maybeImportedCourseGetName(maybeImportedCourse),
-            native,
-          })
-        ) {
-          continue;
-        }
-        if (course !== undefined && importedCourse !== undefined) {
-          switch (importedCourse.grade) {
-            case "wip": {
-              cell.courseIdToMightTakeCourse.set(id, [course, importedCourse]);
-              break;
-            }
-            case "a+":
-            case "a":
-            case "b":
-            case "c":
-            case "pass":
-            case "free": {
-              cell.courseIdToTakenCourse.set(id, [course, importedCourse]);
-              break;
-            }
-            case "d":
-            case "fail": {
-              cell.courseIdToWontTakeCourse.set(id, [course, importedCourse]);
-              break;
-            }
-          }
-        } else if (importedCourse === undefined) {
-          cell.courseIdToWontTakeCourse.set(id, [course, undefined]);
-        } else {
-          cell.courseIdToTakenCourse.set(id, [undefined, importedCourse]);
-        }
-      }
-      akiko.cellIdToCell.set(cellId, cell);
-      for (const { id } of maybeImportedCourses) {
-        akiko.courseIdToCellId.set(id, cellId);
-      }
-    }
-    return akiko;
-  }
-}
-
-type Cell = {
-  creditRequirements: CellCreditRequirements;
-  courseIdToWontTakeCourse: Map<string, [Course, ImportedCourse | undefined]>;
-  courseIdToMightTakeCourse: Map<string, [Course, ImportedCourse | undefined]>;
-  courseIdToTakenCourse: Map<string, [Course | undefined, ImportedCourse]>;
-};
-
-function* map<T, U>(ts: Iterable<T>, f: (t: T) => U): Generator<U> {
-  for (const t of ts) {
-    yield f(t);
-  }
-}
-
-function* filter<T>(
-  ts: Iterable<T>,
-  predicate: (t: T) => boolean,
-): Generator<T> {
-  for (const t of ts) {
-    if (predicate(t)) {
-      yield t;
-    }
-  }
-}
-
-function* zipMapIntersection<K, Va, Vb>(
-  a: Map<K, Va>,
-  b: Map<K, Vb>,
-): Generator<[K, Va, Vb]> {
-  for (const [key, av] of a.entries()) {
-    const bv = b.get(key);
-    if (bv !== undefined) {
-      yield [key, av, bv];
-    }
-  }
-}
-
-function compareStrings(a: string, b: string): number {
-  if (a < b) {
-    return -1;
-  } else if (a > b) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
-function stringToHtmlElement(s: string): HTMLElement {
-  const t = document.createElement("template");
-  t.innerHTML = s;
-  const child = t.content.firstElementChild;
-  assert(child instanceof HTMLElement);
-  return child;
-}
-
-function escapeHtml(html: string): string {
-  return html
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function updateCourseContainers(
-  courseContainers: CourseContainers,
-  cellTbodys: CellTbodys,
-): void {
-  for (const [courseContainer, cellTbody] of [
-    [courseContainers.notTaken, cellTbodys.notTaken],
-    [courseContainers.mightTake, cellTbodys.mightTake],
-    [courseContainers.taken, cellTbodys.taken],
-  ] as const) {
-    if (cellTbody.childElementCount === 0) {
-      courseContainer.classList.add("contains-no-courses");
-    } else {
-      courseContainer.classList.remove("contains-no-courses");
-    }
-  }
-}
-
-function updateCourseTables(
-  courseTables: CourseTables,
-  cellTbodys: CellTbodys,
-): void {
-  for (const e of courseTables.notTaken.getElementsByTagName("tbody")) {
-    e.remove();
-  }
-  for (const e of courseTables.mightTake.getElementsByTagName("tbody")) {
-    e.remove();
-  }
-  for (const e of courseTables.taken.getElementsByTagName("tbody")) {
-    e.remove();
-  }
-  courseTables.notTaken.appendChild(cellTbodys.notTaken);
-  courseTables.mightTake.appendChild(cellTbodys.mightTake);
-  courseTables.taken.appendChild(cellTbodys.taken);
-}
 
 function mustGetElementById(id: string): HTMLElement {
   const e = document.getElementById(id);
@@ -577,7 +324,7 @@ function mustQuerySelectorOfType<T extends HTMLElement>(
   return e;
 }
 
-function parseImportedCourseGrade(s: string): ImportedCourseGrade | undefined {
+function parseImportedCourseGrade(s: string): Grade | "free" | undefined {
   switch (s) {
     case "履修中":
       return "wip";
@@ -600,311 +347,56 @@ function parseImportedCourseGrade(s: string): ImportedCourseGrade | undefined {
   }
 }
 
-function isStringArray(array: unknown[]): array is string[] {
-  for (const e of array) {
-    if (typeof e !== "string") {
-      return false;
-    }
-  }
-  return true;
-}
-
-function parseImportedCourse(row: unknown[]): ImportedCourse | undefined {
-  if (!(isStringArray(row) && row.length === 11)) {
-    return;
-  }
-  for (let i = 0; i < row.length; i++) {
-    row[i] = row[i].trim();
+function parseImportedCourse(row: string[]): ImportedCourse | undefined {
+  if (row.length !== 11) {
+    return undefined;
   }
   // 学籍番号, 学生氏名, 科目番号, 科目名, 単位数, 春学期, 秋学期, 総合評価, 科目区分, 開講年度, 開講区分
   const [, , id, name, rawCredit, , , rawGrade, , rawYearTaken, ,] = row;
   const grade = parseImportedCourseGrade(rawGrade);
-  if (grade === undefined) {
-    return;
+  const credit = tryParseFloat(rawCredit);
+  const takenYear = tryParseInt(rawYearTaken);
+  if (!(grade !== undefined && takenYear !== undefined)) {
+    return undefined;
   }
-  const credit = parseFloat(rawCredit);
-  if (isNaN(credit)) {
-    return;
+  if (isCourseId(id) && grade !== "free") {
+    return { id, name, credit, takenYear, grade };
+  } else if (id === "" && grade === "free") {
+    return { id: fakeCourseIdNewUnique(), name, credit, takenYear, grade };
   }
-  const takenYear = parseInt(rawYearTaken);
-  if (isNaN(takenYear)) {
-    return;
-  }
-  return { id, name, grade, credit, takenYear };
 }
 
 type CsvToImportedCoursesResult =
-  | {
-      kind: "ok";
-      importedCourses: ImportedCourse[];
-    }
-  | {
-      kind: "failed-to-parse-as-csv";
-    }
-  | {
-      kind: "unexpected-csv-content";
-    };
+  | { kind: "ok"; realCourses: RealCourse[]; fakeCourses: FakeCourse[] }
+  | { kind: "failed-to-parse-as-csv" }
+  | { kind: "unexpected-csv-content" };
 
 function csvToImportedCourses(csv: string): CsvToImportedCoursesResult {
-  let rows: unknown;
+  let rows: string[][];
   try {
-    rows = parse(csv, { trim: true });
+    rows = parseCsv(csv, { trim: true });
   } catch {
     return { kind: "failed-to-parse-as-csv" };
   }
-  if (!(Array.isArray(rows) && rows.length >= 1)) {
+  if (rows.length === 0) {
     return { kind: "unexpected-csv-content" };
   }
 
-  const importedCourses: ImportedCourse[] = [];
+  const realCourses: RealCourse[] = [];
+  const fakeCourses: FakeCourse[] = [];
+
   for (const row of rows.slice(1)) {
-    const importedCourse = parseImportedCourse(row as unknown[]);
-    if (importedCourse === undefined) {
+    const ic = parseImportedCourse(row);
+    if (ic === undefined) {
       return { kind: "unexpected-csv-content" };
-    }
-    importedCourses.push(importedCourse);
-  }
-  return { kind: "ok", importedCourses };
-}
-
-function mapSum<T>(elements: Iterable<T>, f: (t: T) => number): number {
-  let sum = 0;
-  for (const e of elements) {
-    sum += f(e);
-  }
-  return sum;
-}
-
-function calculateColumnIdToColumnCredit(
-  cellIdToCellCredit: Map<string, CellCredit>,
-  columnIdToColumnCreditRequirements: Record<string, ColumnCreditRequirements>,
-): Map<string, ColumnCredit> {
-  const columnIdToColumnCredit: Map<string, ColumnCredit> = new Map();
-  for (const [columnId, columnCreditRequirements] of Object.entries(
-    columnIdToColumnCreditRequirements,
-  )) {
-    const entries = Array.from(cellIdToCellCredit.entries()).filter(([id, _]) =>
-      id.startsWith(columnId),
-    );
-    const takenSum = mapSum(entries, ([_, { takenSum, requirements }]) =>
-      Math.min(takenSum, requirements.creditMax ?? Infinity),
-    );
-    const mightTakeSum = mapSum(
-      entries,
-      ([_, { mightTakeSum, requirements }]) =>
-        Math.min(mightTakeSum, requirements.creditMax ?? Infinity),
-    );
-    columnIdToColumnCredit.set(columnId, {
-      takenSum,
-      mightTakeSum,
-      requirements: columnCreditRequirements,
-    });
-  }
-  return columnIdToColumnCredit;
-}
-
-function calculateNetCredit(
-  columnIdToColumnCredit: Map<string, ColumnCredit>,
-  netRequired: number,
-): NetCredit {
-  const columnCredits: ColumnCredit[] = [];
-  for (const [id, c] of columnIdToColumnCredit.entries()) {
-    // FIXME
-    if (id === "b" || id === "d" || id === "f" || id === "h") {
-      columnCredits.push(c);
-    }
-  }
-  const takenSum = mapSum(columnCredits, (c) =>
-    Math.min(c.takenSum, c.requirements.creditMax),
-  );
-  const mightTakeSum = mapSum(columnCredits, (c) =>
-    Math.min(c.mightTakeSum, c.requirements.creditMax),
-  );
-  return { takenSum, mightTakeSum, required: netRequired };
-}
-
-function cellIdToColumnId(cellId: string): string {
-  return cellId[0];
-}
-
-function selectedCellCreditAndColumnCredit(
-  selectedCellId: string,
-  cellIdToCellCredit: Map<string, CellCredit>,
-  columnIdToColumnCredit: Map<string, ColumnCredit>,
-): [CellCredit, ColumnCredit] | undefined {
-  const cellCredit = cellIdToCellCredit.get(selectedCellId);
-  const columnCredit = columnIdToColumnCredit.get(
-    cellIdToColumnId(selectedCellId),
-  );
-  if (cellCredit !== undefined && columnCredit !== undefined) {
-    return [cellCredit, columnCredit];
-  }
-}
-
-function lfToBr(s: string): string {
-  return s.replace(/\n/g, "<br>");
-}
-
-function initializeCourseElements(
-  akiko: Akiko,
-  cellIdToCellTbodys: Map<string, CellTbodys>,
-  courseYear: number,
-): void {
-  const gradeToString: { [key in ImportedCourseGrade]: string } = {
-    wip: "履修中",
-    "a+": "A+",
-    a: "A",
-    b: "B",
-    c: "C",
-    d: "落単済",
-    pass: "P",
-    fail: "落単済",
-    free: "認可",
-  };
-
-  for (const [_, cell, cellTbodys] of zipMapIntersection(
-    akiko.cellIdToCell,
-    cellIdToCellTbodys,
-  )) {
-    const wontTakeCourses = Array.from(cell.courseIdToWontTakeCourse.values());
-    wontTakeCourses.sort(([a], [b]) => compareStrings(a.id, b.id));
-    const wontTakeCourseElements = wontTakeCourses.map(
-      ([course, importedCourse]) => {
-        const grade =
-          importedCourse === undefined
-            ? ""
-            : `（${gradeToString[importedCourse.grade]}）`;
-        const element = stringToHtmlElement(`
-<tr class="course" draggable="true" data-course-id="${course.id}">
-  <td class="id-name">${course.id}<br>
-    <a href="https://kdb.tsukuba.ac.jp/syllabi/${courseYear}/${
-      course.id
-    }/jpn" target="_blank" draggable="false">${course.name}</a>
-    <span>${grade}</span>
-  </td>
-  <td class="credit">${course.credit ?? "-"}</td>
-  <td class="term">${lfToBr(course.term)}</td>
-  <td class="when">${lfToBr(course.when)}</td>
-  <td class="expects">${course.expects}</td>
-</tr>
-`);
-        element.addEventListener("dragstart", (event) => {
-          if (!(event.target instanceof HTMLTableRowElement)) {
-            return;
-          }
-          event.dataTransfer?.setData("text/plain", course.id);
-        });
-        return element;
-      },
-    );
-
-    const mightTakeCourses = Array.from(
-      cell.courseIdToMightTakeCourse.values(),
-    );
-    mightTakeCourses.sort(([a], [b]) => compareStrings(a.id, b.id));
-    const mightTakeCourseElements = mightTakeCourses.map(
-      ([course, importedCourse]) => {
-        const grade =
-          importedCourse === undefined
-            ? ""
-            : `（${gradeToString[importedCourse.grade]}）`;
-        const element = stringToHtmlElement(`
-<tr class="course" draggable="true" data-course-id="${course.id}">
-  <td class="id-name">${course.id}<br>
-    <a href="https://kdb.tsukuba.ac.jp/syllabi/${courseYear}/${
-      course.id
-    }/jpn" target="_blank" draggable="false">${course.name}</a>
-    <span>${grade}</span>
-  </td>
-  <td class="credit">${course.credit ?? "-"}</td>
-  <td class="term">${lfToBr(course.term)}</td>
-  <td class="when">${lfToBr(course.when)}</td>
-  <td class="expects">${course.expects}</td>
-</tr>
-`);
-        element.addEventListener("dragstart", (event) => {
-          if (!(event.target instanceof HTMLTableRowElement)) {
-            return;
-          }
-          event.dataTransfer?.setData("text/plain", course.id);
-        });
-        return element;
-      },
-    );
-
-    const takenCourses = Array.from(cell.courseIdToTakenCourse.values());
-    takenCourses.sort(([, a], [, b]) => compareStrings(a.id, b.id));
-    const takenCourseElements = takenCourses.map(([course, importedCourse]) => {
-      const id = importedCourse.id.startsWith("__free")
-        ? ""
-        : importedCourse.id;
-      const element = stringToHtmlElement(`
-<tr class="course">
-  <td class="id-name">${escapeHtml(id)}<br>
-    <a href="https://kdb.tsukuba.ac.jp/syllabi/${importedCourse.takenYear}/${
-      importedCourse.id
-    }/jpn" target="_blank" draggable="false">${escapeHtml(
-      importedCourse.name,
-    )}</a>
-    <span>(${escapeHtml(importedCourse.takenYear.toString())})</span><br>
-    <span>評価：${escapeHtml(gradeToString[importedCourse.grade])}</span>
-  </td>
-  <td class="credit">${escapeHtml(
-    importedCourse.credit?.toString() ?? "-",
-  )}</td>
-  <td class="term">${lfToBr(course?.term ?? "-")}</td>
-  <td class="when">${lfToBr(course?.when ?? "-")}</td>
-  <td class="expects">${course?.expects ?? "-"}</td>
-</tr>
-`);
-      return element;
-    });
-
-    cellTbodys.notTaken.replaceChildren(...wontTakeCourseElements);
-    cellTbodys.mightTake.replaceChildren(...mightTakeCourseElements);
-    cellTbodys.taken.replaceChildren(...takenCourseElements);
-  }
-}
-
-function insertCourseElement(
-  tbody: HTMLElement,
-  courseId: string,
-  courseElement: HTMLElement,
-): void {
-  for (const child of tbody.children) {
-    assert(child instanceof HTMLTableRowElement);
-    const childCourseId = child.dataset.courseId;
-    assert(childCourseId !== undefined);
-    if (courseId < childCourseId) {
-      child.insertAdjacentElement("beforebegin", courseElement);
-      return;
-    }
-  }
-  tbody.appendChild(courseElement);
-}
-
-function updateCellGauge(
-  cellIdToCellElement: Map<string, HTMLElement>,
-  cellIdToCellCredit: Map<string, CellCredit>,
-): void {
-  for (const [, cellElement, cellCredit] of zipMapIntersection(
-    cellIdToCellElement,
-    cellIdToCellCredit,
-  )) {
-    let green: number;
-    let yellow: number;
-    if (cellCredit.requirements.creditMin === 0) {
-      green = 1;
-      yellow = 1;
+    } else if (ic.grade === "free") {
+      fakeCourses.push(ic);
     } else {
-      green = cellCredit.takenSum / cellCredit.requirements.creditMin;
-      yellow =
-        (cellCredit.takenSum + cellCredit.mightTakeSum) /
-        cellCredit.requirements.creditMin;
+      realCourses.push(ic);
     }
-    cellElement.style.setProperty("--green-percentage", `${100 * green}%`);
-    cellElement.style.setProperty("--yellow-percentage", `${100 * yellow}%`);
   }
+
+  return { kind: "ok", realCourses, fakeCourses };
 }
 
 class Debouncer {
@@ -926,105 +418,199 @@ class Debouncer {
   }
 }
 
-function columnCreditToString(c: ColumnCredit): string {
-  let res = "計 ";
-  if (c.mightTakeSum === 0) {
-    res += c.takenSum.toString();
+function cellCreditStatsDisplay(c: CellCreditStats): {
+  brief: string;
+  warning: string | undefined;
+} {
+  let brief = "計 ";
+  if (c.effectiveMightTake === 0) {
+    brief += c.effectiveTaken.toString();
   } else {
-    res += `${c.takenSum} → ${c.takenSum + c.mightTakeSum}`;
+    brief += `${c.effectiveTaken} → ${c.effectiveTaken + c.effectiveMightTake}`;
   }
-  res += " 単位";
-  return res;
-}
+  brief += " 単位";
 
-function columnCreditIsExcessive(c: ColumnCredit): boolean {
-  return c.takenSum + c.mightTakeSum > c.requirements.creditMax;
-}
-
-function columnCreditToWarning(c: ColumnCredit): string | undefined {
-  if (!columnCreditIsExcessive(c)) {
-    return undefined;
+  let warning: string | undefined;
+  if (c.overflowTotal > 0) {
+    warning = `このマスは合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、${c.overflowTotal}単位無駄になります。`;
   }
-  const sum = c.takenSum + c.mightTakeSum;
-  return `この列は合計で${c.requirements.creditMax}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${sum}単位なので、${sum - c.requirements.creditMax}単位無駄になります。`;
+
+  return { brief, warning };
 }
 
-function netCreditToString(c: NetCredit): string {
-  let res = "選択科目計 ";
-  if (c.mightTakeSum === 0) {
-    res += `${c.takenSum}/${c.required}`;
+function columnCreditStatsDisplay(c: ColumnCreditStats): {
+  brief: string;
+  warning: string | undefined;
+} {
+  let brief = "計 ";
+  if (c.effectiveMightTake === 0) {
+    brief += c.effectiveTaken.toString();
   } else {
-    res += `${c.takenSum} → ${c.takenSum + c.mightTakeSum}/${c.required}`;
+    brief += `${c.effectiveTaken} → ${c.effectiveTaken + c.effectiveMightTake}`;
   }
-  res += " 単位";
-  return res;
+  brief += " 単位";
+
+  let warning: string | undefined;
+  if (c.overflowTotal > 0) {
+    warning = `この列は合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、${c.overflowTotal}単位無駄になります。`;
+  }
+
+  return { brief, warning };
 }
 
-function netCreditIsExcessive(c: NetCredit): boolean {
-  return c.takenSum + c.mightTakeSum > c.required;
-}
-
-function netCreditToWarning(c: NetCredit): string | undefined {
-  if (!netCreditIsExcessive(c)) {
-    return undefined;
+function electiveCreditStatsDisplay(c: ElectiveCreditStats): {
+  brief: string;
+  warning: string | undefined;
+} {
+  let brief = "選択科目計 ";
+  if (c.effectiveMightTake === 0) {
+    brief += c.effectiveTaken.toString();
+  } else {
+    brief += `${c.effectiveTaken} → ${c.effectiveTaken + c.effectiveMightTake}`;
   }
-  const sum = c.takenSum + c.mightTakeSum;
-  return `全体の合計で${c.required}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${sum}単位なので、${sum - c.required}単位無駄になります。`;
+  brief += " 単位";
+
+  let warning: string | undefined;
+  if (c.overflowTotal > 0) {
+    warning = `選択科目全体は合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、${c.overflowTotal}単位無駄になります。`;
+  }
+
+  return { brief, warning };
 }
 
 function creditToGreenYellowPercentages(
-  c: CellCredit | ColumnCredit,
+  mightTaken: number,
+  taken: number,
+  min: number,
 ): [number, number] {
-  if (c.requirements.creditMin === 0) {
+  if (min === 0) {
     return [100, 100];
   }
-  const green = c.takenSum / c.requirements.creditMin;
-  const yellow = (c.takenSum + c.mightTakeSum) / c.requirements.creditMin;
-  return [100 * Math.min(green, 1), 100 * Math.min(yellow, 1)];
-}
-
-function netCreditToGreenYellowPercentages(c: NetCredit): [number, number] {
-  const green = c.takenSum / c.required;
-  const yellow = (c.takenSum + c.mightTakeSum) / c.required;
+  const green = taken / min;
+  const yellow = (taken + mightTaken) / min;
   return [100 * Math.min(green, 1), 100 * Math.min(yellow, 1)];
 }
 
 type Rect = { x: number; y: number; width: number; height: number };
 
-export function setup(
-  requirementsTableYear: number,
-  courses: Course[],
-  courseYear: number,
-  department: string,
-  cellIdToCellMetadataRecord: Record<string, CellMetadata>,
-  columnIdToColumnCreditRequirements: Record<string, ColumnCreditRequirements>,
-  netRequired: number,
-  cellIdToRectRecord: Record<string, Rect>,
-): void {
-  const courseIdToCourse = new Map(map(courses, (c) => [c.id, c]));
+export type ClassifyOptions = { isNative: boolean };
 
-  const cellIdToCellMetadata = new Map(
-    Object.entries(cellIdToCellMetadataRecord),
-  );
-  const cellIds = Array.from(cellIdToCellMetadata.keys());
+export function setup(params: {
+  knownCourses: KnownCourse[];
+  knownCourseYear: number;
+  creditRequirements: {
+    cells: Record<string, { min: number; max: number | undefined }>;
+    columns: Record<string, { min: number; max: number }>;
+    compulsory: number;
+    elective: number;
+  };
+  major: string;
+  requirementsTableYear: number;
+  cellIdToRectRecord: Record<string, Rect>;
+  classifyKnownCourses: (
+    cs: KnownCourse[],
+    opts: ClassifyOptions,
+  ) => Map<CourseId, string>;
+  classifyRealCourses: (
+    cs: RealCourse[],
+    opts: ClassifyOptions,
+  ) => Map<CourseId, string>;
+  classifyFakeCourses: (
+    cs: FakeCourse[],
+    opts: ClassifyOptions,
+  ) => Map<FakeCourseId, string>;
+}): void {
+  const localDataKey = `${params.major}_${params.requirementsTableYear}`;
+  const localData = localDataLoad(localDataKey) ?? localDataDefault();
 
-  const cellIdToCellTbodys = new Map<string, CellTbodys>(
-    cellIds.map((id) => [
-      id,
-      {
-        notTaken: document.createElement("tbody"),
-        mightTake: document.createElement("tbody"),
-        taken: document.createElement("tbody"),
-      },
-    ]),
-  );
+  const knownCourses = new Map(params.knownCourses.map((c) => [c.id, c]));
+  const creditRequirements: CreditRequirements = {
+    cells: new Map(),
+    columns: new Map(),
+    compulsoryMin: params.creditRequirements.compulsory,
+    electiveMin: params.creditRequirements.elective,
+  };
+  for (const [id, cell] of Object.entries(params.creditRequirements.cells)) {
+    assert(isCellId(id), `Bad cell id: "${id}"`);
+    creditRequirements.cells.set(id, cell);
+  }
+  for (const [id, col] of Object.entries(params.creditRequirements.columns)) {
+    assert(isColumnId(id), `Bad column id: "${id}"`);
+    creditRequirements.columns.set(id, col);
+  }
 
-  const cellIdToRect = new Map(Object.entries(cellIdToRectRecord));
+  const createAkiko = (): Akiko => {
+    const sortedRealCourses = Array.from(localData.realCourses);
+    sortedRealCourses.sort((a, b) => a.takenYear - b.takenYear);
+    const realCourses = new Map(localData.realCourses.map((c) => [c.id, c]));
+    for (const c of sortedRealCourses) {
+      realCourses.set(c.id, c);
+    }
+
+    const sortedFakeCourses = Array.from(localData.fakeCourses);
+    sortedFakeCourses.sort((a, b) => a.takenYear - b.takenYear);
+    const fakeCourses = new Map(localData.fakeCourses.map((c) => [c.id, c]));
+    for (const c of sortedFakeCourses) {
+      fakeCourses.set(c.id, c);
+    }
+
+    const courseIdToCellId = new Map<CourseId, CellId>();
+    const realCoursePositions = new Map<CourseId, CellId>();
+    const fakeCoursePositions = new Map<FakeCourseId, CellId>();
+
+    const classifyOptions: ClassifyOptions = { isNative: localData.native };
+    for (const [courseId, cellId] of params.classifyKnownCourses(
+      params.knownCourses,
+      classifyOptions,
+    )) {
+      assert(isCellId(cellId), `Bad cell id: "${cellId}"`);
+      courseIdToCellId.set(courseId, cellId);
+    }
+    for (const [courseId, cellId] of params.classifyRealCourses(
+      localData.realCourses,
+      classifyOptions,
+    )) {
+      assert(isCellId(cellId), `Bad cell id: "${cellId}"`);
+      realCoursePositions.set(courseId, cellId);
+    }
+    for (const [fakeCourseId, cellId] of params.classifyFakeCourses(
+      localData.fakeCourses,
+      classifyOptions,
+    )) {
+      assert(isCellId(cellId), `Bad cell id: "${cellId}"`);
+      fakeCoursePositions.set(fakeCourseId, cellId);
+    }
+
+    const akiko = akikoNew(
+      knownCourses,
+      realCourses,
+      fakeCourses,
+      localData.mightTakeCourseIds,
+      courseIdToCellId,
+      realCoursePositions,
+      fakeCoursePositions,
+      creditRequirements,
+    );
+    assert(akiko !== undefined);
+    return akiko;
+  };
+
+  let akiko = createAkiko();
+  let selectedCellId: CellId | undefined = undefined;
+  let filterString = "";
+
+  const cellIdToRect = new Map<CellId, Rect>();
+  for (const [id, rect] of Object.entries(params.cellIdToRectRecord)) {
+    assert(isCellId(id), `Bad cell id: "${id}"`);
+    cellIdToRect.set(id, rect);
+  }
 
   const requirementsElement = mustGetElementById("requirements");
-  const cellIdToCellElement = new Map<string, HTMLDivElement>();
+  const cellIdToCellElement = new Map<CellId, HTMLDivElement>();
+
   for (const [id, rect] of cellIdToRect.entries()) {
-    if (!cellIdToCellMetadata.has(id)) {
+    if (!creditRequirements.cells.has(id)) {
+      // TODO
       continue;
     }
     const div = document.createElement("div");
@@ -1036,65 +622,26 @@ export function setup(
     div.style.height = `${rect.height}px`;
     requirementsElement.appendChild(div);
     cellIdToCellElement.set(id, div);
+    div.addEventListener("click", (event) => {
+      event.preventDefault();
+      selectedCellId = id;
+      render();
+    });
   }
-  const cellElements = Array.from(cellIdToCellElement.values());
 
   const leftBar = mustGetElementById("left-bar");
-  const leftTable = mustGetElementByIdOfType(
-    "not-taken-table",
-    HTMLTableElement,
-  );
   const rightBar = mustGetElementById("right-bar");
-  const takenTable = mustGetElementByIdOfType("taken-table", HTMLTableElement);
-  const mightTakeTable = mustGetElementByIdOfType(
-    "might-take-table",
-    HTMLTableElement,
-  );
   const creditSumView = document.getElementsByTagName("credit-sum-view")?.[0];
   assert(creditSumView instanceof CreditSumView);
 
   const filterInput = mustGetElementByIdOfType("filter", HTMLInputElement);
   const filterAction = new Debouncer(500, () => {
-    const showOrHide = (e: Element) => {
-      assert(e instanceof HTMLElement && e.dataset.courseId !== undefined);
-      const course = courseIdToCourse.get(e.dataset.courseId);
-      assert(course !== undefined);
-      if (course.id.includes(filter) || course.name.includes(filter)) {
-        e.style.removeProperty("display");
-      } else {
-        e.style.setProperty("display", "none");
-      }
-    };
-    const filter = filterInput.value.trim();
-    for (const tbody of cellIdToCellTbodys.values()) {
-      for (const e of tbody.notTaken.children) {
-        showOrHide(e);
-      }
-      for (const e of tbody.mightTake.children) {
-        showOrHide(e);
-      }
-    }
+    filterString = filterInput.value.trim();
+    render();
   });
   filterInput.addEventListener("input", () => {
     filterAction.call();
   });
-
-  const localDataKey = `${department}_${requirementsTableYear}`;
-  const localDataAsJson = localStorage.getItem(localDataKey);
-  const localData: AkikoLocalData =
-    localDataAsJson === null
-      ? {
-          version: 1,
-          courseYearToMightTakeCourseIds: new Map(),
-          importedCourses: [],
-          native: true,
-        }
-      : (parseLocalData(localDataAsJson) ?? {
-          version: 1,
-          courseYearToMightTakeCourseIds: new Map(),
-          importedCourses: [],
-          native: true,
-        });
 
   const studentTypeRadioNative = mustQuerySelectorOfType(
     document.body,
@@ -1106,132 +653,12 @@ export function setup(
     'input[name="student-type"][value="transfer"]',
     HTMLInputElement,
   );
-  studentTypeRadioNative.checked = localData.native;
-  studentTypeRadioTransfer.checked = !localData.native;
-  const isNative = (): boolean => {
-    const n = studentTypeRadioNative.checked;
-    const t = studentTypeRadioTransfer.checked;
-    if (!n && !t) {
-      return true;
-    }
-    return n;
-  };
-
-  let akiko = Akiko.fromCellIdToCourses(
-    cellIdToCellMetadata,
-    requirementsTableYear,
-    courses,
-    localData.importedCourses,
-    isNative(),
-  );
-  for (const courseId of localData.courseYearToMightTakeCourseIds.get(
-    courseYear,
-  ) ?? []) {
-    akiko.moveCourse("wont-take-to-might-take", courseId);
-  }
-
-  const courseTables: CourseTables = {
-    notTaken: leftTable,
-    mightTake: mightTakeTable,
-    taken: takenTable,
-  };
-  const courseContainers: CourseContainers = {
-    notTaken: mustGetElementById("not-taken-course-container"),
-    mightTake: mustGetElementById("might-take-course-container"),
-    taken: mustGetElementById("taken-course-container"),
-  };
-
-  let selectedCellId: string | undefined = undefined;
-  let cellIdToCellCredit = akiko.calculateCellIdToCellCredit();
-  let columnIdToColumnCredit = calculateColumnIdToColumnCredit(
-    cellIdToCellCredit,
-    columnIdToColumnCreditRequirements,
-  );
-  let netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
-
-  for (const cellElement of cellElements) {
-    cellElement.addEventListener("click", (event) => {
-      event.preventDefault();
-
-      for (const c of cellElements) {
-        if (c.id !== cellElement.id) {
-          c.classList.remove("selected");
-        } else {
-          c.classList.add("selected");
-        }
-      }
-
-      if (selectedCellId === undefined) {
-        for (const e of document.querySelectorAll(".no-cell-selected")) {
-          e.classList.remove("no-cell-selected");
-        }
-      }
-      selectedCellId = cellElement.id;
-      const cellTbodys = cellIdToCellTbodys.get(selectedCellId);
-      assert(cellTbodys !== undefined);
-      updateCourseTables(courseTables, cellTbodys);
-      updateCourseContainers(courseContainers, cellTbodys);
-
-      const selectedCredits = selectedCellCreditAndColumnCredit(
-        selectedCellId,
-        cellIdToCellCredit,
-        columnIdToColumnCredit,
-      );
-      if (selectedCredits !== undefined) {
-        creditSumView.update(selectedCredits);
-      }
-    });
-  }
-  initializeCourseElements(akiko, cellIdToCellTbodys, courseYear);
-  updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
-
-  const updateAkiko = (newAkiko: Akiko) => {
-    akiko = newAkiko;
-    for (const courseId of localData.courseYearToMightTakeCourseIds.get(
-      courseYear,
-    ) ?? []) {
-      akiko.moveCourse("wont-take-to-might-take", courseId);
-    }
-
-    cellIdToCellCredit = akiko.calculateCellIdToCellCredit();
-    columnIdToColumnCredit = calculateColumnIdToColumnCredit(
-      cellIdToCellCredit,
-      columnIdToColumnCreditRequirements,
-    );
-    netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
-
-    initializeCourseElements(akiko, cellIdToCellTbodys, courseYear);
-    updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
-
-    if (selectedCellId !== undefined) {
-      const cellTbodys = cellIdToCellTbodys.get(selectedCellId);
-      assert(cellTbodys !== undefined);
-      updateCourseContainers(courseContainers, cellTbodys);
-
-      const selectedCredits = selectedCellCreditAndColumnCredit(
-        selectedCellId,
-        cellIdToCellCredit,
-        columnIdToColumnCredit,
-      );
-      if (selectedCredits !== undefined) {
-        creditSumView.update(selectedCredits);
-      }
-    }
-  };
 
   const handleStudentTypeRadioChange = () => {
-    const native = isNative();
-    updateAkiko(
-      Akiko.fromCellIdToCourses(
-        cellIdToCellMetadata,
-        requirementsTableYear,
-        courses,
-        localData.importedCourses,
-        native,
-      ),
-    );
-    localData.native = native;
-    localStorage.setItem(localDataKey, stringifyLocalData(localData));
+    localData.native = studentTypeRadioNative.checked;
+    localDataStore(localDataKey, localData);
+    akiko = createAkiko();
+    render();
   };
   studentTypeRadioNative.addEventListener(
     "change",
@@ -1259,122 +686,30 @@ export function setup(
       return;
     }
 
-    updateAkiko(
-      Akiko.fromCellIdToCourses(
-        cellIdToCellMetadata,
-        requirementsTableYear,
-        courses,
-        result.importedCourses,
-        isNative(),
-      ),
-    );
-    localData.importedCourses = result.importedCourses;
-    localStorage.setItem(localDataKey, stringifyLocalData(localData));
+    localData.realCourses = result.realCourses;
+    localData.fakeCourses = result.fakeCourses;
+    localDataStore(localDataKey, localData);
+    akiko = createAkiko();
+
     render();
   });
 
   mustGetElementById("export-might-take-course-ids").addEventListener(
     "click",
     () => {
-      const content = Array.from(
-        map(akiko.nonImportedMightTakeCourses(), ({ id }) => id + "\n"),
-      ).join("");
-      const e = document.createElement("a");
-      e.setAttribute(
-        "href",
-        "data:text/csv;charset=utf-8," + encodeURIComponent(content),
-      );
-      e.setAttribute("download", "科目番号一覧.csv");
-      e.style.display = "none";
-      document.body.appendChild(e);
-      e.click();
-      e.remove();
+      const content = akikoGetMightTakeCourseIds(akiko).join("\n");
+      const a = document.createElement("a");
+      a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(content);
+      a.download = "科目番号一覧.csv";
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     },
   );
 
-  leftBar.addEventListener("dragover", (event) => {
-    event.preventDefault();
-    if (event.dataTransfer !== null) {
-      event.dataTransfer.dropEffect = "move";
-    }
-  });
-  rightBar.addEventListener("dragover", (event) => {
-    event.preventDefault();
-    if (event.dataTransfer !== null) {
-      event.dataTransfer.dropEffect = "move";
-    }
-  });
-
-  const handleDrop = (
-    event: DragEvent,
-    droppedOn: "wont-take" | "might-take",
-  ) => {
-    event.preventDefault();
-    if (selectedCellId === undefined) {
-      return;
-    }
-    const courseId = event.dataTransfer?.getData("text/plain");
-    if (courseId === undefined) {
-      return;
-    }
-    const cellTbodys = cellIdToCellTbodys.get(selectedCellId);
-    assert(cellTbodys !== undefined);
-    akiko.moveCourse(
-      droppedOn === "wont-take"
-        ? "might-take-to-wont-take"
-        : "wont-take-to-might-take",
-      courseId,
-    );
-    cellIdToCellCredit = akiko.calculateCellIdToCellCredit();
-    columnIdToColumnCredit = calculateColumnIdToColumnCredit(
-      cellIdToCellCredit,
-      columnIdToColumnCreditRequirements,
-    );
-    netCredit = calculateNetCredit(columnIdToColumnCredit, netRequired);
-
-    const courseElements = Array.from(
-      document.querySelectorAll(`[data-course-id="${courseId}"]`),
-    );
-    assert(courseElements.length === 1);
-    const courseElement = courseElements[0];
-    assert(courseElement instanceof HTMLElement);
-    insertCourseElement(
-      droppedOn === "wont-take" ? cellTbodys.notTaken : cellTbodys.mightTake,
-      courseId,
-      courseElement,
-    );
-    updateCourseContainers(courseContainers, cellTbodys);
-    updateCellGauge(cellIdToCellElement, cellIdToCellCredit);
-
-    const selectedCredits = selectedCellCreditAndColumnCredit(
-      selectedCellId,
-      cellIdToCellCredit,
-      columnIdToColumnCredit,
-    );
-    if (selectedCredits !== undefined) {
-      creditSumView.update(selectedCredits);
-    }
-
-    // FIXME:
-    localData.courseYearToMightTakeCourseIds.set(
-      courseYear,
-      Array.from(map(akiko.nonImportedMightTakeCourses(), ({ id }) => id)),
-    );
-    localStorage.setItem(localDataKey, stringifyLocalData(localData));
-    render();
-  };
-  leftBar.addEventListener("drop", (event) => {
-    handleDrop(event, "wont-take");
-  });
-  rightBar.addEventListener("drop", (event) => {
-    handleDrop(event, "might-take");
-  });
-
   let barsVisible = true;
-  const barsToggleButton = document.createElement("button");
-  barsToggleButton.id = "bars-toggle";
-  document.body.appendChild(barsToggleButton);
-
+  const barsToggleButton = mustGetElementById("bars-toggle");
   const mainElement = document.querySelector("main");
   assert(mainElement !== null);
 
@@ -1416,22 +751,53 @@ export function setup(
     overallCreditSumElement,
     "span",
   );
-  const overallCreditSumIcon = mustQuerySelector(
-    overallCreditSumElement,
-    "img",
-  );
   const columnToCreditSumElements = new Map<
-    string,
-    { root: HTMLDivElement; span: HTMLSpanElement; icon: HTMLImageElement }
+    ColumnId,
+    { root: HTMLDivElement; span: HTMLSpanElement }
   >();
 
-  for (const column of ["b", "d", "f", "h"] /* TODO */) {
+  const handleMoveToWontTake = (id: CourseId) => {
+    const pos = akiko.coursePositions.get(id);
+    assert(pos !== undefined);
+    pos.listKind = "wont-take";
+    localData.mightTakeCourseIds = akikoGetMightTakeCourseIds(akiko);
+    localDataStore(localDataKey, localData);
+    render();
+  };
+  const handleMoveToMightTake = (id: CourseId) => {
+    const pos = akiko.coursePositions.get(id);
+    assert(pos !== undefined);
+    pos.listKind = "might-take";
+    localData.mightTakeCourseIds = akikoGetMightTakeCourseIds(akiko);
+    localDataStore(localDataKey, localData);
+    render();
+  };
+  const courseLists = new CourseLists(
+    akiko,
+    params.knownCourseYear,
+    mustGetElementById("wont-take-table"),
+    mustGetElementById("might-take-table"),
+    mustGetElementById("taken-table"),
+    mustGetElementById("fake-table"),
+    mustGetElementById("wont-take-course-container"),
+    mustGetElementById("might-take-course-container"),
+    mustGetElementById("taken-course-container"),
+    mustGetElementById("fake-course-container"),
+    leftBar,
+    rightBar,
+    handleMoveToWontTake,
+    handleMoveToMightTake,
+  );
+
+  for (const column of creditRequirements.columns.keys()) {
+    if (columnIdIsCompulsory(column)) {
+      continue;
+    }
     const root = document.createElement("div");
     const icon = document.createElement("img");
     const span = document.createElement("span");
     icon.src = warningIcon;
     icon.width = 20;
-    icon.style.display = "none";
     root.appendChild(icon);
     root.appendChild(span);
     root.addEventListener("click", () => {
@@ -1441,7 +807,7 @@ export function setup(
       }
     });
     columnCreditSumsElement.appendChild(root);
-    columnToCreditSumElements.set(column, { root, span, icon });
+    columnToCreditSumElements.set(column, { root, span });
   }
   overallCreditSumElement.addEventListener("click", () => {
     const message = overallCreditSumElement.dataset.messageOnClick;
@@ -1449,48 +815,88 @@ export function setup(
       window.alert(message);
     }
   });
+  requirementsElement.addEventListener("scroll", () => {
+    const x = -requirementsElement.scrollLeft;
+    columnCreditSumsElement.style.setProperty("--x", `${x}px`);
+  });
 
   const render = () => {
+    const creditStats = akikoGetCreditStats(akiko);
+
+    // マス
+    for (const [id, element] of cellIdToCellElement) {
+      element.classList.toggle("selected", id === selectedCellId);
+      const cellCredit = creditStats.cells.get(id);
+      assert(cellCredit !== undefined);
+      const [green, yellow] = creditToGreenYellowPercentages(
+        cellCredit.effectiveMightTake,
+        cellCredit.effectiveTaken,
+        cellCredit.min,
+      );
+      element.style.setProperty("--green-percentage", `${green}%`);
+      element.style.setProperty("--yellow-percentage", `${yellow}%`);
+    }
+    if (selectedCellId !== undefined) {
+      for (const e of document.querySelectorAll(".no-cell-selected")) {
+        e.classList.remove("no-cell-selected");
+      }
+    }
+
+    // 授業一覧
+    courseLists.setAkiko(akiko);
+    courseLists.filter(filterString);
+    courseLists.setSelectedCellId(selectedCellId);
+
     // 単位合計
     {
+      if (selectedCellId === undefined) {
+        creditSumView.update(undefined);
+      } else {
+        const cell = creditStats.cells.get(selectedCellId);
+        assert(cell !== undefined);
+        creditSumView.update(cell);
+      }
+
       for (const [
         column,
-        { root, span, icon },
+        { root, span },
       ] of columnToCreditSumElements.entries()) {
-        const cellId = column + "1"; // TODO
+        const cellId = column + "1";
+        assert(isCellId(cellId));
         const cellRect = cellIdToRect.get(cellId);
-        const columnCredit = columnIdToColumnCredit.get(column);
+        const columnCredit = creditStats.columns.get(column);
         assert(cellRect !== undefined);
         assert(columnCredit !== undefined);
-        root.dataset.messageOnClick = columnCreditToWarning(columnCredit) ?? "";
-        span.textContent = columnCreditToString(columnCredit);
-        icon.style.display = columnCreditIsExcessive(columnCredit)
-          ? "initial"
-          : "none";
+        const d = columnCreditStatsDisplay(columnCredit);
+        root.dataset.messageOnClick = d.warning ?? "";
+        span.textContent = d.brief;
         root.style.left = `${cellRect.x}px`;
         root.style.width = `${cellRect.width}px`;
-        const [green, yellow] = creditToGreenYellowPercentages(columnCredit);
+        const [green, yellow] = creditToGreenYellowPercentages(
+          columnCredit.effectiveMightTake,
+          columnCredit.effectiveTaken,
+          columnCredit.min,
+        );
         root.style.setProperty("--green-percentage", `${green}%`);
         root.style.setProperty("--yellow-percentage", `${yellow}%`);
       }
-      const [g, y] = netCreditToGreenYellowPercentages(netCredit);
-      overallCreditSumElement.dataset.messageOnClick =
-        netCreditToWarning(netCredit) ?? "";
-      overallCreditSumSpan.textContent = netCreditToString(netCredit);
-      overallCreditSumIcon.style.display = netCreditIsExcessive(netCredit)
-        ? "initial"
-        : "none";
+
+      const d = electiveCreditStatsDisplay(creditStats.elective);
+      const [g, y] = creditToGreenYellowPercentages(
+        creditStats.elective.effectiveMightTake,
+        creditStats.elective.effectiveTaken,
+        creditStats.elective.min,
+      );
+      overallCreditSumElement.dataset.messageOnClick = d.warning ?? "";
+      overallCreditSumSpan.textContent = d.brief;
       overallCreditSumElement.style.setProperty("--green-percentage", `${g}%`);
       overallCreditSumElement.style.setProperty("--yellow-percentage", `${y}%`);
     }
   };
 
-  requirementsElement.addEventListener("scroll", () => {
-    columnCreditSumsElement.style.setProperty(
-      "--x",
-      `${-requirementsElement.scrollLeft}px`,
-    );
-  });
+  // 総合からの移行
+  studentTypeRadioNative.checked = localData.native;
+  studentTypeRadioTransfer.checked = !localData.native;
 
   render();
 }

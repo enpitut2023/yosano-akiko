@@ -1,3 +1,4 @@
+import { KnownCourse, CourseId, RealCourse, FakeCourseId } from "../../akiko";
 import { setup } from "../../app";
 import { courses } from "../../current-courses.js";
 import cellIdToRect from "./cell-id-to-rect.json";
@@ -184,9 +185,6 @@ function isF2(id: string): boolean {
 }
 
 function isH1(id: string): boolean {
-  if (id.startsWith("__")) {
-    return false;
-  }
   return (
     !(
       id.startsWith("GA") ||
@@ -205,49 +203,190 @@ function isH2(id: string): boolean {
   return id.startsWith("GC") || id.startsWith("GB");
 }
 
-setup(
-  2023,
-  courses,
-  2025,
-  "klis-system",
-  {
-    a1: { filter: isA1, creditMin: 3, creditMax: 3 },
-    a2: { filter: isA2, creditMin: 3, creditMax: 3 },
-    a3: { filter: isA3, creditMin: 1, creditMax: 1 },
-    a4: { filter: isA4, creditMin: 1, creditMax: 1 },
-    a5: { filter: isA5, creditMin: 1, creditMax: 1 },
-    a6: { filter: isA6, creditMin: 1, creditMax: 1 },
-    b1: { filter: isB1, creditMin: 16, creditMax: undefined },
-    b2: { filter: isB2, creditMin: 8, creditMax: undefined },
-    c1: { filter: isC1, creditMin: 1, creditMax: 1 },
-    c2: { filter: isC2, creditMin: 1, creditMax: 1 },
-    c3: { filter: isC3, creditMin: 2, creditMax: 2 },
-    c4: { filter: isC4, creditMin: 1, creditMax: 1 },
-    c5: { filter: isC5, creditMin: 2, creditMax: 2 },
-    c6: { filter: isC6, creditMin: 2, creditMax: 2 },
-    c7: { filter: isC7, creditMin: 2, creditMax: 2 },
-    c8: { filter: isC8, creditMin: 1, creditMax: 1 },
-    c9: { filter: isC9, creditMin: 1, creditMax: 1 },
-    c10: { filter: isC10, creditMin: 2, creditMax: 2 },
-    c11: { filter: isC11, creditMin: 2, creditMax: 2 },
-    c12: { filter: isC12, creditMin: 2, creditMax: 2 },
-    d1: { filter: isD1, creditMin: 32, creditMax: 52 },
-    e1: { filter: isE1, creditMin: 2, creditMax: 2 },
-    e2: { filter: isE2, creditMin: 4, creditMax: 4 },
-    f1: { filter: isF1, creditMin: 1, creditMax: undefined },
-    f2: { filter: isF2, creditMin: 0, creditMax: undefined },
-    h1: { filter: isH1, creditMin: 6, creditMax: undefined },
-    h2: { filter: isH2, creditMin: 0, creditMax: undefined },
+function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
+  const courseIdToCellId = new Map<CourseId, string>();
+  for (const c of cs) {
+    // 必修
+    if (isA1(c.id)) {
+      courseIdToCellId.set(c.id, "a1");
+    } else if (isA2(c.id)) {
+      courseIdToCellId.set(c.id, "a2");
+    } else if (isA3(c.id)) {
+      courseIdToCellId.set(c.id, "a3");
+    } else if (isA4(c.id)) {
+      courseIdToCellId.set(c.id, "a4");
+    } else if (isA5(c.id)) {
+      courseIdToCellId.set(c.id, "a5");
+    } else if (isA6(c.id)) {
+      courseIdToCellId.set(c.id, "a6");
+    } else if (isC1(c.id)) {
+      courseIdToCellId.set(c.id, "c1");
+    } else if (isC2(c.id)) {
+      courseIdToCellId.set(c.id, "c2");
+    } else if (isC3(c.id)) {
+      courseIdToCellId.set(c.id, "c3");
+    } else if (isC4(c.id)) {
+      courseIdToCellId.set(c.id, "c4");
+    } else if (isC5(c.id)) {
+      courseIdToCellId.set(c.id, "c5");
+    } else if (isC6(c.id)) {
+      courseIdToCellId.set(c.id, "c6");
+    } else if (isC7(c.id)) {
+      courseIdToCellId.set(c.id, "c7");
+    } else if (isC8(c.id)) {
+      courseIdToCellId.set(c.id, "c8");
+    } else if (isC9(c.id)) {
+      courseIdToCellId.set(c.id, "c9");
+    } else if (isC10(c.id)) {
+      courseIdToCellId.set(c.id, "c10");
+    } else if (isC11(c.id)) {
+      courseIdToCellId.set(c.id, "c11");
+    } else if (isC12(c.id)) {
+      courseIdToCellId.set(c.id, "c12");
+    } else if (isE1(c.id)) {
+      courseIdToCellId.set(c.id, "e1");
+    } else if (isE2(c.id)) {
+      courseIdToCellId.set(c.id, "e2");
+    }
+    // 選択
+    else if (isB1(c.id)) {
+      courseIdToCellId.set(c.id, "b1");
+    } else if (isB2(c.id)) {
+      courseIdToCellId.set(c.id, "b2");
+    } else if (isD1(c.id)) {
+      courseIdToCellId.set(c.id, "d1");
+    } else if (isF1(c.id)) {
+      courseIdToCellId.set(c.id, "f1");
+    } else if (isF2(c.id)) {
+      courseIdToCellId.set(c.id, "f2");
+    } else if (isH1(c.id)) {
+      courseIdToCellId.set(c.id, "h1");
+    } else if (isH2(c.id)) {
+      courseIdToCellId.set(c.id, "h2");
+    }
+  }
+  return courseIdToCellId;
+}
+
+function classifyRealCourses(cs: RealCourse[]): Map<CourseId, string> {
+  const courseIdToCellId = new Map<CourseId, string>();
+  for (const c of cs) {
+    // 必修
+    if (isA1(c.id)) {
+      courseIdToCellId.set(c.id, "a1");
+    } else if (isA2(c.id)) {
+      courseIdToCellId.set(c.id, "a2");
+    } else if (isA3(c.id)) {
+      courseIdToCellId.set(c.id, "a3");
+    } else if (isA4(c.id)) {
+      courseIdToCellId.set(c.id, "a4");
+    } else if (isA5(c.id)) {
+      courseIdToCellId.set(c.id, "a5");
+    } else if (isA6(c.id)) {
+      courseIdToCellId.set(c.id, "a6");
+    } else if (isC1(c.id)) {
+      courseIdToCellId.set(c.id, "c1");
+    } else if (isC2(c.id)) {
+      courseIdToCellId.set(c.id, "c2");
+    } else if (isC3(c.id)) {
+      courseIdToCellId.set(c.id, "c3");
+    } else if (isC4(c.id)) {
+      courseIdToCellId.set(c.id, "c4");
+    } else if (isC5(c.id)) {
+      courseIdToCellId.set(c.id, "c5");
+    } else if (isC6(c.id)) {
+      courseIdToCellId.set(c.id, "c6");
+    } else if (isC7(c.id)) {
+      courseIdToCellId.set(c.id, "c7");
+    } else if (isC8(c.id)) {
+      courseIdToCellId.set(c.id, "c8");
+    } else if (isC9(c.id)) {
+      courseIdToCellId.set(c.id, "c9");
+    } else if (isC10(c.id)) {
+      courseIdToCellId.set(c.id, "c10");
+    } else if (isC11(c.id)) {
+      courseIdToCellId.set(c.id, "c11");
+    } else if (isC12(c.id)) {
+      courseIdToCellId.set(c.id, "c12");
+    } else if (isE1(c.id)) {
+      courseIdToCellId.set(c.id, "e1");
+    } else if (isE2(c.id)) {
+      courseIdToCellId.set(c.id, "e2");
+    }
+    // 選択
+    else if (isB1(c.id)) {
+      courseIdToCellId.set(c.id, "b1");
+    } else if (isB2(c.id)) {
+      courseIdToCellId.set(c.id, "b2");
+    } else if (isD1(c.id)) {
+      courseIdToCellId.set(c.id, "d1");
+    } else if (isF1(c.id)) {
+      courseIdToCellId.set(c.id, "f1");
+    } else if (isF2(c.id)) {
+      courseIdToCellId.set(c.id, "f2");
+    } else if (isH1(c.id)) {
+      courseIdToCellId.set(c.id, "h1");
+    } else if (isH2(c.id)) {
+      courseIdToCellId.set(c.id, "h2");
+    }
+  }
+  return courseIdToCellId;
+}
+
+function classifyFakeCourses(): Map<FakeCourseId, string> {
+  const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
+  return fakeCourseIdToCellId;
+}
+
+setup({
+  knownCourses: courses as KnownCourse[],
+  knownCourseYear: 2025,
+  creditRequirements: {
+    cells: {
+      a1: { min: 3, max: 3 },
+      a2: { min: 3, max: 3 },
+      a3: { min: 1, max: 1 },
+      a4: { min: 1, max: 1 },
+      a5: { min: 1, max: 1 },
+      a6: { min: 1, max: 1 },
+      b1: { min: 16, max: undefined },
+      b2: { min: 8, max: undefined },
+      c1: { min: 1, max: 1 },
+      c2: { min: 1, max: 1 },
+      c3: { min: 2, max: 2 },
+      c4: { min: 1, max: 1 },
+      c5: { min: 2, max: 2 },
+      c6: { min: 2, max: 2 },
+      c7: { min: 2, max: 2 },
+      c8: { min: 1, max: 1 },
+      c9: { min: 1, max: 1 },
+      c10: { min: 2, max: 2 },
+      c11: { min: 2, max: 2 },
+      c12: { min: 2, max: 2 },
+      d1: { min: 32, max: 52 },
+      e1: { min: 2, max: 2 },
+      e2: { min: 4, max: 4 },
+      f1: { min: 1, max: undefined },
+      f2: { min: 0, max: undefined },
+      h1: { min: 6, max: undefined },
+      h2: { min: 0, max: undefined },
+    },
+    columns: {
+      a: { min: 10, max: 10 },
+      b: { min: 24, max: 44 },
+      c: { min: 19, max: 19 },
+      d: { min: 32, max: 52 },
+      e: { min: 12, max: 12 },
+      f: { min: 1, max: 21 },
+      h: { min: 6, max: 26 },
+    },
+    compulsory: 41,
+    elective: 83,
   },
-  {
-    a: { creditMin: 10, creditMax: 10 },
-    b: { creditMin: 24, creditMax: 44 },
-    c: { creditMin: 19, creditMax: 19 },
-    d: { creditMin: 32, creditMax: 52 },
-    e: { creditMin: 12, creditMax: 12 },
-    f: { creditMin: 1, creditMax: 21 },
-    h: { creditMin: 6, creditMax: 26 },
-  },
-  83,
-  cellIdToRect,
-);
+  major: "klis-system",
+  requirementsTableYear: 2023,
+  cellIdToRectRecord: cellIdToRect,
+  classifyKnownCourses,
+  classifyRealCourses,
+  classifyFakeCourses,
+});

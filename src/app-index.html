@@ -37,7 +37,7 @@
       <div id="credit-sums-container">
         <div id="column-credit-sums"></div>
         <div id="overall-credit-sum">
-          <img src="../../icons/warning.svg" width="20" style="display: none" />
+          <img src="../../icons/warning.svg" width="20" />
           <span></span>
         </div>
       </div>
@@ -49,14 +49,13 @@
           <input id="filter" type="text" placeholder="科目番号・科目名で検索" />
         </search>
         <div
-          id="not-taken-course-container"
-          class="course-container no-cell-selected show-id-name show-credit show-term show-when show-expects"
+          id="wont-take-course-container"
+          class="course-container show-id-name show-credit show-term show-when show-expects"
+          data-state="no-cell-selected"
         >
-          <p class="hint-when-no-cells-selected">マスを選択してください</p>
-          <p class="hint-when-contains-no-courses">
-            このマスに該当する授業がありません
-          </p>
-          <table id="not-taken-table">
+          <p class="select-cell">マスを選択してください</p>
+          <p class="no-courses">該当する授業がありません</p>
+          <table id="wont-take-table">
             <thead>
               <tr class="course">
                 <th class="id-name">科目</th>
@@ -122,14 +121,11 @@
         <h2>取る授業</h2>
         <div
           id="might-take-course-container"
-          class="course-container contains-no-courses show-id-name show-credit show-term show-when"
+          class="course-container show-id-name show-credit show-term show-when"
+          data-state="no-cell-selected"
         >
-          <p class="hint-when-no-cells-selected">
-            ここに授業をドラッグ&ドロップ
-          </p>
-          <p class="hint-when-contains-no-courses">
-            ここに授業をドラッグ&ドロップ
-          </p>
+          <p class="select-cell">該当する授業がありません</p>
+          <p class="no-courses">該当する授業がありません</p>
           <table id="might-take-table">
             <thead>
               <tr class="course">
@@ -142,15 +138,15 @@
             </thead>
           </table>
         </div>
+
         <h2>単位取得済みの授業</h2>
         <div
           id="taken-course-container"
-          class="course-container no-cell-selected show-id-name show-credit"
+          class="course-container show-id-name show-credit"
+          data-state="no-cell-selected"
         >
-          <p class="hint-when-no-cells-selected">マスを選択してください</p>
-          <p class="hint-when-contains-no-courses">
-            このマスに該当する授業がありません
-          </p>
+          <p class="select-cell">該当する授業がありません</p>
+          <p class="no-courses">該当する授業がありません</p>
           <table id="taken-table">
             <thead>
               <tr class="course">
@@ -163,8 +159,32 @@
             </thead>
           </table>
         </div>
+
+        <section id="fake-course-section">
+          <h2>認可された授業</h2>
+          <div
+            id="fake-course-container"
+            class="course-container show-id-name show-credit"
+            data-state="no-cell-selected"
+          >
+            <table id="fake-table">
+              <thead>
+                <tr class="course">
+                  <th class="id-name">科目</th>
+                  <th class="credit">単位</th>
+                  <th class="term">学期</th>
+                  <th class="when">時限</th>
+                  <th class="expects">標準<br />履修<br />年次</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+        </section>
       </div>
     </main>
+
+    <button id="bars-toggle"></button>
+
     <script src="index.js"></script>
   </body>
 </html>
