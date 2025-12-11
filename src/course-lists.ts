@@ -137,13 +137,25 @@ function fakeCourseElementMustGetCourseName(e: HTMLElement): string {
   return name;
 }
 
-function sortCourseElements(es: HTMLElement[]): void {
-  es.sort((a, b) =>
-    courseIdCompare(
-      courseElementMustGetCourseId(a),
-      courseElementMustGetCourseId(b),
-    ),
-  );
+function courseElementCompare(
+  akiko: Akiko,
+  a: HTMLElement,
+  b: HTMLElement,
+): number {
+  const aId = courseElementMustGetCourseId(a);
+  const bId = courseElementMustGetCourseId(b);
+  const aGrade = akiko.realCourses.get(aId);
+  const bGrade = akiko.realCourses.get(bId);
+  if (aGrade !== undefined && bGrade === undefined) {
+    return -1;
+  } else if (aGrade === undefined && bGrade !== undefined) {
+    return 1;
+  }
+  return courseIdCompare(aId, bId);
+}
+
+function sortCourseElements(akiko: Akiko, es: HTMLElement[]): void {
+  es.sort((a, b) => courseElementCompare(akiko, a, b));
 }
 
 function sortFakeCourseElements(es: HTMLElement[]): void {
@@ -271,8 +283,7 @@ export class CourseLists {
     let inserted = false;
     for (const element of dstTbody.children) {
       assert(element instanceof HTMLElement);
-      const courseId = courseElementMustGetCourseId(element);
-      if (courseIdCompare(courseId, toMoveCourseId) > 0) {
+      if (courseElementCompare(this.akiko, element, toMove) > 0) {
         element.insertAdjacentElement("beforebegin", toMove);
         inserted = true;
         break;
@@ -377,9 +388,9 @@ export class CourseLists {
     }
 
     for (const [cellId, courseElements] of cellIdToCourseElements) {
-      sortCourseElements(courseElements.wontTake);
-      sortCourseElements(courseElements.mightTake);
-      sortCourseElements(courseElements.taken);
+      sortCourseElements(this.akiko, courseElements.wontTake);
+      sortCourseElements(this.akiko, courseElements.mightTake);
+      sortCourseElements(this.akiko, courseElements.taken);
       sortFakeCourseElements(courseElements.fake);
       const cell: Cell = {
         wontTakeTbody: document.createElement("tbody"),
