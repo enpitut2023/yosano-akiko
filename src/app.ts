@@ -785,6 +785,7 @@ export function setup(params: {
     mustGetElementById("fake-course-container"),
     leftBar,
     rightBar,
+    mustGetElementById("drop-guide"),
     handleMoveToWontTake,
     handleMoveToMightTake,
   );

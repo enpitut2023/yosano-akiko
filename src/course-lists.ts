@@ -211,8 +211,9 @@ export class CourseLists {
     private mightTakeContainer: HTMLElement,
     private takenContainer: HTMLElement,
     private fakeContainer: HTMLElement,
-    wontTakeDropTarget: HTMLElement,
-    mightTakeDropTarget: HTMLElement,
+    private wontTakeDropTarget: HTMLElement,
+    private mightTakeDropTarget: HTMLElement,
+    private dropGuide: HTMLElement,
     private handleMoveToWontTake: (id: CourseId) => void,
     private handleMoveToMightTake: (id: CourseId) => void,
   ) {
@@ -261,6 +262,35 @@ export class CourseLists {
           ? "no-courses"
           : "contains-courses";
     }
+  }
+
+  private showDropGuide(id: CourseId): boolean {
+    const pos = this.akiko.coursePositions.get(id);
+    assert(pos !== undefined);
+    let dropTarget: HTMLElement;
+    switch (pos.listKind) {
+      case "wont-take":
+        dropTarget = this.mightTakeDropTarget;
+        break;
+      case "might-take":
+        dropTarget = this.wontTakeDropTarget;
+        break;
+      case "taken":
+        return false;
+      default:
+        unreachable(pos.listKind);
+    }
+    const rect = dropTarget.getBoundingClientRect();
+    this.dropGuide.style.left = `${rect.x}px`;
+    this.dropGuide.style.top = `${rect.y}px`;
+    this.dropGuide.style.width = `${rect.width}px`;
+    this.dropGuide.style.height = `${rect.height}px`;
+    this.dropGuide.classList.remove("hidden");
+    return true;
+  }
+
+  private hideDropGuide(): void {
+    this.dropGuide.classList.add("hidden");
   }
 
   private handleDrop(event: DragEvent, droppedOnWontTake: boolean): void {
@@ -349,7 +379,12 @@ export class CourseLists {
         element.addEventListener("dragstart", (event) => {
           if (event.dataTransfer !== null) {
             setTransferData(event.dataTransfer, courseId, cellId);
+            this.showDropGuide(courseId);
           }
+        });
+        element.addEventListener("dragend", () => {
+          console.log("here");
+          this.hideDropGuide();
         });
       }
 
