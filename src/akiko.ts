@@ -80,6 +80,10 @@ export function isGrade(s: string): s is Grade {
   );
 }
 
+export function gradeIsPass(g: Grade): boolean {
+  return g === "a+" || g === "a" || g === "b" || g === "c" || g === "pass";
+}
+
 export type KnownCourse = {
   id: CourseId;
   name: string;

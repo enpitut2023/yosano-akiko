@@ -386,10 +386,7 @@ function isH2(id: string): boolean {
   );
 }
 
-function classifyKnownCourses(
-  cs: KnownCourse[],
-  opts: ClassifyOptions,
-): Map<CourseId, string> {
+function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     // 必修
@@ -399,11 +396,11 @@ function classifyKnownCourses(
       courseIdToCellId.set(c.id, "a2");
     } else if (isA3(c.id)) {
       courseIdToCellId.set(c.id, "a3");
-    } else if (isC1(c.id, opts.isNative)) {
+    } else if (isC1(c.id, true)) {
       courseIdToCellId.set(c.id, "c1");
     } else if (isC2(c.id)) {
       courseIdToCellId.set(c.id, "c2");
-    } else if (isC3(c.id, opts.isNative)) {
+    } else if (isC3(c.id, true)) {
       courseIdToCellId.set(c.id, "c3");
     } else if (isC4(c.id)) {
       courseIdToCellId.set(c.id, "c4");
@@ -411,9 +408,9 @@ function classifyKnownCourses(
       courseIdToCellId.set(c.id, "c5");
     } else if (isC6(c.id)) {
       courseIdToCellId.set(c.id, "c6");
-    } else if (isC7(c.id, opts.isNative)) {
+    } else if (isC7(c.id, true)) {
       courseIdToCellId.set(c.id, "c7");
-    } else if (isC8(c.id, opts.isNative)) {
+    } else if (isC8(c.id, true)) {
       courseIdToCellId.set(c.id, "c8");
     } else if (isC9(c.id)) {
       courseIdToCellId.set(c.id, "c9");
