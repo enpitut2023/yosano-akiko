@@ -16,7 +16,6 @@ rsync -avm \
     --include='robots.txt' \
     --exclude='*' \
     src/ dist/ || exit 1
-exit
 
 ./scripts/generate-help.sh || exit 1
 ./scripts/generate-html.ts || exit 1
