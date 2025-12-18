@@ -507,6 +507,7 @@ export function setup(params: {
   major: string;
   requirementsTableYear: number;
   cellIdToRectRecord: Record<string, Rect>;
+  tableViewBox?: Rect;
   classifyKnownCourses: (
     cs: KnownCourse[],
     opts: ClassifyOptions,
@@ -603,6 +604,23 @@ export function setup(params: {
   for (const [id, rect] of Object.entries(params.cellIdToRectRecord)) {
     assert(isCellId(id), `Bad cell id: "${id}"`);
     cellIdToRect.set(id, rect);
+  }
+
+  const requirementsTableElement = mustGetElementByIdOfType(
+    "requirement-table",
+    HTMLImageElement,
+  );
+  if (params.tableViewBox !== undefined) {
+    assert(params.tableViewBox.x === 0 && params.tableViewBox.y === 0); // TODO
+    const scale = 2048 / params.tableViewBox.width;
+    requirementsTableElement.width = scale * params.tableViewBox.width;
+    requirementsTableElement.height = scale * params.tableViewBox.height;
+    for (const rect of cellIdToRect.values()) {
+      rect.x *= scale;
+      rect.y *= scale;
+      rect.width *= scale;
+      rect.height *= scale;
+    }
   }
 
   const requirementsElement = mustGetElementById("requirements");
