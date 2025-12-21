@@ -159,7 +159,7 @@ function baseCreditStatsNew(
     effectiveTaken,
     effectiveTotal,
     overflowMightTake: rawMightTake - effectiveMightTake,
-    overflowTaken: rawTaken - effectiveTotal,
+    overflowTaken: rawTaken - effectiveTaken,
     overflowTotal: rawTotal - effectiveTotal,
   };
 }
