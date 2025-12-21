@@ -6,6 +6,7 @@ import {
   RealCourse,
 } from "../../akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "../../app-setup";
+import { isGakushikiban } from "../../conditions/common";
 
 function convertToGb(id: string): string {
   switch (id) {
@@ -335,11 +336,7 @@ function isE4(id: string): boolean {
 }
 
 function isF1(id: string): boolean {
-  return (
-    (id.startsWith("12") || id.startsWith("14")) &&
-    // 総合科目(学士基盤科目)
-    !["27", "28", "30", "90"].includes(id.substring(2, 4))
-  );
+  return isGakushikiban(id);
 }
 
 function isF2(id: string): boolean {

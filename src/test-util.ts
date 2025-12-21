@@ -18,6 +18,13 @@ import {
 import { parseImportedCsv } from "./csv";
 import { assert } from "./util";
 
+function indent(s: string, n: number): string {
+  return s
+    .split("\n")
+    .map((l) => " ".repeat(n) + l)
+    .join("\n");
+}
+
 export function getCreditStats(params: {
   csv: string;
   isNative: boolean;
@@ -117,6 +124,7 @@ export function assertCreditStatsEqual(
   function f(
     got: BaseCreditStats,
     want: WantBaseCreditStats | undefined,
+    name: string,
   ): void {
     let rawMightTake = 0;
     let rawTaken = 0;
@@ -144,18 +152,21 @@ export function assertCreditStatsEqual(
         effectiveTaken = 0;
       }
     }
-    assert(got.rawMightTake === rawMightTake);
-    assert(got.rawTaken === rawTaken);
-    assert(got.effectiveMightTake === effectiveMightTake);
-    assert(got.effectiveTaken === effectiveTaken);
+    const message = `Bad ${name}:
+${indent(`want: ` + JSON.stringify(want, undefined, 2), 2)}
+${indent(`got: ` + JSON.stringify(got, undefined, 2), 2)}`;
+    assert(got.rawMightTake === rawMightTake, message);
+    assert(got.rawTaken === rawTaken, message);
+    assert(got.effectiveMightTake === effectiveMightTake, message);
+    assert(got.effectiveTaken === effectiveTaken, message);
   }
 
   for (const [id, gotCell] of got.cells) {
-    f(gotCell, want.cells[id]);
+    f(gotCell, want.cells[id], `cell ${id}`);
   }
   for (const [id, gotColumn] of got.columns) {
-    f(gotColumn, want.columns[id]);
+    f(gotColumn, want.columns[id], `column ${id}`);
   }
-  f(got.compulsory, want.compulsory);
-  f(got.elective, want.elective);
+  f(got.compulsory, want.compulsory, "compulsory");
+  f(got.elective, want.elective, "elective");
 }
