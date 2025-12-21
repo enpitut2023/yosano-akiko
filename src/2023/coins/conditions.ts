@@ -5,10 +5,7 @@ import {
   KnownCourse,
   RealCourse,
 } from "../../akiko";
-import { setup } from "../../app";
-import { ClassifyOptions } from "../../app-setup";
-import { courses } from "../../current-courses.js";
-import cellIdToRect from "./cell-id-to-rect.json";
+import { ClassifyOptions, SetupCreditRequirements } from "../../app-setup";
 
 function convertToGb(id: string): string {
   switch (id) {
@@ -387,7 +384,7 @@ function isH2(id: string): boolean {
   );
 }
 
-function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
+export function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     // 必修
@@ -458,7 +455,7 @@ function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
   return courseIdToCellId;
 }
 
-function classifyRealCourses(
+export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
 ): Map<CourseId, string> {
@@ -533,7 +530,9 @@ function classifyRealCourses(
   return courseIdToCellId;
 }
 
-function classifyFakeCourses(cs: FakeCourse[]): Map<FakeCourseId, string> {
+export function classifyFakeCourses(
+  cs: FakeCourse[],
+): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {
     if (isE3(c.name)) {
@@ -543,58 +542,48 @@ function classifyFakeCourses(cs: FakeCourse[]): Map<FakeCourseId, string> {
   return fakeCourseIdToCellId;
 }
 
-setup({
-  knownCourses: courses as KnownCourse[],
-  knownCourseYear: 2025,
-  creditRequirements: {
-    cells: {
-      a1: { min: 6, max: 6 },
-      a2: { min: 6, max: 6 },
-      a3: { min: 4, max: 4 },
-      b1: { min: 16, max: undefined },
-      b2: { min: 0, max: 18 },
-      c1: { min: 2, max: 2 },
-      c2: { min: 2, max: 2 },
-      c3: { min: 2, max: 2 },
-      c4: { min: 2, max: 2 },
-      c5: { min: 2, max: 2 },
-      c6: { min: 1, max: 1 },
-      c7: { min: 2, max: 2 },
-      c8: { min: 1, max: 1 },
-      c9: { min: 3, max: 3 },
-      c10: { min: 3, max: 3 },
-      c11: { min: 2, max: 2 },
-      c12: { min: 2, max: 2 },
-      c13: { min: 2, max: 2 },
-      d1: { min: 8, max: undefined },
-      d2: { min: 2, max: undefined },
-      d3: { min: 4, max: undefined },
-      d4: { min: 8, max: undefined },
-      e1: { min: 2, max: 2 },
-      e2: { min: 2, max: 2 },
-      e3: { min: 4, max: 4 },
-      e4: { min: 4, max: 4 },
-      f1: { min: 1, max: undefined },
-      f2: { min: 0, max: 4 },
-      h1: { min: 6, max: undefined },
-      h2: { min: 0, max: 4 },
-    },
-    columns: {
-      a: { min: 16, max: 16 },
-      b: { min: 34, max: 34 },
-      c: { min: 26, max: 26 },
-      d: { min: 26, max: 26 },
-      e: { min: 12, max: 12 },
-      f: { min: 1, max: 5 },
-      h: { min: 6, max: 10 },
-    },
-    compulsory: 54,
-    elective: 71,
+export const creditRequirements: SetupCreditRequirements = {
+  cells: {
+    a1: { min: 6, max: 6 },
+    a2: { min: 6, max: 6 },
+    a3: { min: 4, max: 4 },
+    b1: { min: 16, max: undefined },
+    b2: { min: 0, max: 18 },
+    c1: { min: 2, max: 2 },
+    c2: { min: 2, max: 2 },
+    c3: { min: 2, max: 2 },
+    c4: { min: 2, max: 2 },
+    c5: { min: 2, max: 2 },
+    c6: { min: 1, max: 1 },
+    c7: { min: 2, max: 2 },
+    c8: { min: 1, max: 1 },
+    c9: { min: 3, max: 3 },
+    c10: { min: 3, max: 3 },
+    c11: { min: 2, max: 2 },
+    c12: { min: 2, max: 2 },
+    c13: { min: 2, max: 2 },
+    d1: { min: 8, max: undefined },
+    d2: { min: 2, max: undefined },
+    d3: { min: 4, max: undefined },
+    d4: { min: 8, max: undefined },
+    e1: { min: 2, max: 2 },
+    e2: { min: 2, max: 2 },
+    e3: { min: 4, max: 4 },
+    e4: { min: 4, max: 4 },
+    f1: { min: 1, max: undefined },
+    f2: { min: 0, max: 4 },
+    h1: { min: 6, max: undefined },
+    h2: { min: 0, max: 4 },
   },
-  major: "coins",
-  requirementsTableYear: 2024,
-  cellIdToRectRecord: cellIdToRect,
-  classifyKnownCourses,
-  classifyRealCourses,
-  classifyFakeCourses,
-});
+  columns: {
+    a: { min: 16, max: 16 },
+    b: { min: 34, max: 34 },
+    c: { min: 26, max: 26 },
+    d: { min: 26, max: 26 },
+    e: { min: 12, max: 12 },
+    f: { min: 1, max: 5 },
+    h: { min: 6, max: 10 },
+  },
+  compulsory: 54,
+  elective: 71,
+};

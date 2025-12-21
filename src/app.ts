@@ -4,7 +4,6 @@ import {
   CellId,
   ColumnCreditStats,
   ColumnId,
-  KnownCourse,
   CreditRequirements,
   ElectiveCreditStats,
   isCellId,
@@ -21,6 +20,7 @@ import {
   CellCreditStats,
   columnIdIsCompulsory,
 } from "./akiko";
+import { ClassifyOptions, SetupParams } from "./app-setup";
 import { CourseLists } from "./course-lists";
 import { parseImportedCsv } from "./csv";
 import warningIcon from "./icons/warning.svg";
@@ -415,34 +415,7 @@ function creditToGreenYellowPercentages(
 
 type Rect = { x: number; y: number; width: number; height: number };
 
-export type ClassifyOptions = { isNative: boolean };
-
-export function setup(params: {
-  knownCourses: KnownCourse[];
-  knownCourseYear: number;
-  creditRequirements: {
-    cells: Record<string, { min: number; max: number | undefined }>;
-    columns: Record<string, { min: number; max: number }>;
-    compulsory: number;
-    elective: number;
-  };
-  major: string;
-  requirementsTableYear: number;
-  cellIdToRectRecord: Record<string, Rect>;
-  tableViewBox?: Rect;
-  classifyKnownCourses: (
-    cs: KnownCourse[],
-    opts: ClassifyOptions,
-  ) => Map<CourseId, string>;
-  classifyRealCourses: (
-    cs: RealCourse[],
-    opts: ClassifyOptions,
-  ) => Map<CourseId, string>;
-  classifyFakeCourses: (
-    cs: FakeCourse[],
-    opts: ClassifyOptions,
-  ) => Map<FakeCourseId, string>;
-}): void {
+export function setup(params: SetupParams): void {
   const localDataKey = `${params.major}_${params.requirementsTableYear}`;
   const localData = localDataLoad(localDataKey) ?? localDataDefault();
 

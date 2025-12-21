@@ -117,7 +117,7 @@ export type CreditRequirements = {
   electiveMin: number;
 };
 
-type BaseCreditStats = {
+export type BaseCreditStats = {
   min: number;
   rawMightTake: number;
   rawTaken: number;

@@ -5,7 +5,8 @@ import {
   KnownCourse,
   RealCourse,
 } from "../../akiko";
-import { ClassifyOptions, setup } from "../../app";
+import { setup } from "../../app";
+import { ClassifyOptions } from "../../app-setup";
 import { courses } from "../../current-courses.js";
 import cellIdToRect from "./cell-id-to-rect.json";
 
