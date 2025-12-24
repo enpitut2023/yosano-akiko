@@ -5,7 +5,9 @@ import {
   KnownCourse,
   RealCourse,
 } from "../../akiko";
-import { ClassifyOptions, setup } from "../../app";
+import { setup } from "../../app";
+import { ClassifyOptions } from "../../app-setup";
+import { isGakushikiban } from "../../conditions/common";
 import { courses } from "../../current-courses.js";
 import cellIdToRect from "./cell-id-to-rect.json";
 
@@ -337,11 +339,7 @@ function isE4(id: string): boolean {
 }
 
 function isF1(id: string): boolean {
-  return (
-    (id.startsWith("12") || id.startsWith("14")) &&
-    // 総合科目(学士基盤科目)
-    !["27", "28", "30", "90"].includes(id.substring(2, 4))
-  );
+  return isGakushikiban(id);
 }
 
 function isF2(id: string): boolean {

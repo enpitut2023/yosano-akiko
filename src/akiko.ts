@@ -117,7 +117,7 @@ export type CreditRequirements = {
   electiveMin: number;
 };
 
-type BaseCreditStats = {
+export type BaseCreditStats = {
   min: number;
   rawMightTake: number;
   rawTaken: number;
@@ -159,7 +159,7 @@ function baseCreditStatsNew(
     effectiveTaken,
     effectiveTotal,
     overflowMightTake: rawMightTake - effectiveMightTake,
-    overflowTaken: rawTaken - effectiveTotal,
+    overflowTaken: rawTaken - effectiveTaken,
     overflowTotal: rawTotal - effectiveTotal,
   };
 }
