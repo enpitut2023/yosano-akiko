@@ -11,7 +11,7 @@ function fillInDescription(template: string, description: string): string {
   return template.replaceAll("!!description!!", description);
 }
 
-type Major = "coins" | "mast" | "klis-science" | "klis-system";
+type Major = "coins" | "mast" | "klis-science" | "klis-system" | "physics";
 
 // TODO
 // function majorCompare(a: Major, b: Major): number {
@@ -28,6 +28,8 @@ function majorToString(m: Major): string {
       return "知識情報・図書館学類 知識科学専攻";
     case "klis-system":
       return "知識情報・図書館学類 知識情報システム専攻";
+    case "physics":
+      return "物理学類"
     default:
       unreachable(m);
   }
@@ -90,6 +92,7 @@ function main(): void {
     { year: 2023, major: "mast", comment: "（選択科目のみ対応）" },
 
     { year: 2024, major: "coins" },
+    { year: 2024, major: "physics" },
 
     { year: 2025, major: "coins" },
   ];
