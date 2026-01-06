@@ -108,7 +108,7 @@ function isH2(id: string): boolean {
 }
 
 function isH3(id: string): boolean {
-  return id.startsWith("99"); //博物館に関する科目　自由科目（特設）
+  return id.startsWith("8") || id.startsWith("99"); //博物館に関する科目　自由科目（特設）
 }
 
 function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
