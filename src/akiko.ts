@@ -84,6 +84,99 @@ export function gradeIsPass(g: Grade): boolean {
   return g === "a+" || g === "a" || g === "b" || g === "c" || g === "pass";
 }
 
+export type Term =
+  | "spring-a"
+  | "spring-b"
+  | "spring-c"
+  | "autumn-a"
+  | "autumn-b"
+  | "autumn-c"
+  | "spring"
+  | "autumn"
+  | "spring-break"
+  | "summer-break"
+  | "all-year";
+
+export function termToString(t: Term): string {
+  switch (t) {
+    case "spring-a":
+      return "春A";
+    case "spring-b":
+      return "春B";
+    case "spring-c":
+      return "春C";
+    case "autumn-a":
+      return "秋A";
+    case "autumn-b":
+      return "秋B";
+    case "autumn-c":
+      return "秋C";
+    case "spring":
+      return "春学期";
+    case "autumn":
+      return "秋学期";
+    case "spring-break":
+      return "春季休業中";
+    case "summer-break":
+      return "夏季休業中";
+    case "all-year":
+      return "通年";
+    default:
+      unreachable(t);
+  }
+}
+
+export type Dow = "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
+
+export function dowToString(d: Dow): string {
+  switch (d) {
+    case "mon":
+      return "月";
+    case "tue":
+      return "火";
+    case "wed":
+      return "水";
+    case "thu":
+      return "木";
+    case "fri":
+      return "金";
+    case "sat":
+      return "土";
+    default:
+      unreachable(d);
+  }
+}
+
+export type When =
+  | { kind: "regular"; dow: Dow; period: number }
+  | { kind: "intensive" }
+  | { kind: "zuiji" }
+  | { kind: "oudan" }
+  | { kind: "nt" };
+
+export function whenToString(w: When): string {
+  switch (w.kind) {
+    case "regular":
+      return dowToString(w.dow) + w.period;
+    case "intensive":
+      return "集中";
+    case "zuiji":
+      return "随時";
+    case "oudan":
+      return "応談";
+    case "nt":
+      return "NT";
+    default:
+      unreachable(w);
+  }
+}
+
+export type Slot = { term: Term; when: When };
+
+export function slotToString(s: Slot): string {
+  return termToString(s.term) + " " + whenToString(s.when);
+}
+
 export type KnownCourse = {
   id: CourseId;
   name: string;
@@ -234,10 +327,6 @@ export function akikoNew(
   };
 }
 
-function akikoGetCourseCredit(akiko: Akiko, id: CourseId): number | undefined {
-  return (akiko.knownCourses.get(id) ?? akiko.realCourses.get(id))?.credit;
-}
-
 export function akikoGetCreditStats(akiko: Akiko): CreditStats {
   const cellIdToMightTakeIds = new Map<CellId, CourseId[]>();
   const cellIdToTakenIds = new Map<CellId, CourseId[]>();
@@ -272,11 +361,14 @@ export function akikoGetCreditStats(akiko: Akiko): CreditStats {
   for (const [cellId, req] of akiko.creditRequirements.cells) {
     let rawMightTake = 0;
     for (const id of cellIdToMightTakeIds.get(cellId) ?? []) {
-      rawMightTake += akikoGetCourseCredit(akiko, id) ?? 0;
+      rawMightTake +=
+        akiko.knownCourses.get(id)?.credit ??
+        akiko.realCourses.get(id)?.credit ??
+        0;
     }
     let rawTaken = 0;
     for (const id of cellIdToTakenIds.get(cellId) ?? []) {
-      rawTaken += akikoGetCourseCredit(akiko, id) ?? 0;
+      rawTaken += akiko.realCourses.get(id)?.credit ?? 0;
     }
     for (const id of cellIdToFakeCourseIds.get(cellId) ?? []) {
       rawTaken += akiko.fakeCourses.get(id)?.credit ?? 0;

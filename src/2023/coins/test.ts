@@ -113,6 +113,43 @@ function test2(): void {
   });
 }
 
+function test3(): void {
+  const csv = readFileSync("grade-csvs/2023/coins-3.csv", { encoding: "utf8" });
+  const isNative = false;
+  const got = getCreditStats({
+    csv,
+    isNative,
+    creditRequirements,
+    classifyRealCourses,
+    classifyFakeCourses,
+  });
+  assertCreditStatsEqual(got, {
+    cells: {
+      b1: { taken: 2 },
+      b2: { rawTaken: 25, effectiveTaken: 18 },
+      c1: { taken: 1 }, // TODO
+      // c1: { taken: 2 },
+      d3: { taken: 2 },
+      e3: { taken: 1 },
+      f1: { taken: 2 },
+      f2: { rawTaken: 7, effectiveTaken: 4 },
+      h1: { taken: 4 },
+      h2: { taken: 2 },
+    },
+    columns: {
+      b: { taken: 20 },
+      c: { taken: 1 },
+      d: { taken: 2 },
+      e: { taken: 1 },
+      f: { rawTaken: 6, effectiveTaken: 5 },
+      h: { taken: 6 },
+    },
+    compulsory: { taken: 2 },
+    elective: { taken: 33 },
+  });
+}
+
 test1();
 test2();
+test3();
 console.log(__filename, "ok");

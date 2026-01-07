@@ -1,4 +1,11 @@
 /**
+ * 共通科目
+ */
+export function isKyoutsuu(id: string): boolean {
+  return /^[1-6]/.test(id);
+}
+
+/**
  * 学問への誘い
  */
 function isIzanai(id: string): boolean {
