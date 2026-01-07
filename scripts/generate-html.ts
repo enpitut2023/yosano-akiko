@@ -1,7 +1,5 @@
-#!/usr/bin/env tsx
-
-import { readFileSync, writeFileSync } from "node:fs";
-import path from "node:path";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path, { dirname } from "node:path";
 
 function unreachable(_: never): never {
   throw new Error("Should be unreachable");
@@ -97,6 +95,9 @@ function main(): void {
   const template = readFileSync("src/index.html", {
     encoding: "utf8",
   });
+  const helpTemplate = readFileSync("src/docs/help.html", {
+    encoding: "utf8",
+  });
   const appTemplate = readFileSync("src/app-index.html", {
     encoding: "utf8",
   });
@@ -111,6 +112,13 @@ function main(): void {
     ),
     { encoding: "utf8" },
   );
+
+  const helpPath = path.join(dstDir, "docs", "help.html");
+  console.log(`Generating ${helpPath}`);
+  mkdirSync(dirname(helpPath), { recursive: true });
+  writeFileSync(helpPath, fillInDescription(helpTemplate, description), {
+    encoding: "utf8",
+  });
 
   for (const instance of instances) {
     const filename = path.join(

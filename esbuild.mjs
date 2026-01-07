@@ -18,6 +18,7 @@ await esbuild.build({
 
     "src/app.scss",
     "src/styles.scss",
+    "src/docs/help.scss",
   ],
   outbase: "src",
   bundle: true,
@@ -27,7 +28,7 @@ await esbuild.build({
   format: "iife",
   charset: "utf8",
   logLevel: "info",
-  external: ["fonts/*"],
+  external: ["*.ttf"],
   plugins: [sassPlugin()],
   sourcemap: release ? undefined : "inline",
   minify: release,

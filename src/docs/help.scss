@@ -1,0 +1,58 @@
+/* TODO: figure out what to do with the font location and stuff {{{ */
+@font-face {
+  font-family: "M PLUS Rounded 1c";
+  src: url(../fonts/MPLUSRounded1c-Regular.ttf);
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "M PLUS 1p";
+  src: url(../fonts/MPLUS1p-Bold.ttf);
+  font-weight: 700;
+}
+
+body,
+button,
+input {
+  font-family: "M PLUS Rounded 1c", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+strong,
+th {
+  font-family: "M PLUS 1p", sans-serif;
+}
+/* }}} */
+
+body {
+  margin: auto;
+  max-width: min(100%, 800px);
+  padding-bottom: 50vh;
+}
+
+h2 {
+  margin-top: 50px;
+  margin-bottom: 20px;
+}
+
+img {
+  width: 100%;
+  margin: 20px 0;
+  border: 1px solid oklch(0.7 0 0);
+}
+
+p.warning {
+  padding: 10px;
+  background-color: oklch(0.98 0.1 110);
+  border: 1px solid oklch(0.85 0.5 110);
+  border-radius: 10px;
+
+  &::before {
+    content: "⚠️ ";
+  }
+}
