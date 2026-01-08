@@ -107,6 +107,8 @@ function main(): void {
     { year: 2023, major: "mast", comment: "（選択科目のみ対応）" },
 
     { year: 2024, major: "coins" },
+    { year: 2024, major: "esys-intelligence", comment: "（ある程度対応）" },
+    { year: 2024, major: "esys-mechanics", comment: "（ある程度対応）" },
 
     { year: 2025, major: "coins" },
   ];
