@@ -107,6 +107,9 @@ function main(): void {
     { year: 2023, major: "mast", comment: "（選択科目のみ対応）" },
 
     { year: 2024, major: "coins" },
+    { year: 2024, major: "pops-economics", comment: "（ある程度対応）" },
+    { year: 2024, major: "pops-management", comment: "（ある程度対応）" },
+    { year: 2024, major: "pops-city-planning", comment: "（ある程度対応）" },
 
     { year: 2025, major: "coins" },
   ];
