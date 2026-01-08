@@ -9,7 +9,16 @@ function fillInDescription(template: string, description: string): string {
   return template.replaceAll("!!description!!", description);
 }
 
-type Major = "coins" | "mast" | "klis-science" | "klis-system";
+type Major =
+  | "coins"
+  | "mast"
+  | "klis-science"
+  | "klis-system"
+  | "pops-economics"
+  | "pops-management"
+  | "pops-city-planning"
+  | "esys-intelligence"
+  | "esys-mechanics";
 
 // TODO
 // function majorCompare(a: Major, b: Major): number {
@@ -26,6 +35,16 @@ function majorToString(m: Major): string {
       return "知識情報・図書館学類 知識科学専攻";
     case "klis-system":
       return "知識情報・図書館学類 知識情報システム専攻";
+    case "pops-economics":
+      return "社会工学類 社会経済システム専攻";
+    case "pops-management":
+      return "社会工学類 経営工学専攻";
+    case "pops-city-planning":
+      return "社会工学類 都市計画専攻";
+    case "esys-intelligence":
+      return "工学システム学類 知的・機能工学システム専攻";
+    case "esys-mechanics":
+      return "工学システム学類 エネルギー・メカニクス主専攻";
     default:
       unreachable(m);
   }
