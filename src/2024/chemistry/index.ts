@@ -8,6 +8,7 @@ import {
   classifyRealCourses,
   creditRequirements,
 } from "./conditions";
+import tableViewBox from "./table-view-box.json";
 
 setup({
   knownCourses: courses as KnownCourse[],
@@ -19,4 +20,5 @@ setup({
   classifyKnownCourses,
   classifyRealCourses,
   classifyFakeCourses,
+  tableViewBox,
 });
