@@ -7,6 +7,7 @@ import {
 } from "../../akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "../../app-setup";
 import { isGakushikiban } from "../../conditions/common";
+import { arrayRemove, assert } from "../../util";
 
 function convertToGb(id: string): string {
   switch (id) {
@@ -127,26 +128,10 @@ function isB2(id: string): boolean {
   );
 }
 
-function isC1(id: string, native: boolean): boolean {
+function isC1(id: string): boolean {
   return (
     id === "GA15211" || //1・2クラス
-    id === "GA15221" || //3・4クラス
-    // 移行生はFAから始まる線形代数1をcoinsの線形代数Aとして使える
-    // TODO: 1年の時にFA...を取らなかった移行生がこれを見ると、2年になってから
-    // FA...を取ることができると勘違いするかも？
-    (!native &&
-      (id === "FA01611" ||
-        id === "FA01621" ||
-        id === "FA01631" ||
-        id === "FA01641" ||
-        id === "FA01651" ||
-        id === "FA01661" ||
-        id === "FA01671" ||
-        id === "FA01681" ||
-        id === "FA01691" ||
-        id === "FA016A1" ||
-        id === "FA016C1" ||
-        id === "FA016D1"))
+    id === "GA15221" //3・4クラス
   );
 }
 
@@ -157,25 +142,10 @@ function isC2(id: string): boolean {
   );
 }
 
-function isC3(id: string, native: boolean): boolean {
+function isC3(id: string): boolean {
   return (
     id === "GA15311" || //1・2クラス
-    id === "GA15321" || //3・4クラス
-    // 移行生はFAから始まる微積分1をcoinsの微分積分Aとして使える
-    // TODO: C1と同じ懸念
-    (!native &&
-      (id === "FA01311" ||
-        id === "FA01321" ||
-        id === "FA01331" ||
-        id === "FA01341" ||
-        id === "FA01351" ||
-        id === "FA01361" ||
-        id === "FA01371" ||
-        id === "FA01381" ||
-        id === "FA01391" ||
-        id === "FA013A1" ||
-        id === "FA013C1" ||
-        id === "FA013D1"))
+    id === "GA15321" //3・4クラス
   );
 }
 
@@ -201,7 +171,6 @@ function isC7(id: string, native: boolean): boolean {
   return (
     id === "GA18212" ||
     // 移行生はFHから始まるプロ入Aをcoinsのプロ入Aとして使える
-    // TODO: C1と同じ懸念
     (!native && (id === "FH60474" || id === "FH60484" || id === "FH60494"))
   );
 }
@@ -210,7 +179,6 @@ function isC8(id: string, native: boolean): boolean {
   return (
     id === "GA18312" ||
     // 移行生はFHから始まるプロ入Bをcoinsのプロ入Bとして使える
-    // TODO: C1と同じ懸念
     (!native && (id === "FH60574" || id === "FH60584" || id === "FH60594"))
   );
 }
@@ -391,11 +359,11 @@ export function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
       courseIdToCellId.set(c.id, "a2");
     } else if (isA3(c.id)) {
       courseIdToCellId.set(c.id, "a3");
-    } else if (isC1(c.id, true)) {
+    } else if (isC1(c.id)) {
       courseIdToCellId.set(c.id, "c1");
     } else if (isC2(c.id)) {
       courseIdToCellId.set(c.id, "c2");
-    } else if (isC3(c.id, true)) {
+    } else if (isC3(c.id)) {
       courseIdToCellId.set(c.id, "c3");
     } else if (isC4(c.id)) {
       courseIdToCellId.set(c.id, "c4");
@@ -452,11 +420,107 @@ export function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
   return courseIdToCellId;
 }
 
+const FA_LINEAR_ALGEBRA_1 = new Set([
+  "FA01611",
+  "FA01621",
+  "FA01631",
+  "FA01641",
+  "FA01651",
+  "FA01661",
+  "FA01671",
+  "FA01681",
+  "FA01691",
+  "FA016A1",
+  "FA016C1",
+  "FA016D1",
+]);
+
+const FA_LINEAR_ALGEBRA_2 = new Set([
+  "FA01711",
+  "FA01721",
+  "FA01731",
+  "FA01741",
+  "FA01751",
+  "FA01761",
+  "FA01771",
+  "FA01781",
+  "FA01791",
+  "FA017A1",
+  "FA017C1",
+  "FA017D1",
+]);
+
+// 移行生はFAから始まる線形代数1と2を両方取っているとcoinsの線形代数Aとして使える
+function handleFaLinearAlgebra(
+  cs: RealCourse[],
+  map: Map<CourseId, string>,
+): void {
+  const c1 = cs.find((c) => FA_LINEAR_ALGEBRA_1.has(c.id));
+  const c2 = cs.find((c) => FA_LINEAR_ALGEBRA_2.has(c.id));
+  if (c1 === undefined || c2 === undefined) {
+    return;
+  }
+  map.set(c1.id, "c1");
+  map.set(c2.id, "c1");
+  assert(arrayRemove(cs, c1));
+  assert(arrayRemove(cs, c2));
+}
+
+const FA_CALCULUS_1 = new Set([
+  "FA01311",
+  "FA01321",
+  "FA01331",
+  "FA01341",
+  "FA01351",
+  "FA01361",
+  "FA01371",
+  "FA01381",
+  "FA01391",
+  "FA013A1",
+  "FA013C1",
+  "FA013D1",
+]);
+
+const FA_CALCULUS_2 = new Set([
+  "FA01411",
+  "FA01421",
+  "FA01431",
+  "FA01441",
+  "FA01451",
+  "FA01461",
+  "FA01471",
+  "FA01481",
+  "FA01491",
+  "FA014A1",
+  "FA014C1",
+  "FA014D1",
+]);
+
+// 移行生はFAから始まる微積分1と2を両方取っているとcoinsの微分積分Aとして使える
+function handleFaCalculus(cs: RealCourse[], map: Map<CourseId, string>): void {
+  const c1 = cs.find((c) => FA_CALCULUS_1.has(c.id));
+  const c2 = cs.find((c) => FA_CALCULUS_2.has(c.id));
+  if (c1 === undefined || c2 === undefined) {
+    return;
+  }
+  map.set(c1.id, "c3");
+  map.set(c2.id, "c3");
+  assert(arrayRemove(cs, c1));
+  assert(arrayRemove(cs, c2));
+}
+
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
 ): Map<CourseId, string> {
+  cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
+
+  if (!opts.isNative) {
+    handleFaLinearAlgebra(cs, courseIdToCellId);
+    handleFaCalculus(cs, courseIdToCellId);
+  }
+
   for (const c of cs) {
     const id = convertToGb(c.id);
     // 必修
@@ -466,11 +530,11 @@ export function classifyRealCourses(
       courseIdToCellId.set(c.id, "a2");
     } else if (isA3(id)) {
       courseIdToCellId.set(c.id, "a3");
-    } else if (isC1(id, opts.isNative)) {
+    } else if (isC1(id)) {
       courseIdToCellId.set(c.id, "c1");
     } else if (isC2(id)) {
       courseIdToCellId.set(c.id, "c2");
-    } else if (isC3(id, opts.isNative)) {
+    } else if (isC3(id)) {
       courseIdToCellId.set(c.id, "c3");
     } else if (isC4(id)) {
       courseIdToCellId.set(c.id, "c4");
