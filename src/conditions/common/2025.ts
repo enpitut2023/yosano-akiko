@@ -27,8 +27,8 @@ export function isGakushikiban(id: string): boolean {
 
 /**
  * 自由科目
- * 「自由科目（特設）」と書かれていることがあるが、特設ではない自由科目は存在し
- * ない模様。
+ * 「自由科目（特設）」や「特設自由科目」と書かれていることがあるが、特設ではな
+ * い自由科目は存在しない模様。
  */
 export function isJiyuukamoku(id: string): boolean {
   return id.startsWith("8");
@@ -39,4 +39,11 @@ export function isJiyuukamoku(id: string): boolean {
  */
 export function isHakubutsukan(id: string): boolean {
   return id.startsWith("99");
+}
+
+/**
+ * 教職に関する科目
+ */
+export function isKyoushoku(id: string): boolean {
+  return id.startsWith("9") && !isHakubutsukan(id);
 }
