@@ -13,78 +13,56 @@ import {
 } from "../../conditions/common";
 import { arrayRemove, assert } from "../../util";
 
-function convertToGb(id: string): string {
-  switch (id) {
-    case "BC12624": // コンピュータグラフィックス基礎
-    case "GC23304": // CG基礎
-      return "GB13704"; // コンピュータグラフィックス基礎
-
-    case "GC50291": // オートマトンと形式言語
-      return "GB20401"; // オートマトンと形式言語
-
-    case "GC53701": // システム数理I
-      return "GB22011"; // システム数理I
-
-    case "GC53801": // システム数理II
-      return "GB22021"; // システム数理II
-
-    case "GC54301": // システム数理III
-      return "GB22031"; // システム数理III
-
-    case "BC12631": // インタラクティブCG
-      return "GB22401"; // インタラクティブCG
-
-    case "GC54601": // 情報線形代数
-      return "GB22501"; // 情報線形代数
-
-    case "GC54091": // 情報可視化
-      return "GB22621"; // 情報可視化
-
-    case "BC12871": // コンピュータネットワーク
-    case "GC25301": // コンピュータネットワーク
-      return "GB30101"; // コンピュータネットワーク
-
-    case "BC12681": // 人工生命概論
-      return "GB32301"; // 人工生命概論
-
-    case "BC12651": // 情報セキュリティ
-      return "GB40111"; // 情報セキュリティ
-
-    case "BC12671": // ヒューマンインタフェース
-    case "GE71101": // ヒューマンインタフェース
-      return "GB40301"; // ヒューマンインタフェース
-
-    case "BC12621": // 信号処理
-      return "GB40411"; // 信号処理
-
-    case "BC12881": // 機械学習
-      return "GB40501"; // 機械学習
-
-    case "GC54904": // アドバンストCG
-      return "GB41104"; // アドバンストCG
-
-    case "BC12601": // 音声聴覚情報処理
-      return "GB41511"; // 音声聴覚情報処理
-
-    case "GC53901": // 自然言語処理
-      return "GB41611"; // 自然言語処理
-
-    case "GC53601": // 視覚情報科学
-      return "GB41711"; // 視覚情報科学
-
-    case "BC12883": // 知能情報メディア実験A
-      return "GB46403"; // 知能情報メディア実験A
-
-    case "BC12893": // 知能情報メディア実験B
-      return "GB46503"; // 知能情報メディア実験B
-
-    case "GC59301": // 情報メディア創成特別講義C
-      return "GB47001"; // 知能情報メディア特別講義A
-
-    default:
-      return id;
-  }
-}
+const COURSE_ID_TO_GB_COURSE_ID = new Map([
+  // コンピュータグラフィックス基礎 → コンピュータグラフィックス基礎
+  ["BC12624", "GB13704"],
+  // CG基礎 → コンピュータグラフィックス基礎
+  ["GC23304", "GB13704"],
+  // オートマトンと形式言語 → オートマトンと形式言語
+  ["GC50291", "GB20401"],
+  // システム数理I → システム数理I
+  ["GC53701", "GB22011"],
+  // システム数理II → システム数理II
+  ["GC53801", "GB22021"],
+  // システム数理III → システム数理III
+  ["GC54301", "GB22031"],
+  // インタラクティブCG → インタラクティブCG
+  ["BC12631", "GB22401"],
+  // 情報線形代数 → 情報線形代数
+  ["GC54601", "GB22501"],
+  // 情報可視化 → 情報可視化
+  ["GC54091", "GB22621"],
+  // コンピュータネットワーク → コンピュータネットワーク
+  ["BC12871", "GB30101"],
+  // コンピュータネットワーク → コンピュータネットワーク
+  ["GC25301", "GB30101"],
+  // 人工生命概論 → 人工生命概論
+  ["BC12681", "GB32301"],
+  // 情報セキュリティ → 情報セキュリティ
+  ["BC12651", "GB40111"],
+  // ヒューマンインタフェース → ヒューマンインタフェース
+  ["BC12671", "GB40301"],
+  // ヒューマンインタフェース → ヒューマンインタフェース
+  ["GE71101", "GB40301"],
+  // 信号処理 → 信号処理
+  ["BC12621", "GB40411"],
+  // 機械学習 → 機械学習
+  ["BC12881", "GB40501"],
+  // アドバンストCG → アドバンストCG
+  ["GC54904", "GB41104"],
+  // 音声聴覚情報処理 → 音声聴覚情報処理
+  ["BC12601", "GB41511"],
+  // 自然言語処理 → 自然言語処理
+  ["GC53901", "GB41611"],
+  // 視覚情報科学 → 視覚情報科学
+  ["GC53601", "GB41711"],
+  // 知能情報メディア実験A → 知能情報メディア実験A
+  ["BC12883", "GB46403"],
+  // 知能情報メディア実験B → 知能情報メディア実験B
+  ["BC12893", "GB46503"],
+  // 情報メディア創成特別講義C → 知能情報メディア特別講義A
+  ["GC59301", "GB47001"],
+]);
 
 function isA1(id: string): boolean {
   return (
@@ -352,6 +330,11 @@ function isH2(id: string): boolean {
 export function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
+    // コードシェアの読み替え前は表示しない
+    if (COURSE_ID_TO_GB_COURSE_ID.has(c.id)) {
+      continue;
+    }
+
     // 必修
     if (isA1(c.id)) {
       courseIdToCellId.set(c.id, "a1");
@@ -522,7 +505,7 @@ export function classifyRealCourses(
   }
 
   for (const c of cs) {
-    const id = convertToGb(c.id);
+    const id = COURSE_ID_TO_GB_COURSE_ID.get(c.id) ?? c.id;
     // 必修
     if (isA1(id)) {
       courseIdToCellId.set(c.id, "a1");
