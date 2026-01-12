@@ -6,7 +6,11 @@ import {
   RealCourse,
 } from "../../akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "../../app-setup";
-import { isGakushikiban } from "../../conditions/common";
+import {
+  isGakushikiban,
+  isKyoushoku,
+  isKyoutsuu,
+} from "../../conditions/common";
 import { arrayRemove, assert } from "../../util";
 
 function convertToGb(id: string): string {
@@ -325,17 +329,13 @@ function isF2(id: string): boolean {
 }
 
 function isH1(id: string): boolean {
-  return (
-    !(
-      id.startsWith("E") ||
-      id.startsWith("F") ||
-      id.startsWith("G") ||
-      id.startsWith("H") ||
-      // 共通科目及び教職に関する科目
-      id.match(/^\d/)
-    ) ||
-    id.startsWith("8") ||
-    id.startsWith("99")
+  return !(
+    id.startsWith("E") ||
+    id.startsWith("F") ||
+    id.startsWith("G") ||
+    id.startsWith("H") ||
+    isKyoutsuu(id) ||
+    isKyoushoku(id)
   );
 }
 
