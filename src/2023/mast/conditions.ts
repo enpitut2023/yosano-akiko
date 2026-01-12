@@ -355,14 +355,94 @@ export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
 ): Map<CourseId, string> {
-  return new Map();
+  const courseIdToCellId = new Map<CourseId, string>();
+  for (const c of cs) {
+    // 必修
+    if (isA1(c.id)) {
+      courseIdToCellId.set(c.id, "a1");
+    } else if (isA2(c.id)) {
+      courseIdToCellId.set(c.id, "a2");
+    } else if (isA3(c.id)) {
+      courseIdToCellId.set(c.id, "a3");
+    } else if (isA4(c.id)) {
+      courseIdToCellId.set(c.id, "a4");
+    } else if (isA5(c.id)) {
+      courseIdToCellId.set(c.id, "a5");
+    } else if (isA6(c.id)) {
+      courseIdToCellId.set(c.id, "a6");
+    } else if (isC1(c.id)) {
+      courseIdToCellId.set(c.id, "c1");
+    } else if (isC2(c.id)) {
+      courseIdToCellId.set(c.id, "c2");
+    } else if (isC3(c.id)) {
+      courseIdToCellId.set(c.id, "c3");
+    } else if (isC4(c.id)) {
+      courseIdToCellId.set(c.id, "c4");
+    } else if (isC5(c.id)) {
+      courseIdToCellId.set(c.id, "c5");
+    } else if (isC6(c.id)) {
+      courseIdToCellId.set(c.id, "c6");
+    } else if (isC7(c.id)) {
+      courseIdToCellId.set(c.id, "c7");
+    } else if (isC8(c.id)) {
+      courseIdToCellId.set(c.id, "c8");
+    } else if (isC9(c.id)) {
+      courseIdToCellId.set(c.id, "c9");
+    } else if (isC10(c.id)) {
+      courseIdToCellId.set(c.id, "c10");
+    } else if (isC11(c.id)) {
+      courseIdToCellId.set(c.id, "c11");
+    } else if (isC12(c.id)) {
+      courseIdToCellId.set(c.id, "c12");
+    } else if (isC13(c.id)) {
+      courseIdToCellId.set(c.id, "c13");
+    } else if (isE1(c.id)) {
+      courseIdToCellId.set(c.id, "e1");
+    } else if (isE2(c.id)) {
+      courseIdToCellId.set(c.id, "e2");
+    } else if (isE3(c.id)) {
+      courseIdToCellId.set(c.id, "e3");
+    } else if (isE4(c.name)) {
+      courseIdToCellId.set(c.id, "e4");
+    }
+    // 選択
+    if (isB1(c.id)) {
+      courseIdToCellId.set(c.id, "b1");
+    } else if (isD1(c.id)) {
+      courseIdToCellId.set(c.id, "d1");
+    } else if (isF1(c.id)) {
+      courseIdToCellId.set(c.id, "f1");
+    } else if (isF2(c.id)) {
+      courseIdToCellId.set(c.id, "f2");
+    } else if (isF3(c.id)) {
+      courseIdToCellId.set(c.id, "f3");
+    } else if (isF4(c.id)) {
+      courseIdToCellId.set(c.id, "f4");
+    } else if (isF5(c.id)) {
+      courseIdToCellId.set(c.id, "f5");
+    } else if (isH1(c.id)) {
+      courseIdToCellId.set(c.id, "h1");
+    } else if (isH2(c.id)) {
+      courseIdToCellId.set(c.id, "h2");
+    } else if (isH3(c.id)) {
+      courseIdToCellId.set(c.id, "h3");
+    }
+  }
+  return courseIdToCellId;
 }
 
 export function classifyFakeCourses(
   cs: FakeCourse[],
 ): Map<FakeCourseId, string> {
-  return new Map();
+  const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
+  for (const c of cs) {
+    if (isE4(c.name)) {
+      fakeCourseIdToCellId.set(c.id, "e4");
+    }
+  }
+  return fakeCourseIdToCellId;
 }
+
 export const creditRequirements: SetupCreditRequirements = {
   cells: {
     a1: { min: 3, max: 3 },
