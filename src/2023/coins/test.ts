@@ -127,25 +127,28 @@ function test3(): void {
     cells: {
       b1: { taken: 2 },
       b2: { rawTaken: 25, effectiveTaken: 18 },
-      c1: { taken: 1 }, // TODO
-      // c1: { taken: 2 },
+      c1: { taken: 2 },
       d3: { taken: 2 },
       e3: { taken: 1 },
       f1: { taken: 2 },
       f2: { rawTaken: 7, effectiveTaken: 4 },
       h1: { taken: 4 },
-      h2: { taken: 2 },
+      // FF18724 線形代数A の1単位がh2に入っている。情報科学類の学生は必修と内
+      // 容が被っている他学類の線形代数などを履修することができない。そのため、
+      // 本来は卒業単位として数えられないが、履修がそもそもできないなら数えてし
+      // まっても問題ないとする。
+      h2: { taken: 1 },
     },
     columns: {
       b: { taken: 20 },
-      c: { taken: 1 },
+      c: { taken: 2 },
       d: { taken: 2 },
       e: { taken: 1 },
       f: { rawTaken: 6, effectiveTaken: 5 },
-      h: { taken: 6 },
+      h: { taken: 5 },
     },
-    compulsory: { taken: 2 },
-    elective: { taken: 33 },
+    compulsory: { taken: 3 },
+    elective: { taken: 32 },
   });
 }
 

@@ -1,10 +1,12 @@
+// @ts-check
 import * as esbuild from "esbuild";
 import { sassPlugin } from "esbuild-sass-plugin";
 import { env } from "node:process";
 
 const release = (env.AKIKO_RELEASE ?? "") !== "";
 
-await esbuild.build({
+/** @type {esbuild.BuildOptions} */
+const options = {
   entryPoints: [
     "src/2021/coins/index.ts",
     "src/2021/mast/index.ts",
@@ -32,4 +34,16 @@ await esbuild.build({
   plugins: [sassPlugin()],
   sourcemap: release ? undefined : "inline",
   minify: release,
-});
+};
+
+async function main() {
+  const watch = process.argv.includes("--watch");
+  if (watch) {
+    const ctx = await esbuild.context(options);
+    await ctx.watch();
+  } else {
+    await esbuild.build(options);
+  }
+}
+
+main();
