@@ -19,6 +19,10 @@ import {
   Akiko,
   CellCreditStats,
   columnIdIsCompulsory,
+  akikoGetUnclassifiedRealCourses,
+  akikoGetUnclassifiedFakeCourses,
+  courseIdCompare,
+  fakeCourseIdCompare,
 } from "./akiko";
 import { ClassifyOptions, SetupParams } from "./app-setup";
 import { CourseLists } from "./course-lists";
@@ -603,6 +607,23 @@ export function setup(params: SetupParams): void {
     localData.fakeCourses = result.fakeCourses;
     localDataStore(localDataKey, localData);
     akiko = createAkiko();
+
+    if (DEBUG) {
+      const rcs = akikoGetUnclassifiedRealCourses(akiko);
+      const fcs = akikoGetUnclassifiedFakeCourses(akiko);
+      rcs.sort((a, b) => courseIdCompare(a.id, b.id));
+      fcs.sort((a, b) => fakeCourseIdCompare(a.id, b.id));
+      let s = "マスに振り分けられなかった授業\n";
+      for (const rc of rcs) {
+        s += [rc.id, rc.name, rc.takenYear, rc.credit, rc.grade].join(" ");
+        s += "\n";
+      }
+      for (const fc of fcs) {
+        s += [fc.id, fc.name, fc.takenYear, fc.credit, fc.grade].join(" ");
+        s += "\n";
+      }
+      console.log(s);
+    }
 
     render();
   });
