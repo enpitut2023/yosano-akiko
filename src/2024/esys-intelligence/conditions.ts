@@ -6,16 +6,16 @@ import {
   RealCourse,
 } from "../../akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "../../app-setup";
-import { 
+import {
   isGakushikiban,
   isJiyuukamoku,
-  isHakubutsukan
+  isHakubutsukan,
 } from "../../conditions/common";
 
 function isA1(id: string): boolean {
-  return ( 
+  return (
     //プログラミング序論C(所属主専攻の科目番号で履修登録)
-    id === "FG20204" || 
+    id === "FG20204" ||
     id === "FG30204" ||
     //プログラミング序論D(所属主専攻の科目番号で履修登録)
     id === "FG20214" ||
@@ -33,8 +33,7 @@ function isA2(id: string): boolean {
 function isA3(id: string): boolean {
   return (
     //知的・機能工学システム実験(所属主専攻の科目番号で履修登録)
-    id === "FG29213" ||
-    id === "FG39213"
+    id === "FG29213" || id === "FG39213"
   );
 }
 
@@ -65,7 +64,7 @@ function isA4(id: string): boolean {
     id === "FG49978" || //2023
     id === "FG59978" || //2023
     //特別卒業研究A 早期卒業用(春ABC)2023, 24, 25で同じ
-    id === "FG19358" || 
+    id === "FG19358" ||
     //特別卒業研究B 早期卒業用(秋ABC)2023, 24, 25で同じ
     id === "FG19348"
   );
@@ -79,7 +78,7 @@ function isA5(id: string): boolean {
 
 function isA6(id: string): boolean {
   return (
-   //専門英語A
+    //専門英語A
     id === "FG18102" || //2年1,2クラス
     id === "FG18112" || //2年3,4クラス
     //専門英語B
@@ -87,7 +86,7 @@ function isA6(id: string): boolean {
     id === "FG30222" || //知的・機能工学システム主専攻
     // id === "FG40222" || //エネルギー・メカニクス主専攻
     // id === "FG50222" || //エネルギー・メカニクス主専攻
-   //専門英語演習
+    //専門英語演習
     id === "FG20232" || //知的・機能工学システム主専攻
     id === "FG30232" //知的・機能工学システム主専攻
     // id === "FG40232" || //エネルギー・メカニクス主専攻
@@ -96,44 +95,36 @@ function isA6(id: string): boolean {
 }
 
 function isB1(id: string): boolean {
-  return (
-    id.startsWith("FG11") ||
-    id.startsWith("FG21")
-  );
+  return id.startsWith("FG11") || id.startsWith("FG21");
 }
 
 function isB2(id: string): boolean {
-  return (
-    id.startsWith("FG12") ||
-    id.startsWith("FG22")
-  );
+  return id.startsWith("FG12") || id.startsWith("FG22");
 }
 
 function isB3(id: string): boolean {
-  return (
-    id.startsWith("FG13") ||
-    id.startsWith("FG23")
-  );
+  return id.startsWith("FG13") || id.startsWith("FG23");
 }
 
 function isB4(id: string): boolean {
   return (
-    id.startsWith("FG17") ||
-    id.startsWith("FG24") ||
-    id.startsWith("FG25")
+    id.startsWith("FG17") || id.startsWith("FG24") || id.startsWith("FG25")
   );
 }
 
 function isB5(id: string): boolean {
   return (
-    ( //FG, FF2-FF5, GB2-GB4で始まる科目
-      id.startsWith("FG") ||
+    (//FG, FF2-FF5, GB2-GB4で始まる科目
+    (id.startsWith("FG") ||
       /^FF[2-5]/.test(id) || //FF2-FF5
-      /^GB[2-4]/.test(id) //GB2-GB4
-    ) && !( //工学システム概論を除く
-      id === "FG10641" || //2019年度および2020年度入学生の必修科目 2023は開講
-      id === "FG16051" //2019年度以降入学生対象
-    ) ||
+      /^GB[2-4]/.test(id)) && //GB2-GB4
+      !(
+        //工学システム概論を除く
+        (
+          id === "FG10641" || //2019年度および2020年度入学生の必修科目 2023は開講
+          id === "FG16051" //2019年度以降入学生対象
+        )
+      )) ||
     id.startsWith("FA00") || //FA00で始まる科目
     id.startsWith("FJ") //FJで始まる科目(学類長が指定する科目がわからない)
   );
@@ -223,7 +214,6 @@ function isC10(id: string): boolean {
 
 function isC11(id: string): boolean {
   return id === "FCB1291"; //力学3 応用理工学類・工学システム学類
-
 }
 
 function isC12(id: string): boolean {
@@ -236,7 +226,6 @@ function isC13(id: string): boolean {
 
 function isC14(id: string): boolean {
   return id === "FCB1381"; //電磁気学3 応用理工学類・工学システム学類
-
 }
 
 function isC15(id: string): boolean {
@@ -263,20 +252,19 @@ function isC19(id: string): boolean {
   return (
     //常微分方程式
     id === "FG10764" || //2023, 2024, 2025開講　2023は2019年度以降入学生対象(2年1, 2クラス) 2024, 2025はクラス分けなし
-    id ==="FG10774" //2023開講 2019年度以降入学生対象(2年3, 4クラス)
+    id === "FG10774" //2023開講 2019年度以降入学生対象(2年3, 4クラス)
   );
 }
 
 function isC20(id: string): boolean {
   return id === "FG10814"; //力学総論
-
 }
 
 function isC21(id: string): boolean {
   return (
     //電磁気学総論
     id === "FG10834" || //2023, 2024, 2025開講　2023は2019年度以降入学生対象(2年1, 2クラス) 2024, 2025はクラス分けなし
-    id ==="FG10844" //2023開講 2019年度以降入学生対象(2年3, 4クラス)
+    id === "FG10844" //2023開講 2019年度以降入学生対象(2年3, 4クラス)
   );
 }
 
@@ -299,7 +287,7 @@ function isC24(id: string): boolean {
     id === "FG10851" || //2023, 2024, 2025開講　2023は2019年度以降入学生の必修科目 2018年度以前入学者で環境開発工学、エネルギー工学主専攻の学生は所属主専攻の科目番号で履修登録 2024, 2025はクラス分けなし
     id === "FG45571" || //2018年度以前入学者で環境開発工学、エネルギー工学主専攻の学生は所属主専攻の科目番号で履修登録
     id === "FG55571" //2018年度以前入学者で環境開発工学、エネルギー工学主専攻の学生は所属主専攻の科目番号で履修登録
-  ); 
+  );
 }
 
 function isC25(id: string): boolean {
@@ -400,7 +388,7 @@ function isF3(id: string): boolean {
 
 function isF4(id: string): boolean {
   // 芸術
-  return id.startsWith("4") //多分ここはOKだけど確認お願いします
+  return id.startsWith("4"); //多分ここはOKだけど確認お願いします
 }
 
 function isF5(id: string): boolean {
@@ -548,7 +536,8 @@ export function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
       courseIdToCellId.set(c.id, "h2");
     } else if (isH3(c.id)) {
       courseIdToCellId.set(c.id, "h3");
-    } else if (isH1(c.id)) { //指定の科目以外なので最後にしてあります
+    } else if (isH1(c.id)) {
+      //指定の科目以外なので最後にしてあります
       courseIdToCellId.set(c.id, "h1");
     }
   }
@@ -570,26 +559,26 @@ export function classifyFakeCourses(
 
 export const creditRequirements: SetupCreditRequirements = {
   cells: {
-    a1: { min: 3, max: 3},
-    a2: { min: 4, max: 4},
-    a3: { min: 6, max: 6},
-    a4: { min: 8, max: 8},
-    a5: { min: 1, max: 1},
-    a6: { min: 3, max: 3},
+    a1: { min: 3, max: 3 },
+    a2: { min: 4, max: 4 },
+    a3: { min: 6, max: 6 },
+    a4: { min: 8, max: 8 },
+    a5: { min: 1, max: 1 },
+    a6: { min: 3, max: 3 },
     b1: { min: 6, max: undefined },
     b2: { min: 1, max: undefined },
     b3: { min: 1, max: undefined },
     b4: { min: 16, max: undefined },
     b5: { min: 0, max: undefined },
-    c1:  { min: 1, max: 1 },
-    c2:  { min: 1, max: 1 },
-    c3:  { min: 1, max: 1 },
-    c4:  { min: 1, max: 1 },
-    c5:  { min: 1, max: 1 },
-    c6:  { min: 1, max: 1 },
-    c7:  { min: 1, max: 1 },
-    c8:  { min: 1, max: 1 },
-    c9:  { min: 1, max: 1 },
+    c1: { min: 1, max: 1 },
+    c2: { min: 1, max: 1 },
+    c3: { min: 1, max: 1 },
+    c4: { min: 1, max: 1 },
+    c5: { min: 1, max: 1 },
+    c6: { min: 1, max: 1 },
+    c7: { min: 1, max: 1 },
+    c8: { min: 1, max: 1 },
+    c9: { min: 1, max: 1 },
     c10: { min: 1, max: 1 },
     c11: { min: 1, max: 1 },
     c12: { min: 1, max: 1 },
