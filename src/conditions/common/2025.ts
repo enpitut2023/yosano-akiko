@@ -6,6 +6,35 @@ export function isKyoutsuu(id: string): boolean {
 }
 
 /**
+ * 必修の英語を科目番号で判定
+ * - English Reading Skills I: 31H...
+ * - English Presentation Skills I: 31J...
+ * - English Reading Skills II: 31K...
+ * - English Presentation Skills II: 31L...
+ */
+export function isCompulsoryEnglishById(id: string): boolean {
+  return /^31[HJKL]/.test(id);
+}
+
+/**
+ * 必修の英語を科目名で判定
+ * English Reading Skills I, IIとEnglish Presentation Skills I, IIが認定された
+ * 単位である場合、認定単位には科目番号が存在せず科目名のみ存在するため、これを
+ * 使って判定できる。
+ */
+export function isCompulsoryEnglishByName(name: string): boolean {
+  name = name.trim();
+  name = name.replaceAll(/\s+/g, " ");
+  name = name.toLowerCase();
+  return (
+    name === "english reading skills i" ||
+    name === "english reading skills ii" ||
+    name === "english presentation skills i" ||
+    name === "english presentation skills ii"
+  );
+}
+
+/**
  * 学問への誘い
  */
 function isIzanai(id: string): boolean {

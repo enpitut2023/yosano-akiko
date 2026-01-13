@@ -104,7 +104,7 @@ function main(): void {
     { year: 2023, major: "coins" },
     { year: 2023, major: "klis-science", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "klis-system", comment: "（ほぼ全て対応）" },
-    { year: 2023, major: "mast", comment: "（選択科目のみ対応）" },
+    { year: 2023, major: "mast", comment: "（ほぼ全て対応）" },
 
     { year: 2024, major: "coins" },
 

@@ -6,18 +6,29 @@ import {
   RealCourse,
 } from "../../akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "../../app-setup";
-import { isGakushikiban } from "../../conditions/common";
+import {
+  isGakushikiban,
+  isHakubutsukan,
+  isJiyuukamoku,
+  isKyoutsuu,
+} from "../../conditions/common";
+import {
+  isCompulsoryEnglishByName,
+  isKyoushoku,
+} from "../../conditions/common/2025";
 
 function isA1(id: string): boolean {
+  // 卒業研究A
   return (
-    id === "GC48708" || // こっちは特別っぽい
-    id === "GC48808"
+    id === "GC48708" || // 秋学期
+    id === "GC48808" // 春学期
   );
 }
 
 function isA2(id: string): boolean {
+  // 卒業研究B
   return (
-    id === "GC48608" || // こっちは特別っぽい
+    id === "GC48608" || // 春学期
     id === "GC48908"
   );
 }
@@ -143,25 +154,11 @@ function isE3(id: string) {
 }
 
 function isE4(name: string): boolean {
-  // TODO:
-  // 編入とかで英語を認定された人は「英語」という名前の4単位の授業を与えられる
-  name = name.trim();
-  name = name.replaceAll(/\s+/g, " ");
-  name = name.toLowerCase();
-  return (
-    name === "english reading skills i" ||
-    name === "english reading skills ii" ||
-    name === "english presentation skills i" ||
-    name === "english presentation skills ii"
-  );
+  return isCompulsoryEnglishByName(name);
 }
 
 function isF1(id: string) {
-  return (
-    (id.startsWith("12") || id.startsWith("14")) &&
-    // 総合科目(学士基盤科目)
-    !["27", "28", "30", "90"].includes(id.substring(2, 4))
-  );
+  return isGakushikiban(id);
 }
 
 function isF2(id: string) {
@@ -189,61 +186,15 @@ function isF5(id: string) {
 }
 
 function isH1(id: string) {
-  if (id.startsWith("__")) {
-    return false;
-  }
-  return (
-    !(
-      id.startsWith("GA") ||
-      id.startsWith("GB") ||
-      id.startsWith("GC") ||
-      id.startsWith("GE") ||
-      // 共通科目及び教職に関する科目
-      id.match(/^\d/)
-    ) ||
-    id.startsWith("8") ||
-    id.startsWith("99")
-  );
+  return !(/^G[ABCE]/.test(id) || isKyoutsuu(id) || isKyoushoku(id));
 }
 
 function isH2(id: string) {
-  return (
-    (id.startsWith("GB") || id.startsWith("GE")) &&
-    !(
-      (
-        id.startsWith("GB102") || //線形代数B
-        id.startsWith("GB104") || //微分積分B
-        id === "GB11931" || //データ構造とアルゴリズム
-        id === "GB11956" || //データ構造とアルゴリズム実験
-        id === "GB11966" || //データ構造とアルゴリズム実験
-        id.startsWith("GB133") || //情報特別演習（情科）
-        id.startsWith("GB139") || //インターンシップ（情科）
-        id === "GB17401" || //情報科学特別講義E
-        id.startsWith("GB19") || //専門英語、卒業研究、特別研究（情科）
-        id.startsWith("GB26") || //ソフトウェアサイエンス実験A、B
-        id.startsWith("GB27") || //ソフトウェアサイエンス特別講義A、B、C、D
-        id.startsWith("GB36") || //情報システム実験A、B
-        id.startsWith("GB37") || //情報システム特別講義A、B、C、D
-        id.startsWith("GB46") || //知能情報メディア実験A、B
-        id.startsWith("GB47") || //知能情報メディア特別講義A、B、C、D
-        id.startsWith("GE116") || //専門英語A1（知識）
-        id.startsWith("GE117") || //専門英語A2（知識）
-        id.startsWith("GE121") || //アカデミックスキルズ（知識）
-        id === "GE40603" || //インターンシップ（知識）
-        id === "GE40703" || //国際インターンシップ（知識）
-        id.startsWith("GE42") || //国際学術演習A、B
-        id.startsWith("GE50") || //知識情報持論、専門英語B-C
-        id.startsWith("GE51") || //卒業研究（知識）
-        id.startsWith("GE601") || //知識科学実習A、B
-        id.startsWith("GE701") || //知識情報システム実習A、B
-        id.startsWith("GE801")
-      ) //情報資源経営実習A、B
-    )
-  );
+  return id.startsWith("GB") || id.startsWith("GE");
 }
 
 function isH3(id: string): boolean {
-  return id.startsWith("99"); //博物館に関する科目　自由科目（特設）
+  return isHakubutsukan(id) || isJiyuukamoku(id);
 }
 
 export function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
@@ -298,7 +249,7 @@ export function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
       courseIdToCellId.set(c.id, "e4");
     }
     // 選択
-    if (isB1(c.id)) {
+    else if (isB1(c.id)) {
       courseIdToCellId.set(c.id, "b1");
     } else if (isD1(c.id)) {
       courseIdToCellId.set(c.id, "d1");
@@ -312,44 +263,16 @@ export function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
       courseIdToCellId.set(c.id, "f4");
     } else if (isF5(c.id)) {
       courseIdToCellId.set(c.id, "f5");
-    } else if (isH1(c.id)) {
-      courseIdToCellId.set(c.id, "h1");
     } else if (isH2(c.id)) {
       courseIdToCellId.set(c.id, "h2");
     } else if (isH3(c.id)) {
       courseIdToCellId.set(c.id, "h3");
+    } else if (isH1(c.id)) {
+      courseIdToCellId.set(c.id, "h1");
     }
   }
   return courseIdToCellId;
 }
-
-// function classifyRealCourses(cs: RealCourse[]): Map<CourseId, string> {
-//   const courseIdToCellId = new Map<CourseId, string>();
-//   for (const c of cs) {
-//     if (isB1(c.id)) {
-//       courseIdToCellId.set(c.id, "b1");
-//     } else if (isD1(c.id)) {
-//       courseIdToCellId.set(c.id, "d1");
-//     } else if (isF1(c.id)) {
-//       courseIdToCellId.set(c.id, "f1");
-//     } else if (isF2(c.id)) {
-//       courseIdToCellId.set(c.id, "f2");
-//     } else if (isF3(c.id)) {
-//       courseIdToCellId.set(c.id, "f3");
-//     } else if (isF4(c.id)) {
-//       courseIdToCellId.set(c.id, "f4");
-//     } else if (isF5(c.id)) {
-//       courseIdToCellId.set(c.id, "f5");
-//     } else if (isH1(c.id)) {
-//       courseIdToCellId.set(c.id, "h1");
-//     } else if (isH2(c.id)) {
-//       courseIdToCellId.set(c.id, "h2");
-//     } else if (isH3(c.id)) {
-//       courseIdToCellId.set(c.id, "h3");
-//     }
-//   }
-//   return courseIdToCellId;
-// }
 
 export function classifyRealCourses(
   cs: RealCourse[],
@@ -406,7 +329,7 @@ export function classifyRealCourses(
       courseIdToCellId.set(c.id, "e4");
     }
     // 選択
-    if (isB1(c.id)) {
+    else if (isB1(c.id)) {
       courseIdToCellId.set(c.id, "b1");
     } else if (isD1(c.id)) {
       courseIdToCellId.set(c.id, "d1");
@@ -420,12 +343,12 @@ export function classifyRealCourses(
       courseIdToCellId.set(c.id, "f4");
     } else if (isF5(c.id)) {
       courseIdToCellId.set(c.id, "f5");
-    } else if (isH1(c.id)) {
-      courseIdToCellId.set(c.id, "h1");
     } else if (isH2(c.id)) {
       courseIdToCellId.set(c.id, "h2");
     } else if (isH3(c.id)) {
       courseIdToCellId.set(c.id, "h3");
+    } else if (isH1(c.id)) {
+      courseIdToCellId.set(c.id, "h1");
     }
   }
   return courseIdToCellId;
