@@ -1,22 +1,21 @@
-import {
-  creditRequirements,
-  classifyKnownCourses,
-  classifyRealCourses,
-  classifyFakeCourses,
-} from "../../2023/coins/conditions";
 import { KnownCourse } from "../../akiko";
 import { setup } from "../../app";
 import { courses } from "../../current-courses.js";
-import cellIdToRectRecord from "./cell-id-to-rect.json";
+import cellIdToRect from "./cell-id-to-rect.json";
+import {
+  classifyFakeCourses,
+  classifyKnownCourses,
+  classifyRealCourses,
+  creditRequirements,
+} from "./conditions";
 
-// 2023年度と同じ
 setup({
   knownCourses: courses as KnownCourse[],
   knownCourseYear: 2025,
   creditRequirements,
-  major: "coins",
-  requirementsTableYear: 2024,
-  cellIdToRectRecord,
+  major: "major-template", // TODO
+  requirementsTableYear: 0, // TODO
+  cellIdToRectRecord: cellIdToRect,
   classifyKnownCourses,
   classifyRealCourses,
   classifyFakeCourses,

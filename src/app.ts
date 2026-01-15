@@ -4,7 +4,6 @@ import {
   CellId,
   ColumnCreditStats,
   ColumnId,
-  KnownCourse,
   CreditRequirements,
   ElectiveCreditStats,
   isCellId,
@@ -17,17 +16,19 @@ import {
   isGrade,
   akikoNew,
   FakeCourseId,
-  ImportedCourse,
-  Grade,
-  fakeCourseIdNewUnique,
   Akiko,
   CellCreditStats,
   columnIdIsCompulsory,
+  akikoGetUnclassifiedRealCourses,
+  akikoGetUnclassifiedFakeCourses,
+  courseIdCompare,
+  fakeCourseIdCompare,
 } from "./akiko";
+import { ClassifyOptions, SetupParams } from "./app-setup";
 import { CourseLists } from "./course-lists";
+import { parseImportedCsv } from "./csv";
 import warningIcon from "./icons/warning.svg";
-import { assert, tryParseFloat, tryParseInt } from "./util";
-import { parse as parseCsv } from "csv-parse/browser/esm/sync";
+import { assert } from "./util";
 import z from "zod";
 
 type LocalDataV1ImportedCourse = {
@@ -324,81 +325,6 @@ function mustQuerySelectorOfType<T extends HTMLElement>(
   return e;
 }
 
-function parseImportedCourseGrade(s: string): Grade | "free" | undefined {
-  switch (s) {
-    case "履修中":
-      return "wip";
-    case "A+":
-      return "a+";
-    case "A":
-      return "a";
-    case "B":
-      return "b";
-    case "C":
-      return "c";
-    case "D":
-      return "d";
-    case "P":
-      return "pass";
-    case "F":
-      return "fail";
-    case "認":
-      return "free";
-  }
-}
-
-function parseImportedCourse(row: string[]): ImportedCourse | undefined {
-  if (row.length !== 11) {
-    return undefined;
-  }
-  // 学籍番号, 学生氏名, 科目番号, 科目名, 単位数, 春学期, 秋学期, 総合評価, 科目区分, 開講年度, 開講区分
-  const [, , id, name, rawCredit, , , rawGrade, , rawYearTaken, ,] = row;
-  const grade = parseImportedCourseGrade(rawGrade);
-  const credit = tryParseFloat(rawCredit);
-  const takenYear = tryParseInt(rawYearTaken);
-  if (!(grade !== undefined && takenYear !== undefined)) {
-    return undefined;
-  }
-  if (isCourseId(id) && grade !== "free") {
-    return { id, name, credit, takenYear, grade };
-  } else if (id === "" && grade === "free") {
-    return { id: fakeCourseIdNewUnique(), name, credit, takenYear, grade };
-  }
-}
-
-type CsvToImportedCoursesResult =
-  | { kind: "ok"; realCourses: RealCourse[]; fakeCourses: FakeCourse[] }
-  | { kind: "failed-to-parse-as-csv" }
-  | { kind: "unexpected-csv-content" };
-
-function csvToImportedCourses(csv: string): CsvToImportedCoursesResult {
-  let rows: string[][];
-  try {
-    rows = parseCsv(csv, { trim: true });
-  } catch {
-    return { kind: "failed-to-parse-as-csv" };
-  }
-  if (rows.length === 0) {
-    return { kind: "unexpected-csv-content" };
-  }
-
-  const realCourses: RealCourse[] = [];
-  const fakeCourses: FakeCourse[] = [];
-
-  for (const row of rows.slice(1)) {
-    const ic = parseImportedCourse(row);
-    if (ic === undefined) {
-      return { kind: "unexpected-csv-content" };
-    } else if (ic.grade === "free") {
-      fakeCourses.push(ic);
-    } else {
-      realCourses.push(ic);
-    }
-  }
-
-  return { kind: "ok", realCourses, fakeCourses };
-}
-
 class Debouncer {
   timeoutId: number | undefined;
 
@@ -493,34 +419,7 @@ function creditToGreenYellowPercentages(
 
 type Rect = { x: number; y: number; width: number; height: number };
 
-export type ClassifyOptions = { isNative: boolean };
-
-export function setup(params: {
-  knownCourses: KnownCourse[];
-  knownCourseYear: number;
-  creditRequirements: {
-    cells: Record<string, { min: number; max: number | undefined }>;
-    columns: Record<string, { min: number; max: number }>;
-    compulsory: number;
-    elective: number;
-  };
-  major: string;
-  requirementsTableYear: number;
-  cellIdToRectRecord: Record<string, Rect>;
-  tableViewBox?: Rect;
-  classifyKnownCourses: (
-    cs: KnownCourse[],
-    opts: ClassifyOptions,
-  ) => Map<CourseId, string>;
-  classifyRealCourses: (
-    cs: RealCourse[],
-    opts: ClassifyOptions,
-  ) => Map<CourseId, string>;
-  classifyFakeCourses: (
-    cs: FakeCourse[],
-    opts: ClassifyOptions,
-  ) => Map<FakeCourseId, string>;
-}): void {
+export function setup(params: SetupParams): void {
   const localDataKey = `${params.major}_${params.requirementsTableYear}`;
   const localData = localDataLoad(localDataKey) ?? localDataDefault();
 
@@ -695,7 +594,7 @@ export function setup(params: {
       return;
     }
     const csv = await csvFile.text();
-    const result = csvToImportedCourses(csv);
+    const result = parseImportedCsv(csv);
     if (result.kind === "failed-to-parse-as-csv") {
       alert("CSVファイルを正しく読み込めませんでした。");
       return;
@@ -708,6 +607,23 @@ export function setup(params: {
     localData.fakeCourses = result.fakeCourses;
     localDataStore(localDataKey, localData);
     akiko = createAkiko();
+
+    if (DEBUG) {
+      const rcs = akikoGetUnclassifiedRealCourses(akiko);
+      const fcs = akikoGetUnclassifiedFakeCourses(akiko);
+      rcs.sort((a, b) => courseIdCompare(a.id, b.id));
+      fcs.sort((a, b) => fakeCourseIdCompare(a.id, b.id));
+      let s = "マスに振り分けられなかった授業\n";
+      for (const rc of rcs) {
+        s += [rc.id, rc.name, rc.takenYear, rc.credit, rc.grade].join(" ");
+        s += "\n";
+      }
+      for (const fc of fcs) {
+        s += [fc.id, fc.name, fc.takenYear, fc.credit, fc.grade].join(" ");
+        s += "\n";
+      }
+      console.log(s);
+    }
 
     render();
   });
