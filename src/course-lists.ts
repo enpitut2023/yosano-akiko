@@ -459,6 +459,17 @@ export class CourseLists {
       courseElements.fake.push(element);
     }
 
+    for (const cellId of akiko.creditRequirements.cells.keys()) {
+      if (!cellIdToCourseElements.has(cellId)) {
+        cellIdToCourseElements.set(cellId, {
+          wontTake: [],
+          mightTake: [],
+          taken: [],
+          fake: [],
+        });
+      }
+    }
+
     for (const [cellId, courseElements] of cellIdToCourseElements) {
       sortCourseElements(this.akiko, courseElements.wontTake);
       sortCourseElements(this.akiko, courseElements.mightTake);
