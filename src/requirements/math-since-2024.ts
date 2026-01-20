@@ -42,29 +42,31 @@ function isB1(id: string): boolean {
   );
 }
 
-function isC1(id: string): boolean {
+function isC1(id: string, isNative: boolean): boolean {
   return (
     id === "FA01371" || //微積分1(2024以降)
-    id === "FA01471" //微積分2(2024以降)
+    id === "FA01471" || //微積分2(2024以降)
     //微分積分Aは総合に所属時にのみ認める
-    // id === "GA15311" || //微分積分A 情報科学類1・2クラス
-    // id === "GA15321" || //微分積分A 情報科学類3・4クラス
-    // id === "GA15331" || //微分積分A 情報メディア創成学類生および総合学域群生
-    // id === "GA15341" //微分積分A 知識学類生および総合学域群生
+    (isNative &&
+      (id === "GA15311" || //微分積分A 情報科学類1・2クラス
+        id === "GA15321" || //微分積分A 情報科学類3・4クラス
+        id === "GA15331" || //微分積分A 情報メディア創成学類生および総合学域群生
+        id === "GA15341")) //微分積分A 知識学類生および総合学域群生
   );
 }
 
-function isC2(id: string): boolean {
+function isC2(id: string, isNative: boolean): boolean {
   return (
     id === "FA01671" || //線形代数1(2024以降)
-    id === "FA01771" //線形代数2(2024以降)
+    id === "FA01771" || //線形代数2(2024以降)
     //線形代数Aは総合に所属時にのみ認める
-    // id === "FF18724" || //線形代数A 応用理工学類1・2クラス
-    // id === "FF18734" || //線形代数A 応用理工学類3・4クラス
-    // id === "GA15211" || //線形代数A 情報科学類生1・2クラスおよび総合学域群生
-    // id === "GA15221" || //線形代数A 情報科学類生3・4クラスおよび総合学域群生
-    // id === "GA15231" || //線形代数A 情報メディア創成学類生および総合学域群生
-    // id === "GA15241" //線形代数A 知識学類生および総合学域群生
+    (isNative &&
+      (id === "FF18724" || //線形代数A 応用理工学類1・2クラス
+        id === "FF18734" || //線形代数A 応用理工学類3・4クラス
+        id === "GA15211" || //線形代数A 情報科学類生1・2クラスおよび総合学域群生
+        id === "GA15221" || //線形代数A 情報科学類生3・4クラスおよび総合学域群生
+        id === "GA15231" || //線形代数A 情報メディア創成学類生および総合学域群生
+        id === "GA15241")) //線形代数A 知識学類生および総合学域群生
   );
 }
 
@@ -159,13 +161,17 @@ function isH1(id: string): boolean {
   return true;
 }
 
-function classify(id: CourseId, name: string): string | undefined {
+function classify(
+  id: CourseId,
+  name: string,
+  isNative: boolean,
+): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
-  if (isC1(id)) return "c1";
-  if (isC2(id)) return "c2";
+  if (isC1(id, isNative)) return "c1";
+  if (isC2(id, isNative)) return "c2";
   if (isC3(id)) return "c3";
   if (isC4(id)) return "c4";
   if (isE1(id)) return "e1";
@@ -187,7 +193,7 @@ export function classifyKnownCourses(
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name);
+    const cellId = classify(c.id, c.name, true);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -211,7 +217,7 @@ export function classifyRealCourses(
   }
 
   for (const c of cs) {
-    const cellId = classify(c.id, c.name);
+    const cellId = classify(c.id, c.name, opts.isNative);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
