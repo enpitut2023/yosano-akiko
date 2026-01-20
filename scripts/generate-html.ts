@@ -1,7 +1,5 @@
-#!/usr/bin/env tsx
-
-import { readFileSync, writeFileSync } from "node:fs";
-import path from "node:path";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path, { dirname } from "node:path";
 
 function unreachable(_: never): never {
   throw new Error("Should be unreachable");
@@ -11,7 +9,18 @@ function fillInDescription(template: string, description: string): string {
   return template.replaceAll("!!description!!", description);
 }
 
-type Major = "coins" | "mast" | "klis-science" | "klis-system" | "physics";
+type Major =
+  | "coins"
+  | "mast"
+  | "klis-science"
+  | "klis-system"
+  | "pops-economics"
+  | "pops-management"
+  | "pops-city-planning"
+  | "esys-intelligence"
+  | "esys-mechanics"
+  | "math"
+  | "physics";
 
 // TODO
 // function majorCompare(a: Major, b: Major): number {
@@ -28,8 +37,20 @@ function majorToString(m: Major): string {
       return "知識情報・図書館学類 知識科学専攻";
     case "klis-system":
       return "知識情報・図書館学類 知識情報システム専攻";
+    case "pops-economics":
+      return "社会工学類 社会経済システム専攻";
+    case "pops-management":
+      return "社会工学類 経営工学専攻";
+    case "pops-city-planning":
+      return "社会工学類 都市計画専攻";
+    case "esys-intelligence":
+      return "工学システム学類 知的・機能工学システム専攻";
+    case "esys-mechanics":
+      return "工学システム学類 エネルギー・メカニクス主専攻";
+    case "math":
+      return "数学類";
     case "physics":
-      return "物理学類"
+      return "物理学類";
     default:
       unreachable(m);
   }
@@ -89,15 +110,20 @@ function main(): void {
     { year: 2023, major: "coins" },
     { year: 2023, major: "klis-science", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "klis-system", comment: "（ほぼ全て対応）" },
-    { year: 2023, major: "mast", comment: "（選択科目のみ対応）" },
+    { year: 2023, major: "mast", comment: "（ほぼ全て対応）" },
 
     { year: 2024, major: "coins" },
-    { year: 2024, major: "physics" },
+    { year: 2024, major: "math", comment: "（ほぼ全て対応）" },
+    { year: 2024, major: "physics", comment: "（ほぼ全て対応）" },
 
     { year: 2025, major: "coins" },
+    { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
   ];
 
   const template = readFileSync("src/index.html", {
+    encoding: "utf8",
+  });
+  const helpTemplate = readFileSync("src/docs/help.html", {
     encoding: "utf8",
   });
   const appTemplate = readFileSync("src/app-index.html", {
@@ -114,6 +140,13 @@ function main(): void {
     ),
     { encoding: "utf8" },
   );
+
+  const helpPath = path.join(dstDir, "docs", "help.html");
+  console.log(`Generating ${helpPath}`);
+  mkdirSync(dirname(helpPath), { recursive: true });
+  writeFileSync(helpPath, fillInDescription(helpTemplate, description), {
+    encoding: "utf8",
+  });
 
   for (const instance of instances) {
     const filename = path.join(

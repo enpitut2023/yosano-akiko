@@ -362,17 +362,55 @@ export class CourseLists {
 
       const kc = akiko.knownCourses.get(courseId);
       const rc = akiko.realCourses.get(courseId);
-      const element = courseElementNew({
-        courseId,
-        name: kc?.name ?? rc?.name ?? "（不明）",
-        courseYear: this.knownCourseYear.toString(),
-        takenYear: rc?.takenYear?.toString(),
-        grade: rc?.grade,
-        credit: kc?.credit?.toString() ?? rc?.credit?.toString(),
-        term: kc?.term,
-        when: kc?.when,
-        expects: kc?.expects,
-      });
+      const courseYear = this.knownCourseYear.toString();
+      let element: HTMLElement;
+      if (kc === undefined) {
+        if (rc === undefined) {
+          element = courseElementNew({
+            courseId,
+            name: "（不明）",
+            courseYear,
+          });
+        } else {
+          element = courseElementNew({
+            courseId,
+            name: rc.name,
+            courseYear,
+            takenYear: rc.takenYear.toString(),
+            grade: rc.grade,
+            // TODO: credit will become non optional
+            credit: (rc.credit ?? 0).toString(),
+          });
+        }
+      } else {
+        if (rc === undefined) {
+          element = courseElementNew({
+            courseId,
+            name: kc.name,
+            courseYear,
+            // TODO: credit will become non optional
+            credit: (kc.credit ?? 0).toString(),
+            term: kc.term,
+            when: kc.when,
+            expects: kc.expects,
+          });
+        } else {
+          element = courseElementNew({
+            courseId,
+            name: kc.name,
+            courseYear,
+            takenYear: rc.takenYear.toString(),
+            grade: rc.grade,
+            // Use the credit from the real course because the amount might
+            // have changed since `takenYear`
+            // TODO: credit will become non optional
+            credit: (rc.credit ?? 0).toString(),
+            term: kc.term,
+            when: kc.when,
+            expects: kc.expects,
+          });
+        }
+      }
 
       if (listKind === "wont-take" || listKind === "might-take") {
         element.draggable = true;
@@ -383,7 +421,6 @@ export class CourseLists {
           }
         });
         element.addEventListener("dragend", () => {
-          console.log("here");
           this.hideDropGuide();
         });
       }
@@ -420,6 +457,17 @@ export class CourseLists {
         credit: fc.credit?.toString(),
       });
       courseElements.fake.push(element);
+    }
+
+    for (const cellId of akiko.creditRequirements.cells.keys()) {
+      if (!cellIdToCourseElements.has(cellId)) {
+        cellIdToCourseElements.set(cellId, {
+          wontTake: [],
+          mightTake: [],
+          taken: [],
+          fake: [],
+        });
+      }
     }
 
     for (const [cellId, courseElements] of cellIdToCourseElements) {

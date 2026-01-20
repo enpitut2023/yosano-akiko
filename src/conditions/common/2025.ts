@@ -1,54 +1,142 @@
 /**
- * https://www.tsukuba.ac.jp/education/ug-courses-openclass/2025/pdf/common-foundation-subject.pdf
+ * 共通科目
+ */
+export function isKyoutsuu(id: string): boolean {
+  return /^[1-6]/.test(id);
+}
+
+/**
+ * 学問への誘い
+ */
+function isIzanai(id: string): boolean {
+  return id.startsWith("1227") || id.startsWith("1228");
+}
+
+/**
+ * 学士基盤科目
+ * 12から始まるものは低年次向け、14から始まるものは高年次向けの科目。ただし、
+ * 1227もしくは1228から始まる科目は学問への誘い。
+ * 学士基盤科目の一覧のPDFを大学が提供しているが、これの日本語版には日本人学生
+ * 向けの科目一覧、英語版には外国人学生向けの科目一覧が記載されている。そのため、
+ * いずれの一覧も完全な学士基盤科目の一覧にはなっていない。
+ * 科目番号表にある「総合科目I」は学士基盤科目の昔の名前らしい。
  */
 export function isGakushikiban(id: string): boolean {
-  switch (id) {
-    // 学士基盤科目
-    case "1207011": // ピア・サポートを学ぶ~支えあいの大学のために
-    case "1210221": // おもてなし学―グローバルマナーと異文化コミュニケーション―
-    case "1210231": // 森林
-    case "1217011": // 実践入門！AI・データサイエンス～基礎と展開～
-    case "1221011": // 科学的根拠にもとづいた最新の健康教育
-    case "1222021": // セルフマネジメント・ケア
-    case "1224021": // おもてなし学―グローバルマナーと異文化コミュニケーション―
-    case "1226014": // キャリアデザイン入門~世界にはばたく未来の自分~
-    case "1226016": // 学問探究チュートリアル
-    case "1226021": // 心と体に安全で快適なキャンパスI-こころのヘルスリテラシー講座-
-    case "1226041": // みんなで創ろう「つくばアクションプロジェクト」
-    case "1226051": // 筑波大学特別講義―大学と学問―
-    case "1226071": // 世界のTSUKUBAで学ぶ
-    case "1226091": // みんなで創ろう「つくばアクションプロジェクト」
-    case "1226101": // 卒業生によるオムニバス講座(社会人としていかに生きるか)
-    case "1226121": // 心と体に安全で快適なキャンパスII救命救急処置とファーストエイド
-    case "1226151": // トップランナーが語る社会課題 - 混沌化する世界と変貌する地方
-    case "1226181": // ダイバーシティ&インクルージョン入門
-    case "1226184": // COOL型未来開拓科目
-    case "1226194": // アントレプレナーへの誘い
-    case "1290181": // Inclusive Smart Society 概論Ⅰ
-    case "1290191": // Inclusive Smart Society 概論II
-    // 学士基盤科目-高年次向け-
-    case "1401011": // 卒業生による業界探訪
-    case "1401021": // 21世紀の中国ー現代中国の諸相ー
-    case "1401031": // 人文学の極意と深淵
-    case "1402011": // 比較文化の探求ー名著のすすめー
-    case "1405014": // 国際学を学ぶIII
-    case "1406011": // 学校を考える
-    case "1410011": // 自然保護学入門
-    case "1412011": // 数学の最前線:未解決の問題への挑戦
-    case "1413011": // 現代物理学入門
-    case "1414014": // 事例に学ぶ環境安全衛生と化学物質
-    case "1415011": // 現代物理と先端工学
-    case "1415021": // 社会問題を見据えた材料開発とその応用
-    case "1416011": // 工学システムをつくる
-    case "1420014": // デジタルクリエイティブ基礎
-    case "1420024": // デジタルクリエイティブ（デザイン）
-    case "1420034": // デジタルクリエイティブ（動画）
-    case "1422011": // 健康と社会
-    case "1425011": // 社会のなかの建築デザイン
-    case "1425021": // スポーツ芸術表現学
-    case "1426011": // 社会基礎学II-「グローバル化」と「地方の活性化」に貢献できる輝く人材の育成:世界に挑む産業界・官界トップリーダーによる連続リレー講義
-    case "1490014": // Inclusive Smart Society PBL
-      return true;
-  }
-  return false;
+  return (id.startsWith("12") && !isIzanai(id)) || id.startsWith("14");
+}
+
+/**
+ * 体育（1年次必修）
+ * 通常の曜時限で開講するものは21、集中で開講するものは25から始まる。
+ */
+export function isCompulsoryPe1(id: string): boolean {
+  return id.startsWith("21") || id.startsWith("25");
+}
+
+/**
+ * 体育（2年次必修）
+ * 2年次必修の体育のみ、集中で開講されるものの科目番号が用意されていない。2年次
+ * 必修かつ集中の体育は存在しないのかもしれないが、詳細は不明。
+ */
+export function isCompulsoryPe2(id: string): boolean {
+  return id.startsWith("22");
+}
+
+/**
+ * 体育（3年次必修）
+ * 通常の曜時限で開講するものは23、集中で開講するものは26から始まる。
+ */
+export function isCompulsoryPe3(id: string): boolean {
+  return id.startsWith("23") || id.startsWith("26");
+}
+
+/**
+ * 体育（4年次必修）
+ * 通常の曜時限で開講するものは24、集中で開講するものは27から始まる。
+ */
+export function isCompulsoryPe4(id: string): boolean {
+  return id.startsWith("24") || id.startsWith("27");
+}
+
+/**
+ * 体育（自由科目）
+ */
+export function isElectivePe(id: string): boolean {
+  return id.startsWith("28");
+}
+
+/**
+ * 必修の英語を科目番号で判定
+ * - English Reading Skills I: 31H...
+ * - English Presentation Skills I: 31J...
+ * - English Reading Skills II: 31K...
+ * - English Presentation Skills II: 31L...
+ */
+export function isCompulsoryEnglishById(id: string): boolean {
+  return /^31[HJKL]/.test(id);
+}
+
+/**
+ * 必修の英語を科目名で判定
+ * English Reading Skills I, IIとEnglish Presentation Skills I, IIが認定された
+ * 単位である場合、認定単位には科目番号が存在せず科目名のみ存在するため、これを
+ * 使って判定できる。
+ */
+export function isCompulsoryEnglishByName(name: string): boolean {
+  name = name.replaceAll(/\s+/g, " ");
+  name = name.trim();
+  name = name.toLowerCase();
+  return (
+    name === "english reading skills i" ||
+    name === "english reading skills ii" ||
+    name === "english presentation skills i" ||
+    name === "english presentation skills ii"
+  );
+}
+
+/**
+ * 外国語
+ * TODO:
+ * - Reading, Presentation Skills以外の英語も入る？
+ * - 「...の言語と文化」とかも入る？
+ */
+export function isForeignLanguage(id: string): boolean {
+  return id.startsWith("3") && !isCompulsoryEnglishById(id);
+}
+
+/**
+ * 芸術
+ */
+export function isArt(id: string): boolean {
+  return id.startsWith("4");
+}
+
+/**
+ * 国語
+ */
+export function isJapanese(id: string): boolean {
+  return id.startsWith("5");
+}
+
+/**
+ * 自由科目
+ * 「自由科目（特設）」や「特設自由科目」と書かれていることがあるが、特設ではな
+ * い自由科目は存在しない模様。
+ */
+export function isJiyuukamoku(id: string): boolean {
+  return id.startsWith("8");
+}
+
+/**
+ * 博物館に関する科目
+ */
+export function isHakubutsukan(id: string): boolean {
+  return id.startsWith("99");
+}
+
+/**
+ * 教職に関する科目
+ */
+export function isKyoushoku(id: string): boolean {
+  return id.startsWith("9") && !isHakubutsukan(id);
 }
