@@ -20,13 +20,19 @@ async function main() {
     entryPoints: [
       "src/2021/coins/index.ts",
       "src/2021/mast/index.ts",
+
       "src/2022/coins/index.ts",
+
       "src/2023/coins/index.ts",
       "src/2023/klis-science/index.ts",
       "src/2023/klis-system/index.ts",
       "src/2023/mast/index.ts",
+
       "src/2024/coins/index.ts",
+      "src/2024/math/index.ts",
+
       "src/2025/coins/index.ts",
+      "src/2025/math/index.ts",
 
       "src/app.scss",
       "src/styles.scss",
