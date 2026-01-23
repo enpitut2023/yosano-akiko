@@ -119,6 +119,27 @@ export function isJapanese(id: string): boolean {
 }
 
 /**
+ * 情報リテラシー（講義）
+ */
+export function isInfoLiteracyLecture(id: string): boolean {
+  return id.startsWith("61");
+}
+
+/**
+ * 情報リテラシー（演習）
+ */
+export function isInfoLiteracyExercise(id: string): boolean {
+  return id.startsWith("64");
+}
+
+/**
+ * データサイエンス
+ */
+export function isDataScience(id: string): boolean {
+  return id.startsWith("65");
+}
+
+/**
  * 自由科目
  * 「自由科目（特設）」や「特設自由科目」と書かれていることがあるが、特設ではな
  * い自由科目は存在しない模様。

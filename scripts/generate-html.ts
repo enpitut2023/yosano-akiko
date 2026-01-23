@@ -118,6 +118,7 @@ function main(): void {
 
     { year: 2025, major: "coins" },
     { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
+    { year: 2025, major: "physics", comment: "（ほぼ全て対応）" },
   ];
 
   const template = readFileSync("src/index.html", {
