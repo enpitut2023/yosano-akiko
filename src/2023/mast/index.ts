@@ -6,7 +6,7 @@ import {
   classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
-  creditRequirements,
+  creditRequirementsSince2023,
 } from "@/requirements/mast-since-2023";
 
 const YEAR = 2023;
@@ -14,7 +14,7 @@ const YEAR = 2023;
 setup({
   knownCourses: courses as KnownCourse[],
   knownCourseYear: 2025,
-  creditRequirements,
+  creditRequirements: creditRequirementsSince2023,
   major: "mast",
   requirementsTableYear: YEAR,
   cellIdToRectRecord,
