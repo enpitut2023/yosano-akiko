@@ -11,11 +11,9 @@ import {
   isHakubutsukan,
   isJiyuukamoku,
   isKyoutsuu,
-} from "../../conditions/common";
-import {
   isCompulsoryEnglishByName,
   isKyoushoku,
-} from "../../conditions/common/2025";
+} from "@/requirements/common";
 
 function isA1(id: string): boolean {
   // 卒業研究A
