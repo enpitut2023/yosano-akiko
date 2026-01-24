@@ -19,7 +19,8 @@ type Major =
   | "pops-city-planning"
   | "esys-intelligence"
   | "esys-mechanics"
-  | "math";
+  | "math"
+  | "physics";
 
 // TODO
 // function majorCompare(a: Major, b: Major): number {
@@ -48,6 +49,8 @@ function majorToString(m: Major): string {
       return "工学システム学類 エネルギー・メカニクス主専攻";
     case "math":
       return "数学類";
+    case "physics":
+      return "物理学類";
     default:
       unreachable(m);
   }
@@ -108,12 +111,15 @@ function main(): void {
     { year: 2023, major: "klis-science", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "klis-system", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "mast", comment: "（ほぼ全て対応）" },
+    { year: 2023, major: "physics", comment: "（ほぼ全て対応）" },
 
     { year: 2024, major: "coins" },
     { year: 2024, major: "math", comment: "（ほぼ全て対応）" },
+    { year: 2024, major: "physics", comment: "（ほぼ全て対応）" },
 
     { year: 2025, major: "coins" },
     { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
+    { year: 2025, major: "physics", comment: "（ほぼ全て対応）" },
   ];
 
   const template = readFileSync("src/index.html", {

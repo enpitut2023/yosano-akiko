@@ -6,9 +6,16 @@ export function isKyoutsuu(id: string): boolean {
 }
 
 /**
+ * ファーストイヤーセミナー
+ */
+export function isFirstYearSeminar(id: string): boolean {
+  return id.startsWith("11");
+}
+
+/**
  * 学問への誘い
  */
-function isIzanai(id: string): boolean {
+export function isIzanai(id: string): boolean {
   return id.startsWith("1227") || id.startsWith("1228");
 }
 
@@ -116,6 +123,27 @@ export function isArt(id: string): boolean {
  */
 export function isJapanese(id: string): boolean {
   return id.startsWith("5");
+}
+
+/**
+ * 情報リテラシー（講義）
+ */
+export function isInfoLiteracyLecture(id: string): boolean {
+  return id.startsWith("61");
+}
+
+/**
+ * 情報リテラシー（演習）
+ */
+export function isInfoLiteracyExercise(id: string): boolean {
+  return id.startsWith("64");
+}
+
+/**
+ * データサイエンス
+ */
+export function isDataScience(id: string): boolean {
+  return id.startsWith("65");
 }
 
 /**
