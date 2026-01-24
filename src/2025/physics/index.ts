@@ -7,7 +7,7 @@ import {
   classifyKnownCourses,
   classifyRealCourses,
   creditRequirementsSince2025,
-} from "@/requirements/physics-since-2024";
+} from "@/requirements/physics-since-2023";
 
 const YEAR = 2025;
 
