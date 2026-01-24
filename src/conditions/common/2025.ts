@@ -6,9 +6,16 @@ export function isKyoutsuu(id: string): boolean {
 }
 
 /**
+ * ファーストイヤーセミナー
+ */
+export function isFirstYearSeminar(id: string): boolean {
+  return id.startsWith("11");
+}
+
+/**
  * 学問への誘い
  */
-function isIzanai(id: string): boolean {
+export function isIzanai(id: string): boolean {
   return id.startsWith("1227") || id.startsWith("1228");
 }
 

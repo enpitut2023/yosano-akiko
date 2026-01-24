@@ -13,10 +13,12 @@ import {
   isCompulsoryPe2,
   isDataScience,
   isElectivePe,
+  isFirstYearSeminar,
   isForeignLanguage,
   isGakushikiban,
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
+  isIzanai,
   isJapanese,
   isKyoushoku,
 } from "@/conditions/common";
@@ -286,10 +288,13 @@ function isD3(id: string, tableYear: number): boolean {
   );
 }
 
-function isE1(id: string): boolean {
+function isE1(id: string, mode: "known" | "real"): boolean {
   return (
     id === "1113102" || // ファーストイヤーセミナー
-    id === "1227391" // 学問への誘い
+    id === "1227391" || // 学問への誘い
+    // TODO: 別学類のE1該当科目を取ってしまっていたら一応成績には反映されるだろ
+    // うと判断。支援室に要確認。
+    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
 
@@ -344,7 +349,7 @@ function isH2(id: string): boolean {
   );
 }
 
-export function classify(
+function classify(
   id: CourseId,
   name: string,
   mode: "known" | "real",
@@ -355,7 +360,7 @@ export function classify(
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
   if (isA4(id)) return "a4";
-  if (isE1(id)) return "e1";
+  if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id)) return "e4";
