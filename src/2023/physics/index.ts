@@ -9,7 +9,7 @@ import {
   creditRequirementsSince2023,
 } from "@/requirements/physics-since-2024";
 
-const YEAR = 2024;
+const YEAR = 2023;
 
 setup({
   knownCourses: courses as KnownCourse[],

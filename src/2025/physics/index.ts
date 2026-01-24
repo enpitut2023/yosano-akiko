@@ -6,7 +6,7 @@ import {
   classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
-  creditRequirements2025,
+  creditRequirementsSince2025,
 } from "@/requirements/physics-since-2024";
 
 const YEAR = 2025;
@@ -14,7 +14,7 @@ const YEAR = 2025;
 setup({
   knownCourses: courses as KnownCourse[],
   knownCourseYear: 2025,
-  creditRequirements: creditRequirements2025,
+  creditRequirements: creditRequirementsSince2025,
   major: "physics",
   requirementsTableYear: YEAR,
   cellIdToRectRecord,

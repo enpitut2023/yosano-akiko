@@ -118,8 +118,13 @@ function isD1(id: string, mode: "known" | "real"): boolean {
   );
 }
 
-function isD2Native(id: string): boolean {
-  return (
+function isD2Native(id: string, tableYear: number): boolean {
+  const until2023 =
+    id === "FBA1471" || // 微積分I (物理学類)
+    id === "FBA1511" || // 微積分II (物理学類)
+    id === "FBA1551" || // 微積分III (物理学類)
+    id === "FBA1901"; // 微積分I (再履修者対象. 主に数学類，物理学類，化学類，地球学類の学生)
+  const since2023 =
     id === "FA01381" || //微積分1(物理学類の学生(2024年度以降入学者))
     id === "FA01481" || //微積分2(物理学類の学生(2024年度以降入学者))
     id === "FA01581" || //微積分3(物理学類の学生(2024年度以降入学者))
@@ -129,12 +134,26 @@ function isD2Native(id: string): boolean {
     id === "FA01181" || //数学リテラシー(物理学類の学生)
     id === "FA011B1" || //数学リテラシー(生物学類の学生, および数学類, 物理学類, 化学類, 地球学類の２年次以上の学生)
     id === "FA01281" || //数学リテラシー(物理学類の学生)
-    id === "FA012B1" //数学リテラシー(生物学類の学生, および数学類, 物理学類, 化学類, 地球学類の２年次以上の学生)
-  );
+    id === "FA012B1"; //数学リテラシー(生物学類の学生, および数学類, 物理学類, 化学類, 地球学類の２年次以上の学生)
+  if (tableYear <= 2023) {
+    return until2023 || since2023;
+  } else {
+    return since2023;
+  }
 }
 
-function isD2Foreign(id: string): boolean {
-  return (
+function isD2Foreign(id: string, tableYear: number): boolean {
+  const until2023 =
+    id === "FBA1461" || // 微積分I (数学類)
+    id === "FBA1481" || // 微積分I (化学類)
+    id === "FBA1491" || // 微積分I (地球学類)
+    id === "FBA1501" || // 微積分II (数学類)
+    id === "FBA1521" || // 微積分II (化学類)
+    id === "FBA1531" || // 微積分II (地球学類)
+    id === "FBA1541" || // 微積分III (数学類)
+    id === "FBA1561" || // 微積分III (化学類)
+    id === "FBA1571"; // 微積分III (地球学類)
+  const since2023 =
     id === "FA01311" || //微積分1(応用理工学類(学籍番号奇数)の学生)
     id === "FA01321" || //微積分1(応用理工学類(学籍番号偶数)の学生)
     id === "FA01331" || //微積分1(工学システム学類(1,2クラス)の学生)
@@ -232,24 +251,33 @@ function isD2Foreign(id: string): boolean {
     id === "GA15211" || //線形代数A(情報科学類生および総合学域群生(情報科学類への移行希望者・学籍番号の下一桁が奇数)優先)
     id === "GA15221" || //線形代数A(情報科学類生および総合学域群生(情報科学類への移行希望者・学籍番号の下一桁が偶数)優先)
     id === "GA15231" || //線形代数A(情報メディア創成学類生および総合学域群生（情報メディア創成学類への移行希望者）優先)
-    id === "GA15241" //線形代数A(知識学類生および総合学域群生（知識学類への移行希望者）優先)
-  );
+    id === "GA15241"; //線形代数A(知識学類生および総合学域群生（知識学類への移行希望者）優先)
+  if (tableYear <= 2023) {
+    return until2023 || since2023;
+  } else {
+    return since2023;
+  }
 }
 
-function isD2(id: string, mode: "known" | "real"): boolean {
+function isD2(id: string, mode: "known" | "real", tableYear: number): boolean {
   // 1. 「微積分1,2または微分積分A」、「線形代数1,2または線形代数A」との記述が
   // あったため、線形代数1と線形代数Aを取得していた場合はどちらかのみ加算される
   // と考えられるが、その処理はしていない。
   // 2. "FF18724","FF18734"も「線形代数A」とい名前で解説されているが、シラバス
   // によると、他学類開設の授業であり、この区分に該当する授業ではないと判断した
   // ため、記述していない。
-  return isD2Native(id) || (mode === "real" && isD2Foreign(id));
+  return (
+    isD2Native(id, tableYear) ||
+    // TODO: 別学類のD2該当科目を取ってしまっていたら一応成績には反映されるだろ
+    // うと判断。支援室に要確認。
+    (mode === "real" && isD2Foreign(id, tableYear))
+  );
 }
 
-function isD3(id: string): boolean {
+function isD3(id: string, tableYear: number): boolean {
   return (
     !isD1Foreign(id) &&
-    !isD2Foreign(id) &&
+    !isD2Foreign(id, tableYear) &&
     (id.startsWith("FA") ||
       id.startsWith("FB") ||
       (id.startsWith("FC") && !id.startsWith("FCC")) ||
@@ -320,6 +348,7 @@ export function classify(
   id: CourseId,
   name: string,
   mode: "known" | "real",
+  tableYear: number,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
@@ -336,8 +365,8 @@ export function classify(
   if (isB3(id)) return "b3";
   if (isB4(id)) return "b4";
   if (isD1(id, mode)) return "d1";
-  if (isD2(id, mode)) return "d2";
-  if (isD3(id)) return "d3";
+  if (isD2(id, mode, tableYear)) return "d2";
+  if (isD3(id, tableYear)) return "d3";
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
   if (isH1(id)) return "h1";
@@ -347,11 +376,11 @@ export function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "known");
+    const cellId = classify(c.id, c.name, "known", tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -362,11 +391,11 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "real");
+    const cellId = classify(c.id, c.name, "real", tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -377,7 +406,7 @@ export function classifyRealCourses(
 export function classifyFakeCourses(
   cs: FakeCourse[],
   opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {
@@ -388,7 +417,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-export const creditRequirements2024: SetupCreditRequirements = {
+export const creditRequirementsSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 6, max: 6 },
@@ -422,7 +451,7 @@ export const creditRequirements2024: SetupCreditRequirements = {
   elective: 91,
 };
 
-export const creditRequirements2025: SetupCreditRequirements = {
+export const creditRequirementsSince2025: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 6, max: 6 },
