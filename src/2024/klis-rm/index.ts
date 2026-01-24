@@ -10,14 +10,14 @@ import {
   Specialty,
 } from "@/requirements/klis-since-2023";
 
-const YEAR = 2023;
-const SPECIALTY: Specialty = "science";
+const YEAR = 2024;
+const SPECIALTY: Specialty = "resource-management";
 
 setup({
   knownCourses: courses as KnownCourse[],
   knownCourseYear: 2025,
   creditRequirements: creditRequirements,
-  major: "klis-science",
+  major: "klis-rm",
   requirementsTableYear: YEAR,
   cellIdToRectRecord: cellIdToRect,
   classifyKnownCourses: (cs, opts) =>

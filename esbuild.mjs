@@ -26,14 +26,21 @@ async function main() {
       "src/2023/coins/index.ts",
       "src/2023/klis-science/index.ts",
       "src/2023/klis-system/index.ts",
+      "src/2023/klis-rm/index.ts",
       "src/2023/mast/index.ts",
       "src/2023/physics/index.ts",
 
       "src/2024/coins/index.ts",
+      "src/2024/klis-science/index.ts",
+      "src/2024/klis-system/index.ts",
+      "src/2024/klis-rm/index.ts",
       "src/2024/math/index.ts",
       "src/2024/physics/index.ts",
 
       "src/2025/coins/index.ts",
+      "src/2025/klis-science/index.ts",
+      "src/2025/klis-system/index.ts",
+      "src/2025/klis-rm/index.ts",
       "src/2025/math/index.ts",
       "src/2025/physics/index.ts",
 

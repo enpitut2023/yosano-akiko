@@ -14,6 +14,7 @@ type Major =
   | "mast"
   | "klis-science"
   | "klis-system"
+  | "klis-rm"
   | "pops-economics"
   | "pops-management"
   | "pops-city-planning"
@@ -37,6 +38,8 @@ function majorToString(m: Major): string {
       return "知識情報・図書館学類 知識科学専攻";
     case "klis-system":
       return "知識情報・図書館学類 知識情報システム専攻";
+    case "klis-rm":
+      return "知識情報・図書館学類 情報資源経営主専攻";
     case "pops-economics":
       return "社会工学類 社会経済システム専攻";
     case "pops-management":
@@ -110,6 +113,7 @@ function main(): void {
     { year: 2023, major: "coins" },
     { year: 2023, major: "klis-science", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "klis-system", comment: "（ほぼ全て対応）" },
+    { year: 2023, major: "klis-rm" },
     { year: 2023, major: "mast", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "physics", comment: "（ほぼ全て対応）" },
 
@@ -120,6 +124,17 @@ function main(): void {
     { year: 2025, major: "coins" },
     { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
     { year: 2025, major: "physics", comment: "（ほぼ全て対応）" },
+    { year: 2024, major: "klis-science" },
+    { year: 2024, major: "klis-system" },
+    { year: 2024, major: "klis-rm" },
+    { year: 2024, major: "mast" },
+
+    { year: 2025, major: "coins" },
+    { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
+    { year: 2025, major: "klis-science" },
+    { year: 2025, major: "klis-system" },
+    { year: 2025, major: "klis-rm" },
+    { year: 2025, major: "mast" },
   ];
 
   const template = readFileSync("src/index.html", {
