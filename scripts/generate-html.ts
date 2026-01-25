@@ -20,7 +20,11 @@ type Major =
   | "esys-intelligence"
   | "esys-mechanics"
   | "math"
-  | "physics";
+  | "physics"
+  | "coens-ap"
+  | "coens-eqe"
+  | "coens-mme"
+  | "coens-mse";
 
 // TODO
 // function majorCompare(a: Major, b: Major): number {
@@ -51,6 +55,14 @@ function majorToString(m: Major): string {
       return "数学類";
     case "physics":
       return "物理学類";
+    case "coens-ap":
+      return "応用理工学類 応用物理主専攻";
+    case "coens-eqe":
+      return "応用理工学類 電子・量子工学主専攻";
+    case "coens-mme":
+      return "応用理工学類 物質・分子工学主専攻";
+    case "coens-mse":
+      return "応用理工学類 物性工学主専攻";
     default:
       unreachable(m);
   }
@@ -112,14 +124,28 @@ function main(): void {
     { year: 2023, major: "klis-system", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "mast", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "physics", comment: "（ほぼ全て対応）" },
+    { year: 2023, major: "coens-ap" },
+    { year: 2023, major: "coens-eqe" },
+    { year: 2023, major: "coens-mme" },
+    { year: 2023, major: "coens-mse" },
 
     { year: 2024, major: "coins" },
-    { year: 2024, major: "math", comment: "（ほぼ全て対応）" },
+    { year: 2024, major: "mast" },
     { year: 2024, major: "physics", comment: "（ほぼ全て対応）" },
+    { year: 2024, major: "math", comment: "（ほぼ全て対応）" },
+    { year: 2024, major: "coens-ap" },
+    { year: 2024, major: "coens-eqe" },
+    { year: 2024, major: "coens-mme" },
+    { year: 2024, major: "coens-mse" },
 
     { year: 2025, major: "coins" },
-    { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
+    { year: 2025, major: "mast" },
     { year: 2025, major: "physics", comment: "（ほぼ全て対応）" },
+    { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
+    { year: 2025, major: "coens-ap" },
+    { year: 2025, major: "coens-eqe" },
+    { year: 2025, major: "coens-mme" },
+    { year: 2025, major: "coens-mse" },
   ];
 
   const template = readFileSync("src/index.html", {
