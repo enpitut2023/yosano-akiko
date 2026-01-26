@@ -20,7 +20,9 @@ type Major =
   | "esys-intelligence"
   | "esys-mechanics"
   | "math"
-  | "physics";
+  | "physics"
+  | "nichinichi"
+  | "nichinichi-japan-expert";
 
 // TODO
 // function majorCompare(a: Major, b: Major): number {
@@ -51,6 +53,10 @@ function majorToString(m: Major): string {
       return "数学類";
     case "physics":
       return "物理学類";
+    case "nichinichi":
+      return "日本語・日本文化学類";
+    case "nichinichi-japan-expert":
+      return "日本語・日本文化学類 Japan-Expert";
     default:
       unreachable(m);
   }
@@ -112,14 +118,20 @@ function main(): void {
     { year: 2023, major: "klis-system", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "mast", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "physics", comment: "（ほぼ全て対応）" },
+    { year: 2023, major: "nichinichi" },
+    { year: 2023, major: "nichinichi-japan-expert" },
 
     { year: 2024, major: "coins" },
     { year: 2024, major: "math", comment: "（ほぼ全て対応）" },
     { year: 2024, major: "physics", comment: "（ほぼ全て対応）" },
+    { year: 2024, major: "nichinichi" },
+    { year: 2024, major: "nichinichi-japan-expert" },
 
     { year: 2025, major: "coins" },
     { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
     { year: 2025, major: "physics", comment: "（ほぼ全て対応）" },
+    { year: 2025, major: "nichinichi" },
+    { year: 2025, major: "nichinichi-japan-expert" },
   ];
 
   const template = readFileSync("src/index.html", {

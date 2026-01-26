@@ -28,14 +28,20 @@ async function main() {
       "src/2023/klis-system/index.ts",
       "src/2023/mast/index.ts",
       "src/2023/physics/index.ts",
+      "src/2023/nichinichi/index.ts",
+      "src/2023/nichinichi-japan-expert/index.ts",
 
       "src/2024/coins/index.ts",
       "src/2024/math/index.ts",
       "src/2024/physics/index.ts",
+      "src/2024/nichinichi/index.ts",
+      "src/2024/nichinichi-japan-expert/index.ts",
 
       "src/2025/coins/index.ts",
       "src/2025/math/index.ts",
       "src/2025/physics/index.ts",
+      "src/2025/nichinichi/index.ts",
+      "src/2025/nichinichi-japan-expert/index.ts",
 
       "src/app.scss",
       "src/styles.scss",
