@@ -241,13 +241,29 @@ function isC2(id: string): boolean {
 function isC3(id: string, specialty: Specialty): boolean {
   switch (specialty) {
     case "ap":
-      return id === "FF20051"; // 専門英語1 応用物理主専攻
+      return (
+        id === "FF20051" || // 専門英語1
+        id === "FF20061" || // 専門英語2
+        id === "FF20071" // 専門英語3
+      );
     case "eqe":
-      return id === "FF30051"; // 専門英語1 電子・量子工学主専攻
+      return (
+        id === "FF30051" || // 専門英語1
+        id === "FF30061" || // 専門英語2
+        id === "FF30071" // 専門英語3
+      );
     case "mse":
-      return id === "FF40051"; // 専門英語1 物性工学主専攻
+      return (
+        id === "FF40051" || // 専門英語1
+        id === "FF40061" || // 専門英語2
+        id === "FF40071" // 専門英語3
+      );
     case "mme":
-      return id === "FF50051"; // 専門英語1 物質・分子工学主専攻
+      return (
+        id === "FF50051" || // 専門英語1
+        id === "FF50051" || // 専門英語1
+        id === "FF50051" // 専門英語1
+      );
   }
 }
 
@@ -303,7 +319,7 @@ function isF3(id: string): boolean {
   return isElectivePe(id); // 選択　体育
 }
 
-// TODO: 
+// TODO:
 function isH1(id: string): boolean {
   return (
     //他学群または他学類開設（学類長指定科目を除く）
@@ -312,10 +328,8 @@ function isH1(id: string): boolean {
 }
 
 function isH2(id: string): boolean {
-    //教職に関する科目および博物館に関する科目、特設自由科目
-  return (
-    isKyoushoku(id) || isHakubutsukan(id) || isJiyuukamoku(id)
-  );
+  //教職に関する科目および博物館に関する科目、特設自由科目
+  return isKyoushoku(id) || isHakubutsukan(id) || isJiyuukamoku(id);
 }
 
 function classify(
@@ -329,7 +343,7 @@ function classify(
   if (isA1(id)) return "a1";
   if (isA2(id, specialty)) return "a2";
   if (isA3(id, specialty)) return "a3";
-  if (isC1D2(id, year)!== undefined) return isC1D2(id, year);
+  if (isC1D2(id, year) !== undefined) return isC1D2(id, year);
   if (isC2(id)) return "c2";
   if (isC3(id, specialty)) return "c3";
   if (isE1(id)) return "e1";
