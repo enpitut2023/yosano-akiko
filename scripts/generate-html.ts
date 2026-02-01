@@ -1,5 +1,6 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import path, { dirname } from "node:path";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import path, { basename, dirname, extname, join } from "node:path";
+import nunjucks from "nunjucks";
 
 function unreachable(_: never): never {
   throw new Error("Should be unreachable");
@@ -56,15 +57,70 @@ function majorToString(m: Major): string {
   }
 }
 
-type Instance = { year: number; major: Major; comment?: string };
+type DocsPageName =
+  | "coins"
+  | "mast"
+  | "klis"
+  | "pops"
+  | "esys"
+  | "math"
+  | "physics";
 
-function fillInPlaceholders(template: string, i: Instance): string {
-  const title = `あきこ（${majorToString(i.major)} ${i.year}年度生）`;
-  template = template.replaceAll("!!title!!", title);
-  template = template.replaceAll("!!year!!", i.year.toString());
-  template = template.replaceAll("!!major!!", majorToString(i.major));
-  return template;
+function isDocsPageName(s: string): s is DocsPageName {
+  switch (s) {
+    case "coins":
+    case "mast":
+    case "klis":
+    case "pops":
+    case "esys":
+    case "math":
+    case "physics":
+      return true;
+    default:
+      return false;
+  }
 }
+
+function majorToDocsPageName(m: Major): DocsPageName {
+  switch (m) {
+    case "coins":
+    case "mast":
+    case "math":
+    case "physics":
+      return m;
+    case "klis-science":
+    case "klis-system":
+      return "klis";
+    case "pops-economics":
+    case "pops-management":
+    case "pops-city-planning":
+      return "pops";
+    case "esys-intelligence":
+    case "esys-mechanics":
+      return "esys";
+  }
+}
+
+function docsPageNameToString(d: DocsPageName): string {
+  switch (d) {
+    case "coins":
+      return "情報科学類";
+    case "mast":
+      return "情報メディア創成学類";
+    case "klis":
+      return "知識情報・図書館学類";
+    case "pops":
+      return "社会工学類";
+    case "esys":
+      return "工学システム学類";
+    case "math":
+      return "数学類";
+    case "physics":
+      return "物理学類";
+  }
+}
+
+type Instance = { year: number; major: Major; comment?: string };
 
 function createNavigationLinks(is: Instance[]): string {
   const yearToInstances = new Map<number, Instance[]>();
@@ -98,6 +154,7 @@ function createNavigationLinks(is: Instance[]): string {
 
 function main(): void {
   const dstDir = "dist";
+  mkdirSync(join(dstDir, "docs"), { recursive: true });
 
   const description =
     "筑波大生向けの履修サポートWebツールです。単位の計算・授業探し・Twinsへの登録を楽に終わらせましょう！";
@@ -125,15 +182,35 @@ function main(): void {
   const template = readFileSync("src/index.html", {
     encoding: "utf8",
   });
-  const helpTemplate = readFileSync("src/docs/help.html", {
-    encoding: "utf8",
-  });
   const appTemplate = readFileSync("src/app-index.html", {
     encoding: "utf8",
   });
 
+  nunjucks.configure(".", { autoescape: true });
+
+  const docsDir = "src/docs";
+  for (const entry of readdirSync(docsDir, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    const ext = extname(entry.name);
+    if (ext !== ".html") continue;
+    const base = basename(entry.name, ext);
+    if (!isDocsPageName(base)) continue;
+    const inPath = join(docsDir, entry.name);
+    const outPath = join("dist", "docs", entry.name);
+    console.log(`Rendering ${outPath}`);
+    const name = docsPageNameToString(base);
+    const output = nunjucks.renderString(
+      readFileSync(inPath, { encoding: "utf8" }),
+      {
+        title: `あきこ未対応の部分など | ${name}`,
+        description: `${name}のあきこが科目判定に対応していない部分、単位計算が正しくない部分などの説明です。`,
+      },
+    );
+    writeFileSync(join("dist/docs", entry.name), output, { encoding: "utf8" });
+  }
+
   const indexPath = path.join(dstDir, "index.html");
-  console.log(`Generating ${indexPath}`);
+  console.log(`Rendering ${indexPath}`);
   writeFileSync(
     indexPath,
     fillInDescription(
@@ -144,27 +221,33 @@ function main(): void {
   );
 
   const helpPath = path.join(dstDir, "docs", "help.html");
-  console.log(`Generating ${helpPath}`);
+  console.log(`Rendering ${helpPath}`);
   mkdirSync(dirname(helpPath), { recursive: true });
-  writeFileSync(helpPath, fillInDescription(helpTemplate, description), {
-    encoding: "utf8",
-  });
+  writeFileSync(
+    helpPath,
+    nunjucks.renderString(
+      readFileSync("src/docs/help.html", { encoding: "utf8" }),
+      {},
+    ),
+  );
 
-  for (const instance of instances) {
+  for (const i of instances) {
     const filename = path.join(
       dstDir,
-      instance.year.toString(),
-      instance.major,
+      i.year.toString(),
+      i.major,
       "index.html",
     );
-    console.log(`Generating ${filename}`);
-    const content = fillInDescription(
-      fillInPlaceholders(appTemplate, instance),
+    console.log(`Rendering ${filename}`);
+    const title = `あきこ（${majorToString(i.major)} ${i.year}年度生）`;
+    const output = nunjucks.renderString(appTemplate, {
+      title,
       description,
-    );
-    writeFileSync(filename, content, {
-      encoding: "utf8",
+      year: i.year.toString(),
+      major: majorToString(i.major),
+      docsPageName: majorToDocsPageName(i.major),
     });
+    writeFileSync(filename, output);
   }
 }
 
