@@ -46,7 +46,7 @@ async function main() {
 
       "src/app.scss",
       "src/styles.scss",
-      "src/docs/help.scss",
+      "src/docs/styles.scss",
     ],
     outbase: "src",
     bundle: true,

@@ -11,22 +11,14 @@ import {
   isHakubutsukan,
   isJiyuukamoku,
   isKyoutsuu,
-} from "@/conditions/common";
-import {
   isArt,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
   isElectivePe,
   isForeignLanguage,
-  isJapanese,
   isKyoushoku,
-} from "@/conditions/common/2025";
-import { assert } from "@/util";
-
-function assertYear(year: number): void {
-  assert(2023 <= year && year <= 2025);
-}
+} from "@/requirements/common";
 
 function isA1(id: string): boolean {
   // 卒業研究A
@@ -64,7 +56,7 @@ function isB1(id: string) {
   return id.startsWith("GC5") || id.startsWith("GA4");
 }
 
-function isC(id: CourseId, year: number): string | undefined {
+function classifyColumnC(id: CourseId, year: number): string | undefined {
   if (id === "GA15331") return "c1"; // 微分積分A
   if (id === "GC11701") return "c2"; // 微分積分B
   if (id === "GA15231") return "c3"; // 線形代数A
@@ -180,7 +172,7 @@ function classify(
   if (isA4(id)) return "a4";
   if (isA5(id)) return "a5";
   if (isA6(id)) return "a6";
-  if (isC(id, year) !== undefined) return isC(id, year);
+  if (classifyColumnC(id, year) !== undefined) return classifyColumnC(id, year);
   if (isE1(id)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(id)) return "e3";

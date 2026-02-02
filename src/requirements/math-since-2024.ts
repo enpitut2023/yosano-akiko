@@ -6,8 +6,8 @@ import {
   RealCourse,
 } from "@/akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
-import { isGakushikiban } from "@/conditions/common";
 import {
+  isGakushikiban,
   isArt,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
@@ -16,7 +16,7 @@ import {
   isForeignLanguage,
   isJapanese,
   isKyoushoku,
-} from "@/conditions/common/2025";
+} from "@/requirements/common";
 import { arrayRemove } from "@/util";
 
 function isA1(id: string): boolean {

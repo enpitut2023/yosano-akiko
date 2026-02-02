@@ -23,12 +23,12 @@ import {
   akikoGetUnclassifiedFakeCourses,
   courseIdCompare,
   fakeCourseIdCompare,
-} from "./akiko";
-import { ClassifyOptions, SetupParams } from "./app-setup";
-import { CourseLists } from "./course-lists";
-import { parseImportedCsv } from "./csv";
-import warningIcon from "./icons/warning.svg";
-import { assert } from "./util";
+} from "@/akiko";
+import { ClassifyOptions, SetupParams } from "@/app-setup";
+import { CourseLists } from "@/course-lists";
+import { parseImportedCsv } from "@/csv";
+import warningIcon from "@/icons/warning.svg";
+import { assert } from "@/util";
 import z from "zod";
 
 type LocalDataV1ImportedCourse = {
@@ -542,6 +542,7 @@ export function setup(params: SetupParams): void {
     div.addEventListener("click", (event) => {
       event.preventDefault();
       selectedCellId = id;
+      barsVisible = true;
       render();
     });
   }
@@ -648,25 +649,20 @@ export function setup(params: SetupParams): void {
   assert(mainElement !== null);
 
   const updateBarsToggleButtonPosition = () => {
-    if (barsVisible) {
-      barsToggleButton.textContent = "⏵";
-    } else {
-      barsToggleButton.textContent = "⏴";
-    }
     mainElement.classList.toggle("bars-hidden", !barsVisible);
     const left =
       requirementsElement.clientWidth -
       barsToggleButton.getBoundingClientRect().width;
     barsToggleButton.style.left = `${left}px`;
   };
-  updateBarsToggleButtonPosition();
+
   new ResizeObserver(updateBarsToggleButtonPosition).observe(
     requirementsElement,
   );
 
   barsToggleButton.addEventListener("click", () => {
     barsVisible = !barsVisible;
-    updateBarsToggleButtonPosition();
+    render();
   });
 
   mustGetElementById("reset").addEventListener("click", () => {
@@ -827,11 +823,19 @@ export function setup(params: SetupParams): void {
       overallCreditSumElement.style.setProperty("--green-percentage", `${g}%`);
       overallCreditSumElement.style.setProperty("--yellow-percentage", `${y}%`);
     }
-  };
 
-  // 総合からの移行
-  studentTypeRadioNative.checked = localData.native;
-  studentTypeRadioTransfer.checked = !localData.native;
+    // 総合からの移行
+    studentTypeRadioNative.checked = localData.native;
+    studentTypeRadioTransfer.checked = !localData.native;
+
+    // 右側の表示切り替え
+    if (barsVisible) {
+      barsToggleButton.textContent = "⏵";
+    } else {
+      barsToggleButton.textContent = "⏴";
+    }
+    updateBarsToggleButtonPosition();
+  };
 
   render();
 }

@@ -8,11 +8,6 @@ import {
 import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
 import {
   isGakushikiban,
-  isHakubutsukan,
-  isJiyuukamoku,
-  isKyoutsuu,
-} from "@/conditions/common";
-import {
   isArt,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
@@ -20,8 +15,7 @@ import {
   isElectivePe,
   isForeignLanguage,
   isJapanese,
-  isKyoushoku,
-} from "@/conditions/common/2025";
+} from "@/requirements/common";
 
 export type Specialty = "system" | "science" | "resource-management";
 
@@ -86,7 +80,7 @@ function isA6(id: string, specialty: Specialty): boolean {
   }
 }
 
-function isB(id: string): string | undefined {
+function classifyColumnB(id: string): string | undefined {
   if (
     id !== "GE70501" && // 情報検索システム
     id !== "GE72701" && // Machine Learning and Information Retrieval
@@ -300,7 +294,7 @@ function classify(
   if (isE3(id)) return "e3";
   if (isE4(id)) return "e4";
   // 選択
-  if (isB(id) !== undefined) return isB(id);
+  if (classifyColumnB(id) !== undefined) return classifyColumnB(id);
   if (isD1(id)) return "d1";
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
