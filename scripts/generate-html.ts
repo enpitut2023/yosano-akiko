@@ -1,13 +1,9 @@
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import path, { basename, dirname, extname, join } from "node:path";
+import path, { basename, extname, join } from "node:path";
 import nunjucks from "nunjucks";
 
 function unreachable(_: never): never {
   throw new Error("Should be unreachable");
-}
-
-function fillInDescription(template: string, description: string): string {
-  return template.replaceAll("!!description!!", description);
 }
 
 type Major =
@@ -122,7 +118,7 @@ function docsPageNameToString(d: DocsPageName): string {
 
 type Instance = { year: number; major: Major; comment?: string };
 
-function createNavigationLinks(is: Instance[]): string {
+function createIndexTemplateContext(is: Instance[], description: string) {
   const yearToInstances = new Map<number, Instance[]>();
   for (const i of is) {
     const majors = yearToInstances.get(i.year);
@@ -136,20 +132,16 @@ function createNavigationLinks(is: Instance[]): string {
   const years = Array.from(yearToInstances.keys());
   years.sort((a, b) => b - a);
 
-  let result = "";
-  for (const year of years) {
-    result += `<section><h3>${year}年度入学</h3><ul>`;
-    for (const i of yearToInstances.get(year) ?? []) {
-      result += `<li><a href="${year}/${i.major}">${majorToString(i.major)}</a>`;
-      if (i.comment !== undefined) {
-        result += " " + i.comment;
-      }
-      result += "</li>";
-    }
-    result += "</ul></section>";
-  }
+  const sections = years.map((year) => ({
+    year,
+    instances: (yearToInstances.get(year) ?? []).map((i) => ({
+      major: i.major,
+      majorName: majorToString(i.major),
+      comment: i.comment,
+    })),
+  }));
 
-  return result;
+  return { sections, description };
 }
 
 function main(): void {
@@ -179,7 +171,7 @@ function main(): void {
     { year: 2025, major: "physics", comment: "（ほぼ全て対応）" },
   ];
 
-  const template = readFileSync("src/index.html", {
+  const indexTemplate = readFileSync("src/index.html", {
     encoding: "utf8",
   });
   const appTemplate = readFileSync("src/app-index.html", {
@@ -213,16 +205,14 @@ function main(): void {
   console.log(`Rendering ${indexPath}`);
   writeFileSync(
     indexPath,
-    fillInDescription(
-      template.replaceAll("!!links!!", createNavigationLinks(instances)),
-      description,
+    nunjucks.renderString(
+      indexTemplate,
+      createIndexTemplateContext(instances, description),
     ),
-    { encoding: "utf8" },
   );
 
   const helpPath = path.join(dstDir, "docs", "help.html");
   console.log(`Rendering ${helpPath}`);
-  mkdirSync(dirname(helpPath), { recursive: true });
   writeFileSync(
     helpPath,
     nunjucks.renderString(
