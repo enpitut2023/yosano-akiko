@@ -192,8 +192,8 @@ function main(): void {
     { year: 2023, major: "physics", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "coens-ap" },
     { year: 2023, major: "coens-eqe" },
-    { year: 2023, major: "coens-mme" },
     { year: 2023, major: "coens-mse" },
+    { year: 2023, major: "coens-mme" },
 
     { year: 2024, major: "coins" },
     { year: 2024, major: "klis-science" },
@@ -205,8 +205,8 @@ function main(): void {
     { year: 2024, major: "math", comment: "（ほぼ全て対応）" },
     { year: 2024, major: "coens-ap" },
     { year: 2024, major: "coens-eqe" },
-    { year: 2024, major: "coens-mme" },
     { year: 2024, major: "coens-mse" },
+    { year: 2024, major: "coens-mme" },
 
     { year: 2025, major: "coins" },
     { year: 2025, major: "klis-science" },
@@ -218,8 +218,8 @@ function main(): void {
     { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
     { year: 2025, major: "coens-ap" },
     { year: 2025, major: "coens-eqe" },
-    { year: 2025, major: "coens-mme" },
     { year: 2025, major: "coens-mse" },
+    { year: 2025, major: "coens-mme" },
   ];
 
   const indexTemplate = readFileSync("src/index.html", {
