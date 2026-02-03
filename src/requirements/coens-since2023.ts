@@ -22,6 +22,9 @@ import {
   isIzanai,
   isCompulsoryPe4,
   isJapanese,
+  isInfoLiteracyLecture,
+  isInfoLiteracyExercise,
+  isDataScience,
 } from "@/requirements/common";
 
 export type Specialty =
@@ -118,34 +121,21 @@ function isB1(id: string, specialty: Specialty): boolean {
       return id.startsWith("FF55");
   }
 }
-//rjooske
+
 function isB2(id: string, specialty: Specialty): boolean {
+  if (id.startsWith("FF16")) return true;
   switch (specialty) {
     case "ap":
-      if (id.startsWith("FF26")) {
-        return true;
-      }
-      break;
+      return id.startsWith("FF26");
     case "eqe":
-      if (id.startsWith("FF36")) {
-        return true;
-      }
-      break;
+      return id.startsWith("FF36");
     case "mse":
-      if (id.startsWith("FF46")) {
-        return true;
-      }
-      break;
+      return id.startsWith("FF46");
     case "mme":
-      if (id.startsWith("FF56")) {
-        return true;
-      }
-      break;
+      return id.startsWith("FF56");
   }
-  return id.startsWith("FF16");
 }
 
-//rjooske
 function isB3(id: string, specialty: Specialty): boolean {
   if (
     id === "FF13103" || // インターンシップⅠ
@@ -176,7 +166,6 @@ function isB3(id: string, specialty: Specialty): boolean {
   }
 }
 
-// rjooske
 function isC1D2(id: string, year: number): string | undefined {
   // 応用理工学概論
   if (id === "FF17011") {
@@ -208,9 +197,8 @@ function isC1D2(id: string, year: number): string | undefined {
     id === "FE11281" || // 化学2 !!A!!
     id === "FE11291" // 化学3 !!A!!
   ) {
-    if (year === 2023) {
-      return "c1";
-    } else return "d2";
+    if (year === 2023) return "c1";
+    else return "d2";
   }
 }
 
@@ -278,14 +266,15 @@ function isD1(id: string): boolean {
   return id.startsWith("FF15");
 }
 
-function isE1(id: string): boolean {
+function isE1(id: string, mode: "known" | "real"): boolean {
   return (
     id === "1115102" || // ファーストイヤーセミナー 1クラス
     id === "1115202" || // ファーストイヤーセミナー 2クラス
     id === "1115302" || // ファーストイヤーセミナー 3クラス
     id === "1227431" || // 学問への誘い 1クラス
     id === "1227441" || // 学問への誘い 2クラス
-    id === "1227451" // 学問への誘い 3クラス
+    id === "1227451" || // 学問への誘い 3クラス
+    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
 
@@ -299,13 +288,17 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name); // 必修　外国語(英語)
 }
 
-function isE4(id: string): boolean {
+function isE4(id: string, mode: "known" | "real"): boolean {
   return (
     id === "6115101" || // 情報リテラシー(講義) !!A!!
     id === "6415102" || // 情報リテラシー(演習) 1班 !!A!!
     id === "6415202" || // 情報リテラシー(演習) 2班 !!A!!
     id === "6515102" || // データサイエンス 1班 !!A!!
-    id === "6515202" // データサイエンス 2班 !!A!!
+    id === "6515202" || // データサイエンス 2班 !!A!!
+    (mode === "real" &&
+      (isInfoLiteracyLecture(id) ||
+        isInfoLiteracyExercise(id) ||
+        isDataScience(id)))
   );
 }
 
@@ -340,7 +333,7 @@ function classify(
   name: string,
   year: number,
   specialty: Specialty,
-  _isNative: boolean,
+  mode: "known" | "real",
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
@@ -349,10 +342,10 @@ function classify(
   if (isC1D2(id, year) !== undefined) return isC1D2(id, year);
   if (isC2(id)) return "c2";
   if (isC3(id, specialty)) return "c3";
-  if (isE1(id)) return "e1";
+  if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(id, mode)) return "e4";
   // 選択
   if (isD1(id)) return "d1";
   if (isB1(id, specialty)) return "b1";
@@ -373,7 +366,7 @@ export function classifyKnownCourses(
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, year, specialty, true);
+    const cellId = classify(c.id, c.name, year, specialty, "known");
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -383,14 +376,14 @@ export function classifyKnownCourses(
 
 export function classifyRealCourses(
   cs: RealCourse[],
-  opts: ClassifyOptions,
+  _opts: ClassifyOptions,
   year: number,
   specialty: Specialty,
 ): Map<CourseId, string> {
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, year, specialty, opts.isNative);
+    const cellId = classify(c.id, c.name, year, specialty, "real");
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
