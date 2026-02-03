@@ -171,6 +171,7 @@ function main(): void {
     { year: 2024, major: "klis-science" },
     { year: 2024, major: "klis-system" },
     { year: 2024, major: "klis-rm" },
+    { year: 2024, major: "mast" },
     { year: 2024, major: "math", comment: "（ほぼ全て対応）" },
     { year: 2024, major: "physics", comment: "（ほぼ全て対応）" },
 
@@ -178,6 +179,7 @@ function main(): void {
     { year: 2025, major: "klis-science" },
     { year: 2025, major: "klis-system" },
     { year: 2025, major: "klis-rm" },
+    { year: 2025, major: "mast" },
     { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
     { year: 2025, major: "physics", comment: "（ほぼ全て対応）" },
   ];

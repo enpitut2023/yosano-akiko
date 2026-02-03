@@ -285,6 +285,7 @@ export const creditRequirementsSince2023: SetupCreditRequirements = {
   compulsory: 50,
   elective: 74,
 };
+
 export const creditRequirementsSince2025: SetupCreditRequirements = {
   cells: {
     a1: { min: 3, max: 3 },

@@ -1,7 +1,7 @@
-import { KnownCourse } from "../../akiko";
 import { setup } from "../../app";
 import { courses } from "../../current-courses.js";
 import cellIdToRectRecord from "./cell-id-to-rect.json";
+import { KnownCourse } from "@/akiko";
 import {
   classifyFakeCourses,
   classifyKnownCourses,
@@ -9,7 +9,7 @@ import {
   creditRequirementsSince2023,
 } from "@/requirements/mast-since-2023";
 
-const YEAR = 2023;
+const YEAR = 2024;
 
 setup({
   knownCourses: courses as KnownCourse[],
