@@ -21,7 +21,7 @@ import {
   isIzanai,
   isJapanese,
   isKyoushoku,
-} from "@/conditions/common";
+} from "@/requirements/common";
 
 function isA1(id: string): boolean {
   return id === "FCC2733";

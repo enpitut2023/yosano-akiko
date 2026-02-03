@@ -10,22 +10,29 @@ import {
   isGakushikiban,
   isHakubutsukan,
   isJiyuukamoku,
-  isKyoutsuu,
-} from "@/conditions/common";
-import {
   isArt,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
   isElectivePe,
   isForeignLanguage,
-  isJapanese,
   isKyoushoku,
-} from "@/conditions/common/2025";
-import { spec } from "node:test/reporters";
+  isCompulsoryPe3,
+  isFirstYearSeminar,
+  isIzanai,
+  isCompulsoryPe4,
+  isJapanese,
+} from "@/requirements/common";
 
-export type Specialty = "ap" | "eqe" | "mse" | "mme";
-// "Applied Physics" | "Electronics and Quantum Engineering" | "Material Science and Engineering" | "Material and Molecular Engineering"
+export type Specialty =
+  // Applied Physics
+  | "ap"
+  //  Electronics and Quantum Engineering
+  | "eqe"
+  // Material Science and Engineering
+  | "mse"
+  // Material and Molecular Engineering
+  | "mme";
 
 function isA1(id: string): boolean {
   return (
@@ -37,7 +44,7 @@ function isA2(id: string, specialty: Specialty): boolean {
   switch (specialty) {
     case "ap":
       return (
-        id === "FF20113" || // 応用物理専攻実験A　1班対象　!!A!!
+        id === "FF20113" || // 応用物理専攻実験A　1班対象
         id === "FF20123" || // 応用物理専攻実験A　2班対象
         id === "FF20133" || // 応用物理専攻実験B　1班対象
         id === "FF20143" // 応用物理専攻実験B　2班対象
@@ -111,7 +118,7 @@ function isB1(id: string, specialty: Specialty): boolean {
       return id.startsWith("FF55");
   }
 }
-// rjooske
+//rjooske
 function isB2(id: string, specialty: Specialty): boolean {
   switch (specialty) {
     case "ap":
@@ -284,7 +291,7 @@ function isE1(id: string): boolean {
 
 function isE2(id: string): boolean {
   return (
-    isCompulsoryPe1(id) || isCompulsoryPe2(id) // 必修 体育
+    isCompulsoryPe1(id) || isCompulsoryPe2(id) || isCompulsoryPe3(id) // 必修 体育
   );
 }
 
@@ -308,9 +315,8 @@ function isF1(id: string): boolean {
 
 function isF2(id: string): boolean {
   return (
-    //TODO: 英語（選択・自由科目）もあります
     isForeignLanguage(id) || // 選択　外国語
-    id.startsWith("5") || //選択 国語
+    isJapanese(id) || //選択 国語
     isArt(id) // 選択 芸術
   );
 }
@@ -319,12 +325,9 @@ function isF3(id: string): boolean {
   return isElectivePe(id); // 選択　体育
 }
 
-// TODO:
 function isH1(id: string): boolean {
-  return (
-    //他学群または他学類開設（学類長指定科目を除く）
-    false
-  );
+  // TODO: 思いつくものは除いておく
+  return !(isFirstYearSeminar(id) || isIzanai(id) || isCompulsoryPe4(id));
 }
 
 function isH2(id: string): boolean {
@@ -337,7 +340,7 @@ function classify(
   name: string,
   year: number,
   specialty: Specialty,
-  isNative: boolean,
+  _isNative: boolean,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
@@ -358,13 +361,13 @@ function classify(
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
   if (isF3(id)) return "f3";
-  if (isH1(id)) return "h1";
   if (isH2(id)) return "h2";
+  if (isH1(id)) return "h1"; // 「...以外」なので最後
 }
 
 export function classifyKnownCourses(
   cs: KnownCourse[],
-  opts: ClassifyOptions,
+  _opts: ClassifyOptions,
   year: number,
   specialty: Specialty,
 ): Map<CourseId, string> {
@@ -395,12 +398,11 @@ export function classifyRealCourses(
   return courseIdToCellId;
 }
 
-// TODO:
 export function classifyFakeCourses(
   cs: FakeCourse[],
-  opts: ClassifyOptions,
-  year: number,
-  specialty: Specialty,
+  _opts: ClassifyOptions,
+  _year: number,
+  _specialty: Specialty,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {
@@ -410,7 +412,7 @@ export function classifyFakeCourses(
   }
   return fakeCourseIdToCellId;
 }
-//応用理工学類2024,2025年度
+
 export const creditRequirementsSince2024: SetupCreditRequirements = {
   cells: {
     a1: { min: 1, max: 1 },
@@ -447,7 +449,6 @@ export const creditRequirementsSince2024: SetupCreditRequirements = {
   elective: 75,
 };
 
-//応用理工学類2023年度
 export const creditRequirements2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 1, max: 1 },
