@@ -18,6 +18,7 @@ import {
   isElectivePe,
   isForeignLanguage,
   isKyoushoku,
+  isJapanese,
 } from "@/requirements/common";
 
 function isA1(id: string): boolean {
@@ -66,7 +67,7 @@ function classifyColumnC(id: CourseId, year: number): string | undefined {
   if (id === "GA18222") return "c7"; // プログラミング入門A
   if (id === "GA18322") return "c8"; // プログラミング入門B
   let offset = 0;
-  if (year === 2025) {
+  if (year >= 2025) {
     offset = 1;
     if (id === "GC12104") {
       return "c9";
@@ -140,7 +141,7 @@ function isF3(id: string) {
 }
 
 function isF4(id: string) {
-  return id.startsWith("5"); //選択 国語
+  return isJapanese(id);
 }
 
 function isF5(id: string) {
@@ -163,7 +164,7 @@ function classify(
   id: CourseId,
   name: string,
   year: number,
-  isNative: boolean,
+  _isNative: boolean,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
@@ -185,14 +186,14 @@ function classify(
   if (isF3(id)) return "f3";
   if (isF4(id)) return "f4";
   if (isF5(id)) return "f5";
-  if (isH1(id)) return "h1";
   if (isH2(id)) return "h2";
   if (isH3(id)) return "h3";
+  if (isH1(id)) return "h1"; // 「...以外」なので最後
 }
 
 export function classifyKnownCourses(
   cs: KnownCourse[],
-  opts: ClassifyOptions,
+  _opts: ClassifyOptions,
   year: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
@@ -224,8 +225,8 @@ export function classifyRealCourses(
 // TODO:
 export function classifyFakeCourses(
   cs: FakeCourse[],
-  opts: ClassifyOptions,
-  year: number,
+  _opts: ClassifyOptions,
+  _year: number,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {

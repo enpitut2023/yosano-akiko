@@ -15,6 +15,8 @@ import {
   isElectivePe,
   isForeignLanguage,
   isJapanese,
+  isKyoutsuu,
+  isKyoushoku,
 } from "@/requirements/common";
 
 export type Specialty = "system" | "science" | "resource-management";
@@ -236,26 +238,18 @@ function isF1(id: string): boolean {
 function isF2(id: string): boolean {
   // TODO: 体育3,4必修をどうする？
   return (
-    isGakushikiban(id) ||
-    isElectivePe(id) ||
-    isForeignLanguage(id) ||
-    isJapanese(id) ||
-    isArt(id)
+    isElectivePe(id) || isForeignLanguage(id) || isJapanese(id) || isArt(id)
   );
 }
 
 function isH1(id: string): boolean {
-  return (
-    !(
-      id.startsWith("GA") ||
-      id.startsWith("GB") ||
-      id.startsWith("GC") ||
-      id.startsWith("GE") ||
-      // 共通科目及び教職に関する科目
-      id.match(/^\d/)
-    ) ||
-    id.startsWith("8") ||
-    id.startsWith("99")
+  return !(
+    id.startsWith("GA") ||
+    id.startsWith("GB") ||
+    id.startsWith("GC") ||
+    id.startsWith("GE") ||
+    isKyoutsuu(id) ||
+    isKyoushoku(id)
   );
 }
 
@@ -266,9 +260,9 @@ function isH2(id: string): boolean {
 function classify(
   id: CourseId,
   name: string,
-  year: number,
+  _year: number,
   specialty: Specialty,
-  isNative: boolean,
+  _isNative: boolean,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
@@ -292,19 +286,19 @@ function classify(
   if (isE1(id)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(id)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(name)) return "e4";
   // 選択
   if (classifyColumnB(id) !== undefined) return classifyColumnB(id);
   if (isD1(id)) return "d1";
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
-  if (isH1(id)) return "h1";
   if (isH2(id)) return "h2";
+  if (isH1(id)) return "h1"; // 「...以外」なので最後
 }
 
 export function classifyKnownCourses(
   cs: KnownCourse[],
-  opts: ClassifyOptions,
+  _opts: ClassifyOptions,
   year: number,
   specialty: Specialty,
 ): Map<CourseId, string> {
@@ -338,9 +332,9 @@ export function classifyRealCourses(
 // TODO:
 export function classifyFakeCourses(
   cs: FakeCourse[],
-  opts: ClassifyOptions,
-  year: number,
-  specialty: Specialty,
+  _opts: ClassifyOptions,
+  _year: number,
+  _specialty: Specialty,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {

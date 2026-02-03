@@ -168,15 +168,18 @@ function main(): void {
     { year: 2023, major: "physics", comment: "（ほぼ全て対応）" },
 
     { year: 2024, major: "coins" },
+    { year: 2024, major: "klis-science" },
+    { year: 2024, major: "klis-system" },
+    { year: 2024, major: "klis-rm" },
     { year: 2024, major: "math", comment: "（ほぼ全て対応）" },
     { year: 2024, major: "physics", comment: "（ほぼ全て対応）" },
 
     { year: 2025, major: "coins" },
-    { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
-    { year: 2025, major: "physics", comment: "（ほぼ全て対応）" },
     { year: 2025, major: "klis-science" },
     { year: 2025, major: "klis-system" },
     { year: 2025, major: "klis-rm" },
+    { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
+    { year: 2025, major: "physics", comment: "（ほぼ全て対応）" },
   ];
 
   const indexTemplate = readFileSync("src/index.html", {
