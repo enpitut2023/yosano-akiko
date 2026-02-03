@@ -17,11 +17,11 @@ rsync -avm \
     --exclude='*' \
     src/ dist/ || exit 1
 
-./scripts/generate-help.sh || exit 1
-./scripts/generate-html.ts || exit 1
+npm run lint-grade-csvs || exit 1
+npm run generate-html || exit 1
 npm run esbuild || exit 1
 
 if [ "$release" ]
 then
-    find dist -name '*.html' -print0 | xargs -0 ./scripts/inject-matomo-tracker.ts || exit 1
+    find dist -name '*.html' -print0 | xargs -0 npm run inject-matomo-tracker || exit 1
 fi

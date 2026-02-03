@@ -31,3 +31,25 @@ export function stringCompare(a: string, b: string): number {
     return 0;
   }
 }
+
+export function arrayRemove<T>(ts: T[], t: T): boolean {
+  const i = ts.indexOf(t);
+  if (i < 0) {
+    return false;
+  }
+  ts.splice(i, 1);
+  return true;
+}
+
+export function arrayRetain<T>(ts: T[], predicate: (t: T) => boolean): void {
+  const newTs: T[] = [];
+  for (const t of ts) {
+    if (predicate(t)) {
+      newTs.push(t);
+    }
+  }
+  ts.splice(0);
+  for (const t of newTs) {
+    ts.push(t);
+  }
+}

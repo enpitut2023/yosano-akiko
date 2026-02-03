@@ -14,8 +14,6 @@ jobs:
       url: ${{ steps.deploy-pages-step.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt install -y pandoc
-      - run: npm i -g tsx
       - run: npm i
       - run: AKIKO_RELEASE=1 ./scripts/build.sh
       - uses: actions/upload-pages-artifact@v3

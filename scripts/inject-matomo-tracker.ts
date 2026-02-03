@@ -1,5 +1,3 @@
-#!/usr/bin/env tsx
-
 import { readFileSync, writeFileSync } from "node:fs";
 import { argv, exit } from "node:process";
 

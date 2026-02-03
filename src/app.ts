@@ -19,12 +19,16 @@ import {
   Akiko,
   CellCreditStats,
   columnIdIsCompulsory,
-} from "./akiko";
-import { ClassifyOptions, SetupParams } from "./app-setup";
-import { CourseLists } from "./course-lists";
-import { parseImportedCsv } from "./csv";
-import warningIcon from "./icons/warning.svg";
-import { assert } from "./util";
+  akikoGetUnclassifiedRealCourses,
+  akikoGetUnclassifiedFakeCourses,
+  courseIdCompare,
+  fakeCourseIdCompare,
+} from "@/akiko";
+import { ClassifyOptions, SetupParams } from "@/app-setup";
+import { CourseLists } from "@/course-lists";
+import { parseImportedCsv } from "@/csv";
+import warningIcon from "@/icons/warning.svg";
+import { assert } from "@/util";
 import z from "zod";
 
 type LocalDataV1ImportedCourse = {
@@ -538,6 +542,7 @@ export function setup(params: SetupParams): void {
     div.addEventListener("click", (event) => {
       event.preventDefault();
       selectedCellId = id;
+      barsVisible = true;
       render();
     });
   }
@@ -604,6 +609,23 @@ export function setup(params: SetupParams): void {
     localDataStore(localDataKey, localData);
     akiko = createAkiko();
 
+    if (DEBUG) {
+      const rcs = akikoGetUnclassifiedRealCourses(akiko);
+      const fcs = akikoGetUnclassifiedFakeCourses(akiko);
+      rcs.sort((a, b) => courseIdCompare(a.id, b.id));
+      fcs.sort((a, b) => fakeCourseIdCompare(a.id, b.id));
+      let s = "マスに振り分けられなかった授業\n";
+      for (const rc of rcs) {
+        s += [rc.id, rc.name, rc.takenYear, rc.credit, rc.grade].join(" ");
+        s += "\n";
+      }
+      for (const fc of fcs) {
+        s += [fc.id, fc.name, fc.takenYear, fc.credit, fc.grade].join(" ");
+        s += "\n";
+      }
+      console.log(s);
+    }
+
     render();
   });
 
@@ -627,25 +649,20 @@ export function setup(params: SetupParams): void {
   assert(mainElement !== null);
 
   const updateBarsToggleButtonPosition = () => {
-    if (barsVisible) {
-      barsToggleButton.textContent = "⏵";
-    } else {
-      barsToggleButton.textContent = "⏴";
-    }
     mainElement.classList.toggle("bars-hidden", !barsVisible);
     const left =
       requirementsElement.clientWidth -
       barsToggleButton.getBoundingClientRect().width;
     barsToggleButton.style.left = `${left}px`;
   };
-  updateBarsToggleButtonPosition();
+
   new ResizeObserver(updateBarsToggleButtonPosition).observe(
     requirementsElement,
   );
 
   barsToggleButton.addEventListener("click", () => {
     barsVisible = !barsVisible;
-    updateBarsToggleButtonPosition();
+    render();
   });
 
   mustGetElementById("reset").addEventListener("click", () => {
@@ -806,11 +823,19 @@ export function setup(params: SetupParams): void {
       overallCreditSumElement.style.setProperty("--green-percentage", `${g}%`);
       overallCreditSumElement.style.setProperty("--yellow-percentage", `${y}%`);
     }
-  };
 
-  // 総合からの移行
-  studentTypeRadioNative.checked = localData.native;
-  studentTypeRadioTransfer.checked = !localData.native;
+    // 総合からの移行
+    studentTypeRadioNative.checked = localData.native;
+    studentTypeRadioTransfer.checked = !localData.native;
+
+    // 右側の表示切り替え
+    if (barsVisible) {
+      barsToggleButton.textContent = "⏵";
+    } else {
+      barsToggleButton.textContent = "⏴";
+    }
+    updateBarsToggleButtonPosition();
+  };
 
   render();
 }
