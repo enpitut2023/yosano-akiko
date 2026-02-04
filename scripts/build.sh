@@ -18,6 +18,8 @@ rsync -avm \
     src/ dist/ || exit 1
 
 npm run lint-grade-csvs || exit 1
+npm run test || exit 1
+
 npm run generate-html || exit 1
 npm run esbuild || exit 1
 
