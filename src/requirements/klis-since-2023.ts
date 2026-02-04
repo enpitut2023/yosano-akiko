@@ -18,8 +18,9 @@ import {
   isKyoutsuu,
   isKyoushoku,
 } from "@/requirements/common";
+import { unreachable } from "@/util";
 
-export type Specialty = "system" | "science" | "resource-management";
+export type Specialty = "science" | "system" | "rm";
 
 function isA1(id: string): boolean {
   // 卒業研究A
@@ -42,67 +43,106 @@ function isA3(id: string, specialty: Specialty): boolean {
   switch (specialty) {
     case "science":
       return id === "GE50712"; //専門英語B-1 知識科学主専攻生 知識情報システム主専攻の一部
-    case "resource-management":
-      return id === "GE50732"; // 専門英語B-3　情報資源経営主専攻　知識情報システム主専攻の一部
     case "system":
       return id === "GE50712" || id === "GE50732";
+    case "rm":
+      return id === "GE50732"; // 専門英語B-3　情報資源経営主専攻　知識情報システム主専攻の一部
   }
 }
 
 function isA4(id: string, specialty: Specialty): boolean {
   switch (specialty) {
-    case "system":
-      return id === "GE50822"; // 専門英語C-2 知識情報システム主専攻
     case "science":
       return id === "GE50812"; // 専門英語C-1　知識科学主専攻
-    case "resource-management":
+    case "system":
+      return id === "GE50822"; // 専門英語C-2 知識情報システム主専攻
+    case "rm":
       return id === "GE50832"; //専門英語C-3 情報資源主専攻
   }
 }
 
 function isA5(id: string, specialty: Specialty): boolean {
   switch (specialty) {
-    case "system":
-      return id === "GE70113"; // 知識情報システム実習A
     case "science":
       return id === "GE60113"; // 知識科学実習A
-    case "resource-management":
+    case "system":
+      return id === "GE70113"; // 知識情報システム実習A
+    case "rm":
       return id === "GE80113"; // 情報資源経営実習A
   }
 }
 
 function isA6(id: string, specialty: Specialty): boolean {
   switch (specialty) {
-    case "system":
-      return id === "GE70123"; // 知識情報システム実習B
     case "science":
       return id === "GE60123"; // 知識科学実習B
-    case "resource-management":
+    case "system":
+      return id === "GE70123"; // 知識情報システム実習B
+    case "rm":
       return id === "GE80123"; //情報資源経営実習B
   }
 }
 
-function classifyColumnB(id: string): string | undefined {
-  if (
-    id !== "GE70501" && // 情報検索システム
-    id !== "GE72701" && // Machine Learning and Information Retrieval
-    id !== "GE73101" && // Human Information Interaction
-    id !== "GE71801" && // データ構造とアルゴリズム
-    id !== "GE70113" && // 知識情報システム実習A
-    id !== "GE70123" && // 知識情報システム実習B
-    id !== "GE80113" && // 情報資源経営実習A
-    id !== "GE80123" && // 情報資源経営実習B
-    (id.startsWith("GA4") ||
-      id.startsWith("GE6") ||
-      id.startsWith("GE4") ||
-      id.startsWith("GE7") ||
-      id.startsWith("GE8"))
-  ) {
-    if (id.startsWith("GE6")) {
-      return "b1";
+const [sharedGe6CourseIds, sharedGe7CourseIds, sharedGe8CourseIds] = (() => {
+  const ge6 = new Set<string>();
+  const ge7 = new Set<string>();
+  const ge8 = new Set<string>();
+
+  for (const ids of [
+    ["GE61801", "GE71801"], // データ構造とアルゴリズム
+    ["GE61901", "GE70501"], // 情報検索システム
+    ["GE62401", "GE72701"], // Machine Learning and Information Retrieval
+    ["GE62501", "GE73101"], // Human Information Interaction
+    ["GE72101", "GE80401"], // 経営情報システム論
+  ]) {
+    if (ids.some((i) => i.startsWith("GE6"))) {
+      for (const id of ids) ge6.add(id);
     }
-    return "b2";
+    if (ids.some((i) => i.startsWith("GE7"))) {
+      for (const id of ids) ge7.add(id);
+    }
+    if (ids.some((i) => i.startsWith("GE8"))) {
+      for (const id of ids) ge8.add(id);
+    }
   }
+
+  return [ge6, ge7, ge8];
+})();
+
+function classifyColumnB(
+  id: string,
+  speciality: Specialty,
+): string | undefined {
+  // 知識科学専攻のb2にある「GE6と共通開設の科目を除く」は、上記のデータ構造と
+  // アルゴリズムのように科目番号をコードシェアする科目を除く意図で書かれている。
+  // 知識科学専攻はGE6から始まる科目番号が優先的にb1に該当し、知識情報システム
+  // はGE7、情報資源経営はGE8が優先される。
+
+  let b1Prefix: string;
+  let b2Pattern: RegExp;
+  let avoidInB2: Set<string>;
+  switch (speciality) {
+    case "science":
+      b1Prefix = "GE6";
+      b2Pattern = /^(GA4|GE4|GE7|GE8)/;
+      avoidInB2 = sharedGe6CourseIds;
+      break;
+    case "system":
+      b1Prefix = "GE7";
+      b2Pattern = /^(GA4|GE4|GE6|GE8)/;
+      avoidInB2 = sharedGe7CourseIds;
+      break;
+    case "rm":
+      b1Prefix = "GE8";
+      b2Pattern = /^(GA4|GE4|GE6|GE7)/;
+      avoidInB2 = sharedGe8CourseIds;
+      break;
+    default:
+      unreachable(speciality);
+  }
+
+  if (id.startsWith(b1Prefix)) return "b1";
+  if (b2Pattern.test(id) && !avoidInB2.has(id)) return "b2";
 }
 
 function isC1(id: string): boolean {
@@ -288,7 +328,8 @@ function classify(
   if (isE3(id)) return "e3";
   if (isE4(name)) return "e4";
   // 選択
-  if (classifyColumnB(id) !== undefined) return classifyColumnB(id);
+  const b = classifyColumnB(id, specialty);
+  if (b !== undefined) return b;
   if (isD1(id)) return "d1";
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
