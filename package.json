@@ -7,7 +7,8 @@
     "esbuild": "tsc && node esbuild.mjs",
     "esbuild-release": "tsc && AKIKO_RELEASE=1 node esbuild.mjs",
     "lint-grade-csvs": "tsx scripts/lint-grade-csvs.ts",
-    "inject-matomo-tracker": "tsx scripts/inject-matomo-tracker.ts"
+    "inject-matomo-tracker": "tsx scripts/inject-matomo-tracker.ts",
+    "test": "tsx src/tests/index.ts"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
