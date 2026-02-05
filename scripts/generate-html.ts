@@ -173,6 +173,7 @@ function main(): void {
     { year: 2023, major: "klis-rm" },
     { year: 2023, major: "mast", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "physics", comment: "（ほぼ全て対応）" },
+    { year: 2023, major: "chemistry", comment: "（ほぼ全て対応）" },
 
     { year: 2024, major: "coins" },
     { year: 2024, major: "klis-science" },
@@ -190,6 +191,7 @@ function main(): void {
     { year: 2025, major: "mast" },
     { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
     { year: 2025, major: "physics", comment: "（ほぼ全て対応）" },
+    { year: 2025, major: "chemistry", comment: "（ほぼ全て対応）" },
   ];
 
   const indexTemplate = readFileSync("src/index.html", {
