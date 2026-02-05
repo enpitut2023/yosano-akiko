@@ -11,7 +11,7 @@ import {
 } from "@/requirements/klis-since-2023";
 
 const YEAR = 2024;
-const SPECIALTY: Specialty = "resource-management";
+const SPECIALTY: Specialty = "rm";
 
 setup({
   knownCourses: courses as KnownCourse[],
