@@ -8,18 +8,14 @@ import {
 import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
 import {
   isGakushikiban,
-  isArt,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
-  isElectivePe,
-  isForeignLanguage,
-  isJapanese,
-  isKyoutsuu,
-  isKyoushoku,
   isInfoLiteracyLecture,
   isInfoLiteracyExercise,
   isDataScience,
+  isIzanai,
+  isFirstYearSeminar,
 } from "@/requirements/common";
 
 function isA1(id: string): boolean {
@@ -222,7 +218,7 @@ function isD2(id: string): boolean {
   );
 }
 
-function isE1(id: string, tableYear: number): boolean {
+function isE1(id: string, tableYear: number, mode: "real" | "known"): boolean {
   return (
     //学問への誘い
     id === "1227411" || //1クラス
@@ -230,7 +226,8 @@ function isE1(id: string, tableYear: number): boolean {
     //ファーストイヤーセミナー
     id === "1114102" || //1クラス
     id === "1114202" || //2クラス
-    (tableYear === 2025 && id === "1414014") //事例に学ぶ環境安全衛生と化学物質
+    (tableYear === 2025 && id === "1414014") || //事例に学ぶ環境安全衛生と化学物質
+    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
 
@@ -286,7 +283,7 @@ function classify(
   if (isA3(id)) return "a3";
   if (isA4(id)) return "a4";
   if (isC1(id)) return "c1";
-  if (isE1(id, tableYear)) return "e1";
+  if (isE1(id, tableYear, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id, mode)) return "e4";
@@ -358,7 +355,7 @@ export const creditRequirementsSince2023: SetupCreditRequirements = {
     b3: { min: 6, max: 6 },
     b4: { min: 24, max: 34 },
     c1: { min: 3, max: 3 },
-    d1: {min: 12, max:12},
+    d1: { min: 12, max: 12 },
     d2: { min: 5, max: 18 },
     e1: { min: 2, max: 2 },
     e2: { min: 2, max: 2 },
@@ -392,7 +389,7 @@ export const creditRequirementsSince2025: SetupCreditRequirements = {
     b3: { min: 6, max: 6 },
     b4: { min: 24, max: 34 },
     c1: { min: 3, max: 3 },
-    d1: {min: 8, max:8},
+    d1: { min: 8, max: 8 },
     d2: { min: 9, max: 22 },
     e1: { min: 3, max: 3 },
     e2: { min: 2, max: 2 },
@@ -414,4 +411,3 @@ export const creditRequirementsSince2025: SetupCreditRequirements = {
   compulsory: 42,
   elective: 82,
 };
-
