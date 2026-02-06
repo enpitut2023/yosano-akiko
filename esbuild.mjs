@@ -28,6 +28,7 @@ async function main() {
       "src/2023/klis-system/index.ts",
       "src/2023/klis-rm/index.ts",
       "src/2023/mast/index.ts",
+      "src/2023/math/index.ts",
       "src/2023/physics/index.ts",
 
       "src/2024/coins/index.ts",

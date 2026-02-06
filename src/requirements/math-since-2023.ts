@@ -16,6 +16,11 @@ import {
   isForeignLanguage,
   isJapanese,
   isKyoushoku,
+  isFirstYearSeminar,
+  isIzanai,
+  isInfoLiteracyLecture,
+  isInfoLiteracyExercise,
+  isDataScience,
 } from "@/requirements/common";
 import { arrayRemove } from "@/util";
 
@@ -42,31 +47,56 @@ function isB1(id: string): boolean {
   );
 }
 
-function isC1(id: string, isNative: boolean): boolean {
+function isC1(id: string, isNative: boolean, tableYear: number): boolean {
+  const transfer =
+    !isNative &&
+    (id === "FA013C1" || // 微積分1（総合）
+      id === "FA013D1" || // 微積分1（総合）
+      id === "FA014C1" || // 微積分2（総合）
+      id === "FA014D1" || // 微積分2（総合）
+      id === "GA15311" || //微分積分A 情報科学類1・2クラス
+      id === "GA15321" || //微分積分A 情報科学類3・4クラス
+      id === "GA15331" || //微分積分A 情報メディア創成学類生および総合学域群生
+      id === "GA15341"); //微分積分A 知識学類生および総合学域群生
+  if (tableYear <= 2023) {
+    return (
+      id === "FBA1461" || // 微積分I
+      id === "FBA1901" || // 微積分I（再履修用）
+      id === "FBA1501" || // 微積分II
+      transfer
+    );
+  }
   return (
     id === "FA01371" || //微積分1(2024以降)
     id === "FA01471" || //微積分2(2024以降)
-    //微分積分Aは総合に所属時にのみ認める
-    (!isNative &&
-      (id === "GA15311" || //微分積分A 情報科学類1・2クラス
-        id === "GA15321" || //微分積分A 情報科学類3・4クラス
-        id === "GA15331" || //微分積分A 情報メディア創成学類生および総合学域群生
-        id === "GA15341")) //微分積分A 知識学類生および総合学域群生
+    transfer
   );
 }
 
-function isC2(id: string, isNative: boolean): boolean {
+function isC2(id: string, isNative: boolean, tableYear: number): boolean {
+  const transfer =
+    !isNative &&
+    (id === "FA016C1" || // 線形代数1（総合）
+      id === "FA016D1" || // 線形代数1（総合）
+      id === "FA017C1" || // 線形代数2 （総合）
+      id === "FA017D1" || // 線形代数2 （総合）
+      id === "FF18744" || // 線形代数B
+      id === "FF18754" || // 線形代数B
+      id === "GB10234" || // 線形代数B
+      id === "GB10244" || // 線形代数B
+      id === "GC11801"); // 線形代数B
+  if (tableYear <= 2023) {
+    return (
+      id === "FBA1581" || // 線形代数I
+      id === "FBA1911" || // 線形代数I（再履修用）
+      id === "FBA1621" || // 線形代数II
+      transfer
+    );
+  }
   return (
     id === "FA01671" || //線形代数1(2024以降)
     id === "FA01771" || //線形代数2(2024以降)
-    //線形代数Aは総合に所属時にのみ認める
-    (!isNative &&
-      (id === "FF18724" || //線形代数A 応用理工学類1・2クラス
-        id === "FF18734" || //線形代数A 応用理工学類3・4クラス
-        id === "GA15211" || //線形代数A 情報科学類生1・2クラスおよび総合学域群生
-        id === "GA15221" || //線形代数A 情報科学類生3・4クラスおよび総合学域群生
-        id === "GA15231" || //線形代数A 情報メディア創成学類生および総合学域群生
-        id === "GA15241")) //線形代数A 知識学類生および総合学域群生
+    transfer
   );
 }
 
@@ -110,10 +140,11 @@ function isD1(id: string): boolean {
   );
 }
 
-function isE1(id: string): boolean {
+function isE1(id: string, mode: "known" | "real"): boolean {
   return (
     id === "1112102" || //ファーストイヤーセミナー
-    id === "1227371" //学問への誘い
+    id === "1227371" || //学問への誘い
+    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
 
@@ -125,11 +156,15 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string): boolean {
+function isE4(id: string, mode: "known" | "real"): boolean {
   return (
     id === "6112101" || //情報リテラシー(講義)
     id === "6412102" || //情報リテラシー(演習)
-    id === "6512102" //データサイエンス
+    id === "6512102" || //データサイエンス
+    (mode === "real" &&
+      (isInfoLiteracyLecture(id) ||
+        isInfoLiteracyExercise(id) ||
+        isDataScience(id)))
   );
 }
 
@@ -165,19 +200,21 @@ function classify(
   id: CourseId,
   name: string,
   isNative: boolean,
+  mode: "known" | "real",
+  tableYear: number,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
-  if (isC1(id, isNative)) return "c1";
-  if (isC2(id, isNative)) return "c2";
+  if (isC1(id, isNative, tableYear)) return "c1";
+  if (isC2(id, isNative, tableYear)) return "c2";
   if (isC3(id)) return "c3";
   if (isC4(id)) return "c4";
-  if (isE1(id)) return "e1";
+  if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(id, mode)) return "e4";
   // 選択
   if (isB1(id)) return "b1";
   if (isD1(id)) return "d1";
@@ -189,11 +226,11 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, true);
+    const cellId = classify(c.id, c.name, opts.isNative, "known", tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -204,7 +241,7 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
 ): Map<CourseId, string> {
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
@@ -217,7 +254,7 @@ export function classifyRealCourses(
   }
 
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, opts.isNative);
+    const cellId = classify(c.id, c.name, opts.isNative, "real", tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -227,8 +264,8 @@ export function classifyRealCourses(
 
 export function classifyFakeCourses(
   cs: FakeCourse[],
-  opts: ClassifyOptions,
-  year: number,
+  _opts: ClassifyOptions,
+  _tableYear: number,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {

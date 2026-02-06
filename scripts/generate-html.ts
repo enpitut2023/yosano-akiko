@@ -165,6 +165,7 @@ function main(): void {
     { year: 2023, major: "klis-system", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "klis-rm" },
     { year: 2023, major: "mast", comment: "（ほぼ全て対応）" },
+    { year: 2023, major: "math", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "physics", comment: "（ほぼ全て対応）" },
 
     { year: 2024, major: "coins" },

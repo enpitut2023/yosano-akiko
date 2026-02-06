@@ -7,7 +7,7 @@ import {
   classifyRealCourses,
   classifyFakeCourses,
   creditRequirements,
-} from "@/requirements/math-since-2024";
+} from "@/requirements/math-since-2023";
 
 const YEAR = 2025;
 
