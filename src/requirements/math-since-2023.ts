@@ -22,7 +22,6 @@ import {
   isInfoLiteracyExercise,
   isDataScience,
 } from "@/requirements/common";
-import { arrayRemove } from "@/util";
 
 function isA1(id: string): boolean {
   return id === "FB14908"; // 卒業研究
@@ -247,13 +246,20 @@ export function classifyRealCourses(
   const courseIdToCellId = new Map<CourseId, string>();
 
   // f1とf2に学士基盤が入るので、先にf1に入る分は入れておく
-  const firstGakushikiban = cs.find((c) => isGakushikiban(c.id));
-  if (firstGakushikiban !== undefined) {
-    courseIdToCellId.set(firstGakushikiban.id, "f1");
-    arrayRemove(cs, firstGakushikiban);
-  }
+  let seenF1 = false;
 
   for (const c of cs) {
+    if (!seenF1) {
+      if (isF1(c.id)) {
+        seenF1 = true;
+        courseIdToCellId.set(c.id, "f1");
+        continue;
+      }
+    } else if (isF2(c.id)) {
+      courseIdToCellId.set(c.id, "f2");
+      continue;
+    }
+
     const cellId = classify(c.id, c.name, opts.isNative, "real", tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
