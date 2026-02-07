@@ -161,28 +161,28 @@ function main(): void {
     { year: 2022, major: "coins", comment: "（選択科目のみ対応）" },
 
     { year: 2023, major: "coins" },
-    { year: 2023, major: "klis-science", comment: "（ほぼ全て対応）" },
-    { year: 2023, major: "klis-system", comment: "（ほぼ全て対応）" },
+    { year: 2023, major: "klis-science" },
+    { year: 2023, major: "klis-system" },
     { year: 2023, major: "klis-rm" },
-    { year: 2023, major: "mast", comment: "（ほぼ全て対応）" },
-    { year: 2023, major: "math", comment: "（ほぼ全て対応）" },
-    { year: 2023, major: "physics", comment: "（ほぼ全て対応）" },
+    { year: 2023, major: "mast" },
+    { year: 2023, major: "math" },
+    { year: 2023, major: "physics" },
 
     { year: 2024, major: "coins" },
     { year: 2024, major: "klis-science" },
     { year: 2024, major: "klis-system" },
     { year: 2024, major: "klis-rm" },
     { year: 2024, major: "mast" },
-    { year: 2024, major: "math", comment: "（ほぼ全て対応）" },
-    { year: 2024, major: "physics", comment: "（ほぼ全て対応）" },
+    { year: 2024, major: "math" },
+    { year: 2024, major: "physics" },
 
     { year: 2025, major: "coins" },
     { year: 2025, major: "klis-science" },
     { year: 2025, major: "klis-system" },
     { year: 2025, major: "klis-rm" },
     { year: 2025, major: "mast" },
-    { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
-    { year: 2025, major: "physics", comment: "（ほぼ全て対応）" },
+    { year: 2025, major: "math" },
+    { year: 2025, major: "physics" },
   ];
 
   const indexTemplate = readFileSync("src/index.html", {
