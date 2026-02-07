@@ -1,3 +1,9 @@
 {
-  "plugins": ["@trivago/prettier-plugin-sort-imports"]
+  "plugins": [
+    "@trivago/prettier-plugin-sort-imports",
+    "prettier-plugin-jinja-template"
+  ],
+  "overrides": [
+    { "files": ["*.html"], "options": { "parser": "jinja-template" } }
+  ]
 }

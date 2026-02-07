@@ -65,6 +65,10 @@ export function fakeCourseIdNewUnique(): FakeCourseId {
   return id;
 }
 
+export function fakeCourseIdCompare(a: FakeCourseId, b: FakeCourseId): number {
+  return a - b;
+}
+
 export type Grade = "wip" | "a+" | "a" | "b" | "c" | "d" | "pass" | "fail";
 
 export function isGrade(s: string): s is Grade {
@@ -460,4 +464,24 @@ export function akikoIsCourseVisible(
     return rc.id.includes(idOrName) || rc.name.includes(idOrName);
   }
   return false;
+}
+
+export function akikoGetUnclassifiedRealCourses(akiko: Akiko): RealCourse[] {
+  const rcs: RealCourse[] = [];
+  for (const rc of akiko.realCourses.values()) {
+    if (!akiko.coursePositions.has(rc.id)) {
+      rcs.push(rc);
+    }
+  }
+  return rcs;
+}
+
+export function akikoGetUnclassifiedFakeCourses(akiko: Akiko): FakeCourse[] {
+  const fcs: FakeCourse[] = [];
+  for (const fc of akiko.fakeCourses.values()) {
+    if (!akiko.fakeCoursePositions.has(fc.id)) {
+      fcs.push(fc);
+    }
+  }
+  return fcs;
 }

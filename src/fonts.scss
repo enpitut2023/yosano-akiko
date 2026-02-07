@@ -1,28 +1,30 @@
-@font-face {
-  font-family: "M PLUS Rounded 1c";
-  src: url(fonts/MPLUSRounded1c-Regular.ttf);
-  font-weight: 400;
-}
+@mixin load($base-path) {
+  @font-face {
+    font-family: "M PLUS Rounded 1c";
+    src: url("#{$base-path}/fonts/MPLUSRounded1c-Regular.ttf");
+    font-weight: 400;
+  }
 
-@font-face {
-  font-family: "M PLUS 1p";
-  src: url(fonts/MPLUS1p-Bold.ttf);
-  font-weight: 700;
-}
+  @font-face {
+    font-family: "M PLUS 1p";
+    src: url("#{$base-path}/fonts/MPLUS1p-Bold.ttf");
+    font-weight: 700;
+  }
 
-body,
-button,
-input {
-  font-family: "M PLUS Rounded 1c", sans-serif;
-}
+  body,
+  button,
+  input {
+    font-family: "M PLUS Rounded 1c", sans-serif;
+  }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-strong,
-th {
-  font-family: "M PLUS 1p", sans-serif;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  th {
+    font-family: "M PLUS 1p", sans-serif;
+  }
 }
