@@ -4,10 +4,26 @@ import {
   FakeCourseId,
   KnownCourse,
   RealCourse,
-} from "../../akiko";
-import { ClassifyOptions, SetupCreditRequirements } from "../../app-setup";
-import { arrayRemove, assert } from "../../util";
-import { isGakushikiban, isKyoushoku, isKyoutsuu } from "@/requirements/common";
+} from "@/akiko";
+import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
+import {
+  isArt,
+  isCompulsoryEnglishByName,
+  isDataScience,
+  isElectivePe,
+  isFirstYearSeminar,
+  isForeignLanguage,
+  isGakushikiban,
+  isInfoLiteracyExercise,
+  isInfoLiteracyLecture,
+  isIzanai,
+  isJapanese,
+  isKyoushoku,
+  isKyoutsuu,
+} from "@/requirements/common";
+import { arrayRemove, assert } from "@/util";
+
+export type Specialty = "scs" | "cs" | "mimt";
 
 const COURSE_ID_TO_GB_COURSE_ID = new Map([
   // コンピュータグラフィックス基礎 → コンピュータグラフィックス基礎
@@ -60,11 +76,24 @@ const COURSE_ID_TO_GB_COURSE_ID = new Map([
   ["GC59301", "GB47001"],
 ]);
 
-function isA1(id: string): boolean {
-  return (
-    id === "GB26403" || // ソフトウェアサイエンス実験A
-    id === "GB26503" // ソフトウェアサイエンス実験B
-  );
+function isA1(id: string, specialty: Specialty): boolean {
+  switch (specialty) {
+    case "scs":
+      return (
+        id === "GB26403" || // ソフトウェアサイエンス実験A
+        id === "GB26503" // ソフトウェアサイエンス実験B
+      );
+    case "cs":
+      return (
+        id === "GB36403" || // 情報システム実験A
+        id === "GB36503" // 情報システム実験B
+      );
+    case "mimt":
+      return (
+        id === "GB46403" || // 知能情報メディア実験A
+        id === "GB46503" // 知能情報メディア実験B
+      );
+  }
 }
 
 function isA2(id: string): boolean {
@@ -100,9 +129,11 @@ function isB2(id: string): boolean {
     id === "GB13312" || //情報特別演習I
     id === "GB13322" || //情報特別演習II
     id === "GB13332" || //情報科学特別演習
-    ((id.startsWith("GB2") || id.startsWith("GB3") || id.startsWith("GB4")) &&
-      id[3] !== "0" &&
-      id[3] !== "6")
+    id.startsWith("GB2") ||
+    id.startsWith("GB3") ||
+    id.startsWith("GB4")
+    //   && id[3] !== "0" &&
+    //   id[3] !== "6")
   );
 }
 
@@ -208,8 +239,6 @@ function isD3(id: string): boolean {
     id !== "GB13322" && //情報特別演習II
     id !== "GB13332" && //情報科学特別演習
     id.startsWith("GB1") &&
-    !isD1(id) &&
-    !isD2(id) && //同列の他セルに含まれない
     !id.startsWith("GB19") && //他列に含まれない
     //必修を除外
     !(
@@ -231,7 +260,7 @@ function isD4(id: string): boolean {
   );
 }
 
-function isE1(id: string): boolean {
+function isE1(id: string, mode: "known" | "real"): boolean {
   return (
     //学問への誘い
     id === "1227571" || //1クラス
@@ -242,7 +271,8 @@ function isE1(id: string): boolean {
     id === "1118102" || //1クラス
     id === "1118202" || //2クラス
     id === "1118302" || //3クラス
-    id === "1118402" //4クラス
+    id === "1118402" || //4クラス
+    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
 
@@ -255,29 +285,13 @@ function isE2(id: string): boolean {
 }
 
 function isE3(name: string): boolean {
-  // TODO:
-  // 編入とかで英語を認定された人は「英語」という名前の4単位の授業を与えられる
-  name = name.trim();
-  name = name.replaceAll(/\s+/g, " ");
-  name = name.toLowerCase();
-  return (
-    name === "english reading skills i" ||
-    name === "english reading skills ii" ||
-    name === "english presentation skills i" ||
-    name === "english presentation skills ii"
-  );
+  return isCompulsoryEnglishByName(name);
 }
 
 function isE4(id: string): boolean {
-  // TODO:
-  // 編入とかで情報を認定された人は「情報」という名前の4単位の授業を与えられる
+  // TODO: knownのcoins用科目分岐
   return (
-    // 情報リテラシー講義
-    id.startsWith("61") ||
-    // 情報リテラシー演習
-    id.startsWith("64") ||
-    // データサイエンス
-    id.startsWith("65")
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -288,17 +302,7 @@ function isF1(id: string): boolean {
 function isF2(id: string): boolean {
   return (
     // 体育（自由科目）、外国語、国語、芸術
-    (id.startsWith("28") ||
-      id.startsWith("3") ||
-      id.startsWith("4") ||
-      id.startsWith("5")) &&
-    // 必修の外国語を除外
-    !(
-      id.startsWith("31H") ||
-      id.startsWith("31J") ||
-      id.startsWith("31K") ||
-      id.startsWith("31L")
-    )
+    isElectivePe(id) || isForeignLanguage(id) || isJapanese(id) || isArt(id)
   );
 }
 
@@ -323,77 +327,68 @@ function isH2(id: string): boolean {
   );
 }
 
-export function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
+function classify(
+  id: string,
+  name: string,
+  mode: "known" | "real",
+  isNative: boolean,
+  specialty: Specialty,
+): string | undefined {
+  // TODO: コードシェアの実装
+  // if (mode === "known") {
+  //   // コードシェアの読み替え前は表示しない
+  //   if (COURSE_ID_TO_GB_COURSE_ID.has(id)) {
+  //     return undefined;
+  //   }
+  // } else {
+  //   id  = COURSE_ID_TO_GB_COURSE_ID.get(id) ?? id;
+  // }
+
+  // 必修
+  if (isA1(id, specialty)) return "a1";
+  if (isA2(id)) return "a2";
+  if (isA3(id)) return "a3";
+  if (isC1(id)) return "c1";
+  if (isC2(id)) return "c2";
+  if (isC3(id)) return "c3";
+  if (isC4(id)) return "c4";
+  if (isC5(id)) return "c5";
+  if (isC6(id)) return "c6";
+  if (isC7(id, isNative)) return "c7";
+  if (isC8(id, isNative)) return "c8";
+  if (isC9(id)) return "c9";
+  if (isC10(id)) return "c10";
+  if (isC11(id)) return "c11";
+  if (isC12(id)) return "c12";
+  if (isC13(id)) return "c13";
+  if (isE1(id, mode)) return "e1";
+  if (isE2(id)) return "e2";
+  if (isE3(name)) return "e3";
+  if (isE4(id)) return "e4";
+
+  // 選択
+  if (isB1(id)) return "b1";
+  if (isB2(id)) return "b2";
+  if (isD1(id)) return "d1";
+  if (isD2(id)) return "d2";
+  if (isD3(id)) return "d3";
+  if (isD4(id)) return "d4";
+  if (isF1(id)) return "f1";
+  if (isF2(id)) return "f2";
+  if (isH1(id)) return "h1";
+  if (isH2(id)) return "h2";
+}
+
+export function classifyKnownCourses(
+  cs: KnownCourse[],
+  _opts: ClassifyOptions,
+  specialty: Specialty,
+): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    // コードシェアの読み替え前は表示しない
-    if (COURSE_ID_TO_GB_COURSE_ID.has(c.id)) {
-      continue;
-    }
-
-    // 必修
-    if (isA1(c.id)) {
-      courseIdToCellId.set(c.id, "a1");
-    } else if (isA2(c.id)) {
-      courseIdToCellId.set(c.id, "a2");
-    } else if (isA3(c.id)) {
-      courseIdToCellId.set(c.id, "a3");
-    } else if (isC1(c.id)) {
-      courseIdToCellId.set(c.id, "c1");
-    } else if (isC2(c.id)) {
-      courseIdToCellId.set(c.id, "c2");
-    } else if (isC3(c.id)) {
-      courseIdToCellId.set(c.id, "c3");
-    } else if (isC4(c.id)) {
-      courseIdToCellId.set(c.id, "c4");
-    } else if (isC5(c.id)) {
-      courseIdToCellId.set(c.id, "c5");
-    } else if (isC6(c.id)) {
-      courseIdToCellId.set(c.id, "c6");
-    } else if (isC7(c.id, true)) {
-      courseIdToCellId.set(c.id, "c7");
-    } else if (isC8(c.id, true)) {
-      courseIdToCellId.set(c.id, "c8");
-    } else if (isC9(c.id)) {
-      courseIdToCellId.set(c.id, "c9");
-    } else if (isC10(c.id)) {
-      courseIdToCellId.set(c.id, "c10");
-    } else if (isC11(c.id)) {
-      courseIdToCellId.set(c.id, "c11");
-    } else if (isC12(c.id)) {
-      courseIdToCellId.set(c.id, "c12");
-    } else if (isC13(c.id)) {
-      courseIdToCellId.set(c.id, "c13");
-    } else if (isE1(c.id)) {
-      courseIdToCellId.set(c.id, "e1");
-    } else if (isE2(c.id)) {
-      courseIdToCellId.set(c.id, "e2");
-    } else if (isE3(c.name)) {
-      courseIdToCellId.set(c.id, "e3");
-    } else if (isE4(c.id)) {
-      courseIdToCellId.set(c.id, "e4");
-    }
-    // 選択
-    else if (isB1(c.id)) {
-      courseIdToCellId.set(c.id, "b1");
-    } else if (isB2(c.id)) {
-      courseIdToCellId.set(c.id, "b2");
-    } else if (isD1(c.id)) {
-      courseIdToCellId.set(c.id, "d1");
-    } else if (isD2(c.id)) {
-      courseIdToCellId.set(c.id, "d2");
-    } else if (isD3(c.id)) {
-      courseIdToCellId.set(c.id, "d3");
-    } else if (isD4(c.id)) {
-      courseIdToCellId.set(c.id, "d4");
-    } else if (isF1(c.id)) {
-      courseIdToCellId.set(c.id, "f1");
-    } else if (isF2(c.id)) {
-      courseIdToCellId.set(c.id, "f2");
-    } else if (isH1(c.id)) {
-      courseIdToCellId.set(c.id, "h1");
-    } else if (isH2(c.id)) {
-      courseIdToCellId.set(c.id, "h2");
+    const cellId = classify(c.id, c.name, "known", true, specialty);
+    if (cellId !== undefined) {
+      courseIdToCellId.set(c.id, cellId);
     }
   }
   return courseIdToCellId;
@@ -491,6 +486,7 @@ function handleFaCalculus(cs: RealCourse[], map: Map<CourseId, string>): void {
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
+  specialty: Specialty,
 ): Map<CourseId, string> {
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
@@ -501,70 +497,9 @@ export function classifyRealCourses(
   }
 
   for (const c of cs) {
-    const id = COURSE_ID_TO_GB_COURSE_ID.get(c.id) ?? c.id;
-    // 必修
-    if (isA1(id)) {
-      courseIdToCellId.set(c.id, "a1");
-    } else if (isA2(id)) {
-      courseIdToCellId.set(c.id, "a2");
-    } else if (isA3(id)) {
-      courseIdToCellId.set(c.id, "a3");
-    } else if (isC1(id)) {
-      courseIdToCellId.set(c.id, "c1");
-    } else if (isC2(id)) {
-      courseIdToCellId.set(c.id, "c2");
-    } else if (isC3(id)) {
-      courseIdToCellId.set(c.id, "c3");
-    } else if (isC4(id)) {
-      courseIdToCellId.set(c.id, "c4");
-    } else if (isC5(id)) {
-      courseIdToCellId.set(c.id, "c5");
-    } else if (isC6(id)) {
-      courseIdToCellId.set(c.id, "c6");
-    } else if (isC7(id, opts.isNative)) {
-      courseIdToCellId.set(c.id, "c7");
-    } else if (isC8(id, opts.isNative)) {
-      courseIdToCellId.set(c.id, "c8");
-    } else if (isC9(id)) {
-      courseIdToCellId.set(c.id, "c9");
-    } else if (isC10(id)) {
-      courseIdToCellId.set(c.id, "c10");
-    } else if (isC11(id)) {
-      courseIdToCellId.set(c.id, "c11");
-    } else if (isC12(id)) {
-      courseIdToCellId.set(c.id, "c12");
-    } else if (isC13(id)) {
-      courseIdToCellId.set(c.id, "c13");
-    } else if (isE1(id)) {
-      courseIdToCellId.set(c.id, "e1");
-    } else if (isE2(id)) {
-      courseIdToCellId.set(c.id, "e2");
-    } else if (isE3(c.name)) {
-      courseIdToCellId.set(c.id, "e3");
-    } else if (isE4(id)) {
-      courseIdToCellId.set(c.id, "e4");
-    }
-    // 選択
-    else if (isB1(id)) {
-      courseIdToCellId.set(c.id, "b1");
-    } else if (isB2(id)) {
-      courseIdToCellId.set(c.id, "b2");
-    } else if (isD1(id)) {
-      courseIdToCellId.set(c.id, "d1");
-    } else if (isD2(id)) {
-      courseIdToCellId.set(c.id, "d2");
-    } else if (isD3(id)) {
-      courseIdToCellId.set(c.id, "d3");
-    } else if (isD4(id)) {
-      courseIdToCellId.set(c.id, "d4");
-    } else if (isF1(id)) {
-      courseIdToCellId.set(c.id, "f1");
-    } else if (isF2(id)) {
-      courseIdToCellId.set(c.id, "f2");
-    } else if (isH1(id)) {
-      courseIdToCellId.set(c.id, "h1");
-    } else if (isH2(id)) {
-      courseIdToCellId.set(c.id, "h2");
+    const cellId = classify(c.id, c.name, "real", opts.isNative, specialty);
+    if (cellId !== undefined) {
+      courseIdToCellId.set(c.id, cellId);
     }
   }
   return courseIdToCellId;
@@ -572,6 +507,8 @@ export function classifyRealCourses(
 
 export function classifyFakeCourses(
   cs: FakeCourse[],
+  _opts: ClassifyOptions,
+  _specialty: Specialty,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {

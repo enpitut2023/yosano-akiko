@@ -11,13 +11,13 @@ import {
 } from "@/requirements/coins-since-2023";
 
 const YEAR = 2025;
-const SPECIALTY: Specialty = "scs";
+const SPECIALTY: Specialty = "mimt";
 
 setup({
   knownCourses: courses as KnownCourse[],
   knownCourseYear: 2025,
   creditRequirements: creditRequirements,
-  major: "coins",
+  major: "coins-mimt",
   requirementsTableYear: YEAR,
   cellIdToRectRecord,
   classifyKnownCourses: (cs, opts) => classifyKnownCourses(cs, opts, SPECIALTY),

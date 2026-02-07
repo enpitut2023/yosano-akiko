@@ -8,6 +8,8 @@ function unreachable(_: never): never {
 
 type Major =
   | "coins"
+  | "coins-cs"
+  | "coins-mimt"
   | "mast"
   | "klis-science"
   | "klis-system"
@@ -28,7 +30,11 @@ type Major =
 function majorToString(m: Major): string {
   switch (m) {
     case "coins":
-      return "情報科学類";
+      return "情報科学類 ソフトウェアサイエンス主専攻";
+    case "coins-cs":
+      return "情報科学類 情報システム主専攻";
+    case "coins-mimt":
+      return "情報科学類 知能情報メディア主専攻";
     case "mast":
       return "情報メディア創成学類";
     case "klis-science":
@@ -82,11 +88,14 @@ function isDocsPageName(s: string): s is DocsPageName {
 
 function majorToDocsPageName(m: Major): DocsPageName {
   switch (m) {
-    case "coins":
     case "mast":
     case "math":
     case "physics":
       return m;
+    case "coins":
+    case "coins-cs":
+    case "coins-mimt":
+      return "coins";
     case "klis-science":
     case "klis-system":
     case "klis-rm":
@@ -161,6 +170,8 @@ function main(): void {
     { year: 2022, major: "coins", comment: "（選択科目のみ対応）" },
 
     { year: 2023, major: "coins" },
+    { year: 2023, major: "coins-cs" },
+    { year: 2023, major: "coins-mimt" },
     { year: 2023, major: "klis-science", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "klis-system", comment: "（ほぼ全て対応）" },
     { year: 2023, major: "klis-rm" },
@@ -168,6 +179,8 @@ function main(): void {
     { year: 2023, major: "physics", comment: "（ほぼ全て対応）" },
 
     { year: 2024, major: "coins" },
+    { year: 2024, major: "coins-cs" },
+    { year: 2024, major: "coins-mimt" },
     { year: 2024, major: "klis-science" },
     { year: 2024, major: "klis-system" },
     { year: 2024, major: "klis-rm" },
@@ -176,6 +189,8 @@ function main(): void {
     { year: 2024, major: "physics", comment: "（ほぼ全て対応）" },
 
     { year: 2025, major: "coins" },
+    { year: 2025, major: "coins-cs" },
+    { year: 2025, major: "coins-mimt" },
     { year: 2025, major: "klis-science" },
     { year: 2025, major: "klis-system" },
     { year: 2025, major: "klis-rm" },
