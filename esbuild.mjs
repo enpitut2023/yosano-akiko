@@ -38,6 +38,8 @@ async function main() {
       "src/2024/mast/index.ts",
       "src/2024/math/index.ts",
       "src/2024/physics/index.ts",
+      "src/2024/esys-ies/index.ts",
+      "src/2024/esys-eme/index.ts",
 
       "src/2025/coins/index.ts",
       "src/2025/klis-science/index.ts",

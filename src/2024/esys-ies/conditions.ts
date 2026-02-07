@@ -6,41 +6,38 @@ import {
   RealCourse,
 } from "../../akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "../../app-setup";
-import { 
+import {
   isGakushikiban,
   isJiyuukamoku,
-  isHakubutsukan
-} from "../../conditions/common";
+  isHakubutsukan,
+} from "@/requirements/common";
 
 function isA1(id: string): boolean {
-  return ( 
-    //工学システム基礎実験A
-    id === "FG19103" || //工学システム基礎実験A 2023, 2024, 2025開講　2023は2019年度以降入学生対象(FG29193, FG39193, FG49583, FG59583と同一) 2024, 2025はクラス分けなし
-    id === "FG29193" || //知的工学システム基礎実験A 2023開講 2013年度以降2018年以前入学者対象(FG39193と同一)
-    id === "FG39193" || //機能工学システム基礎実験A 2023開講 2013年度以降2018年以前入学者対象(FG29193と同一)
-    id === "FG49583" || //環境開発工学基礎実験A 2023開講 2013年度以降2018年以前入学者対象(FG59583と同一)
-    id === "FG59583" || //エネルギー工学基礎実験A 2023開講 2013年度以降2018年以前入学者対象(FG49583と同一)
-    //工学システム基礎実験B
-    id === "FG19113" || //工学システム基礎実験B 2023, 2024, 2025開講　2023は2019年度以降入学生対象(FG29203, FG39203, FG49593, FG59593と同一) 2024, 2025はクラス分けなし
-    id === "FG29203" || //知的工学システム基礎実験B 2023開講 2013年度以降2018年以前入学者対象(FG18313, FG39203, FG49593, FG59593と同一。 FG39203と同一。)
-    id === "FG39203" || //機能工学システム基礎実験B 2023開講 2013年度以降2018年以前入学者対象(FG18313, FG39203, FG49593, FG59593と同一。 FG29203と同一。)
-    id === "FG49593" || //環境開発工学基礎実験B 2023開講 2013年度以降2018年以前入学者対象(FG18313, FG29203, FG39203と同一。 FG59593と同一。)
-    id === "FG59593" //エネルギー工学基礎実験B 2023開講 2013年度以降2018年以前入学者対象(FG18313, FG29203, FG39203と同一。 FG49593と同一。)
+  return (
+    //プログラミング序論C(所属主専攻の科目番号で履修登録)
+    id === "FG20204" ||
+    id === "FG30204" ||
+    //プログラミング序論D(所属主専攻の科目番号で履修登録)
+    id === "FG20214" ||
+    id === "FG30214"
   );
 }
 
 function isA2(id: string): boolean {
   return (
-    //エネルギー・メカニクス専門実験(所属主専攻の科目番号で履修登録)
-    id === "FG49873" ||
-    id === "FG59873" ||
-    //エネルギー・メカニクス応用実験(所属主専攻の科目番号で履修登録)
-    id === "FG49883" ||
-    id === "FG59883"
+    id === "FG19103" || //工学システム基礎実験A
+    id === "FG19113" //工学システム基礎実験B
   );
 }
 
 function isA3(id: string): boolean {
+  return (
+    //知的・機能工学システム実験(所属主専攻の科目番号で履修登録)
+    id === "FG29213" || id === "FG39213"
+  );
+}
+
+function isA4(id: string): boolean {
   return (
     //卒業研究A(春ABC)
     id === "FG19208" || //2024以降
@@ -67,201 +64,67 @@ function isA3(id: string): boolean {
     id === "FG49978" || //2023
     id === "FG59978" || //2023
     //特別卒業研究A 早期卒業用(春ABC)2023, 24, 25で同じ
-    id === "FG19358" || 
+    id === "FG19358" ||
     //特別卒業研究B 早期卒業用(秋ABC)2023, 24, 25で同じ
     id === "FG19348"
   );
 }
 
-function isA4(id: string): boolean {
+function isA5(id: string): boolean {
   return (
     id === "FG18101" //工学者のための倫理
   );
 }
 
-function isA5(id: string): boolean {
+function isA6(id: string): boolean {
   return (
-   //専門英語A
+    //専門英語A
     id === "FG18102" || //2年1,2クラス
     id === "FG18112" || //2年3,4クラス
     //専門英語B
-    // id === "FG20222" || //知的・機能工学システム主専攻
-    // id === "FG30222" || //知的・機能工学システム主専攻
-    id === "FG40222" || //エネルギー・メカニクス主専攻
-    id === "FG50222" || //エネルギー・メカニクス主専攻
-   //専門英語演習
-    // id === "FG20232" || //知的・機能工学システム主専攻
-    // id === "FG30232" //知的・機能工学システム主専攻
-    id === "FG40232" || //エネルギー・メカニクス主専攻
-    id === "FG50232" //エネルギー・メカニクス主専攻
-  );
-}
-
-function isA6(id: string): boolean {
-  return (
-   //数値計算法 2023, 2024, 2025開講　2024以降は所属主専攻の科目番号で履修登録
-    id === "FG40354" ||
-    id === "FG50354"
+    id === "FG20222" || //知的・機能工学システム主専攻
+    id === "FG30222" || //知的・機能工学システム主専攻
+    // id === "FG40222" || //エネルギー・メカニクス主専攻
+    // id === "FG50222" || //エネルギー・メカニクス主専攻
+    //専門英語演習
+    id === "FG20232" || //知的・機能工学システム主専攻
+    id === "FG30232" //知的・機能工学システム主専攻
+    // id === "FG40232" || //エネルギー・メカニクス主専攻
+    // id === "FG50232" //エネルギー・メカニクス主専攻
   );
 }
 
 function isB1(id: string): boolean {
-  return (
-    id.startsWith("FG11") ||
-    id.startsWith("FG41")
-  );
+  return id.startsWith("FG11") || id.startsWith("FG21");
 }
 
 function isB2(id: string): boolean {
-  return (
-    id.startsWith("FG12") ||
-    id.startsWith("FG42")
-  );
+  return id.startsWith("FG12") || id.startsWith("FG22");
 }
 
 function isB3(id: string): boolean {
-  return (
-    id.startsWith("FG13") ||
-    id.startsWith("FG43")
-  );
+  return id.startsWith("FG13") || id.startsWith("FG23");
 }
 
 function isB4(id: string): boolean {
   return (
-    id.startsWith("FG17") ||
-    id.startsWith("FG44") ||
-    id.startsWith("FG45")
+    id.startsWith("FG17") || id.startsWith("FG24") || id.startsWith("FG25")
   );
 }
 
 function isB5(id: string): boolean {
   return (
-    ( //FG, FF2-FF5, GB2-GB4で始まる科目
-      id.startsWith("FG") ||
+    //FG, FF2-FF5, GB2-GB4で始まる科目
+    ((id.startsWith("FG") ||
       /^FF[2-5]/.test(id) || //FF2-FF5
-      /^GB[2-4]/.test(id) //GB2-GB4
-    ) && !( //工学システム概論を除く
-      id === "FG10641" || //2019年度および2020年度入学生の必修科目 2023は開講
-      id === "FG16051" //2019年度以降入学生対象
-    ) ||
-    //FH, YA, YBで始まる建築士試験受験資格の指定科目に対応する科目
-      // id === "FG45876" || //建築設計製図I
-      // id === "FG45886" || //建築設計製図II
-      // id === "FG45896" || //建築設計製図III
-      id === "FH45092" || //施設設計演習
-
-      //設計計画論
-      // id === "FG43811" || //2023, 2024, 2025開講
-      // id === "FG43821" || //2023開講 2016〜2018年度入学者対象
-
-      id === "FH46031" || //空間デザイン論
-      id === "FH46021" || //住環境計画概論 BC12551と同一
-
-      //都市計画の歴史
-      id === "FH45211" || //2023, 2024, 2025開講 BC12831と同一
-      id === "FH63081" || //2024, 2025開講 2018年度以前入学者の選択必修科目 2018年度以前入学者はFH45211の履修により本科目の履修に代えることができる
-
-      id === "YBQ4061" || //建築計画論
-      id === "YBQ3601" || //建築設計論
-      id === "YBQ4041" || //建築通史
-      id === "YBQ0411" || //世界建築史
-
-      //建築環境工学
-      // id === "FG45911" || 
-      // id === "FG55911" || 
-
-      id === "YBQ3811" || //建築環境計画論
-      // id === "FG45901" || //建築設備
-      //建築設備計画論 該当科目なし？
-
-      //材料力学基礎
-      // id === "FG10864" || //2023, 2024, 2025開講 2023は2018年度以前入学者で環境開発工学、エネルギー工学主専攻の学生は所属主専攻の科目番号で履修登録(FG45554, FG55554と同一)
-      // id === "FG45554" || //2023開講
-      // id === "FG55554" || //2023開講
-
-      //応用材料力学I
-      // id === "FG45564" ||
-      // id === "FG55564" ||
-
-      //応用材料力学II
-      // id === "FG45604" ||
-      // id === "FG55604" ||
-
-      //構造力学I
-      // id === "FG45434" ||
-      // id === "FG55434" ||
-
-      //構造力学II
-      // id === "FG45721" ||
-      // id === "FG55721" ||
-
-      //振動工学
-      // id === "FG45611" ||
-      // id === "FG55611" ||
-
-      // id === "FG45451" || //土質力学
-
-      //地盤工学
-      // id === "FG45771" || //2023開講　2018年度以前の入学者対象 2018年度以前の入学者で、建築士受験資格の取得を目指す者は、FG45831より、本科目を履修することが望ましい
-      // id === "FG45831" || //2023, 2024, 2025開講 2019年度以降入学者対象
-      
-      id === "YBQ5021" || //構造計画 西暦奇数年度開講 2023, 2025開講
-      // id === "FG45791" || //鉄筋コンクリート構造学
-      // id === "FG45801" || //鋼構造学
-
-      //防災工学
-      // id === "FG45751" || //2023, 2024, 2025開講
-      // id === "FG45821" || //2023開講 2018年度以前入学者対象　2018年度以前の入学者で、建築士受験資格の取得を目指す者は、FG45751より、本科目を履修することが望ましい
-
-      id === "YBQ4201" || //建築構法論
-      id === "YBQ4202" || //建築構法論演習
-
-      //材料学基礎
-      // id === "FG12021" || //2023, 2024, 2025開講 2023は2018年度以前入学者は所属主専攻の科目番号の科目番号で履修登録　FG22301, FG32301, FG42261, FG52261と同一
-      // id === "FG22301" || //2023開講 2019年度以降入学生はFG12021
-      // id === "FG32301" || //2023開講
-      // id === "FG42261" || //2023開講
-      // id === "FG52261" || //2023開講
-
-      //応用材料学
-      // id === "FG42271" ||
-      // id === "FG52271" ||
-
-      // id === "FG42251" || //コンクリート工学
-
-      //複合材料学
-      // id === "FG42621" ||
-      // id === "FG52621" ||
-
-      id === "YBQ0821" || //建築材料論 西暦偶数年度開講 2024開講
-      id === "FH45061" || //建築経済
-      id === "FH45071" || //建築生産
-      id === "FH45051" || //建築関連法規
-      // id === "FG18101" || //工学者のための倫理
-
-      //エネルギー・メカニクス専門実験(所属主専攻の科目番号で履修登録)
-      // id === "FG49873" ||
-      // id === "FG59873" ||
-
-      id === "YBP3401" || //ランドスケープデザイン論
-      id === "YAX1601" || //世界遺産学入門
-      id === "YAZ1411" || //デザイン史概説A
-      id === "YAZ1421" || //デザイン史概説B
-      id === "YBQ4051" || //現代デザイン論
-      id === "YAQ1011" || //建築デザイン概論
-      id === "YAP1011" || //環境デザイン概論
-      id === "YBP3301" || //都市デザイン論
-      // id === "1425011" || //社会のなかの建築デザイン
-
-      //都市計画原論
-      id === "FH45201" || //2023, 2024, 2025開講 BC12721と同一  2018年度以前入学者はFH63071の履修に代えることができる
-      id === "FH63071" || //2024, 2025開講 2018年度以前入学者の選択必修科目 2019年度以降入学者はFH45201を履修すること
-
-      id === "FH47041" || //都市防災計画
-      id === "FH46041" || //都市緑地計画
-      id === "FH46051" || //現代まちづくり論
-      id === "FH47021" || //土地利用計画
-      id === "YBP2831" || //地域まちづくり論特講
+      /^GB[2-4]/.test(id)) && //GB2-GB4
+      !(
+        //工学システム概論を除く
+        (
+          id === "FG10641" || //2019年度および2020年度入学生の必修科目 2023は開講
+          id === "FG16051" //2019年度以降入学生対象
+        )
+      )) ||
     id.startsWith("FA00") || //FA00で始まる科目
     id.startsWith("FJ") //FJで始まる科目(学類長が指定する科目がわからない)
   );
@@ -351,7 +214,6 @@ function isC10(id: string): boolean {
 
 function isC11(id: string): boolean {
   return id === "FCB1291"; //力学3 応用理工学類・工学システム学類
-
 }
 
 function isC12(id: string): boolean {
@@ -364,7 +226,6 @@ function isC13(id: string): boolean {
 
 function isC14(id: string): boolean {
   return id === "FCB1381"; //電磁気学3 応用理工学類・工学システム学類
-
 }
 
 function isC15(id: string): boolean {
@@ -391,20 +252,19 @@ function isC19(id: string): boolean {
   return (
     //常微分方程式
     id === "FG10764" || //2023, 2024, 2025開講　2023は2019年度以降入学生対象(2年1, 2クラス) 2024, 2025はクラス分けなし
-    id ==="FG10774" //2023開講 2019年度以降入学生対象(2年3, 4クラス)
+    id === "FG10774" //2023開講 2019年度以降入学生対象(2年3, 4クラス)
   );
 }
 
 function isC20(id: string): boolean {
   return id === "FG10814"; //力学総論
-
 }
 
 function isC21(id: string): boolean {
   return (
     //電磁気学総論
     id === "FG10834" || //2023, 2024, 2025開講　2023は2019年度以降入学生対象(2年1, 2クラス) 2024, 2025はクラス分けなし
-    id ==="FG10844" //2023開講 2019年度以降入学生対象(2年3, 4クラス)
+    id === "FG10844" //2023開講 2019年度以降入学生対象(2年3, 4クラス)
   );
 }
 
@@ -427,7 +287,7 @@ function isC24(id: string): boolean {
     id === "FG10851" || //2023, 2024, 2025開講　2023は2019年度以降入学生の必修科目 2018年度以前入学者で環境開発工学、エネルギー工学主専攻の学生は所属主専攻の科目番号で履修登録 2024, 2025はクラス分けなし
     id === "FG45571" || //2018年度以前入学者で環境開発工学、エネルギー工学主専攻の学生は所属主専攻の科目番号で履修登録
     id === "FG55571" //2018年度以前入学者で環境開発工学、エネルギー工学主専攻の学生は所属主専攻の科目番号で履修登録
-  ); 
+  );
 }
 
 function isC25(id: string): boolean {
@@ -528,7 +388,7 @@ function isF3(id: string): boolean {
 
 function isF4(id: string): boolean {
   // 芸術
-  return id.startsWith("4") //多分ここはOKだけど確認お願いします
+  return id.startsWith("4"); //多分ここはOKだけど確認お願いします
 }
 
 function isF5(id: string): boolean {
@@ -676,7 +536,8 @@ export function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
       courseIdToCellId.set(c.id, "h2");
     } else if (isH3(c.id)) {
       courseIdToCellId.set(c.id, "h3");
-    } else if (isH1(c.id)) { //指定の科目以外なので最後にしてあります
+    } else if (isH1(c.id)) {
+      //指定の科目以外なので最後にしてあります
       courseIdToCellId.set(c.id, "h1");
     }
   }
@@ -698,26 +559,26 @@ export function classifyFakeCourses(
 
 export const creditRequirements: SetupCreditRequirements = {
   cells: {
-    a1: { min: 4, max: 4},
-    a2: { min: 6, max: 6},
-    a3: { min: 8, max: 8},
-    a4: { min: 1, max: 1},
-    a5: { min: 3, max: 3},
-    a6: { min: 3, max: 3},
-    b1: { min: 1, max: undefined },
+    a1: { min: 3, max: 3 },
+    a2: { min: 4, max: 4 },
+    a3: { min: 6, max: 6 },
+    a4: { min: 8, max: 8 },
+    a5: { min: 1, max: 1 },
+    a6: { min: 3, max: 3 },
+    b1: { min: 6, max: undefined },
     b2: { min: 1, max: undefined },
     b3: { min: 1, max: undefined },
-    b4: { min: 23, max: undefined },
+    b4: { min: 16, max: undefined },
     b5: { min: 0, max: undefined },
-    c1:  { min: 1, max: 1 },
-    c2:  { min: 1, max: 1 },
-    c3:  { min: 1, max: 1 },
-    c4:  { min: 1, max: 1 },
-    c5:  { min: 1, max: 1 },
-    c6:  { min: 1, max: 1 },
-    c7:  { min: 1, max: 1 },
-    c8:  { min: 1, max: 1 },
-    c9:  { min: 1, max: 1 },
+    c1: { min: 1, max: 1 },
+    c2: { min: 1, max: 1 },
+    c3: { min: 1, max: 1 },
+    c4: { min: 1, max: 1 },
+    c5: { min: 1, max: 1 },
+    c6: { min: 1, max: 1 },
+    c7: { min: 1, max: 1 },
+    c8: { min: 1, max: 1 },
+    c9: { min: 1, max: 1 },
     c10: { min: 1, max: 1 },
     c11: { min: 1, max: 1 },
     c12: { min: 1, max: 1 },
