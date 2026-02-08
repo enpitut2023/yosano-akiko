@@ -15,8 +15,8 @@ type Major =
   | "pops-economics"
   | "pops-management"
   | "pops-city-planning"
-  | "esys-intelligence"
-  | "esys-mechanics"
+  | "esys-ies"
+  | "esys-eme"
   | "math"
   | "physics";
 
@@ -43,9 +43,9 @@ function majorToString(m: Major): string {
       return "社会工学類 経営工学専攻";
     case "pops-city-planning":
       return "社会工学類 都市計画専攻";
-    case "esys-intelligence":
+    case "esys-ies":
       return "工学システム学類 知的・機能工学システム専攻";
-    case "esys-mechanics":
+    case "esys-eme":
       return "工学システム学類 エネルギー・メカニクス主専攻";
     case "math":
       return "数学類";
@@ -95,8 +95,8 @@ function majorToDocsPageName(m: Major): DocsPageName {
     case "pops-management":
     case "pops-city-planning":
       return "pops";
-    case "esys-intelligence":
-    case "esys-mechanics":
+    case "esys-ies":
+    case "esys-eme":
       return "esys";
   }
 }
@@ -167,6 +167,8 @@ function main(): void {
     { year: 2023, major: "mast" },
     { year: 2023, major: "math" },
     { year: 2023, major: "physics" },
+    { year: 2023, major: "esys-ies" },
+    { year: 2023, major: "esys-eme" },
 
     { year: 2024, major: "coins" },
     { year: 2024, major: "klis-science" },
@@ -175,6 +177,8 @@ function main(): void {
     { year: 2024, major: "mast" },
     { year: 2024, major: "math" },
     { year: 2024, major: "physics" },
+    { year: 2024, major: "esys-ies" },
+    { year: 2024, major: "esys-eme" },
 
     { year: 2025, major: "coins" },
     { year: 2025, major: "klis-science" },
@@ -183,6 +187,8 @@ function main(): void {
     { year: 2025, major: "mast" },
     { year: 2025, major: "math" },
     { year: 2025, major: "physics" },
+    { year: 2025, major: "esys-ies" },
+    { year: 2025, major: "esys-eme" },
   ];
 
   const indexTemplate = readFileSync("src/index.html", {
