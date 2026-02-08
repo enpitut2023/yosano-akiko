@@ -167,6 +167,8 @@ function main(): void {
     { year: 2023, major: "mast" },
     { year: 2023, major: "math" },
     { year: 2023, major: "physics" },
+    { year: 2023, major: "esys-ies" },
+    { year: 2023, major: "esys-eme" },
 
     { year: 2024, major: "coins" },
     { year: 2024, major: "klis-science" },
@@ -185,6 +187,8 @@ function main(): void {
     { year: 2025, major: "mast" },
     { year: 2025, major: "math" },
     { year: 2025, major: "physics" },
+    { year: 2025, major: "esys-ies" },
+    { year: 2025, major: "esys-eme" },
   ];
 
   const indexTemplate = readFileSync("src/index.html", {
