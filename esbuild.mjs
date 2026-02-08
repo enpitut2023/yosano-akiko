@@ -34,8 +34,8 @@ async function main() {
       "src/2023/esys-eme/index.ts",
       "src/2023/coens-ap/index.ts",
       "src/2023/coens-eqe/index.ts",
-      "src/2023/coens-mme/index.ts",
       "src/2023/coens-mse/index.ts",
+      "src/2023/coens-mme/index.ts",
 
       "src/2024/coins/index.ts",
       "src/2024/klis-science/index.ts",
@@ -48,8 +48,8 @@ async function main() {
       "src/2024/esys-eme/index.ts",
       "src/2024/coens-ap/index.ts",
       "src/2024/coens-eqe/index.ts",
-      "src/2024/coens-mme/index.ts",
       "src/2024/coens-mse/index.ts",
+      "src/2024/coens-mme/index.ts",
 
       "src/2025/coins/index.ts",
       "src/2025/klis-science/index.ts",
@@ -62,8 +62,8 @@ async function main() {
       "src/2025/esys-eme/index.ts",
       "src/2025/coens-ap/index.ts",
       "src/2025/coens-eqe/index.ts",
-      "src/2025/coens-mme/index.ts",
       "src/2025/coens-mse/index.ts",
+      "src/2025/coens-mme/index.ts",
 
       "src/app.scss",
       "src/styles.scss",

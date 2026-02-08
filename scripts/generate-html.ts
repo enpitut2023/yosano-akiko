@@ -21,8 +21,8 @@ type Major =
   | "physics"
   | "coens-ap"
   | "coens-eqe"
-  | "coens-mme"
-  | "coens-mse";
+  | "coens-mse"
+  | "coens-mme";
 
 // TODO
 // function majorCompare(a: Major, b: Major): number {
@@ -59,10 +59,10 @@ function majorToString(m: Major): string {
       return "応用理工学類 応用物理主専攻";
     case "coens-eqe":
       return "応用理工学類 電子・量子工学主専攻";
-    case "coens-mme":
-      return "応用理工学類 物質・分子工学主専攻";
     case "coens-mse":
       return "応用理工学類 物性工学主専攻";
+    case "coens-mme":
+      return "応用理工学類 物質・分子工学主専攻";
     default:
       unreachable(m);
   }
@@ -114,8 +114,8 @@ function majorToDocsPageName(m: Major): DocsPageName {
       return "esys";
     case "coens-ap":
     case "coens-eqe":
-    case "coens-mme":
     case "coens-mse":
+    case "coens-mme":
       return "coens";
     default:
       unreachable(m);
