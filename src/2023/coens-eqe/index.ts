@@ -8,7 +8,7 @@ import {
   classifyRealCourses,
   creditRequirements2023,
   Specialty,
-} from "@/requirements/coens-since2023";
+} from "@/requirements/coens-since-2023";
 
 const YEAR = 2023;
 const SPECIALTY: Specialty = "eqe";
