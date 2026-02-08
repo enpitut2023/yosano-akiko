@@ -1,9 +1,9 @@
-import { assertCreditStatsEqual, getCreditStats } from "../../test-util";
 import {
   classifyFakeCourses,
   classifyRealCourses,
-  creditRequirements,
-} from "./conditions";
+  creditRequirementsSince2023,
+} from "@/requirements/mast-since-2023";
+import { assertCreditStatsEqual, getCreditStats } from "@/test-util";
 import { readFileSync } from "node:fs";
 
 function test1(): void {
@@ -12,9 +12,9 @@ function test1(): void {
   const got = getCreditStats({
     csv,
     isNative,
-    creditRequirements,
-    classifyRealCourses,
-    classifyFakeCourses,
+    creditRequirements: creditRequirementsSince2023,
+    classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts, 2023),
+    classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts, 2023),
   });
   assertCreditStatsEqual(got, {
     cells: {

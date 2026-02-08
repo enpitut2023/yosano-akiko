@@ -1,9 +1,9 @@
-import { assertCreditStatsEqual, getCreditStats } from "../../test-util";
 import {
   classifyFakeCourses,
   classifyRealCourses,
   creditRequirements,
-} from "./conditions";
+} from "@/2023/coins/conditions";
+import { assertCreditStatsEqual, getCreditStats } from "@/test-util";
 import { readFileSync } from "node:fs";
 
 function test2(): void {
