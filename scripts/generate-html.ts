@@ -1,5 +1,6 @@
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import path, { basename, extname, join } from "node:path";
+import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import path, { join } from "node:path";
+import { exit } from "node:process";
 import nunjucks from "nunjucks";
 
 function unreachable(_: never): never {
@@ -68,31 +69,18 @@ function majorToString(m: Major): string {
   }
 }
 
-type DocsPageName =
-  | "coins"
-  | "mast"
-  | "klis"
-  | "pops"
-  | "esys"
-  | "math"
-  | "physics"
-  | "coens";
+const DOCS_PAGE_NAMES = [
+  "coins",
+  "mast",
+  "klis",
+  "pops",
+  "esys",
+  "math",
+  "physics",
+  "coens",
+] as const;
 
-function isDocsPageName(s: string): s is DocsPageName {
-  switch (s) {
-    case "coins":
-    case "mast":
-    case "klis":
-    case "pops":
-    case "esys":
-    case "math":
-    case "physics":
-    case "coens":
-      return true;
-    default:
-      return false;
-  }
-}
+type DocsPageName = (typeof DOCS_PAGE_NAMES)[number];
 
 function majorToDocsPageName(m: Major): DocsPageName {
   switch (m) {
@@ -122,7 +110,7 @@ function majorToDocsPageName(m: Major): DocsPageName {
   }
 }
 
-function docsPageNameToString(d: DocsPageName): string {
+function docsPageNameToJa(d: DocsPageName): string {
   switch (d) {
     case "coins":
       return "情報科学類";
@@ -238,24 +226,29 @@ function main(): void {
   nunjucks.configure(".", { autoescape: true });
 
   const docsDir = "src/docs";
-  for (const entry of readdirSync(docsDir, { withFileTypes: true })) {
-    if (!entry.isFile()) continue;
-    const ext = extname(entry.name);
-    if (ext !== ".html") continue;
-    const base = basename(entry.name, ext);
-    if (!isDocsPageName(base)) continue;
-    const inPath = join(docsDir, entry.name);
-    const outPath = join("dist", "docs", entry.name);
+  const missingDocs: string[] = [];
+  for (const name of DOCS_PAGE_NAMES) {
+    const inPath = join(docsDir, name + ".html");
+    const outPath = join("dist", "docs", name + ".html");
+    const stat = statSync(inPath, { throwIfNoEntry: false });
+    if (stat === undefined) {
+      missingDocs.push(name);
+      continue;
+    }
+    const template = readFileSync(inPath, { encoding: "utf8" });
     console.log(`Rendering ${outPath}`);
-    const name = docsPageNameToString(base);
-    const output = nunjucks.renderString(
-      readFileSync(inPath, { encoding: "utf8" }),
-      {
-        title: `あきこ未対応の部分など | ${name}`,
-        description: `${name}のあきこが科目判定に対応していない部分、単位計算が正しくない部分などの説明です。`,
-      },
-    );
-    writeFileSync(join("dist/docs", entry.name), output, { encoding: "utf8" });
+    const ja = docsPageNameToJa(name);
+    const output = nunjucks.renderString(template, {
+      title: `あきこ未対応の部分など | ${ja}`,
+      description: `${ja}のあきこが科目判定に対応していない部分、単位計算が正しくない部分などの説明です。`,
+    });
+    writeFileSync(outPath, output);
+  }
+  if (missingDocs.length > 0) {
+    for (const d of missingDocs) {
+      console.log(`Missing documentation for ${d}`);
+    }
+    exit(1);
   }
 
   const indexPath = path.join(dstDir, "index.html");
