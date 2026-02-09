@@ -6,7 +6,7 @@ import {
   classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
-  creditRequirements2023,
+  creditRequirementsSince2023,
   Specialty,
 } from "@/requirements/coens-since-2023";
 
@@ -16,7 +16,7 @@ const SPECIALTY: Specialty = "eqe";
 setup({
   knownCourses: courses as KnownCourse[],
   knownCourseYear: 2025,
-  creditRequirements: creditRequirements2023,
+  creditRequirements: creditRequirementsSince2023,
   major: "coens-eqe",
   requirementsTableYear: YEAR,
   cellIdToRectRecord: cellIdToRect,

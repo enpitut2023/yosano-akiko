@@ -1,31 +1,32 @@
 import {
-  CourseId,
   FakeCourse,
+  CourseId,
   FakeCourseId,
   KnownCourse,
   RealCourse,
 } from "@/akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
 import {
-  isGakushikiban,
-  isHakubutsukan,
-  isJiyuukamoku,
   isArt,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
-  isElectivePe,
-  isForeignLanguage,
-  isKyoushoku,
   isCompulsoryPe3,
-  isFirstYearSeminar,
-  isIzanai,
   isCompulsoryPe4,
-  isJapanese,
-  isInfoLiteracyLecture,
-  isInfoLiteracyExercise,
   isDataScience,
+  isElectivePe,
+  isFirstYearSeminar,
+  isForeignLanguage,
+  isGakushikiban,
+  isHakubutsukan,
+  isInfoLiteracyExercise,
+  isInfoLiteracyLecture,
+  isIzanai,
+  isJapanese,
+  isJiyuukamoku,
+  isKyoushoku,
 } from "@/requirements/common";
+import { unreachable } from "@/util";
 
 export type Specialty =
   // Applied Physics
@@ -73,6 +74,8 @@ function isA2(id: string, specialty: Specialty): boolean {
         id === "FF50133" || // 物性・分子工学専攻実験B　1班対象
         id === "FF50143" // 物性・分子工学専攻実験B　2班対象
       );
+    default:
+      unreachable(specialty);
   }
 }
 
@@ -106,6 +109,8 @@ function isA3(id: string, specialty: Specialty): boolean {
         id === "FF59948" || // 卒業研究B 春学期　物性・分子工学主専攻
         id === "FF59958" // 卒業研究B 秋学期　物性・分子工学主専攻
       );
+    default:
+      unreachable(specialty);
   }
 }
 
@@ -119,6 +124,8 @@ function isB1(id: string, specialty: Specialty): boolean {
       return id.startsWith("FF45");
     case "mme":
       return id.startsWith("FF55");
+    default:
+      unreachable(specialty);
   }
 }
 
@@ -133,6 +140,8 @@ function isB2(id: string, specialty: Specialty): boolean {
       return id.startsWith("FF46");
     case "mme":
       return id.startsWith("FF56");
+    default:
+      unreachable(specialty);
   }
 }
 
@@ -163,10 +172,12 @@ function isB3(id: string, specialty: Specialty): boolean {
     case "mme":
       //応用理工学類の専門科目のうち、物質・分子工学主専攻で開設していない科目
       return id.startsWith("FF") && !id.startsWith("FF5");
+    default:
+      unreachable(specialty);
   }
 }
 
-function isC1D2(id: string, year: number): string | undefined {
+function classifyC1D2(id: string, year: number): string | undefined {
   // 応用理工学概論
   if (id === "FF17011") {
     return "c1";
@@ -256,9 +267,11 @@ function isC3(id: string, specialty: Specialty): boolean {
     case "mme":
       return (
         id === "FF50051" || // 専門英語1
-        id === "FF50051" || // 専門英語1
-        id === "FF50051" // 専門英語1
+        id === "FF50051" || // 専門英語2
+        id === "FF50051" // 専門英語3
       );
+    default:
+      unreachable(specialty);
   }
 }
 
@@ -279,13 +292,11 @@ function isE1(id: string, mode: "known" | "real"): boolean {
 }
 
 function isE2(id: string): boolean {
-  return (
-    isCompulsoryPe1(id) || isCompulsoryPe2(id) || isCompulsoryPe3(id) // 必修 体育
-  );
+  return isCompulsoryPe1(id) || isCompulsoryPe2(id) || isCompulsoryPe3(id);
 }
 
 function isE3(name: string): boolean {
-  return isCompulsoryEnglishByName(name); // 必修　外国語(英語)
+  return isCompulsoryEnglishByName(name);
 }
 
 function isE4(id: string, mode: "known" | "real"): boolean {
@@ -303,19 +314,15 @@ function isE4(id: string, mode: "known" | "real"): boolean {
 }
 
 function isF1(id: string): boolean {
-  return isGakushikiban(id); // 学士基盤科目
+  return isGakushikiban(id);
 }
 
 function isF2(id: string): boolean {
-  return (
-    isForeignLanguage(id) || // 選択　外国語
-    isJapanese(id) || //選択 国語
-    isArt(id) // 選択 芸術
-  );
+  return isForeignLanguage(id) || isJapanese(id) || isArt(id);
 }
 
 function isF3(id: string): boolean {
-  return isElectivePe(id); // 選択　体育
+  return isElectivePe(id);
 }
 
 function isH1(id: string): boolean {
@@ -339,7 +346,8 @@ function classify(
   if (isA1(id)) return "a1";
   if (isA2(id, specialty)) return "a2";
   if (isA3(id, specialty)) return "a3";
-  if (isC1D2(id, year) !== undefined) return isC1D2(id, year);
+  const c1d2 = classifyC1D2(id, year);
+  if (c1d2 !== undefined) return c1d2;
   if (isC2(id)) return "c2";
   if (isC3(id, specialty)) return "c3";
   if (isE1(id, mode)) return "e1";
@@ -442,7 +450,7 @@ export const creditRequirementsSince2024: SetupCreditRequirements = {
   elective: 75,
 };
 
-export const creditRequirements2023: SetupCreditRequirements = {
+export const creditRequirementsSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 1, max: 1 },
     a2: { min: 4, max: 4 },
