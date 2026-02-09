@@ -13,9 +13,9 @@ type Major =
   | "klis-science"
   | "klis-system"
   | "klis-rm"
-  | "pops-economics"
-  | "pops-management"
-  | "pops-city-planning"
+  | "pops-ses" // Social and Economic Sciences
+  | "pops-mse" // Management Science and Engineering
+  | "pops-urp" // Urban and Regional Planning
   | "esys-ies"
   | "esys-eme"
   | "math"
@@ -42,11 +42,11 @@ function majorToString(m: Major): string {
       return "知識情報・図書館学類 知識情報システム専攻";
     case "klis-rm":
       return "知識情報・図書館学類 情報資源経営主専攻";
-    case "pops-economics":
+    case "pops-ses":
       return "社会工学類 社会経済システム専攻";
-    case "pops-management":
+    case "pops-mse":
       return "社会工学類 経営工学専攻";
-    case "pops-city-planning":
+    case "pops-urp":
       return "社会工学類 都市計画専攻";
     case "esys-ies":
       return "工学システム学類 知的・機能工学システム専攻";
@@ -93,9 +93,9 @@ function majorToDocsPageName(m: Major): DocsPageName {
     case "klis-system":
     case "klis-rm":
       return "klis";
-    case "pops-economics":
-    case "pops-management":
-    case "pops-city-planning":
+    case "pops-ses":
+    case "pops-mse":
+    case "pops-urp":
       return "pops";
     case "esys-ies":
     case "esys-eme":
@@ -200,6 +200,9 @@ function main(): void {
     { year: 2024, major: "coens-eqe" },
     { year: 2024, major: "coens-mse" },
     { year: 2024, major: "coens-mme" },
+    { year: 2024, major: "pops-ses" },
+    { year: 2024, major: "pops-mse" },
+    { year: 2024, major: "pops-urp" },
 
     { year: 2025, major: "coins" },
     { year: 2025, major: "klis-science" },

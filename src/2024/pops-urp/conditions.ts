@@ -6,13 +6,20 @@ import {
   RealCourse,
 } from "../../akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "../../app-setup";
-import { isGakushikiban } from "../../conditions/common";
 
 function isA1(id: string): boolean {
-  return id === "FH35012"; // 問題発見と解決
+  return id === "FH45222"; // 都市計画情報演習
+  // 2018年度以前入学者に対してはFH62033に読み替える
 }
 
 function isA2(id: string): boolean {
+  return (
+    id === "BC12712" || // 都市計画演習 この2つの科目番号の区別不明
+    id === "FH45122"
+  );
+}
+
+function isA3(id: string): boolean {
   return (
     id === "FH11918" || // 卒業研究A 春
     id === "FH11928" || // 卒業研究B 秋
@@ -24,7 +31,7 @@ function isA2(id: string): boolean {
 
 function isB1(id: string): boolean {
   return (
-    id.startsWith("FE32") || id.startsWith("FE33") || id.startsWith("FE34")
+    id.startsWith("FE46") || id.startsWith("FE47") || id.startsWith("FE48")
   );
   // TODO: 演習を7単位以上含む条件
 }
@@ -34,9 +41,9 @@ function isB2(id: string): boolean {
     id.startsWith("FE24") ||
     id.startsWith("FE26") ||
     id.startsWith("FE27") ||
-    id.startsWith("FE46") ||
-    id.startsWith("FE47") ||
-    id.startsWith("FE48")
+    id.startsWith("FE32") ||
+    id.startsWith("FE33") ||
+    id.startsWith("FE34")
   );
 }
 
@@ -199,6 +206,8 @@ export function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
       courseIdToCellId.set(c.id, "a1");
     } else if (isA2(c.id)) {
       courseIdToCellId.set(c.id, "a2");
+    } else if (isA3(c.id)) {
+      courseIdToCellId.set(c.id, "a3");
     } else if (isC1(c.id)) {
       courseIdToCellId.set(c.id, "c1");
     } else if (isC2(c.id)) {
@@ -255,8 +264,9 @@ export function classifyFakeCourses(
 
 export const creditRequirements: SetupCreditRequirements = {
   cells: {
-    a1: { min: 2, max: 2 },
-    a2: { min: 8, max: 8 },
+    a1: { min: 3, max: 3 },
+    a2: { min: 4, max: 4 },
+    a3: { min: 8, max: 8 },
     b1: { min: 16, max: undefined },
     b2: { min: 8, max: undefined },
     b3: { min: 0, max: undefined },
@@ -277,14 +287,14 @@ export const creditRequirements: SetupCreditRequirements = {
     h4: { min: 0, max: 4 },
   },
   columns: {
-    a: { min: 10, max: 10 },
-    b: { min: 50, max: 75 },
+    a: { min: 15, max: 15 },
+    b: { min: 45, max: 70 },
     c: { min: 8, max: 8 },
     d: { min: 11, max: 16 },
     e: { min: 13, max: 13 },
     f: { min: 1, max: 7 },
     h: { min: 6, max: 20 },
   },
-  compulsory: 31,
-  elective: 93,
+  compulsory: 36,
+  elective: 88,
 };

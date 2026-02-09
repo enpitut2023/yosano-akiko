@@ -50,6 +50,9 @@ async function main() {
       "src/2024/coens-eqe/index.ts",
       "src/2024/coens-mse/index.ts",
       "src/2024/coens-mme/index.ts",
+      "src/2024/pops-ses/index.ts",
+      "src/2024/pops-mse/index.ts",
+      "src/2024/pops-urp/index.ts",
 
       "src/2025/coins/index.ts",
       "src/2025/klis-science/index.ts",

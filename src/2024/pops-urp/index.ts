@@ -13,7 +13,7 @@ setup({
   knownCourses: courses as KnownCourse[],
   knownCourseYear: 2025,
   creditRequirements,
-  major: "pops-city-planning",
+  major: "pops-urp",
   requirementsTableYear: 2024,
   cellIdToRectRecord: cellIdToRect,
   classifyKnownCourses,

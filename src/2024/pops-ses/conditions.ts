@@ -6,7 +6,6 @@ import {
   RealCourse,
 } from "../../akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "../../app-setup";
-import { isGakushikiban } from "../../conditions/common";
 
 function isA1(id: string): boolean {
   return (
