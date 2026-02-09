@@ -1,6 +1,6 @@
 import {
-  FakeCourse,
   CourseId,
+  FakeCourse,
   FakeCourseId,
   KnownCourse,
   RealCourse,

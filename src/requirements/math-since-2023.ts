@@ -7,20 +7,20 @@ import {
 } from "@/akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
 import {
-  isGakushikiban,
   isArt,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
+  isDataScience,
   isElectivePe,
+  isFirstYearSeminar,
   isForeignLanguage,
+  isGakushikiban,
+  isInfoLiteracyExercise,
+  isInfoLiteracyLecture,
+  isIzanai,
   isJapanese,
   isKyoushoku,
-  isFirstYearSeminar,
-  isIzanai,
-  isInfoLiteracyLecture,
-  isInfoLiteracyExercise,
-  isDataScience,
 } from "@/requirements/common";
 
 function isA1(id: string): boolean {

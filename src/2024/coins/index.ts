@@ -1,8 +1,8 @@
 import {
-  creditRequirements,
+  classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
-  classifyFakeCourses,
+  creditRequirements,
 } from "../../2023/coins/conditions";
 import { KnownCourse } from "../../akiko";
 import { setup } from "../../app";

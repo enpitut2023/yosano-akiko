@@ -1,14 +1,14 @@
-import { KnownCourse } from "../../akiko";
-import { setup } from "../../app";
-import { courses } from "../../current-courses.js";
-import cellIdToRectRecord from "./cell-id-to-rect.json";
 import {
+  Specialty,
   classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
   creditRequirementsIes,
-  Specialty,
 } from "@/requirements/esys-since-2023";
+import { KnownCourse } from "../../akiko";
+import { setup } from "../../app";
+import { courses } from "../../current-courses.js";
+import cellIdToRectRecord from "./cell-id-to-rect.json";
 
 const YEAR = 2025;
 const SPECIALTY: Specialty = "ies";

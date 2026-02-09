@@ -1,3 +1,4 @@
+import { isGakushikiban } from "@/requirements/common";
 import {
   CourseId,
   FakeCourse,
@@ -6,7 +7,6 @@ import {
   RealCourse,
 } from "../../akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "../../app-setup";
-import { isGakushikiban } from "@/requirements/common";
 
 export function classifyKnownCourses(cs: KnownCourse[]): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();

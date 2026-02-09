@@ -1,10 +1,10 @@
+import { readFileSync } from "node:fs";
 import {
   classifyFakeCourses,
   classifyRealCourses,
   creditRequirementsSince2024,
 } from "@/requirements/coens-since-2023";
 import { assertCreditStatsEqual, getCreditStats } from "@/test-util";
-import { readFileSync } from "node:fs";
 
 function test1(): void {
   const csv = readFileSync("grade-csvs/2024/coens-1.csv", {

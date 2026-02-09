@@ -1,3 +1,4 @@
+import z from "zod";
 import {
   Akiko,
   BaseCreditStats,
@@ -30,7 +31,6 @@ import { CourseLists } from "@/course-lists";
 import { parseImportedCsv } from "@/csv";
 import warningIcon from "@/icons/warning.svg";
 import { assert } from "@/util";
-import z from "zod";
 
 type LocalDataV1ImportedCourse = {
   id: string;

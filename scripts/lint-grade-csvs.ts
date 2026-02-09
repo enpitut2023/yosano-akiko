@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { exit } from "node:process";
-import { parse as parseCsv, ParseResult } from "papaparse";
+import { ParseResult, parse as parseCsv } from "papaparse";
 
 function lint(csv: string): boolean {
   csv = csv.replaceAll("\r\n", "\n");

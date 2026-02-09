@@ -1,3 +1,4 @@
+import { isGakushikiban, isKyoushoku, isKyoutsuu } from "@/requirements/common";
 import {
   CourseId,
   FakeCourse,
@@ -7,7 +8,6 @@ import {
 } from "../../akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "../../app-setup";
 import { arrayRemove, assert } from "../../util";
-import { isGakushikiban, isKyoushoku, isKyoutsuu } from "@/requirements/common";
 
 const COURSE_ID_TO_GB_COURSE_ID = new Map([
   // コンピュータグラフィックス基礎 → コンピュータグラフィックス基礎
