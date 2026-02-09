@@ -186,6 +186,9 @@ function main(): void {
     { year: 2023, major: "coens-eqe" },
     { year: 2023, major: "coens-mse" },
     { year: 2023, major: "coens-mme" },
+    { year: 2023, major: "pops-ses" },
+    { year: 2023, major: "pops-mse" },
+    { year: 2023, major: "pops-urp" },
 
     { year: 2024, major: "coins" },
     { year: 2024, major: "klis-science" },
@@ -217,6 +220,9 @@ function main(): void {
     { year: 2025, major: "coens-eqe" },
     { year: 2025, major: "coens-mse" },
     { year: 2025, major: "coens-mme" },
+    { year: 2025, major: "pops-ses" },
+    { year: 2025, major: "pops-mse" },
+    { year: 2025, major: "pops-urp" },
   ];
 
   const indexTemplate = readFileSync("src/index.html", {

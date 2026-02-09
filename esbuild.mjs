@@ -36,6 +36,9 @@ async function main() {
       "src/2023/coens-eqe/index.ts",
       "src/2023/coens-mse/index.ts",
       "src/2023/coens-mme/index.ts",
+      "src/2023/pops-ses/index.ts",
+      "src/2023/pops-mse/index.ts",
+      "src/2023/pops-urp/index.ts",
 
       "src/2024/coins/index.ts",
       "src/2024/klis-science/index.ts",
@@ -67,6 +70,9 @@ async function main() {
       "src/2025/coens-eqe/index.ts",
       "src/2025/coens-mse/index.ts",
       "src/2025/coens-mme/index.ts",
+      "src/2025/pops-ses/index.ts",
+      "src/2025/pops-mse/index.ts",
+      "src/2025/pops-urp/index.ts",
 
       "src/app.scss",
       "src/styles.scss",
