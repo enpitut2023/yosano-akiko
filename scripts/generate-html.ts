@@ -149,14 +149,23 @@ function createIndexTemplateContext(is: Instance[], description: string) {
   const years = Array.from(yearToInstances.keys());
   years.sort((a, b) => b - a);
 
-  const sections = years.map((year) => ({
-    year,
-    instances: (yearToInstances.get(year) ?? []).map((i) => ({
-      major: i.major,
-      majorName: majorToString(i.major),
-      comment: i.comment,
-    })),
-  }));
+  const sections = years.map((year) => {
+    const instances: object[] = [];
+    const is = yearToInstances.get(year) ?? [];
+    for (let j = 0; j < is.length; j++) {
+      const i = is[j];
+      const gap =
+        j > 0 &&
+        majorToDocsPageName(is[j - 1].major) !== majorToDocsPageName(i.major);
+      instances.push({
+        major: i.major,
+        majorName: majorToString(i.major),
+        comment: i.comment,
+        gap,
+      });
+    }
+    return { year, instances };
+  });
 
   return { sections, description };
 }
