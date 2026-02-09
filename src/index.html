@@ -53,7 +53,7 @@
         <h3>{{ s.year }}年度入学</h3>
         <ul>
           {% for i in s.instances %}
-            <li>
+            <li class="{{ 'gap' if i.gap }}">
               <a href="{{ s.year }}/{{ i.major }}">{{ i.majorName }}</a>
               {% if i.comment %}
                 <span>{{ i.comment }}</span>

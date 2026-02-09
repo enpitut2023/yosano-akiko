@@ -1,5 +1,6 @@
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import path, { basename, extname, join } from "node:path";
+import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import path, { join } from "node:path";
+import { exit } from "node:process";
 import nunjucks from "nunjucks";
 
 function unreachable(_: never): never {
@@ -12,13 +13,17 @@ type Major =
   | "klis-science"
   | "klis-system"
   | "klis-rm"
-  | "pops-economics"
-  | "pops-management"
-  | "pops-city-planning"
-  | "esys-intelligence"
-  | "esys-mechanics"
+  | "pops-ses" // Social and Economic Sciences
+  | "pops-mse" // Management Science and Engineering
+  | "pops-urp" // Urban and Regional Planning
+  | "esys-ies"
+  | "esys-eme"
   | "math"
   | "physics"
+  | "coens-ap"
+  | "coens-eqe"
+  | "coens-mse"
+  | "coens-mme"
   | "chemistry";
 
 // TODO
@@ -38,20 +43,28 @@ function majorToString(m: Major): string {
       return "知識情報・図書館学類 知識情報システム専攻";
     case "klis-rm":
       return "知識情報・図書館学類 情報資源経営主専攻";
-    case "pops-economics":
+    case "pops-ses":
       return "社会工学類 社会経済システム専攻";
-    case "pops-management":
+    case "pops-mse":
       return "社会工学類 経営工学専攻";
-    case "pops-city-planning":
+    case "pops-urp":
       return "社会工学類 都市計画専攻";
-    case "esys-intelligence":
+    case "esys-ies":
       return "工学システム学類 知的・機能工学システム専攻";
-    case "esys-mechanics":
+    case "esys-eme":
       return "工学システム学類 エネルギー・メカニクス主専攻";
     case "math":
       return "数学類";
     case "physics":
       return "物理学類";
+    case "coens-ap":
+      return "応用理工学類 応用物理主専攻";
+    case "coens-eqe":
+      return "応用理工学類 電子・量子工学主専攻";
+    case "coens-mse":
+      return "応用理工学類 物性工学主専攻";
+    case "coens-mme":
+      return "応用理工学類 物質・分子工学主専攻";
     case "chemistry":
       return "化学類";
     default:
@@ -59,30 +72,19 @@ function majorToString(m: Major): string {
   }
 }
 
-type DocsPageName =
-  | "coins"
-  | "mast"
-  | "klis"
-  | "pops"
-  | "esys"
-  | "math"
-  | "physics"
-  | "chemistry";
+const DOCS_PAGE_NAMES = [
+  "coins",
+  "mast",
+  "klis",
+  "pops",
+  "esys",
+  "math",
+  "physics",
+  "coens",
+  "chemistry",
+] as const;
 
-function isDocsPageName(s: string): s is DocsPageName {
-  switch (s) {
-    case "coins":
-    case "mast":
-    case "klis":
-    case "pops":
-    case "esys":
-    case "math":
-    case "physics":
-      return true;
-    default:
-      return false;
-  }
-}
+type DocsPageName = (typeof DOCS_PAGE_NAMES)[number];
 
 function majorToDocsPageName(m: Major): DocsPageName {
   switch (m) {
@@ -96,17 +98,24 @@ function majorToDocsPageName(m: Major): DocsPageName {
     case "klis-system":
     case "klis-rm":
       return "klis";
-    case "pops-economics":
-    case "pops-management":
-    case "pops-city-planning":
+    case "pops-ses":
+    case "pops-mse":
+    case "pops-urp":
       return "pops";
-    case "esys-intelligence":
-    case "esys-mechanics":
+    case "esys-ies":
+    case "esys-eme":
       return "esys";
+    case "coens-ap":
+    case "coens-eqe":
+    case "coens-mse":
+    case "coens-mme":
+      return "coens";
+    default:
+      unreachable(m);
   }
 }
 
-function docsPageNameToString(d: DocsPageName): string {
+function docsPageNameToJa(d: DocsPageName): string {
   switch (d) {
     case "coins":
       return "情報科学類";
@@ -122,8 +131,12 @@ function docsPageNameToString(d: DocsPageName): string {
       return "数学類";
     case "physics":
       return "物理学類";
+    case "coens":
+      return "応用理工学類";
     case "chemistry":
       return "化学類";
+    default:
+      unreachable(d);
   }
 }
 
@@ -143,14 +156,23 @@ function createIndexTemplateContext(is: Instance[], description: string) {
   const years = Array.from(yearToInstances.keys());
   years.sort((a, b) => b - a);
 
-  const sections = years.map((year) => ({
-    year,
-    instances: (yearToInstances.get(year) ?? []).map((i) => ({
-      major: i.major,
-      majorName: majorToString(i.major),
-      comment: i.comment,
-    })),
-  }));
+  const sections = years.map((year) => {
+    const instances: object[] = [];
+    const is = yearToInstances.get(year) ?? [];
+    for (let j = 0; j < is.length; j++) {
+      const i = is[j];
+      const gap =
+        j > 0 &&
+        majorToDocsPageName(is[j - 1].major) !== majorToDocsPageName(i.major);
+      instances.push({
+        major: i.major,
+        majorName: majorToString(i.major),
+        comment: i.comment,
+        gap,
+      });
+    }
+    return { year, instances };
+  });
 
   return { sections, description };
 }
@@ -168,30 +190,58 @@ function main(): void {
     { year: 2022, major: "coins", comment: "（選択科目のみ対応）" },
 
     { year: 2023, major: "coins" },
-    { year: 2023, major: "klis-science", comment: "（ほぼ全て対応）" },
-    { year: 2023, major: "klis-system", comment: "（ほぼ全て対応）" },
+    { year: 2023, major: "klis-science" },
+    { year: 2023, major: "klis-system" },
     { year: 2023, major: "klis-rm" },
-    { year: 2023, major: "mast", comment: "（ほぼ全て対応）" },
-    { year: 2023, major: "physics", comment: "（ほぼ全て対応）" },
-    { year: 2023, major: "chemistry", comment: "（ほぼ全て対応）" },
+    { year: 2023, major: "mast" },
+    { year: 2023, major: "math" },
+    { year: 2023, major: "physics" },
+    { year: 2023, major: "esys-ies" },
+    { year: 2023, major: "esys-eme" },
+    { year: 2023, major: "coens-ap" },
+    { year: 2023, major: "coens-eqe" },
+    { year: 2023, major: "coens-mse" },
+    { year: 2023, major: "coens-mme" },
+    { year: 2023, major: "pops-ses" },
+    { year: 2023, major: "pops-mse" },
+    { year: 2023, major: "pops-urp" },
+    { year: 2023, major: "chemistry" },
 
     { year: 2024, major: "coins" },
     { year: 2024, major: "klis-science" },
     { year: 2024, major: "klis-system" },
     { year: 2024, major: "klis-rm" },
     { year: 2024, major: "mast" },
-    { year: 2024, major: "math", comment: "（ほぼ全て対応）" },
-    { year: 2024, major: "physics", comment: "（ほぼ全て対応）" },
-    { year: 2024, major: "chemistry", comment: "（ほぼ全て対応）" },
+    { year: 2024, major: "math" },
+    { year: 2024, major: "physics" },
+    { year: 2024, major: "esys-ies" },
+    { year: 2024, major: "esys-eme" },
+    { year: 2024, major: "coens-ap" },
+    { year: 2024, major: "coens-eqe" },
+    { year: 2024, major: "coens-mse" },
+    { year: 2024, major: "coens-mme" },
+    { year: 2024, major: "pops-ses" },
+    { year: 2024, major: "pops-mse" },
+    { year: 2024, major: "pops-urp" },
+    { year: 2024, major: "chemistry" },
 
     { year: 2025, major: "coins" },
     { year: 2025, major: "klis-science" },
     { year: 2025, major: "klis-system" },
     { year: 2025, major: "klis-rm" },
     { year: 2025, major: "mast" },
-    { year: 2025, major: "math", comment: "（ほぼ全て対応）" },
-    { year: 2025, major: "physics", comment: "（ほぼ全て対応）" },
-    { year: 2025, major: "chemistry", comment: "（ほぼ全て対応）" },
+    { year: 2025, major: "math" },
+    { year: 2025, major: "physics" },
+    { year: 2025, major: "esys-ies" },
+    { year: 2025, major: "esys-eme" },
+    { year: 2025, major: "coens-ap" },
+    { year: 2025, major: "coens-eqe" },
+    { year: 2025, major: "coens-mse" },
+    { year: 2025, major: "coens-mme" },
+    { year: 2025, major: "pops-ses" },
+    { year: 2025, major: "pops-mse" },
+    { year: 2025, major: "pops-urp" },
+    { year: 2025, major: "chemistry" },
   ];
 
   const indexTemplate = readFileSync("src/index.html", {
@@ -204,24 +254,29 @@ function main(): void {
   nunjucks.configure(".", { autoescape: true });
 
   const docsDir = "src/docs";
-  for (const entry of readdirSync(docsDir, { withFileTypes: true })) {
-    if (!entry.isFile()) continue;
-    const ext = extname(entry.name);
-    if (ext !== ".html") continue;
-    const base = basename(entry.name, ext);
-    if (!isDocsPageName(base)) continue;
-    const inPath = join(docsDir, entry.name);
-    const outPath = join("dist", "docs", entry.name);
+  const missingDocs: string[] = [];
+  for (const name of DOCS_PAGE_NAMES) {
+    const inPath = join(docsDir, name + ".html");
+    const outPath = join("dist", "docs", name + ".html");
+    const stat = statSync(inPath, { throwIfNoEntry: false });
+    if (stat === undefined) {
+      missingDocs.push(name);
+      continue;
+    }
+    const template = readFileSync(inPath, { encoding: "utf8" });
     console.log(`Rendering ${outPath}`);
-    const name = docsPageNameToString(base);
-    const output = nunjucks.renderString(
-      readFileSync(inPath, { encoding: "utf8" }),
-      {
-        title: `あきこ未対応の部分など | ${name}`,
-        description: `${name}のあきこが科目判定に対応していない部分、単位計算が正しくない部分などの説明です。`,
-      },
-    );
-    writeFileSync(join("dist/docs", entry.name), output, { encoding: "utf8" });
+    const ja = docsPageNameToJa(name);
+    const output = nunjucks.renderString(template, {
+      title: `あきこ未対応の部分など | ${ja}`,
+      description: `${ja}のあきこが科目判定に対応していない部分、単位計算が正しくない部分などの説明です。`,
+    });
+    writeFileSync(outPath, output);
+  }
+  if (missingDocs.length > 0) {
+    for (const d of missingDocs) {
+      console.log(`Missing documentation for ${d}`);
+    }
+    exit(1);
   }
 
   const indexPath = path.join(dstDir, "index.html");

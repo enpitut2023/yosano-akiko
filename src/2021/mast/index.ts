@@ -1,8 +1,8 @@
-import { KnownCourse, CourseId, RealCourse, FakeCourseId } from "../../akiko";
+import { isGakushikiban } from "@/requirements/common";
+import { CourseId, FakeCourseId, KnownCourse, RealCourse } from "../../akiko";
 import { setup } from "../../app";
 import { courses } from "../../current-courses.js";
 import cellIdToRect from "./cell-id-to-rect.json";
-import { isGakushikiban } from "@/requirements/common";
 
 function isB1(id: string): boolean {
   return id.startsWith("GC5") || id.startsWith("GA4");

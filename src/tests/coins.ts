@@ -1,10 +1,10 @@
-import { assertCreditStatsEqual, getCreditStats } from "../../test-util";
+import { readFileSync } from "node:fs";
 import {
   classifyFakeCourses,
   classifyRealCourses,
   creditRequirements,
-} from "./conditions";
-import { readFileSync } from "node:fs";
+} from "@/2023/coins/conditions";
+import { assertCreditStatsEqual, getCreditStats } from "@/test-util";
 
 function test2(): void {
   const csv = readFileSync("grade-csvs/2023/coins-2.csv", { encoding: "utf8" });
