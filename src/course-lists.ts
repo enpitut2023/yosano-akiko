@@ -1,10 +1,10 @@
 import {
   Akiko,
-  akikoIsCourseVisible,
   CellId,
   CourseId,
-  courseIdCompare,
   Grade,
+  akikoIsCourseVisible,
+  courseIdCompare,
   gradeIsPass,
   isCellId,
   isCourseId,
@@ -457,6 +457,17 @@ export class CourseLists {
         credit: fc.credit?.toString(),
       });
       courseElements.fake.push(element);
+    }
+
+    for (const cellId of akiko.creditRequirements.cells.keys()) {
+      if (!cellIdToCourseElements.has(cellId)) {
+        cellIdToCourseElements.set(cellId, {
+          wontTake: [],
+          mightTake: [],
+          taken: [],
+          fake: [],
+        });
+      }
     }
 
     for (const [cellId, courseElements] of cellIdToCourseElements) {

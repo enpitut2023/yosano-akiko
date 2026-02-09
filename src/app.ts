@@ -1,31 +1,36 @@
+import z from "zod";
 import {
-  akikoGetCreditStats,
-  akikoGetMightTakeCourseIds,
+  Akiko,
+  BaseCreditStats,
+  CellCreditStats,
   CellId,
   ColumnCreditStats,
   ColumnId,
+  CourseId,
   CreditRequirements,
   ElectiveCreditStats,
+  FakeCourse,
+  FakeCourseId,
+  RealCourse,
+  akikoGetCreditStats,
+  akikoGetMightTakeCourseIds,
+  akikoGetUnclassifiedFakeCourses,
+  akikoGetUnclassifiedRealCourses,
+  akikoNew,
+  columnIdIsCompulsory,
+  courseIdCompare,
+  fakeCourseIdCompare,
   isCellId,
   isColumnId,
-  CourseId,
-  RealCourse,
-  FakeCourse,
   isCourseId,
   isFakeCourseId,
   isGrade,
-  akikoNew,
-  FakeCourseId,
-  Akiko,
-  CellCreditStats,
-  columnIdIsCompulsory,
-} from "./akiko";
-import { ClassifyOptions, SetupParams } from "./app-setup";
-import { CourseLists } from "./course-lists";
-import { parseImportedCsv } from "./csv";
-import warningIcon from "./icons/warning.svg";
-import { assert } from "./util";
-import z from "zod";
+} from "@/akiko";
+import { ClassifyOptions, SetupParams } from "@/app-setup";
+import { CourseLists } from "@/course-lists";
+import { parseImportedCsv } from "@/csv";
+import warningIcon from "@/icons/warning.svg";
+import { assert } from "@/util";
 
 type LocalDataV1ImportedCourse = {
   id: string;
@@ -538,6 +543,7 @@ export function setup(params: SetupParams): void {
     div.addEventListener("click", (event) => {
       event.preventDefault();
       selectedCellId = id;
+      barsVisible = true;
       render();
     });
   }
@@ -604,6 +610,66 @@ export function setup(params: SetupParams): void {
     localDataStore(localDataKey, localData);
     akiko = createAkiko();
 
+    if (DEBUG) {
+      const rcs = akikoGetUnclassifiedRealCourses(akiko);
+      const fcs = akikoGetUnclassifiedFakeCourses(akiko);
+      rcs.sort((a, b) => courseIdCompare(a.id, b.id));
+      fcs.sort((a, b) => fakeCourseIdCompare(a.id, b.id));
+      let s = "マスに振り分けられなかった授業\n";
+      for (const rc of rcs) {
+        s += [rc.id, rc.name, rc.takenYear, rc.credit, rc.grade].join(" ");
+        s += "\n";
+      }
+      for (const fc of fcs) {
+        s += [fc.id, fc.name, fc.takenYear, fc.credit, fc.grade].join(" ");
+        s += "\n";
+      }
+      console.log(s);
+
+      function createWantBaseCreditStats(
+        s: BaseCreditStats,
+      ): Record<string, number> {
+        const o: Record<string, number> = {};
+        if (s.rawTaken > 0) {
+          if (s.overflowTaken === 0) {
+            o.taken = s.rawTaken;
+          } else {
+            o.rawTaken = s.rawTaken;
+            o.effectiveTaken = s.effectiveTaken;
+          }
+        }
+        if (s.rawMightTake > 0) {
+          if (s.overflowMightTake === 0) {
+            o.mightTake = s.rawMightTake;
+          } else {
+            o.rawMightTake = s.rawMightTake;
+            o.effectiveMightTake = s.effectiveMightTake;
+          }
+        }
+        return o;
+      }
+
+      const stats = akikoGetCreditStats(akiko);
+      const cells: Record<string, object> = {};
+      for (const [cellId, s] of stats.cells) {
+        const cell = createWantBaseCreditStats(s);
+        if (Object.keys(cell).length > 0) {
+          cells[cellId] = cell;
+        }
+      }
+      const columns: Record<string, object> = {};
+      for (const [colId, s] of stats.columns) {
+        const col = createWantBaseCreditStats(s);
+        if (Object.keys(col).length > 0) {
+          columns[colId] = col;
+        }
+      }
+      const compulsory = createWantBaseCreditStats(stats.compulsory);
+      const elective = createWantBaseCreditStats(stats.elective);
+
+      console.log(JSON.stringify({ cells, columns, compulsory, elective }));
+    }
+
     render();
   });
 
@@ -627,25 +693,20 @@ export function setup(params: SetupParams): void {
   assert(mainElement !== null);
 
   const updateBarsToggleButtonPosition = () => {
-    if (barsVisible) {
-      barsToggleButton.textContent = "⏵";
-    } else {
-      barsToggleButton.textContent = "⏴";
-    }
     mainElement.classList.toggle("bars-hidden", !barsVisible);
     const left =
       requirementsElement.clientWidth -
       barsToggleButton.getBoundingClientRect().width;
     barsToggleButton.style.left = `${left}px`;
   };
-  updateBarsToggleButtonPosition();
+
   new ResizeObserver(updateBarsToggleButtonPosition).observe(
     requirementsElement,
   );
 
   barsToggleButton.addEventListener("click", () => {
     barsVisible = !barsVisible;
-    updateBarsToggleButtonPosition();
+    render();
   });
 
   mustGetElementById("reset").addEventListener("click", () => {
@@ -806,11 +867,19 @@ export function setup(params: SetupParams): void {
       overallCreditSumElement.style.setProperty("--green-percentage", `${g}%`);
       overallCreditSumElement.style.setProperty("--yellow-percentage", `${y}%`);
     }
-  };
 
-  // 総合からの移行
-  studentTypeRadioNative.checked = localData.native;
-  studentTypeRadioTransfer.checked = !localData.native;
+    // 総合からの移行
+    studentTypeRadioNative.checked = localData.native;
+    studentTypeRadioTransfer.checked = !localData.native;
+
+    // 右側の表示切り替え
+    if (barsVisible) {
+      barsToggleButton.textContent = "⏵";
+    } else {
+      barsToggleButton.textContent = "⏴";
+    }
+    updateBarsToggleButtonPosition();
+  };
 
   render();
 }

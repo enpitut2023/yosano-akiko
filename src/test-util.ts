@@ -1,12 +1,12 @@
 import {
-  akikoGetCreditStats,
-  akikoNew,
   BaseCreditStats,
   CellId,
   CourseId,
   CreditRequirements,
   CreditStats,
   FakeCourseId,
+  akikoGetCreditStats,
+  akikoNew,
   isCellId,
   isColumnId,
 } from "./akiko";
