@@ -24,7 +24,7 @@ type Major =
   | "coens-eqe"
   | "coens-mse"
   | "coens-mme"
-  | "chemistry";
+  | "chem";
 
 // TODO
 // function majorCompare(a: Major, b: Major): number {
@@ -65,7 +65,7 @@ function majorToString(m: Major): string {
       return "応用理工学類 物性工学主専攻";
     case "coens-mme":
       return "応用理工学類 物質・分子工学主専攻";
-    case "chemistry":
+    case "chem":
       return "化学類";
     default:
       unreachable(m);
@@ -81,7 +81,7 @@ const DOCS_PAGE_NAMES = [
   "math",
   "physics",
   "coens",
-  "chemistry",
+  "chem",
 ] as const;
 
 type DocsPageName = (typeof DOCS_PAGE_NAMES)[number];
@@ -92,7 +92,7 @@ function majorToDocsPageName(m: Major): DocsPageName {
     case "mast":
     case "math":
     case "physics":
-    case "chemistry":
+    case "chem":
       return m;
     case "klis-science":
     case "klis-system":
@@ -133,7 +133,7 @@ function docsPageNameToJa(d: DocsPageName): string {
       return "物理学類";
     case "coens":
       return "応用理工学類";
-    case "chemistry":
+    case "chem":
       return "化学類";
     default:
       unreachable(d);
@@ -205,7 +205,7 @@ function main(): void {
     { year: 2023, major: "pops-ses" },
     { year: 2023, major: "pops-mse" },
     { year: 2023, major: "pops-urp" },
-    { year: 2023, major: "chemistry" },
+    { year: 2023, major: "chem" },
 
     { year: 2024, major: "coins" },
     { year: 2024, major: "klis-science" },
@@ -223,7 +223,7 @@ function main(): void {
     { year: 2024, major: "pops-ses" },
     { year: 2024, major: "pops-mse" },
     { year: 2024, major: "pops-urp" },
-    { year: 2024, major: "chemistry" },
+    { year: 2024, major: "chem" },
 
     { year: 2025, major: "coins" },
     { year: 2025, major: "klis-science" },
@@ -241,7 +241,7 @@ function main(): void {
     { year: 2025, major: "pops-ses" },
     { year: 2025, major: "pops-mse" },
     { year: 2025, major: "pops-urp" },
-    { year: 2025, major: "chemistry" },
+    { year: 2025, major: "chem" },
   ];
 
   const indexTemplate = readFileSync("src/index.html", {
