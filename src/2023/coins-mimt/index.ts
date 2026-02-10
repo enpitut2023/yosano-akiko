@@ -1,23 +1,23 @@
+import { setup } from "../../app";
+import { courses } from "../../current-courses.js";
+import cellIdToRectRecord from "./cell-id-to-rect.json";
 import { KnownCourse } from "@/akiko";
 import {
-  Specialty,
   classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
   creditRequirements,
+  Specialty,
 } from "@/requirements/coins-since-2023";
-import { setup } from "../../app";
-import { courses } from "../../current-courses.js";
-import cellIdToRectRecord from "./cell-id-to-rect.json";
 
-const YEAR = 2025;
-const SPECIALTY: Specialty = "scs";
+const YEAR = 2023;
+const SPECIALTY: Specialty = "mimt";
 
 setup({
   knownCourses: courses as KnownCourse[],
   knownCourseYear: 2025,
   creditRequirements: creditRequirements,
-  major: "coins",
+  major: "coins-mimt",
   requirementsTableYear: YEAR,
   cellIdToRectRecord,
   classifyKnownCourses: (cs, opts) => classifyKnownCourses(cs, opts, SPECIALTY),

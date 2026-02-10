@@ -24,6 +24,8 @@ async function main() {
       "src/2022/coins/index.ts",
 
       "src/2023/coins/index.ts",
+      "src/2023/coins-cs/index.ts",
+      "src/2023/coins-mimt/index.ts",
       "src/2023/klis-science/index.ts",
       "src/2023/klis-system/index.ts",
       "src/2023/klis-rm/index.ts",
@@ -42,6 +44,8 @@ async function main() {
       "src/2023/chem/index.ts",
 
       "src/2024/coins/index.ts",
+      "src/2024/coins-cs/index.ts",
+      "src/2024/coins-mimt/index.ts",
       "src/2024/klis-science/index.ts",
       "src/2024/klis-system/index.ts",
       "src/2024/klis-rm/index.ts",
@@ -60,6 +64,8 @@ async function main() {
       "src/2024/chem/index.ts",
 
       "src/2025/coins/index.ts",
+      "src/2025/coins-cs/index.ts",
+      "src/2025/coins-mimt/index.ts",
       "src/2025/klis-science/index.ts",
       "src/2025/klis-system/index.ts",
       "src/2025/klis-rm/index.ts",

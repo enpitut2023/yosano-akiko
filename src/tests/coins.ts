@@ -3,7 +3,7 @@ import {
   classifyFakeCourses,
   classifyRealCourses,
   creditRequirements,
-} from "@/2023/coins/conditions";
+} from "@/requirements/coins-since-2023";
 import { assertCreditStatsEqual, getCreditStats } from "@/test-util";
 
 function test2(): void {
@@ -13,8 +13,8 @@ function test2(): void {
     csv,
     isNative,
     creditRequirements,
-    classifyRealCourses,
-    classifyFakeCourses,
+    classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts, "scs"),
+    classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts, "scs"),
   });
   assertCreditStatsEqual(got, {
     cells: {
@@ -67,8 +67,8 @@ function test3(): void {
     csv,
     isNative,
     creditRequirements,
-    classifyRealCourses,
-    classifyFakeCourses,
+    classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts, "scs"),
+    classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts, "scs"),
   });
   assertCreditStatsEqual(got, {
     cells: {
