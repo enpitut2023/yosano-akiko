@@ -1,14 +1,14 @@
-import { setup } from "../../app";
-import { courses } from "../../current-courses.js";
-import cellIdToRect from "./cell-id-to-rect.json";
 import { KnownCourse } from "@/akiko";
 import {
+  Specialty,
   classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
   creditRequirements,
-  Specialty,
 } from "@/requirements/klis-since-2023";
+import { setup } from "../../app";
+import { courses } from "../../current-courses.js";
+import cellIdToRect from "./cell-id-to-rect.json";
 
 const YEAR = 2024;
 const SPECIALTY: Specialty = "science";

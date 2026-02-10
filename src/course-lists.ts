@@ -1,10 +1,10 @@
 import {
   Akiko,
-  akikoIsCourseVisible,
   CellId,
   CourseId,
-  courseIdCompare,
   Grade,
+  akikoIsCourseVisible,
+  courseIdCompare,
   gradeIsPass,
   isCellId,
   isCourseId,

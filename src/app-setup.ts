@@ -1,9 +1,9 @@
 import {
-  KnownCourse,
   CourseId,
-  RealCourse,
   FakeCourse,
   FakeCourseId,
+  KnownCourse,
+  RealCourse,
 } from "./akiko";
 
 type Rect = { x: number; y: number; width: number; height: number };

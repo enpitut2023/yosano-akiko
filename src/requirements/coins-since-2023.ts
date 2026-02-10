@@ -334,15 +334,14 @@ function classify(
   isNative: boolean,
   specialty: Specialty,
 ): string | undefined {
-  // TODO: コードシェアの実装
-  // if (mode === "known") {
-  //   // コードシェアの読み替え前は表示しない
-  //   if (COURSE_ID_TO_GB_COURSE_ID.has(id)) {
-  //     return undefined;
-  //   }
-  // } else {
-  //   id  = COURSE_ID_TO_GB_COURSE_ID.get(id) ?? id;
-  // }
+  if (mode === "known") {
+    // コードシェアの読み替え前は表示しない
+    if (COURSE_ID_TO_GB_COURSE_ID.has(id)) {
+      return undefined;
+    }
+  } else {
+    id = COURSE_ID_TO_GB_COURSE_ID.get(id) ?? id;
+  }
 
   // 必修
   if (isA1(id, specialty)) return "a1";

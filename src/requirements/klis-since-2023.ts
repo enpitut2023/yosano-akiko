@@ -7,16 +7,16 @@ import {
 } from "@/akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
 import {
-  isGakushikiban,
   isArt,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
   isElectivePe,
   isForeignLanguage,
+  isGakushikiban,
   isJapanese,
-  isKyoutsuu,
   isKyoushoku,
+  isKyoutsuu,
 } from "@/requirements/common";
 import { unreachable } from "@/util";
 

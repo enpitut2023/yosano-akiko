@@ -1,13 +1,13 @@
+import { ParseResult, parse as parseCsv } from "papaparse";
 import {
-  RealCourse,
   FakeCourse,
   Grade,
   ImportedCourse,
-  isCourseId,
+  RealCourse,
   fakeCourseIdNewUnique,
+  isCourseId,
 } from "./akiko";
 import { tryParseFloat, tryParseInt } from "./util";
-import { parse as parseCsv, ParseResult } from "papaparse";
 
 function parseImportedCourseGrade(s: string): Grade | "free" | undefined {
   switch (s) {

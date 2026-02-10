@@ -3,6 +3,8 @@
     "@trivago/prettier-plugin-sort-imports",
     "prettier-plugin-jinja-template"
   ],
+  "importOrder": ["^@/", "^[./]"],
+  "importOrderSortSpecifiers": true,
   "overrides": [
     { "files": ["*.html"], "options": { "parser": "jinja-template" } }
   ]
