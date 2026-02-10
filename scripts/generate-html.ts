@@ -149,7 +149,12 @@ function docsPageNameToJa(d: DocsPageName): string {
   }
 }
 
-type Instance = { year: number; major: Major; comment?: string };
+type Instance = {
+  year: number;
+  major: Major;
+  comment?: string;
+  checked?: true;
+};
 
 function createIndexTemplateContext(is: Instance[], description: string) {
   const yearToInstances = new Map<number, Instance[]>();
@@ -178,6 +183,7 @@ function createIndexTemplateContext(is: Instance[], description: string) {
         majorName: majorToString(i.major),
         comment: i.comment,
         gap,
+        checked: i.checked,
       });
     }
     return { year, instances };
@@ -198,9 +204,9 @@ function main(): void {
 
     { year: 2022, major: "coins", comment: "（選択科目のみ対応）" },
 
-    { year: 2023, major: "coins" },
-    { year: 2023, major: "coins-cs" },
-    { year: 2023, major: "coins-mimt" },
+    { year: 2023, major: "coins", checked: true },
+    { year: 2023, major: "coins-cs", checked: true },
+    { year: 2023, major: "coins-mimt", checked: true },
     { year: 2023, major: "klis-science" },
     { year: 2023, major: "klis-system" },
     { year: 2023, major: "klis-rm" },
@@ -218,9 +224,9 @@ function main(): void {
     { year: 2023, major: "pops-urp" },
     { year: 2023, major: "chem" },
 
-    { year: 2024, major: "coins" },
-    { year: 2024, major: "coins-cs" },
-    { year: 2024, major: "coins-mimt" },
+    { year: 2024, major: "coins", checked: true },
+    { year: 2024, major: "coins-cs", checked: true },
+    { year: 2024, major: "coins-mimt", checked: true },
     { year: 2024, major: "klis-science" },
     { year: 2024, major: "klis-system" },
     { year: 2024, major: "klis-rm" },
@@ -238,9 +244,9 @@ function main(): void {
     { year: 2024, major: "pops-urp" },
     { year: 2024, major: "chem" },
 
-    { year: 2025, major: "coins" },
-    { year: 2025, major: "coins-cs" },
-    { year: 2025, major: "coins-mimt" },
+    { year: 2025, major: "coins", checked: true },
+    { year: 2025, major: "coins-cs", checked: true },
+    { year: 2025, major: "coins-mimt", checked: true },
     { year: 2025, major: "klis-science" },
     { year: 2025, major: "klis-system" },
     { year: 2025, major: "klis-rm" },
