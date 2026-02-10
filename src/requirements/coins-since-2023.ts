@@ -9,6 +9,8 @@ import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
 import {
   isArt,
   isCompulsoryEnglishByName,
+  isCompulsoryPe1,
+  isCompulsoryPe2,
   isDataScience,
   isElectivePe,
   isFirstYearSeminar,
@@ -21,7 +23,7 @@ import {
   isKyoushoku,
   isKyoutsuu,
 } from "@/requirements/common";
-import { arrayRemove, assert } from "@/util";
+import { arrayRemove, assert, unreachable } from "@/util";
 
 export type Specialty = "scs" | "cs" | "mimt";
 
@@ -93,6 +95,8 @@ function isA1(id: string, specialty: Specialty): boolean {
         id === "GB46403" || // 知能情報メディア実験A
         id === "GB46503" // 知能情報メディア実験B
       );
+    default:
+      unreachable(specialty);
   }
 }
 
@@ -132,8 +136,6 @@ function isB2(id: string): boolean {
     id.startsWith("GB2") ||
     id.startsWith("GB3") ||
     id.startsWith("GB4")
-    //   && id[3] !== "0" &&
-    //   id[3] !== "6")
   );
 }
 
@@ -277,21 +279,25 @@ function isE1(id: string, mode: "known" | "real"): boolean {
 }
 
 function isE2(id: string): boolean {
-  return (
-    // TODO: 基礎体育の時に種目が違うか、応用の時に種目が同じかチェック
-    id.startsWith("21") || // 基礎体育
-    id.startsWith("22") // 応用体育
-  );
+  // TODO: 基礎体育の時に種目が違うか、応用の時に種目が同じかチェック
+  return isCompulsoryPe1(id) || isCompulsoryPe2(id);
 }
 
 function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string): boolean {
-  // TODO: knownのcoins用科目分岐
+function isE4(id: string, mode: "known" | "real"): boolean {
   return (
-    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
+    id === "6124101" || // 情報リテラシー(講義)
+    id === "6424102" || // 情報リテラシー(演習) 2023年度は情報1班対象 以降は全員対象
+    id === "6424202" || // 情報リテラシー(演習) 2023年度は情報2班対象 以降は開講せず
+    id === "6524102" || // データサイエンス 2023年度は情報1班対象 以降は全員対象
+    id === "6524202" || // データサイエンス 2023年度は情報2班対象 以降は開講せず
+    (mode === "real" &&
+      (isInfoLiteracyLecture(id) ||
+        isInfoLiteracyExercise(id) ||
+        isDataScience(id)))
   );
 }
 
@@ -301,7 +307,6 @@ function isF1(id: string): boolean {
 
 function isF2(id: string): boolean {
   return (
-    // 体育（自由科目）、外国語、国語、芸術
     isElectivePe(id) || isForeignLanguage(id) || isJapanese(id) || isArt(id)
   );
 }
@@ -363,7 +368,7 @@ function classify(
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(id, mode)) return "e4";
 
   // 選択
   if (isB1(id)) return "b1";
