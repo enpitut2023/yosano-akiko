@@ -7,15 +7,16 @@ import {
 } from "@/akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
 import {
-  isGakushikiban,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
-  isInfoLiteracyLecture,
-  isInfoLiteracyExercise,
   isDataScience,
-  isIzanai,
   isFirstYearSeminar,
+  isGakushikiban,
+  isInfoLiteracyExercise,
+  isInfoLiteracyLecture,
+  isIzanai,
+  isKyoushoku,
 } from "@/requirements/common";
 
 function isA1(id: string): boolean {
@@ -140,7 +141,7 @@ function isD1(id: string, tableYear: number): boolean {
     id === "FCB1341" || //  電磁気学2(物理学類、化学類、数学類、地球学類、生物学類 原則平成31年度以降入学者) !!A!!
     id === "FCB1371" //  電磁気学3(物理学類、化学類、数学類、地球学類、生物学類 原則平成31年度以降入学者) !!A!!
 
-    // 2023年度入学生が成績として反映される可能性があるもの(2023の化学類対象の科目が存在しないため)
+    // TODO: 2023年度入学生が成績として反映される可能性があるもの(2023の化学類対象の科目が存在しないため)
     // FA01311 微積分1
     // FA01321 微積分1
     // FA01331 微積分1
@@ -219,6 +220,9 @@ function isD2(id: string): boolean {
 }
 
 function isE1(id: string, tableYear: number, mode: "real" | "known"): boolean {
+  //事例に学ぶ環境安全衛生と化学物質
+  if (tableYear === 2025 && id === "1414014") return true;
+
   return (
     //学問への誘い
     id === "1227411" || //1クラス
@@ -226,7 +230,6 @@ function isE1(id: string, tableYear: number, mode: "real" | "known"): boolean {
     //ファーストイヤーセミナー
     id === "1114102" || //1クラス
     id === "1114202" || //2クラス
-    (tableYear === 2025 && id === "1414014") || //事例に学ぶ環境安全衛生と化学物質
     (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
@@ -240,26 +243,20 @@ function isE3(name: string): boolean {
 }
 
 function isE4(id: string, mode: "known" | "real"): boolean {
-  switch (mode) {
-    case "known":
-      return (
-        id === "6112101" || //  情報リテラシー(講義) 2024~ 数学、化学対象
-        id === "6114101" || //  情報リテラシー(講義) 2023 化学、創成、物理対象
-        id === "6414102" || //  情報リテラシー(演習) 化学対象
-        id === "6514102" //  データサイエンス 化学対象
-      );
-    case "real":
-      return (
-        isInfoLiteracyLecture(id) ||
+  return (
+    id === "6112101" || //  情報リテラシー(講義) 2024~ 数学、化学対象
+    id === "6114101" || //  情報リテラシー(講義) 2023 化学、創成、物理対象
+    id === "6414102" || //  情報リテラシー(演習) 化学対象
+    id === "6514102" || //  データサイエンス 化学対象
+    (mode === "real" &&
+      (isInfoLiteracyLecture(id) ||
         isInfoLiteracyExercise(id) ||
-        isDataScience(id)
-      );
-  }
+        isDataScience(id)))
+  );
 }
 
 function isF1(id: string): boolean {
-  // TODO:
-  // 2024 学士基盤科目は高年時向けから1つ以上必要
+  // TODO: 2024 学士基盤科目は高年時向けから1つ以上必要
   return isGakushikiban(id);
 }
 
@@ -268,7 +265,15 @@ function isH1(id: string): boolean {
 }
 
 function isH2(id: string): boolean {
-  // TODO: 「教職科目は理科に関するもののみ」という条件もあるが、保留
+  // 専門科目，専門基礎科目及び共通科目で指定されていない科目
+  if (isKyoushoku(id)) {
+    return (
+      id.startsWith("9454") || // 理科教育概論
+      id.startsWith("9455") || // 中等理科教育論
+      id.startsWith("9456") || // 中学校理科教育論
+      id.startsWith("9457") // 中学校理科教育実践論
+    );
+  }
   return true;
 }
 
@@ -287,7 +292,6 @@ function classify(
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id, mode)) return "e4";
-
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";
@@ -297,12 +301,12 @@ function classify(
   if (isD2(id)) return "d2";
   if (isF1(id)) return "f1";
   if (isH1(id)) return "h1";
-  if (isH2(id)) return "h2";
+  if (isH2(id)) return "h2"; // 「...以外」なので最後
 }
 
 export function classifyKnownCourses(
   cs: KnownCourse[],
-  opts: ClassifyOptions,
+  _opts: ClassifyOptions,
   tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
@@ -317,7 +321,7 @@ export function classifyKnownCourses(
 
 export function classifyRealCourses(
   cs: RealCourse[],
-  opts: ClassifyOptions,
+  _opts: ClassifyOptions,
   tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
@@ -332,8 +336,8 @@ export function classifyRealCourses(
 
 export function classifyFakeCourses(
   cs: FakeCourse[],
-  opts: ClassifyOptions,
-  tableYear: number,
+  _opts: ClassifyOptions,
+  _tableYear: number,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {

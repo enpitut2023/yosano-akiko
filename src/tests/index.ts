@@ -1,3 +1,4 @@
+import "./chem";
 import "./coens";
 import "./coins";
 import "./esys";
