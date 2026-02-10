@@ -26,7 +26,8 @@ type Major =
   | "coens-eqe"
   | "coens-mse"
   | "coens-mme"
-  | "chem";
+  | "chem"
+  | "ccc";
 
 // TODO
 // function majorCompare(a: Major, b: Major): number {
@@ -73,6 +74,8 @@ function majorToString(m: Major): string {
       return "応用理工学類 物質・分子工学主専攻";
     case "chem":
       return "化学類";
+    case "ccc":
+      return "比較文化学類";
     default:
       unreachable(m);
   }
@@ -88,6 +91,7 @@ const DOCS_PAGE_NAMES = [
   "physics",
   "coens",
   "chem",
+  "ccc",
 ] as const;
 
 type DocsPageName = (typeof DOCS_PAGE_NAMES)[number];
@@ -98,6 +102,7 @@ function majorToDocsPageName(m: Major): DocsPageName {
     case "math":
     case "physics":
     case "chem":
+    case "ccc":
       return m;
     case "coins":
     case "coins-cs":
@@ -144,6 +149,8 @@ function docsPageNameToJa(d: DocsPageName): string {
       return "応用理工学類";
     case "chem":
       return "化学類";
+    case "ccc":
+      return "比較文化学類";
     default:
       unreachable(d);
   }
@@ -217,6 +224,7 @@ function main(): void {
     { year: 2023, major: "pops-mse" },
     { year: 2023, major: "pops-urp" },
     { year: 2023, major: "chem" },
+    { year: 2023, major: "ccc" },
 
     { year: 2024, major: "coins" },
     { year: 2024, major: "coins-cs" },
@@ -237,6 +245,7 @@ function main(): void {
     { year: 2024, major: "pops-mse" },
     { year: 2024, major: "pops-urp" },
     { year: 2024, major: "chem" },
+    { year: 2024, major: "ccc" },
 
     { year: 2025, major: "coins" },
     { year: 2025, major: "coins-cs" },
@@ -257,6 +266,7 @@ function main(): void {
     { year: 2025, major: "pops-mse" },
     { year: 2025, major: "pops-urp" },
     { year: 2025, major: "chem" },
+    { year: 2025, major: "ccc" },
   ];
 
   const indexTemplate = readFileSync("src/index.html", {
