@@ -26,7 +26,9 @@ type Major =
   | "coens-eqe"
   | "coens-mse"
   | "coens-mme"
-  | "chem";
+  | "chem"
+  | "earth-gs"
+  | "earth-ees";
 
 // TODO
 // function majorCompare(a: Major, b: Major): number {
@@ -73,6 +75,10 @@ function majorToString(m: Major): string {
       return "応用理工学類 物質・分子工学主専攻";
     case "chem":
       return "化学類";
+    case "earth-gs":
+      return "地球学類 地球環境学主専攻";
+    case "earth-ees":
+      return "地球学類 地球進化学主専攻";
     default:
       unreachable(m);
   }
@@ -88,6 +94,7 @@ const DOCS_PAGE_NAMES = [
   "physics",
   "coens",
   "chem",
+  "earth",
 ] as const;
 
 type DocsPageName = (typeof DOCS_PAGE_NAMES)[number];
@@ -119,6 +126,9 @@ function majorToDocsPageName(m: Major): DocsPageName {
     case "coens-mse":
     case "coens-mme":
       return "coens";
+    case "earth-gs":
+    case "earth-ees":
+      return "earth";
     default:
       unreachable(m);
   }
@@ -144,6 +154,8 @@ function docsPageNameToJa(d: DocsPageName): string {
       return "応用理工学類";
     case "chem":
       return "化学類";
+    case "earth":
+      return "地球学類";
     default:
       unreachable(d);
   }
@@ -223,6 +235,8 @@ function main(): void {
     { year: 2023, major: "pops-mse" },
     { year: 2023, major: "pops-urp" },
     { year: 2023, major: "chem" },
+    { year: 2023, major: "earth-gs" },
+    { year: 2023, major: "earth-ees" },
 
     { year: 2024, major: "coins", checked: true },
     { year: 2024, major: "coins-cs", checked: true },
@@ -243,6 +257,8 @@ function main(): void {
     { year: 2024, major: "pops-mse" },
     { year: 2024, major: "pops-urp" },
     { year: 2024, major: "chem" },
+    { year: 2024, major: "earth-gs" },
+    { year: 2024, major: "earth-ees" },
 
     { year: 2025, major: "coins", checked: true },
     { year: 2025, major: "coins-cs", checked: true },
@@ -263,6 +279,8 @@ function main(): void {
     { year: 2025, major: "pops-mse" },
     { year: 2025, major: "pops-urp" },
     { year: 2025, major: "chem" },
+    { year: 2025, major: "earth-gs" },
+    { year: 2025, major: "earth-ees" },
   ];
 
   const indexTemplate = readFileSync("src/index.html", {
