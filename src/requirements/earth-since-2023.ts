@@ -296,6 +296,7 @@ function classify(
   if (isE2(id)) return "e2";
   if (isE3(id)) return "e3";
   if (isE4(id)) return "e4";
+  if(isA2(id, "ees") || isA2(id, "gs")) return undefined;
   // 選択
   if (isB1(id, specialty)) return "b1";
   if (isB2(id, specialty)) return "b2";
