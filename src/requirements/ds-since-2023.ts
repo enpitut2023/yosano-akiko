@@ -28,6 +28,13 @@ function isA1(id: string): boolean {
   return id === "CE21918"; // 卒業研究I
 }
 
+function isA2(id: string): boolean {
+  return (
+    id === "CE21928" || // 卒業研究II
+    id === "CE21948" // 卒業研究II 9月卒業
+  );
+}
+
 function isB1(id: string): boolean {
   return (
     id === "CE21411" || // 視覚障害児の心理・生理・病理
@@ -149,6 +156,7 @@ function classify(
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
+  if (isA2(id)) return "a2";
   const c = classifyColumnC(id);
   if (c !== undefined) return c;
   if (isE1(id)) return "e1";
