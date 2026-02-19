@@ -1,13 +1,13 @@
-import { KnownCourse } from "../../akiko";
-import { setup } from "../../app";
-import { courses } from "../../current-courses.js";
-import cellIdToRectRecord from "./cell-id-to-rect.json";
 import {
   classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
   creditRequirementsSince2023,
 } from "@/requirements/physics-since-2023";
+import { KnownCourse } from "../../akiko";
+import { setup } from "../../app";
+import { courses } from "../../current-courses.js";
+import cellIdToRectRecord from "./cell-id-to-rect.json";
 
 const YEAR = 2024;
 

@@ -7,13 +7,13 @@
       content="ElZ1XtfP6n7yBxt8mHVieqka_FBUissCrOEYX4iT24Q"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="!!description!!" />
+    <meta name="description" content="{{ description }}" />
     <meta name="og:title" content="あきこ" />
     <meta
       name="og:image"
       content="https://github.com/user-attachments/assets/be6c928e-36fa-48e4-ac5b-5a0406a0adb2"
     />
-    <meta name="og:description" content="!!description!!" />
+    <meta name="og:description" content="{{ description }}" />
     <link rel="stylesheet" href="styles.css" />
     <title>あきこ</title>
     <link rel="icon" href="favicon.ico" />
@@ -48,6 +48,24 @@
       <span>あきこ</span>
       <span>まずは入学年度と学類を教えてね〜</span>
     </div>
-    !!links!!
+    <p class="remark">
+      チェックマーク✅は、その学類の支援室があきこの正しさをある程度確認済みであること表します。
+      チェックマークがついていても、成績データに対する単位計算は正しくない可能性があります。
+      また、支援室はあきこ上の誤った単位計算などによる損害の責任を負いません。
+    </p>
+    {% for s in sections %}
+      <section>
+        <h3>{{ s.year }}年度入学</h3>
+        <ul>
+          {% for i in s.instances %}
+            <li class="{{ 'gap' if i.gap }}">
+              <a href="{{ s.year }}/{{ i.major }}">{{ i.majorJa }}</a>
+              {% if i.checked %}<span>✅</span>{% endif %}
+              {% if i.comment %}<span>{{ i.comment }}</span>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endfor %}
   </body>
 </html>

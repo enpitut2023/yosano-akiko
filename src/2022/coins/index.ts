@@ -1,6 +1,6 @@
-import { KnownCourse, CourseId, RealCourse, FakeCourseId } from "../../akiko";
+import { isGakushikiban } from "@/requirements/common";
+import { CourseId, FakeCourseId, KnownCourse, RealCourse } from "../../akiko";
 import { setup } from "../../app";
-import { isGakushikiban } from "../../conditions/common";
 import { courses } from "../../current-courses.js";
 import cellIdToRect from "./cell-id-to-rect.json";
 

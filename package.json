@@ -6,20 +6,25 @@
     "generate-html": "tsx scripts/generate-html.ts",
     "esbuild": "tsc && node esbuild.mjs",
     "esbuild-release": "tsc && AKIKO_RELEASE=1 node esbuild.mjs",
-    "inject-matomo-tracker": "tsx scripts/inject-matomo-tracker.ts"
+    "lint-grade-csvs": "tsx scripts/lint-grade-csvs.ts",
+    "inject-matomo-tracker": "tsx scripts/inject-matomo-tracker.ts",
+    "test": "tsx src/tests/index.ts"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
-    "@types/node": "^25.0.9",
+    "@types/node": "^25.2.1",
+    "@types/nunjucks": "^3.2.6",
     "@types/papaparse": "^5.5.2",
-    "esbuild": "^0.27.2",
+    "esbuild": "^0.27.3",
     "esbuild-sass-plugin": "^3.6.0",
-    "live-server": "^1.2.0",
+    "live-server": "^1.2.2",
+    "nunjucks": "^3.2.4",
+    "prettier-plugin-jinja-template": "^2.1.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "papaparse": "^5.5.3",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   }
 }
