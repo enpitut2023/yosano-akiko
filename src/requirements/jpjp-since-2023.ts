@@ -11,17 +11,11 @@ import {
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
-  isDataScience,
   isElectivePe,
-  isFirstYearSeminar,
   isForeignLanguage,
   isGakushikiban,
-  isInfoLiteracyExercise,
-  isInfoLiteracyLecture,
-  isIzanai,
   isJapanese,
-  isKyoushoku,
-} from "@/conditions/common";
+} from "@/requirements/common";
 
 export type Specialty = "normal" | "japan-expert";
 

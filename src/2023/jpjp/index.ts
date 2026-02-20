@@ -1,23 +1,23 @@
-import cellIdToRect from "./cell-id-to-rect.json";
 import { KnownCourse } from "@/akiko";
 import { setup } from "@/app";
 import { courses } from "@/current-courses.js";
 import {
+  Specialty,
+  classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
-  classifyFakeCourses,
   creditRequirementsNormal,
-  Specialty,
-} from "@/requirements/nichinichi-since-2023";
+} from "@/requirements/jpjp-since-2023";
+import cellIdToRect from "./cell-id-to-rect.json";
 
-const YEAR = 2025;
+const YEAR = 2023;
 const SPECIALTY: Specialty = "normal";
 
 setup({
   knownCourses: courses as KnownCourse[],
   knownCourseYear: 2025,
   creditRequirements: creditRequirementsNormal,
-  major: "nichinichi",
+  major: "jpjp",
   requirementsTableYear: YEAR,
   cellIdToRectRecord: cellIdToRect,
   classifyKnownCourses: (cs, opts) =>
