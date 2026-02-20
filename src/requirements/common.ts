@@ -73,6 +73,13 @@ export function isElectivePe(id: string): boolean {
 }
 
 /**
+ * 英語
+ */
+function isEnglish(id: string): boolean {
+  return id.startsWith("31");
+}
+
+/**
  * 必修の英語を科目番号で判定
  * - English Reading Skills I: 31H...
  * - English Presentation Skills I: 31J...
@@ -99,6 +106,20 @@ export function isCompulsoryEnglishByName(name: string): boolean {
     name === "english presentation skills i" ||
     name === "english presentation skills ii"
   );
+}
+
+/**
+ * 第一外国語(必修以外の英語)
+ */
+export function isNonCompulsoryEnglish(id: string): boolean {
+  return isEnglish(id) && !isCompulsoryEnglishById(id);
+}
+
+/**
+ * 第二外国語
+ */
+export function isSecondForeignLanguage(id: string): boolean {
+  return id.startsWith("3") && !isEnglish(id);
 }
 
 /**
@@ -167,4 +188,11 @@ export function isHakubutsukan(id: string): boolean {
  */
 export function isKyoushoku(id: string): boolean {
   return id.startsWith("9") && !isHakubutsukan(id);
+}
+
+/**
+ * 人間学群学群コア・カリキュラム
+ */
+export function isHumanSciencesCoreCurriculum(id: string): boolean {
+  return id.startsWith("CA1");
 }
