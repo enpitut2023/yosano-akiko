@@ -44,6 +44,7 @@ async function main() {
       "src/2023/chem/index.ts",
       "src/2023/jpjp/index.ts",
       "src/2023/jpjp-jltt/index.ts",
+      "src/2023/ccc/index.ts",
 
       "src/2024/coins/index.ts",
       "src/2024/coins-cs/index.ts",
@@ -66,6 +67,7 @@ async function main() {
       "src/2024/chem/index.ts",
       "src/2024/jpjp/index.ts",
       "src/2024/jpjp-jltt/index.ts",
+      "src/2024/ccc/index.ts",
 
       "src/2025/coins/index.ts",
       "src/2025/coins-cs/index.ts",
@@ -88,6 +90,7 @@ async function main() {
       "src/2025/chem/index.ts",
       "src/2025/jpjp/index.ts",
       "src/2025/jpjp-jltt/index.ts",
+      "src/2025/ccc/index.ts",
 
       "src/app.scss",
       "src/styles.scss",
