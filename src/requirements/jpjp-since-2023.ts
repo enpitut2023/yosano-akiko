@@ -17,7 +17,7 @@ import {
   isJapanese,
 } from "@/requirements/common";
 
-export type Specialty = "normal" | "japan-expert";
+export type Specialty = "none" | "jltt";
 
 function isA1(id: string): boolean {
   return (
@@ -29,13 +29,13 @@ function isA1(id: string): boolean {
 function isB(id: string, specialty: Specialty): string | undefined {
   let offset = 0;
   switch (specialty) {
-    case "normal": {
+    case "none": {
       // TODO:  //AE14を１単位必ず含む
       if (id.startsWith("AE13") || id.startsWith("AE14")) return "b1";
       offset = 0;
       break;
     }
-    case "japan-expert": {
+    case "jltt": {
       if (id.startsWith("AE13") || id.startsWith("AE14")) return "b1";
       if (id.startsWith("AE18")) return "b2";
       offset = 1;
@@ -72,7 +72,7 @@ function isC1(id: string): boolean {
 function isC2(id: string, specialty: Specialty): boolean {
   return (
     //Japan-Expert（学士）プログラム日本語教師養成コースのみ
-    specialty === "japan-expert" && id === "AE51K11" // Japan-Expert総論
+    specialty === "jltt" && id === "AE51K11" // Japan-Expert総論
   );
 }
 function isD(id: string, specialty: Specialty): string | undefined {
@@ -80,7 +80,7 @@ function isD(id: string, specialty: Specialty): string | undefined {
   if (id.startsWith("AE53")) return "d2";
   if (id.startsWith("AE54")) return "d3";
   let offset = 0;
-  if (specialty === "japan-expert") {
+  if (specialty === "jltt") {
     offset = 1;
     if (id.startsWith("AE55")) return "d4";
   }
@@ -103,7 +103,7 @@ function isE1(id: string, specialty: Specialty): boolean {
   return (
     id === "1103102" || // ファーストイヤーセミナー 1クラス対象 !!A!!
     id === "1227111" || // 学問への誘い 1クラス対象 !!A!!
-    (id === "1122502" && specialty === "japan-expert") // Japan-Expertファーストイヤーセミナー
+    (specialty === "jltt" && id === "1122502") // Japan-Expertファーストイヤーセミナー
   );
 }
 
@@ -116,8 +116,8 @@ function isE2(id: string): boolean {
 
 function isE3(id: string, name: string, specialty: Specialty): boolean {
   return (
-    (isCompulsoryEnglishByName(name) && specialty === "normal") || // 必修　第一外国語(英語)
-    (id.startsWith("3920") && specialty === "japan-expert") // 第一外国語（日本語）
+    (isCompulsoryEnglishByName(name) && specialty === "none") || // 必修　第一外国語(英語)
+    (id.startsWith("3920") && specialty === "jltt") // 第一外国語（日本語）
   );
 }
 
@@ -138,7 +138,7 @@ function isE5(id: string): boolean {
 function isE6(id: string, specialty: Specialty): boolean {
   //通常コースのみ
   return (
-    specialty === "normal" &&
+    specialty === "none" &&
     (id === "5102031" || // 国語Ⅰ  !!A!!
       id === "5202031") // 国語Ⅱ !!A!!
   );

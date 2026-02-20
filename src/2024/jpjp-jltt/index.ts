@@ -11,7 +11,7 @@ import {
 import cellIdToRect from "./cell-id-to-rect.json";
 
 const YEAR = 2024;
-const SPECIALTY: Specialty = "japan-expert";
+const SPECIALTY: Specialty = "jltt";
 
 setup({
   knownCourses: courses as KnownCourse[],
