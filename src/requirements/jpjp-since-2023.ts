@@ -8,16 +8,24 @@ import {
 import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
 import {
   isArt,
+  isCompulsoryEnglishById,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
+  isCompulsoryPe3,
+  isDataScience,
   isElectivePe,
   isForeignLanguage,
   isGakushikiban,
+  isInfoLiteracyExercise,
+  isInfoLiteracyLecture,
   isJapanese,
+  isSecondForeignLanguage,
 } from "@/requirements/common";
+import { unreachable } from "@/util";
 
 export type Specialty = "none" | "jltt";
+type Mode = "known" | "real";
 
 function isA1(id: string): boolean {
   return (
@@ -26,56 +34,42 @@ function isA1(id: string): boolean {
   );
 }
 
-function isB(id: string, specialty: Specialty): string | undefined {
+function classifyColumnB(id: string, specialty: Specialty): string | undefined {
   let offset = 0;
   switch (specialty) {
     case "none": {
-      // TODO:  //AE14を１単位必ず含む
+      // TODO: AE14を１単位必ず含む
       if (id.startsWith("AE13") || id.startsWith("AE14")) return "b1";
-      offset = 0;
       break;
     }
     case "jltt": {
       if (id.startsWith("AE13") || id.startsWith("AE14")) return "b1";
       if (id.startsWith("AE18")) return "b2";
       offset = 1;
+      break;
     }
+    default:
+      unreachable(specialty);
   }
   if (id.startsWith("AE10A")) return "b" + (2 + offset);
   if (id.startsWith("AE10B")) return "b" + (3 + offset);
   if (id.startsWith("AE10C")) return "b" + (4 + offset);
   if (id.startsWith("AE10D")) return "b" + (5 + offset);
   if (id.startsWith("AE10E")) return "b" + (6 + offset);
-  if (
-    (id.startsWith("AB6") && !id.startsWith("AB60")) ||
-    (id.startsWith("AB7") && !id.startsWith("AB70")) ||
-    (id.startsWith("AB8") && !id.startsWith("AB80")) ||
-    (id.startsWith("AB9") && !id.startsWith("AB90")) ||
-    (id.startsWith("AC6") &&
-      !id.startsWith("AB67") &&
-      !id.startsWith("AB68") &&
-      !id.startsWith("AB69")) ||
-    (id.startsWith("BB11") && !id.startsWith("BB110")) ||
-    id.startsWith("BB16") ||
-    id.startsWith("BB19")
-  ) {
+  if (/^(AB[6-9][1-9]|AC6[0-6]|BB11[1-9]|BB1[69])/.test(id)) {
     return "b" + (7 + offset);
   }
 }
 
 function isC1(id: string): boolean {
-  return (
-    id === "AE51A21" // 日本語・日本文化研究法
-  );
+  return id === "AE51A21"; // 日本語・日本文化研究法
 }
 
 function isC2(id: string, specialty: Specialty): boolean {
-  return (
-    //Japan-Expert（学士）プログラム日本語教師養成コースのみ
-    specialty === "jltt" && id === "AE51K11" // Japan-Expert総論
-  );
+  return specialty === "jltt" && id === "AE51K11"; // Japan-Expert総論
 }
-function isD(id: string, specialty: Specialty): string | undefined {
+
+function classifyColumnD(id: string, specialty: Specialty): string | undefined {
   if (id.startsWith("AE56")) return "d1";
   if (id.startsWith("AE53")) return "d2";
   if (id.startsWith("AE54")) return "d3";
@@ -84,19 +78,7 @@ function isD(id: string, specialty: Specialty): string | undefined {
     offset = 1;
     if (id.startsWith("AE55")) return "d4";
   }
-  if (
-    id.startsWith("AE5") ||
-    id.startsWith("AB50") ||
-    id.startsWith("AB60") ||
-    id.startsWith("AB70") ||
-    id.startsWith("AB80") ||
-    id.startsWith("AB90") ||
-    id.startsWith("AC50") ||
-    id.startsWith("AC56") ||
-    id.startsWith("BB110")
-  ) {
-    return "d" + (4 + offset);
-  }
+  if (/^(AE5|AB[5-9]0|AC5[06]|BB110)/.test(id)) return "d" + (4 + offset);
 }
 
 function isE1(id: string, specialty: Specialty): boolean {
@@ -108,88 +90,100 @@ function isE1(id: string, specialty: Specialty): boolean {
 }
 
 function isE2(id: string): boolean {
-  return (
-    // TODO:3年次必修
-    isCompulsoryPe1(id) || isCompulsoryPe2(id) // 必修 体育 3単位
-  );
+  return isCompulsoryPe1(id) || isCompulsoryPe2(id) || isCompulsoryPe3(id);
 }
 
 function isE3(id: string, name: string, specialty: Specialty): boolean {
-  return (
-    (isCompulsoryEnglishByName(name) && specialty === "none") || // 必修　第一外国語(英語)
-    (id.startsWith("3920") && specialty === "jltt") // 第一外国語（日本語）
-  );
+  switch (specialty) {
+    case "none":
+      return isCompulsoryEnglishByName(name);
+    case "jltt":
+      // TODO: 5-1.pdfによると3920から始まるものはJapan-Expert用の外国語として
+      // の日本語授業だが、そもそも39から始まるものが外国語としての日本語。今は
+      // 広くとっておく。!!B!!
+      return id.startsWith("39");
+    default:
+      unreachable(specialty);
+  }
 }
 
-function isE4(id: string): boolean {
-  //通常コースは第2外国語（初修外国語）
-  //japan-expertコースは第2外国語（英語）
-  TODO: return false;
+function isE4(id: string, specialty: Specialty): boolean {
+  switch (specialty) {
+    case "none":
+      // TODO: 第二外国語（初修外国語）は必修ではない英語も含まない？ !!B!!
+      return isSecondForeignLanguage(id);
+    case "jltt":
+      // TODO: JEの第二外国語（英語）は日本人の必修英語と一緒？ !!B!!
+      return isCompulsoryEnglishById(id);
+    default:
+      unreachable(specialty);
+  }
 }
 
-function isE5(id: string): boolean {
+function isE5(id: string, mode: Mode): boolean {
   return (
     id === "6102101" || // 情報リテラシー(講義) !!A!!
     id === "6402202" || // 情報リテラシー(演習)  !!A!!
-    id === "6502202" // データサイエンス !!A!!
+    id === "6502202" || // データサイエンス !!A!!
+    (mode === "real" &&
+      (isInfoLiteracyLecture(id) ||
+        isInfoLiteracyExercise(id) ||
+        isDataScience(id)))
   );
 }
 
 function isE6(id: string, specialty: Specialty): boolean {
-  //通常コースのみ
-  return (
-    specialty === "none" &&
-    (id === "5102031" || // 国語Ⅰ  !!A!!
-      id === "5202031") // 国語Ⅱ !!A!!
-  );
+  if (specialty === "none") {
+    return (
+      id === "5102031" || // 国語I (日日、総学1,2組対象) !!A!!
+      id === "5202031" // 国語II (日日、総学1,2組対象) !!A!!
+    );
+  }
+  return false;
 }
 
 function isF1(id: string): boolean {
-  return isGakushikiban(id); // 学士基盤科目
+  return isGakushikiban(id);
 }
 
-function isF2(id: string): boolean {
-  // TODO: //選択科目英語が含まれていない可能性あり
-  //尚選択科目英語は通常コースのみ認定Japan-Expertでは含まれない
+function isF2(id: string, specialty: Specialty): boolean {
+  if (
+    // 「日本画実習」「書A・B・C」は、共通科目の「芸術」とはならない。
+    specialty === "jltt" &&
+    (id === "YBE1112" || // 日本画演習１
+      id === "YBE1122" || // 日本画演習２
+      id === "4006012" || // 芸術(書A)
+      id === "4006022" || // 芸術(書B)
+      id === "4006032") // 芸術(書C)
+  ) {
+    return false;
+  }
+  // TODO: 外国語がらみが曖昧でおそらく間違っている
   return (
-    //総合科目　体育　外国語（英語及び初修外国語）国語　芸術
-    isElectivePe(id) || // 選択　体育
-    isForeignLanguage(id) || // 選択　外国語
-    isJapanese(id) || //選択 国語
-    isArt(id) // 選択 芸術
+    isElectivePe(id) || isForeignLanguage(id) || isJapanese(id) || isArt(id)
   );
 }
 
 function isH1(id: string): boolean {
-  return (
-    //ABCWYで始まる科目（専門科目、専門基礎科目で指定したAB,AC,AE,BB1で始まる科目を除く）
-    id.startsWith("A") ||
-    id.startsWith("B") ||
-    id.startsWith("C") ||
-    id.startsWith("W") ||
-    id.startsWith("Y")
-  );
+  //ABCWYで始まる科目（専門科目、専門基礎科目で指定したAB,AC,AE,BB1で始まる科目を除く）
+  return /^[ABCWY]/.test(id);
 }
 
 function isH2(id: string): boolean {
-  return (
-    id.startsWith("E") ||
-    id.startsWith("F") ||
-    id.startsWith("G") ||
-    id.startsWith("H")
-  );
+  return /^[EFGH]/.test(id);
 }
 
 function isH3(id: string): boolean {
-  return id.startsWith("8") || id.startsWith("9");
+  return /^[89]/.test(id);
 }
 
 function classify(
   id: CourseId,
   name: string,
-  year: number,
+  _year: number,
   specialty: Specialty,
-  isNative: boolean,
+  _isNative: boolean,
+  mode: Mode,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
@@ -198,14 +192,16 @@ function classify(
   if (isE1(id, specialty)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(id, name, specialty)) return "e3";
-  if (isE4(id)) return "e4";
-  if (isE5(id)) return "e5";
+  if (isE4(id, specialty)) return "e4";
+  if (isE5(id, mode)) return "e5";
   if (isE6(id, specialty)) return "e6";
   // 選択
-  if (isB(id, specialty) !== undefined) return isB(id, specialty);
-  if (isD(id, specialty) !== undefined) return isD(id, specialty);
+  const b = classifyColumnB(id, specialty);
+  if (b !== undefined) return b;
+  const d = classifyColumnD(id, specialty);
+  if (d !== undefined) return d;
   if (isF1(id)) return "f1";
-  if (isF2(id)) return "f2";
+  if (isF2(id, specialty)) return "f2";
   if (isH1(id)) return "h1";
   if (isH2(id)) return "h2";
   if (isH3(id)) return "h3";
@@ -219,7 +215,14 @@ export function classifyKnownCourses(
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, year, specialty, true);
+    const cellId = classify(
+      c.id,
+      c.name,
+      year,
+      specialty,
+      opts.isNative,
+      "known",
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -236,7 +239,14 @@ export function classifyRealCourses(
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, year, specialty, opts.isNative);
+    const cellId = classify(
+      c.id,
+      c.name,
+      year,
+      specialty,
+      opts.isNative,
+      "real",
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -247,15 +257,19 @@ export function classifyRealCourses(
 // TODO:
 export function classifyFakeCourses(
   cs: FakeCourse[],
-  opts: ClassifyOptions,
-  year: number,
+  _opts: ClassifyOptions,
+  _year: number,
   specialty: Specialty,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
+  for (const c of cs) {
+    if (isCompulsoryEnglishByName(c.name)) {
+      fakeCourseIdToCellId.set(c.id, specialty === "none" ? "e3" : "e4");
+    }
+  }
   return fakeCourseIdToCellId;
 }
 
-//日本語・日本文化学類通常コース
 export const creditRequirementsNormal: SetupCreditRequirements = {
   cells: {
     a1: { min: 6, max: 6 },
@@ -296,7 +310,6 @@ export const creditRequirementsNormal: SetupCreditRequirements = {
   elective: 98,
 };
 
-//日本語・日本文化学類Japan-Expert（学士）プログラム日本語教師養成コース
 export const creditRequirementsJapanExpert: SetupCreditRequirements = {
   cells: {
     a1: { min: 6, max: 6 },
