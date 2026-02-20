@@ -20,12 +20,11 @@ import {
   isInfoLiteracyLecture,
   isIzanai,
   isJapanese,
-  isKyoushoku,
   isKyoutsuu,
+  isSecondForeignLanguage,
 } from "@/requirements/common";
 
 type Mode = "known" | "real";
-
 
 function isA1(id: string): boolean {
   return (
@@ -49,7 +48,6 @@ function isB2(id: string): boolean {
   if (id.startsWith("AC6") && !id.startsWith("AC67")) {
     return true;
   }
-
   if (
     id === "AB98A11" ||
     id === "AB98A21" ||
@@ -61,7 +59,6 @@ function isB2(id: string): boolean {
   ) {
     return true;
   }
-
   if (
     id === "AB85A11" ||
     id === "AB85A21" ||
@@ -74,14 +71,16 @@ function isB2(id: string): boolean {
   ) {
     return true;
   }
-
   if (id === "AB61") return true;
   if (id.startsWith("AB62") && !id.startsWith("AB62K")) return true;
   if (id.startsWith("AB63") && !id.startsWith("AB63K")) return true;
   if (id === "AE13G41") return true;
-
   return false;
-  // TODO: 右の実装（注3）が必要?「演習または実習として開設された科目を8単位以上含めること。また、所属する領域の科目から10単位以上を修得す るものとする。なお、比較文化学類長が各領域の専門科目として指定した科目(他の学群及び学類の科目を含む)に ついては42～74単位中の14単位まで、また、当該領域の専門科目としては10単位以上のうち4単位まで履修すること ができる」
+  // TODO: 演習または実習として開設された科目を8単位以上含めること。また、所属
+  // する領域の科目から10単位以上を修得するものとする。なお、比較文化学類長が各
+  // 領域の専門科目として指定した科目(他の学群及び学類の科目を含む)については42
+  // ～74単位中の14単位まで、また、当該領域の専門科目としては10単位以上のうち4
+  // 単位まで履修することができる
 }
 
 function isC1(id: string): boolean {
@@ -105,26 +104,22 @@ function isD4(id: string): boolean {
 }
 
 function isD5(id: string): boolean {
-  return (
-    id.startsWith("AC54") || 
-    id.startsWith("AC55") || 
-    id === "AB98F4"
-  );
+  return id.startsWith("AC54") || id.startsWith("AC55") || id === "AB98F4";
 }
 
-function isE1(id: string): boolean {
+function isE1(id: string, mode: Mode): boolean {
   return (
     id === "1102102" || // ファーストイヤーセミナー 春AB 比文1クラス対象.
     id === "1102202" || // ファーストイヤーセミナー 春AB 比文2クラス対象.
     id === "1102302" || // ファーストイヤーセミナー 春AB 比文3クラス対象.
     id === "1227071" || // 学問への誘い 春A 比文1クラス対象.
     id === "1227081" || // 学問への誘い 春A 比文2クラス対象.
-    id === "1227091" // 学問への誘い 春A 比文3クラス対象.
+    id === "1227091" || // 学問への誘い 春A 比文3クラス対象.
+    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
 
 function isE2(id: string): boolean {
-  // TODO: 基礎体育の時に種目が違うか、応用の時に種目が同じかチェック
   return isCompulsoryPe1(id) || isCompulsoryPe2(id);
 }
 
@@ -133,13 +128,12 @@ function isE3(name: string): boolean {
 }
 
 function isE4(id: string): boolean {
-  return false;
-  //TODO: E4,F3の外国語との違いを聞きに行く
+  return isSecondForeignLanguage(id);
 }
 
 function isE5(id: string, mode: Mode): boolean {
   return (
-    id === "6102101" || // 情報リテラシー(講義) 春A 
+    id === "6102101" || // 情報リテラシー(講義) 春A
     id === "6402102" || // 情報リテラシー(演習) 春B 比文1班
     id === "6402202" || // 情報リテラシー(演習) 春B 比文2班
     id === "6502102" || // データサイエンス 秋AB 比文1班
@@ -164,8 +158,7 @@ function isF2(id: string): boolean {
 }
 
 function isF3(id: string): boolean {
-  return false;
-  //TODO: E4,F3の外国語との違いを聞きに行く
+  return isForeignLanguage(id);
 }
 
 function isF4(id: string): boolean {
@@ -173,60 +166,36 @@ function isF4(id: string): boolean {
 }
 
 function isH1(id: string): boolean {
-  const targetedPrefix =
-    id.startsWith("AA2") ||
-    id.startsWith("AB") ||
-    id.startsWith("AE") ||
-    id.startsWith("B") ||
-    id.startsWith("Y");
-
-  if (!targetedPrefix) {
-    return false;
-  }
-
-  return true;
+  return /^(AA2|A[BE]|B|Y)/.test(id);
 }
 
 function isH2(id: string): boolean {
-  const targetedPrefix =
-    id.startsWith("C") ||
-    id.startsWith("E") ||
-    id.startsWith("F") ||
-    id.startsWith("G") ||
-    id.startsWith("H") ||
-    id.startsWith("W");
-
-  if (!targetedPrefix) {
-    return false;
-  }
-
-  return true;
+  return /^[CEFGHW]/.test(id);
 }
 
 function isH3(id: string): boolean {
   // 上記以外の他学群又は他学類の授業科目
   // TODO: 適当に思いつくものは除いておきたい
-  return true;
+  return !isKyoutsuu(id);
 }
 
 function classify(
   id: CourseId,
   name: string,
   mode: Mode,
-  isNative: boolean,
+  _isNative: boolean,
 ): string | undefined {
-  // 必修: A, C, E
+  // 必修
   if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
   if (isC1(id)) return "c1";
-  if (isE1(id)) return "e1";
+  if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id)) return "e4";
   if (isE5(id, mode)) return "e5";
   if (isE6(id)) return "e6";
-
-  // 選択: B, D, F, H
+  // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";
   if (isD1(id)) return "d1";
@@ -246,7 +215,7 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   opts: ClassifyOptions,
-  tableYear: number,
+  _tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
@@ -261,7 +230,7 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
-  tableYear: number,
+  _tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
@@ -274,12 +243,17 @@ export function classifyRealCourses(
 }
 
 export function classifyFakeCourses(
-  _cs: FakeCourse[],
+  cs: FakeCourse[],
   _opts: ClassifyOptions,
-  tableYear: number,
+  _tableYear: number,
 ): Map<FakeCourseId, string> {
-  // 一旦このまま置いておく
-  return new Map();
+  const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
+  for (const c of cs) {
+    if (isE3(c.name)) {
+      fakeCourseIdToCellId.set(c.id, "e3");
+    }
+  }
+  return fakeCourseIdToCellId;
 }
 
 export const creditRequirements: SetupCreditRequirements = {
@@ -317,6 +291,6 @@ export const creditRequirements: SetupCreditRequirements = {
     f: { min: 1, max: 19 },
     h: { min: 6, max: 38 },
   },
-  compulsory: 29, // TODO: 実数値が判明したら更新
-  elective: 95, // TODO: 実数値が判明したら更新
+  compulsory: 29,
+  elective: 95,
 };
