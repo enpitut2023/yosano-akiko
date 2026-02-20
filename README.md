@@ -1,7 +1,7 @@
 # あきこ
 
 > 履修を楽にしてくれる筑波大生向けのWebアプリ！\
-単位の計算・授業探し・Twinsへの登録があっという間におわります。
+> 単位の計算・授業探し・Twinsへの登録があっという間におわります。
 
 <img width="2238" height="1231" alt="screenshot" src="https://github.com/user-attachments/assets/9c523aa9-3797-4725-9eb0-204daa1cfb33" />
 
@@ -27,34 +27,13 @@
 ## 主な機能
 
 - **単位の計算**\
-成績データから単位状況が自動で計算されて、足りない単位が一目でわかります！
+  成績データから単位状況が自動で計算されて、足りない単位が一目でわかります！
 
 - **授業探し**\
-ほしい単位の区分（マス）から対象授業を検索できます！
+  ほしい単位の区分（マス）から対象授業を検索できます！
 
 - **Twinsへの登録**\
-選んだ授業のデータを出力して、TWINSへ一括登録できます！
-
-## 対応ユーザ
-
-- 2025年度入学\
-[情報科学類](https://enpitut2023.github.io/yosano-akiko/2025/coins/)
-
-- 2024年度入学\
-[情報科学類](https://enpitut2023.github.io/yosano-akiko/2024/coins/)
-
-- 2023年度入学\
-[情報科学類](https://enpitut2023.github.io/yosano-akiko/2023/coins)\
-[知識情報・図書館学類 知識科学専攻](https://enpitut2023.github.io/yosano-akiko/2023/klis-science) （ほぼ全て対応）\
-[知識情報・図書館学類 知識情報システム専攻](https://enpitut2023.github.io/yosano-akiko/2023/klis-system) （ほぼ全て対応）\
-[情報メディア創成学類](https://enpitut2023.github.io/yosano-akiko/2023/mast) （選択科目のみ対応）
-
-- 2022年度入学\
-[情報科学類](https://enpitut2023.github.io/yosano-akiko/2022/coins) （選択科目のみ対応）
-
-- 2021年度入学\
-[情報科学類](https://enpitut2023.github.io/yosano-akiko/2021/coins) （選択科目のみ対応）\
-[情報メディア創成学類](https://enpitut2023.github.io/yosano-akiko/2021/mast) （選択科目のみ対応）
+  選んだ授業のデータを出力して、TWINSへ一括登録できます！
 
 ## 開発メンバー
 
@@ -63,7 +42,6 @@
 - 髙橋
 - 齊藤
 - 安田
-
 
 ## 連絡先
 

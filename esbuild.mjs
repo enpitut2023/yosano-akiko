@@ -42,6 +42,9 @@ async function main() {
       "src/2023/pops-mse/index.ts",
       "src/2023/pops-urp/index.ts",
       "src/2023/chem/index.ts",
+      "src/2023/jpjp/index.ts",
+      "src/2023/jpjp-jltt/index.ts",
+      "src/2023/ccc/index.ts",
       "src/2023/earth-gs/index.ts",
       "src/2023/earth-ees/index.ts",
 
@@ -64,6 +67,9 @@ async function main() {
       "src/2024/pops-mse/index.ts",
       "src/2024/pops-urp/index.ts",
       "src/2024/chem/index.ts",
+      "src/2024/jpjp/index.ts",
+      "src/2024/jpjp-jltt/index.ts",
+      "src/2024/ccc/index.ts",
       "src/2024/earth-gs/index.ts",
       "src/2024/earth-ees/index.ts",
 
@@ -86,6 +92,9 @@ async function main() {
       "src/2025/pops-mse/index.ts",
       "src/2025/pops-urp/index.ts",
       "src/2025/chem/index.ts",
+      "src/2025/jpjp/index.ts",
+      "src/2025/jpjp-jltt/index.ts",
+      "src/2025/ccc/index.ts",
       "src/2025/earth-gs/index.ts",
       "src/2025/earth-ees/index.ts",
 
