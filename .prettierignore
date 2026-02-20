@@ -1,0 +1,6 @@
+/node_modules
+/dist
+/src/courses
+/src/current-courses.js
+/src/**/cell-id-to-rect.json
+/src/**/table-view-box.json
