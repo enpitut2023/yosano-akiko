@@ -232,7 +232,9 @@ function isF1(id: string): boolean {
 }
 
 function isF2(id: string): boolean {
-  return isForeignLanguage(id) || isElectivePe(id) || isJapanese(id) || isArt(id);
+  return (
+    isForeignLanguage(id) || isElectivePe(id) || isJapanese(id) || isArt(id)
+  );
 }
 
 function isH1(id: string, year: number): boolean {
@@ -296,7 +298,7 @@ function classify(
   if (isE2(id)) return "e2";
   if (isE3(id)) return "e3";
   if (isE4(id)) return "e4";
-  if(isA2(id, "ees") || isA2(id, "gs")) return undefined;
+  if (isA2(id, "ees") || isA2(id, "gs")) return undefined;
   // 選択
   if (isB1(id, specialty)) return "b1";
   if (isB2(id, specialty)) return "b2";

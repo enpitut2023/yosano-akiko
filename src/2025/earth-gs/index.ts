@@ -22,6 +22,8 @@ setup({
   cellIdToRectRecord: cellIdToRect,
   classifyKnownCourses: (cs, opts) =>
     classifyKnownCourses(cs, opts, YEAR, SPECIALTY),
-  classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts, YEAR,SPECIALTY),
-  classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts, YEAR, SPECIALTY),
+  classifyRealCourses: (cs, opts) =>
+    classifyRealCourses(cs, opts, YEAR, SPECIALTY),
+  classifyFakeCourses: (cs, opts) =>
+    classifyFakeCourses(cs, opts, YEAR, SPECIALTY),
 });
