@@ -332,6 +332,8 @@ function main(): void {
     { year: 2023, major: "jpjp" },
     { year: 2023, major: "jpjp-jltt" },
     { year: 2023, major: "ccc" },
+    { year: 2023, major: "earth-gs" },
+    { year: 2023, major: "earth-ees" },
 
     { year: 2024, major: "coins", checked: true },
     { year: 2024, major: "coins-cs", checked: true },
@@ -355,6 +357,8 @@ function main(): void {
     { year: 2024, major: "jpjp" },
     { year: 2024, major: "jpjp-jltt" },
     { year: 2024, major: "ccc" },
+    { year: 2024, major: "earth-gs" },
+    { year: 2024, major: "earth-ees" },
 
     { year: 2025, major: "coins", checked: true },
     { year: 2025, major: "coins-cs", checked: true },
@@ -378,6 +382,8 @@ function main(): void {
     { year: 2025, major: "jpjp" },
     { year: 2025, major: "jpjp-jltt" },
     { year: 2025, major: "ccc" },
+    { year: 2025, major: "earth-gs" },
+    { year: 2025, major: "earth-ees" },
   ];
 
   const indexTemplate = readFileSync("src/index.html", {
