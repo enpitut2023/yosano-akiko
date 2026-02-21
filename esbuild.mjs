@@ -42,6 +42,8 @@ async function main() {
       "src/2023/pops-mse/index.ts",
       "src/2023/pops-urp/index.ts",
       "src/2023/chem/index.ts",
+      "src/2023/bres-as/index.ts",
+      "src/2023/bres-les/index.ts",
 
       "src/2024/coins/index.ts",
       "src/2024/coins-cs/index.ts",
@@ -62,6 +64,8 @@ async function main() {
       "src/2024/pops-mse/index.ts",
       "src/2024/pops-urp/index.ts",
       "src/2024/chem/index.ts",
+      "src/2024/bres-as/index.ts",
+      "src/2024/bres-les/index.ts",
 
       "src/2025/coins/index.ts",
       "src/2025/coins-cs/index.ts",
@@ -82,6 +86,8 @@ async function main() {
       "src/2025/pops-mse/index.ts",
       "src/2025/pops-urp/index.ts",
       "src/2025/chem/index.ts",
+      "src/2025/bres-as/index.ts",
+      "src/2025/bres-les/index.ts",
 
       "src/app.scss",
       "src/styles.scss",
