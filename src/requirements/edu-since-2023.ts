@@ -14,17 +14,21 @@ import {
   isDataScience,
   isElectivePe,
   isFirstYearSeminar,
-  isForeignLanguage,
   isGakushikiban,
+  isHakubutsukan,
+  isHumanSciencesCoreCurriculum,
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
   isIzanai,
   isJapanese,
+  isJiyuukamoku,
   isKyoushoku,
   isNonCompulsoryEnglish,
   isSecondForeignLanguage,
 } from "@/requirements/common";
-import { assert } from "@/util";
+import { arrayRemove, assert, defined } from "@/util";
+
+type Mode = "known" | "real";
 
 function isA1(id: string): boolean {
   return (
@@ -34,7 +38,8 @@ function isA1(id: string): boolean {
 }
 
 function isB1(id: string): boolean {
-  // ただし4単位は演習または探求の科目（科目番号の末尾2の科目を含むこと）
+  // TODO: 「ただし4単位は演習または探求の科目（科目番号の末尾2の科目を含むこ
+  // と）」という条件は未実装
   return id.startsWith("CB2");
 }
 
@@ -63,8 +68,8 @@ function isC4(id: string): boolean {
 
 function isC5(id: string): boolean {
   return (
-    id === "CA10051" || // 障害科学Ⅰ
-    id === "CA10061" // 障害科学Ⅱ
+    id === "CA10051" || // 障害科学I
+    id === "CA10061" // 障害科学II
   );
 }
 
@@ -93,10 +98,10 @@ function isC11(id: string): boolean {
 }
 
 function isD1(id: string): boolean {
-  return id.startsWith("CA") || id.startsWith("CB1");
+  return isHumanSciencesCoreCurriculum(id) || id.startsWith("CB1");
 }
 
-function isE1(id: string, mode: "known" | "real"): boolean {
+function isE1(id: string, mode: Mode): boolean {
   return (
     id === "1106102" || // ファーストイヤーセミナー 1,2クラス
     id === "1227201" || // 学問への誘い 1,2クラス
@@ -105,18 +110,18 @@ function isE1(id: string, mode: "known" | "real"): boolean {
 }
 
 function isE2(id: string): boolean {
-  return isCompulsoryPe1(id) || isCompulsoryPe2(id); // 必修 体育 2単位
+  return isCompulsoryPe1(id) || isCompulsoryPe2(id);
 }
 
 function isE3(name: string): boolean {
-  return isCompulsoryEnglishByName(name); // 必修 第一外国語(英語)
+  return isCompulsoryEnglishByName(name);
 }
 
 function isE4(id: string): boolean {
-  return isSecondForeignLanguage(id); // 必修 第二外国語(初修外国語)
+  return isSecondForeignLanguage(id);
 }
 
-function isE5(id: string, mode: "known" | "real"): boolean {
+function isE5(id: string, mode: Mode): boolean {
   return (
     id === "6126101" || // 情報リテラシー(講義)
     id === "6406102" || // 情報リテラシー(演習)
@@ -129,39 +134,32 @@ function isE5(id: string, mode: "known" | "real"): boolean {
 }
 
 function isF1(id: string): boolean {
-  return isGakushikiban(id); // 学士基盤科目
+  return isGakushikiban(id);
 }
 
 function isF2(id: string): boolean {
   return (
-    isElectivePe(id) || // 選択 体育
-    isNonCompulsoryEnglish(id) || // 選択 外国語
-    isSecondForeignLanguage(id) || // 第二外国語
-    isJapanese(id) || // 選択 国語
-    isArt(id) // 選択 芸術
+    isElectivePe(id) ||
+    isNonCompulsoryEnglish(id) ||
+    isSecondForeignLanguage(id) ||
+    isJapanese(id) ||
+    isArt(id)
   );
 }
 
 function isH1(id: string): boolean {
-  // 他学類が開設している科目
   return (
-    id.startsWith("A") ||
-    id.startsWith("B") ||
-    id.startsWith("E") ||
-    id.startsWith("F") ||
-    id.startsWith("G") ||
-    id.startsWith("H") ||
-    id.startsWith("V") ||
-    id.startsWith("W") ||
-    id.startsWith("Y") ||
-    isKyoushoku(id) // 教職や博物館に関する科目
+    /^[ABEFGHVWY]/.test(id) ||
+    isKyoushoku(id) ||
+    isHakubutsukan(id) ||
+    isJiyuukamoku(id)
   );
 }
 
 function classify(
   id: CourseId,
   name: string,
-  mode: "known" | "real",
+  mode: Mode,
   _year: number,
 ): string | undefined {
   // 必修
@@ -211,26 +209,55 @@ export function classifyRealCourses(
   _opts: ClassifyOptions,
   year: number,
 ): Map<CourseId, string> {
-  const csArray = Array.from(cs);
+  cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
 
-  // e4とf2に第二外国語が入るので、先にe4に3単位分入れてから残りはf2に入れる
-  // TODO: 1科目2単位があったらアウト
-  let e4Credits = 0;
-
-  for (const c of csArray) {
+  // e4とf2に第二外国語が入るので、先にe4に3単位分入れてから残りはf2に入れる。
+  // なるべく3単位ちょうど入るようにする。
+  // TODO: 3単位ちょうどにできない場合の処理 !!B!!
+  const e4CandidatesWorth1: RealCourse[] = [];
+  const e4CandidatesWorth2: RealCourse[] = [];
+  const e4CandidatesWorth3: RealCourse[] = [];
+  for (const c of cs) {
     if (isE4(c.id)) {
-      if (e4Credits < 3) {
-        assert(c.credit !== undefined);
-        e4Credits += c.credit;
-        courseIdToCellId.set(c.id, "e4");
-        continue;
-      } else {
-        courseIdToCellId.set(c.id, "f2");
-        continue;
+      if (c.credit === 1) e4CandidatesWorth1.push(c);
+      if (c.credit === 2) e4CandidatesWorth2.push(c);
+      if (c.credit === 3) e4CandidatesWorth3.push(c);
+    }
+  }
+
+  const e4Courses: RealCourse[] = [];
+  const n1 = e4CandidatesWorth1.length;
+  const n2 = e4CandidatesWorth2.length;
+  const n3 = e4CandidatesWorth3.length;
+  if (n3 >= 1) {
+    e4Courses.push(defined(e4CandidatesWorth3.pop()));
+  } else if (n2 >= 1 && n1 >= 1) {
+    e4Courses.push(defined(e4CandidatesWorth2.pop()));
+    e4Courses.push(defined(e4CandidatesWorth1.pop()));
+  } else if (n1 >= 3) {
+    for (let i = 0; i < 3; i++) {
+      e4Courses.push(defined(e4CandidatesWorth1.pop()));
+    }
+  } else {
+    const e4Candidates = cs.filter((c) => isE4(c.id));
+    e4Candidates.sort((a, b) => (a.credit ?? 0) - (b.credit ?? 0));
+    let total = 0;
+    for (const c of e4Candidates) {
+      total += c.credit ?? 0;
+      e4Courses.push(c);
+      if (total >= 3) {
+        break;
       }
     }
+  }
 
+  for (const c of e4Courses) {
+    assert(arrayRemove(cs, c));
+    courseIdToCellId.set(c.id, "e4");
+  }
+
+  for (const c of cs) {
     const cellId = classify(c.id, c.name, "real", year);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
@@ -253,7 +280,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-export const creditRequirements: SetupCreditRequirements = {
+export const creditRequirementsSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 6, max: 6 },
     b1: { min: 42, max: 79 },

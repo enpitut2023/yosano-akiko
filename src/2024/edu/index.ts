@@ -3,7 +3,7 @@ import {
   classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
-  creditRequirements,
+  creditRequirementsSince2023,
 } from "@/requirements/edu-since-2023";
 import { setup } from "../../app";
 import { courses } from "../../current-courses.js";
@@ -14,7 +14,7 @@ const YEAR = 2024;
 setup({
   knownCourses: courses as KnownCourse[],
   knownCourseYear: 2025,
-  creditRequirements: creditRequirements,
+  creditRequirements: creditRequirementsSince2023,
   major: "edu",
   requirementsTableYear: YEAR,
   cellIdToRectRecord: cellIdToRect,
