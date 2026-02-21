@@ -2,13 +2,5 @@
   "flagWords": [],
   "language": "en",
   "version": "0.2",
-  "words": [
-    "akiko",
-    "divs",
-    "klis",
-    "mainfont",
-    "maxwidth",
-    "tbodys",
-    "twinte"
-  ]
+  "words": ["akiko", "divs", "klis", "mainfont", "maxwidth", "tbodys", "twinte"]
 }
