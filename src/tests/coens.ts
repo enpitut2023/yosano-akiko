@@ -7,7 +7,7 @@ import {
 import { assertCreditStatsEqual, getCreditStats } from "@/test-util";
 
 function test1(): void {
-  const csv = readFileSync("grade-csvs/2024/coens-1.csv", {
+  const csv = readFileSync("grade-csvs/2024/coens-ap-1.csv", {
     encoding: "utf8",
   });
   const isNative = true;

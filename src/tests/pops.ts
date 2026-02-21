@@ -55,7 +55,7 @@ function test1(): void {
 }
 
 function test2(): void {
-  const csv = readFileSync("grade-csvs/2024/pops-1.csv", {
+  const csv = readFileSync("grade-csvs/2024/pops-ses-1.csv", {
     encoding: "utf8",
   });
   const isNative = true;
