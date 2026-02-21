@@ -243,8 +243,9 @@ export function classifyRealCourses(
   }
 
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "real", year);
+    let cellId = classify(c.id, c.name, "real", year);
     if (cellId !== undefined) {
+      if (cellId === "e4") cellId = "f2";
       courseIdToCellId.set(c.id, cellId);
     }
   }
