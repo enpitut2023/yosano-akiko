@@ -335,6 +335,7 @@ function main(): void {
     { year: 2023, major: "earth-gs" },
     { year: 2023, major: "earth-ees" },
     { year: 2023, major: "edu" },
+    { year: 2023, major: "psy" },
 
     { year: 2024, major: "coins", checked: true },
     { year: 2024, major: "coins-cs", checked: true },
@@ -361,6 +362,7 @@ function main(): void {
     { year: 2024, major: "earth-gs" },
     { year: 2024, major: "earth-ees" },
     { year: 2024, major: "edu" },
+    { year: 2024, major: "psy" },
 
     { year: 2025, major: "coins", checked: true },
     { year: 2025, major: "coins-cs", checked: true },
@@ -387,6 +389,7 @@ function main(): void {
     { year: 2025, major: "earth-gs" },
     { year: 2025, major: "earth-ees" },
     { year: 2025, major: "edu" },
+    { year: 2025, major: "psy" },
   ];
 
   const indexTemplate = readFileSync("src/index.html", {

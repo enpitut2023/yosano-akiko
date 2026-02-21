@@ -7,3 +7,4 @@ import "./mast";
 import "./math";
 import "./physics";
 import "./pops";
+import "./psy";
