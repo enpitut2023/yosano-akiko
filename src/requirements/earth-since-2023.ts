@@ -9,28 +9,29 @@ import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
 import {
   isArt,
   isCompulsoryEnglishById,
+  isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
+  isDataScience,
   isElectivePe,
+  isFirstYearSeminar,
   isForeignLanguage,
   isGakushikiban,
   isHakubutsukan,
+  isInfoLiteracyExercise,
+  isInfoLiteracyLecture,
+  isIzanai,
   isJapanese,
   isKyoushoku,
   isKyoutsuu,
 } from "@/requirements/common";
 import { unreachable } from "@/util";
 
-export type Specialty =
-  // Earth Environmental Science (Geo-environmental Science)
-  | "gs"
-  // Evolutionary Earth Sciences
-  | "ees";
-
+export type Specialty = "gs" | "ees";
 type Mode = "known" | "real";
 
-function isA1(id: string, year: number): boolean {
-  if (year >= 2024) {
+function isA1(id: string, tableYear: number): boolean {
+  if (tableYear >= 2024) {
     return (
       id === "EE51968" || // 卒業研究 通年
       id === "EE51978" || // 卒業研究 応談 春
@@ -77,17 +78,14 @@ function isB1(id: string, specialty: Specialty): boolean {
   }
 }
 
-function isB2(id: string, _specialty: Specialty): boolean {
-  // Shared logic for EE2/EE3/EE4/EE8/EG9 etc as per my previous analysis
-  // Note: Source has separate blocks for gs/ees but they look identical in coverage
-  // except for comments "2023年度にのみ" etc.
-  // I will make it permissive union.
+function isB2(id: string, tableYear: number): boolean {
+  if (tableYear === 2023 && /^(EE[34]|EG[89])/.test(id)) {
+    return true;
+  }
+  if (tableYear >= 2024 && /^(EE3|EG9)/.test(id)) {
+    return true;
+  }
   return (
-    id.startsWith("EE2") ||
-    id.startsWith("EE3") ||
-    id.startsWith("EE4") ||
-    id.startsWith("EE8") ||
-    id.startsWith("EG9") ||
     id === "EE11881" || // 地球基礎数学・物理学
     id === "EE11891" || // 地球基礎化学
     id === "EE11831" || // 地球統計学
@@ -108,7 +106,7 @@ function isC1(id: string): boolean {
   );
 }
 
-function isD1(id: string, year: number): boolean {
+function isD1(id: string, tableYear: number): boolean {
   // TODO: 微分積分Aは以下のどちらでも可能か？学類による指定はない
   // id === "GA15331" || // 微分積分A !!A!!
   // id === "GA15341" || // 微分積分A !!A!!
@@ -161,21 +159,19 @@ function isD1(id: string, year: number): boolean {
     id === "AB70F11" || // 歴史地理概説-a
     id === "AB70F21" || // 歴史地理概説-b
     id === "AC50E41" || // 文化地理学概論
-    id === "AC62F21" || // 地域地理学I 西暦偶数年度 2025年度のみ
-    id === "AC62F31" || // 地域地理学Ⅱ 西暦奇数年度 2025年度のみ
     id === "FF17011" || // 応用理工学概論
     id === "FG16051" || // 工学システム概論
     id === "FCA1011" || // 物理学序説
     id === "FE00031" || // 化学序説
-    id.startsWith("FB") ||
-    id.startsWith("FC") ||
-    id.startsWith("FE") ||
-    id.startsWith("EB") ||
-    id.startsWith("EC") ||
-    id.startsWith("EE1") ||
-    (id.startsWith("EG") && id[2] !== "7" && id[2] !== "8" && id[2] !== "9") ||
-    id.startsWith("EG70");
-  if (year >= 2024) {
+    /^(F[BCE]|E[BC]|EE1|EG[0-6]|EG70)/.test(id);
+  if (
+    tableYear >= 2025 &&
+    (id === "AC62F21" || // 地域地理学I 西暦偶数年度
+      id === "AC62F31") // 地域地理学II 西暦奇数年度
+  ) {
+    return true;
+  }
+  if (tableYear >= 2024) {
     return (
       common ||
       id === "FA013A1" || // 微積分1 !!A!!
@@ -189,12 +185,12 @@ function isD1(id: string, year: number): boolean {
     // 2023
     return (
       common ||
-      id === "FBA1491" || // 微積分Ⅰ !!A!!
-      id === "FBA1531" || // 微積分Ⅱ !!A!!
-      id === "FA015A1" || // 微積分Ⅲ !!A!!
-      id === "FBA1611" || // 線形代数Ⅰ !!A!!
-      id === "FBA1651" || // 線形代数Ⅱ !!A!!
-      id === "FBA1691" || // 線形代数Ⅲ !!A!!
+      id === "FBA1491" || // 微積分I !!A!!
+      id === "FBA1531" || // 微積分II !!A!!
+      id === "FA015A1" || // 微積分II !!A!!
+      id === "FBA1611" || // 線形代数I !!A!!
+      id === "FBA1651" || // 線形代数II !!A!!
+      id === "FBA1691" || // 線形代数II !!A!!
       id.startsWith("FA") || // 2023年度のみ
       id.startsWith("GA") || // 2023年度のみ
       id.startsWith("71") // 2023年度のみ
@@ -202,12 +198,13 @@ function isD1(id: string, year: number): boolean {
   }
 }
 
-function isE1(id: string): boolean {
+function isE1(id: string, mode: Mode): boolean {
   return (
     id === "1111102" || // ファーストイヤーセミナー 1クラス
     id === "1111202" || // ファーストイヤーセミナー 2クラス
     id === "1227351" || // 学問への誘い 1クラス
-    id === "1227361" // 学問への誘い 2クラス
+    id === "1227361" || // 学問への誘い 2クラス
+    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
 
@@ -219,11 +216,15 @@ function isE3(id: string): boolean {
   return isCompulsoryEnglishById(id);
 }
 
-function isE4(id: string): boolean {
+function isE4(id: string, mode: Mode): boolean {
   return (
     id === "6109101" || // 情報リテラシー(講義)
     id === "6411102" || // 情報リテラシー(演習)
-    id === "6511102" // データサイエンス
+    id === "6511102" || // データサイエンス
+    (mode === "real" &&
+      (isInfoLiteracyLecture(id) ||
+        isInfoLiteracyExercise(id) ||
+        isDataScience(id)))
   );
 }
 
@@ -237,75 +238,52 @@ function isF2(id: string): boolean {
   );
 }
 
-function isH1(id: string, year: number): boolean {
+function isH1(id: string, tableYear: number): boolean {
+  if (isKyoutsuu(id)) {
+    return false;
+  }
   // TODO: その他学類長が特に指定する科目 2025のみH1
   // ファーストイヤーセミナーとかがめっちゃ入ってる
-  if (year >= 2025) {
-    return (
-      isKyoushoku(id) ||
-      isHakubutsukan(id) ||
-      (!id.startsWith("E") &&
-        !id.startsWith("FB") &&
-        !id.startsWith("FC") &&
-        !id.startsWith("FE") &&
-        !isKyoutsuu(id))
-    );
+  if (tableYear >= 2025) {
+    return isKyoushoku(id) || isHakubutsukan(id) || !/^(E|FB|FC|FE)/.test(id);
   } else {
     // 2023 2024
     return (
-      isKyoushoku(id) ||
-      isHakubutsukan(id) ||
-      id.startsWith("AB") ||
-      id.startsWith("AC") ||
-      id.startsWith("FF") ||
-      id.startsWith("FG") ||
-      id.startsWith("FH")
+      isKyoushoku(id) || isHakubutsukan(id) || /^(AB|AC|FF|FG|FH)/.test(id)
     );
   }
 }
 
 function isH2(id: string): boolean {
-  //TODO: その他学類長が特に指定する科目 2023,2024
-  return (
-    !id.startsWith("AB") &&
-    !id.startsWith("AC") &&
-    !id.startsWith("EB") &&
-    !id.startsWith("EC") &&
-    !id.startsWith("EE") &&
-    !id.startsWith("EG") &&
-    !id.startsWith("FB") &&
-    !id.startsWith("FC") &&
-    !id.startsWith("FE") &&
-    !id.startsWith("FF") &&
-    !id.startsWith("FG") &&
-    !id.startsWith("FH") &&
-    !isKyoutsuu(id)
-  );
+  if (isKyoutsuu(id)) {
+    return false;
+  }
+  return /^(A[BC]|E[BCEG]|F[BCEFGH])/.test(id);
 }
 
 function classify(
   id: CourseId,
   specialty: Specialty,
   _isNative: boolean,
-  _mode: Mode,
-  year: number,
+  mode: Mode,
+  tableYear: number,
 ): string | undefined {
   // 必修
-  if (isA1(id, year)) return "a1";
+  if (isA1(id, tableYear)) return "a1";
   if (isA2(id, specialty)) return "a2";
   if (isC1(id)) return "c1";
-  if (isE1(id)) return "e1";
+  if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(id)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(id, mode)) return "e4";
   if (isA2(id, "ees") || isA2(id, "gs")) return undefined;
   // 選択
   if (isB1(id, specialty)) return "b1";
-  if (isB2(id, specialty)) return "b2";
-  if (isD1(id, year)) return "d1";
+  if (isB2(id, tableYear)) return "b2";
+  if (isD1(id, tableYear)) return "d1";
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
-  if (isH1(id, year)) return "h1";
+  if (isH1(id, tableYear)) return "h1";
   if (isH2(id)) return "h2";
 }
 
@@ -342,17 +320,20 @@ export function classifyRealCourses(
 }
 
 export function classifyFakeCourses(
-  _cs: FakeCourse[],
+  cs: FakeCourse[],
   _opts: ClassifyOptions,
   _tableYear: number,
   _specialty: Specialty,
 ): Map<FakeCourseId, string> {
-  return new Map();
+  const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
+  for (const c of cs) {
+    if (isCompulsoryEnglishByName(c.name)) {
+      fakeCourseIdToCellId.set(c.id, "e3");
+    }
+  }
+  return fakeCourseIdToCellId;
 }
 
-/**
- * 地球環境学主専攻
- */
 export const creditRequirementsGs2025: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
@@ -443,9 +424,6 @@ export const creditRequirementsGs2023: SetupCreditRequirements = {
   elective: 91,
 };
 
-/**
- * 地球進化学主専攻
- */
 export const creditRequirementsEes2025: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
