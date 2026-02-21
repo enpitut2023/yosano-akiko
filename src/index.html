@@ -59,7 +59,7 @@
         <ul>
           {% for i in s.instances %}
             <li class="{{ 'gap' if i.gap }}">
-              <a href="{{ s.year }}/{{ i.major }}">{{ i.majorName }}</a>
+              <a href="{{ s.year }}/{{ i.major }}">{{ i.majorJa }}</a>
               {% if i.checked %}<span>✅</span>{% endif %}
               {% if i.comment %}<span>{{ i.comment }}</span>{% endif %}
             </li>
