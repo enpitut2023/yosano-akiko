@@ -1,18 +1,19 @@
+import { readFileSync } from "node:fs";
 import {
   BaseCreditStats,
   CreditStats,
   akikoGetCreditStats,
   akikoNew,
-} from "./akiko";
+} from "@/akiko";
 import {
   ClassifyFakeCourses,
   ClassifyRealCourses,
   SetupCreditRequirements,
   classifyCoursesOrFail,
   createCreditRequirementsOrFail,
-} from "./app-setup";
-import { parseImportedCsv } from "./csv";
-import { assert } from "./util";
+} from "@/app-setup";
+import { parseImportedCsv } from "@/csv";
+import { assert } from "@/util";
 
 function indent(s: string, n: number): string {
   return s
@@ -54,6 +55,29 @@ export function getCreditStats(params: {
   assert(akiko !== undefined);
 
   return akikoGetCreditStats(akiko);
+}
+
+export type RunTestParams = {
+  isNative: boolean;
+  creditRequirements: SetupCreditRequirements;
+  classifyRealCourses: ClassifyRealCourses;
+  classifyFakeCourses: ClassifyFakeCourses;
+  want: WantCreditStats;
+} & ({ csvPath: string } | { csv: string });
+
+export function runTest(params: RunTestParams): void {
+  const csv =
+    "csv" in params
+      ? params.csv
+      : readFileSync(params.csvPath, { encoding: "utf8" });
+  const got = getCreditStats({
+    csv,
+    isNative: params.isNative,
+    creditRequirements: params.creditRequirements,
+    classifyRealCourses: params.classifyRealCourses,
+    classifyFakeCourses: params.classifyFakeCourses,
+  });
+  assertCreditStatsEqual(got, params.want);
 }
 
 /**
