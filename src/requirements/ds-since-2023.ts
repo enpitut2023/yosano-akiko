@@ -11,18 +11,24 @@ import {
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
+  isDataScience,
   isElectivePe,
-  isForeignLanguage,
+  isFirstYearSeminar,
   isGakushikiban,
   isHakubutsukan,
   isHumanSciencesCoreCurriculum,
+  isInfoLiteracyExercise,
+  isInfoLiteracyLecture,
+  isIzanai,
   isJapanese,
   isJiyuukamoku,
   isKyoushoku,
   isNonCompulsoryEnglish,
   isSecondForeignLanguage,
 } from "@/requirements/common";
-import { assert } from "@/util";
+import { arrayRemove, assert, defined } from "@/util";
+
+type Mode = "known" | "real";
 
 function isA1(id: string): boolean {
   return id === "CE21918"; // 卒業研究I
@@ -53,7 +59,8 @@ function isB1(id: string): boolean {
 }
 
 function isB2(id: string): boolean {
-  // TODO:短期留学生対象科目を除く
+  // TODO: 「短期留学生対象科目を除く」とあるが、CEから始まる科目（障害科学類の
+  // 科目）のうち短期留学生に言及している科目が見当たらない。 !!B!!
   return id.startsWith("CE");
 }
 
@@ -61,15 +68,15 @@ function isB3(id: string): boolean {
   return id.startsWith("CB") || id.startsWith("CC");
 }
 
-function classifyColumnC(id: string): string | undefined {
+function classifyColumnC(id: string, tableYear: number): string | undefined {
   if (id === "CA10001") return "c1"; // 人間学I
   if (id === "CA10051") return "c2"; // 障害科学I
   if (id === "CA10061") return "c3"; // 障害科学II
   if (id === "CA10091") return "c4"; // キャリアデザイン入門
   if (id === "CA10161") return "c5"; // Current Topics in Disability Sciences
   if (id === "CB11081" || id === "CB11091") return "c6"; // 教育基礎論, 学校の経営・制度・社会
-  // TODO: 教職のやつは障害科学類生は取れないのか
-  // id === "CB23481" || // 心理学概論 原則として、教員免許状取得予定者に限る
+  // TODO: 教職のやつは障害科学類生は取れないのか !!B!!
+  // CB23481 心理学概論 原則として、教員免許状取得予定者に限る
   if (id === "CC11211") return "c7"; // 心理学概論
   if (id === "CE11011") return "c8"; // 障害科学実践入門
   if (id === "CE11021") return "c9"; // 障害原理論I
@@ -78,22 +85,26 @@ function classifyColumnC(id: string): string | undefined {
   if (id === "CE12014") return "c12"; // 障害科学セミナー
   if (id === "CE11141") return "c13"; // 障害者教育基礎理論I
   if (id === "CE11151") return "c14"; // 障害者教育基礎理論II
-  if (id === "CC11231") return "c15"; // 心理学統計法I
+  if (tableYear >= 2025) {
+    if (id === "CC11231") return "c15"; // 心理学統計法I
+  } else {
+    if (id === "CC11241") return "c15"; // 心理学統計法II
+  }
   if (id === "CE11101") return "c16"; // 障害科学研究法入門
   if (id === "CE11113") return "c17"; // 障害科学研究法実習
-  return undefined;
 }
 
 function isD1(id: string): boolean {
   return isHumanSciencesCoreCurriculum(id);
 }
 
-function isE1(id: string): boolean {
+function isE1(id: string, mode: Mode): boolean {
   return (
     id === "1108102" || // ファーストイヤーセミナー 1クラス
     id === "1108202" || // ファーストイヤーセミナー 2クラス
     id === "1227231" || // 学問への誘い 1クラス
-    id === "1227241" //  学問への誘い 2クラス
+    id === "1227241" || //  学問への誘い 2クラス
+    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
 
@@ -109,11 +120,15 @@ function isE4(id: string): boolean {
   return isSecondForeignLanguage(id);
 }
 
-function isE5(id: string): boolean {
+function isE5(id: string, mode: Mode): boolean {
   return (
     id === "6107101" || // 情報リテラシー(講義)
     id === "6408102" || // 情報リテラシー(演習)
-    id === "6508102" // データサイエンス
+    id === "6508102" || // データサイエンス
+    (mode === "real" &&
+      (isInfoLiteracyLecture(id) ||
+        isInfoLiteracyExercise(id) ||
+        isDataScience(id)))
   );
 }
 
@@ -133,15 +148,7 @@ function isF2(id: string): boolean {
 
 function isH1(id: string): boolean {
   return (
-    id.startsWith("A") ||
-    id.startsWith("B") ||
-    id.startsWith("E") ||
-    id.startsWith("F") ||
-    id.startsWith("G") ||
-    id.startsWith("H") ||
-    id.startsWith("V") ||
-    id.startsWith("W") ||
-    id.startsWith("Y") ||
+    /^[ABEFGHVWY]/.test(id) ||
     isKyoushoku(id) ||
     isHakubutsukan(id) ||
     isJiyuukamoku(id)
@@ -151,19 +158,20 @@ function isH1(id: string): boolean {
 function classify(
   id: CourseId,
   name: string,
-  _year: number,
+  tableYear: number,
   _isNative: boolean,
+  mode: Mode,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
-  const c = classifyColumnC(id);
+  const c = classifyColumnC(id, tableYear);
   if (c !== undefined) return c;
-  if (isE1(id)) return "e1";
+  if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id)) return "e4";
-  if (isE5(id)) return "e5";
+  if (isE5(id, mode)) return "e5";
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";
@@ -176,12 +184,12 @@ function classify(
 
 export function classifyKnownCourses(
   cs: KnownCourse[],
-  _opts: ClassifyOptions,
-  year: number,
+  opts: ClassifyOptions,
+  tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, year, true);
+    const cellId = classify(c.id, c.name, tableYear, opts.isNative, "known");
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -192,30 +200,60 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
 ): Map<CourseId, string> {
-  const csArray = Array.from(cs);
+  cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
 
-  // e4とf2に第二外国語が入るので、先にe4に3単位分入れてから残りはf2に入れる
-  // TODO: 1科目2単位があったらアウト
-  let e4Credits = 0;
-
-  for (const c of csArray) {
+  // e4とf2に第二外国語が入るので、先にe4に3単位分入れてから残りはf2に入れる。
+  // なるべく3単位ちょうど入るようにする。
+  // TODO: 3単位ちょうどにできない場合の処理 !!B!!
+  const e4CandidatesWorth1: RealCourse[] = [];
+  const e4CandidatesWorth2: RealCourse[] = [];
+  const e4CandidatesWorth3: RealCourse[] = [];
+  for (const c of cs) {
     if (isE4(c.id)) {
-      if (e4Credits < 3) {
-        assert(c.credit !== undefined);
-        e4Credits += c.credit;
-        courseIdToCellId.set(c.id, "e4");
-        continue;
-      } else {
-        courseIdToCellId.set(c.id, "f2");
-        continue;
+      if (c.credit === 1) e4CandidatesWorth1.push(c);
+      if (c.credit === 2) e4CandidatesWorth2.push(c);
+      if (c.credit === 3) e4CandidatesWorth3.push(c);
+    }
+  }
+
+  const e4Courses: RealCourse[] = [];
+  const n1 = e4CandidatesWorth1.length;
+  const n2 = e4CandidatesWorth2.length;
+  const n3 = e4CandidatesWorth3.length;
+  if (n3 >= 1) {
+    e4Courses.push(defined(e4CandidatesWorth3.pop()));
+  } else if (n2 >= 1 && n1 >= 1) {
+    e4Courses.push(defined(e4CandidatesWorth2.pop()));
+    e4Courses.push(defined(e4CandidatesWorth1.pop()));
+  } else if (n1 >= 3) {
+    for (let i = 0; i < 3; i++) {
+      e4Courses.push(defined(e4CandidatesWorth1.pop()));
+    }
+  } else {
+    const e4Candidates = cs.filter((c) => isE4(c.id));
+    e4Candidates.sort((a, b) => (a.credit ?? 0) - (b.credit ?? 0));
+    let total = 0;
+    for (const c of e4Candidates) {
+      total += c.credit ?? 0;
+      e4Courses.push(c);
+      if (total >= 3) {
+        break;
       }
     }
+  }
 
-    const cellId = classify(c.id, c.name, year, opts.isNative);
+  for (const c of e4Courses) {
+    assert(arrayRemove(cs, c));
+    courseIdToCellId.set(c.id, "e4");
+  }
+
+  for (const c of cs) {
+    let cellId = classify(c.id, c.name, tableYear, opts.isNative, "real");
     if (cellId !== undefined) {
+      if (cellId === "e4") cellId = "f2";
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -225,7 +263,7 @@ export function classifyRealCourses(
 export function classifyFakeCourses(
   cs: FakeCourse[],
   _opts: ClassifyOptions,
-  _year: number,
+  _tableYear: number,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {
@@ -236,7 +274,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-export const creditRequirements: SetupCreditRequirements = {
+export const creditRequirementsSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 4, max: 4 },
