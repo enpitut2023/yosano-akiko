@@ -192,6 +192,7 @@ export function isKyoushoku(id: string): boolean {
 
 /**
  * 人間学群学群コア・カリキュラム
+ * https://www.tsukuba.ac.jp/education/ug-courses-openclass/2025/pdf/human-core-curriculum.pdf
  */
 export function isHumanSciencesCoreCurriculum(id: string): boolean {
   return id.startsWith("CA1");

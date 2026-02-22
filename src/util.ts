@@ -4,6 +4,11 @@ export function assert(b: boolean, message = "Assertion failed"): asserts b {
   }
 }
 
+export function defined<T>(t: T | undefined): T {
+  assert(t !== undefined, "Must not be undefined");
+  return t;
+}
+
 export function unreachable(_: never): never {
   throw new Error("Should be unreachable");
 }

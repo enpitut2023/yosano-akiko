@@ -1,3 +1,4 @@
+import assert from "node:assert";
 import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path, { join } from "node:path";
 import { exit } from "node:process";
@@ -20,6 +21,7 @@ const MAJORS = [
   "edu",
   "psy",
   "ds",
+  "biol",
   "bres",
   "bres-as", // Agricultural Science Course
   "bres-les", // Life and Environmental Sciences
@@ -78,6 +80,7 @@ const MAJOR_TO_JA = {
   edu: "教育学類",
   psy: "心理学類",
   ds: "障害科学類",
+  biol: "生物学類",
   bres: "生物資源学類",
   "bres-as": "生物資源学類 Japan-Expert アグロノミスト養成コース",
   "bres-les": "生物資源学類 生命環境学際プログラム",
@@ -118,10 +121,20 @@ const MAJOR_TO_JA = {
   "art-jad": "芸術専門学群 Japan-Expert 日本芸術コース",
 } as const satisfies { [K in Major]: string };
 
-// TODO
-// function majorCompare(a: Major, b: Major): number {
-//   return 0;
-// }
+const MAJOR_TO_INDEX = (() => {
+  const m = new Map<Major, number>();
+  for (let i = 0; i < MAJORS.length; i++) {
+    m.set(MAJORS[i], i);
+  }
+  return m;
+})();
+
+function majorCompare(a: Major, b: Major): number {
+  const ai = MAJOR_TO_INDEX.get(a);
+  const bi = MAJOR_TO_INDEX.get(b);
+  assert(ai !== undefined && bi !== undefined);
+  return ai - bi;
+}
 
 const DOCS_PAGE_NAMES = [
   "help",
@@ -132,6 +145,7 @@ const DOCS_PAGE_NAMES = [
   "edu",
   "psy",
   "ds",
+  "biol",
   "bres",
   "earth",
   "math",
@@ -168,6 +182,7 @@ const MAJOR_TO_DOCS_PAGE_NAME = {
   edu: "edu",
   psy: "psy",
   ds: "ds",
+  biol: "biol",
   bres: "bres",
   "bres-as": "bres",
   "bres-les": "bres",
@@ -217,6 +232,7 @@ const DOCS_PAGE_NAME_TO_JA = {
   edu: "教育学類",
   psy: "心理学類",
   ds: "障害科学類",
+  biol: "生物学類",
   bres: "生物資源学類",
   earth: "地球学類",
   math: "数学類",
@@ -252,6 +268,9 @@ function createIndexTemplateContext(is: Instance[], description: string) {
       majors.push(i);
     }
   }
+  for (const is of yearToInstances.values()) {
+    is.sort((a, b) => majorCompare(a.major, b.major));
+  }
 
   const years = Array.from(yearToInstances.keys());
   years.sort((a, b) => b - a);
@@ -267,7 +286,7 @@ function createIndexTemplateContext(is: Instance[], description: string) {
           MAJOR_TO_DOCS_PAGE_NAME[i.major];
       instances.push({
         major: i.major,
-        majorName: MAJOR_TO_JA[i.major],
+        majorJa: MAJOR_TO_JA[i.major],
         comment: i.comment,
         gap,
         checked: i.checked,
@@ -310,6 +329,13 @@ function main(): void {
     { year: 2023, major: "pops-mse" },
     { year: 2023, major: "pops-urp" },
     { year: 2023, major: "chem" },
+    { year: 2023, major: "jpjp" },
+    { year: 2023, major: "jpjp-jltt" },
+    { year: 2023, major: "ccc" },
+    { year: 2023, major: "earth-gs" },
+    { year: 2023, major: "earth-ees" },
+    { year: 2023, major: "edu" },
+    { year: 2023, major: "psy" },
     { year: 2023, major: "ds" },
 
     { year: 2024, major: "coins", checked: true },
@@ -331,6 +357,13 @@ function main(): void {
     { year: 2024, major: "pops-mse" },
     { year: 2024, major: "pops-urp" },
     { year: 2024, major: "chem" },
+    { year: 2024, major: "jpjp" },
+    { year: 2024, major: "jpjp-jltt" },
+    { year: 2024, major: "ccc" },
+    { year: 2024, major: "earth-gs" },
+    { year: 2024, major: "earth-ees" },
+    { year: 2024, major: "edu" },
+    { year: 2024, major: "psy" },
     { year: 2024, major: "ds" },
 
     { year: 2025, major: "coins", checked: true },
@@ -352,6 +385,13 @@ function main(): void {
     { year: 2025, major: "pops-mse" },
     { year: 2025, major: "pops-urp" },
     { year: 2025, major: "chem" },
+    { year: 2025, major: "jpjp" },
+    { year: 2025, major: "jpjp-jltt" },
+    { year: 2025, major: "ccc" },
+    { year: 2025, major: "earth-gs" },
+    { year: 2025, major: "earth-ees" },
+    { year: 2025, major: "edu" },
+    { year: 2025, major: "psy" },
     { year: 2025, major: "ds" },
   ];
 
