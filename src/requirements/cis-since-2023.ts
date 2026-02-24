@@ -293,7 +293,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-export const creditRequirementsSince: SetupCreditRequirements = {
+export const creditRequirements: SetupCreditRequirements = {
   cells: {
     a1: { min: 6, max: 6 },
     b1: { min: 32, max: 70 },
