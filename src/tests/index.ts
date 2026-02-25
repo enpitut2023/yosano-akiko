@@ -1,4 +1,5 @@
 import "./chem";
+import "./cis";
 import "./coens";
 import "./coins";
 import "./esys";
@@ -7,3 +8,4 @@ import "./mast";
 import "./math";
 import "./physics";
 import "./pops";
+import "./psy";

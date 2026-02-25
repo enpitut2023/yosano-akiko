@@ -335,6 +335,8 @@ function main(): void {
     { year: 2023, major: "earth-gs" },
     { year: 2023, major: "earth-ees" },
     { year: 2023, major: "edu" },
+    { year: 2023, major: "psy" },
+    { year: 2023, major: "ds" },
     { year: 2023, major: "cis-ir" },
     { year: 2023, major: "cis-id" },
 
@@ -363,6 +365,8 @@ function main(): void {
     { year: 2024, major: "earth-gs" },
     { year: 2024, major: "earth-ees" },
     { year: 2024, major: "edu" },
+    { year: 2024, major: "psy" },
+    { year: 2024, major: "ds" },
     { year: 2024, major: "cis-ir" },
     { year: 2024, major: "cis-id" },
 
@@ -391,6 +395,8 @@ function main(): void {
     { year: 2025, major: "earth-gs" },
     { year: 2025, major: "earth-ees" },
     { year: 2025, major: "edu" },
+    { year: 2025, major: "psy" },
+    { year: 2025, major: "ds" },
     { year: 2025, major: "cis-ir" },
     { year: 2025, major: "cis-id" },
   ];

@@ -48,6 +48,8 @@ async function main() {
       "src/2023/earth-gs/index.ts",
       "src/2023/earth-ees/index.ts",
       "src/2023/edu/index.ts",
+      "src/2023/psy/index.ts",
+      "src/2023/ds/index.ts",
       "src/2023/cis-ir/index.ts",
       "src/2023/cis-id/index.ts",
 
@@ -76,6 +78,8 @@ async function main() {
       "src/2024/earth-gs/index.ts",
       "src/2024/earth-ees/index.ts",
       "src/2024/edu/index.ts",
+      "src/2024/psy/index.ts",
+      "src/2024/ds/index.ts",
       "src/2024/cis-ir/index.ts",
       "src/2024/cis-id/index.ts",
 
@@ -104,6 +108,8 @@ async function main() {
       "src/2025/earth-gs/index.ts",
       "src/2025/earth-ees/index.ts",
       "src/2025/edu/index.ts",
+      "src/2025/psy/index.ts",
+      "src/2025/ds/index.ts",
       "src/2025/cis-ir/index.ts",
       "src/2025/cis-id/index.ts",
 
