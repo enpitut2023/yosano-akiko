@@ -112,7 +112,6 @@ function test3(): void {
         f1: { taken: 2 },
         f2: { rawTaken: 7, effectiveTaken: 4 },
         h1: { taken: 4 },
-        h2: { taken: 1 },
       },
       columns: {
         b: { taken: 20 },
@@ -120,10 +119,10 @@ function test3(): void {
         d: { taken: 2 },
         e: { taken: 1 },
         f: { rawTaken: 6, effectiveTaken: 5 },
-        h: { taken: 5 },
+        h: { taken: 4 },
       },
       compulsory: { taken: 3 },
-      elective: { taken: 32 },
+      elective: { taken: 31 },
     },
   });
 }
