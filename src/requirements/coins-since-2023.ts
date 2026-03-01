@@ -180,19 +180,19 @@ function isC6(id: string): boolean {
   return id === "GB19061";
 }
 
-function isC7(id: string, native: boolean): boolean {
+function isC7(id: string, isNative: boolean): boolean {
   return (
     id === "GA18212" ||
     // 移行生はFHから始まるプロ入Aをcoinsのプロ入Aとして使える
-    (!native && (id === "FH60474" || id === "FH60484" || id === "FH60494"))
+    (!isNative && (id === "FH60474" || id === "FH60484" || id === "FH60494"))
   );
 }
 
-function isC8(id: string, native: boolean): boolean {
+function isC8(id: string, isNative: boolean): boolean {
   return (
     id === "GA18312" ||
     // 移行生はFHから始まるプロ入Bをcoinsのプロ入Bとして使える
-    (!native && (id === "FH60574" || id === "FH60584" || id === "FH60594"))
+    (!isNative && (id === "FH60574" || id === "FH60584" || id === "FH60594"))
   );
 }
 

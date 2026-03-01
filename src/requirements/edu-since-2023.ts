@@ -160,7 +160,7 @@ function classify(
   id: CourseId,
   name: string,
   mode: Mode,
-  _year: number,
+  _tableYear: number,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
@@ -192,11 +192,11 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   _opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "known", year);
+    const cellId = classify(c.id, c.name, "known", tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -207,7 +207,7 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   _opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
 ): Map<CourseId, string> {
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
@@ -258,7 +258,7 @@ export function classifyRealCourses(
   }
 
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "real", year);
+    const cellId = classify(c.id, c.name, "real", tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -269,7 +269,7 @@ export function classifyRealCourses(
 export function classifyFakeCourses(
   cs: FakeCourse[],
   _opts: ClassifyOptions,
-  _year: number,
+  _tableYear: number,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {

@@ -57,7 +57,7 @@ function isB1(id: string) {
   return id.startsWith("GC5") || id.startsWith("GA4");
 }
 
-function classifyColumnC(id: CourseId, year: number): string | undefined {
+function classifyColumnC(id: CourseId, tableYear: number): string | undefined {
   if (id === "GA15331") return "c1"; // 微分積分A
   if (id === "GC11701") return "c2"; // 微分積分B
   if (id === "GA15231") return "c3"; // 線形代数A
@@ -67,7 +67,7 @@ function classifyColumnC(id: CourseId, year: number): string | undefined {
   if (id === "GA18222") return "c7"; // プログラミング入門A
   if (id === "GA18322") return "c8"; // プログラミング入門B
   let offset = 0;
-  if (year >= 2025) {
+  if (tableYear >= 2025) {
     offset = 1;
     if (id === "GC12104") {
       return "c9";
@@ -163,7 +163,7 @@ function isH3(id: string): boolean {
 function classify(
   id: CourseId,
   name: string,
-  year: number,
+  tableYear: number,
   _isNative: boolean,
 ): string | undefined {
   // 必修
@@ -173,7 +173,7 @@ function classify(
   if (isA4(id)) return "a4";
   if (isA5(id)) return "a5";
   if (isA6(id)) return "a6";
-  if (classifyColumnC(id, year) !== undefined) return classifyColumnC(id, year);
+  if (classifyColumnC(id, tableYear) !== undefined) return classifyColumnC(id, tableYear);
   if (isE1(id)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(id)) return "e3";
@@ -194,11 +194,11 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   _opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, year, true);
+    const cellId = classify(c.id, c.name, tableYear, true);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -209,12 +209,12 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
 ): Map<CourseId, string> {
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, year, opts.isNative);
+    const cellId = classify(c.id, c.name, tableYear, opts.isNative);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -226,7 +226,7 @@ export function classifyRealCourses(
 export function classifyFakeCourses(
   cs: FakeCourse[],
   _opts: ClassifyOptions,
-  _year: number,
+  _tableYear: number,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {

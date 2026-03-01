@@ -300,7 +300,7 @@ function isH2(id: string): boolean {
 function classify(
   id: CourseId,
   name: string,
-  _year: number,
+  _tableYear: number,
   specialty: Specialty,
   _isNative: boolean,
 ): string | undefined {
@@ -340,12 +340,12 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   _opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
   specialty: Specialty,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, year, specialty, true);
+    const cellId = classify(c.id, c.name, tableYear, specialty, true);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -356,13 +356,13 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
   specialty: Specialty,
 ): Map<CourseId, string> {
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, year, specialty, opts.isNative);
+    const cellId = classify(c.id, c.name, tableYear, specialty, opts.isNative);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -374,7 +374,7 @@ export function classifyRealCourses(
 export function classifyFakeCourses(
   cs: FakeCourse[],
   _opts: ClassifyOptions,
-  _year: number,
+  _tableYear: number,
   _specialty: Specialty,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
