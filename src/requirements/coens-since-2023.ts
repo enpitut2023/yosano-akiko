@@ -12,7 +12,6 @@ import {
   isCompulsoryPe1,
   isCompulsoryPe2,
   isCompulsoryPe3,
-  isCompulsoryPe4,
   isDataScience,
   isElectivePe,
   isFirstYearSeminar,
@@ -25,6 +24,7 @@ import {
   isJapanese,
   isJiyuukamoku,
   isKyoushoku,
+  isKyoutsuu,
 } from "@/requirements/common";
 import { unreachable } from "@/util";
 
@@ -37,6 +37,7 @@ export type Specialty =
   | "mse"
   // Material and Molecular Engineering
   | "mme";
+type Mode = "known" | "real";
 
 function isA1(id: string): boolean {
   return (
@@ -48,31 +49,31 @@ function isA2(id: string, specialty: Specialty): boolean {
   switch (specialty) {
     case "ap":
       return (
-        id === "FF20113" || // 応用物理専攻実験A　1班対象
-        id === "FF20123" || // 応用物理専攻実験A　2班対象
-        id === "FF20133" || // 応用物理専攻実験B　1班対象
-        id === "FF20143" // 応用物理専攻実験B　2班対象
+        id === "FF20113" || // 応用物理専攻実験A 1班対象
+        id === "FF20123" || // 応用物理専攻実験A 2班対象
+        id === "FF20133" || // 応用物理専攻実験B 1班対象
+        id === "FF20143" // 応用物理専攻実験B 2班対象
       );
     case "eqe":
       return (
-        id === "FF30113" || // 電子・量子工学専攻実験A　1班対象
-        id === "FF30123" || // 電子・量子工学専攻実験A　2班対象
-        id === "FF30133" || // 電子・量子工学専攻実験B　1班対象
-        id === "FF30143" // 電子・量子工学専攻実験B　2班対象
+        id === "FF30113" || // 電子・量子工学専攻実験A 1班対象
+        id === "FF30123" || // 電子・量子工学専攻実験A 2班対象
+        id === "FF30133" || // 電子・量子工学専攻実験B 1班対象
+        id === "FF30143" // 電子・量子工学専攻実験B 2班対象
       );
     case "mse":
       return (
-        id === "FF40113" || // 物性工学専攻実験A　1班対象
-        id === "FF40123" || // 物性工学専攻実験A　2班対象
-        id === "FF40133" || // 物性工学専攻実験B　1班対象
-        id === "FF40143" // 物性工学専攻実験B　2班対象
+        id === "FF40113" || // 物性工学専攻実験A 1班対象
+        id === "FF40123" || // 物性工学専攻実験A 2班対象
+        id === "FF40133" || // 物性工学専攻実験B 1班対象
+        id === "FF40143" // 物性工学専攻実験B 2班対象
       );
     case "mme":
       return (
-        id === "FF50113" || // 物性・分子工学専攻実験A　1班対象
-        id === "FF50123" || // 物性・分子工学専攻実験A　2班対象
-        id === "FF50133" || // 物性・分子工学専攻実験B　1班対象
-        id === "FF50143" // 物性・分子工学専攻実験B　2班対象
+        id === "FF50113" || // 物性・分子工学専攻実験A 1班対象
+        id === "FF50123" || // 物性・分子工学専攻実験A 2班対象
+        id === "FF50133" || // 物性・分子工学専攻実験B 1班対象
+        id === "FF50143" // 物性・分子工学専攻実験B 2班対象
       );
     default:
       unreachable(specialty);
@@ -83,31 +84,31 @@ function isA3(id: string, specialty: Specialty): boolean {
   switch (specialty) {
     case "ap":
       return (
-        id === "FF29928" || // 卒業研究A 春学期　応用物理主専攻
-        id === "FF29938" || // 卒業研究A 秋学期　応用物理主専攻
-        id === "FF29948" || // 卒業研究B 春学期　応用物理主専攻
-        id === "FF29958" // 卒業研究B 秋学期　応用物理主専攻
+        id === "FF29928" || // 卒業研究A 春学期 応用物理主専攻
+        id === "FF29938" || // 卒業研究A 秋学期 応用物理主専攻
+        id === "FF29948" || // 卒業研究B 春学期 応用物理主専攻
+        id === "FF29958" // 卒業研究B 秋学期 応用物理主専攻
       );
     case "eqe":
       return (
-        id === "FF39928" || // 卒業研究A 春学期　電子・量子工学主専攻
-        id === "FF39938" || // 卒業研究A 秋学期　電子・量子工学主専攻
-        id === "FF39948" || // 卒業研究B 春学期　電子・量子工学主専攻
-        id === "FF39958" // 卒業研究B 秋学期　電子・量子工学主専攻
+        id === "FF39928" || // 卒業研究A 春学期 電子・量子工学主専攻
+        id === "FF39938" || // 卒業研究A 秋学期 電子・量子工学主専攻
+        id === "FF39948" || // 卒業研究B 春学期 電子・量子工学主専攻
+        id === "FF39958" // 卒業研究B 秋学期 電子・量子工学主専攻
       );
     case "mse":
       return (
-        id === "FF49928" || // 卒業研究A 春学期　物性工学主専攻
-        id === "FF49938" || // 卒業研究A 秋学期　物性工学主専攻
-        id === "FF49948" || // 卒業研究B 春学期　物性工学主専攻
-        id === "FF49958" // 卒業研究B 秋学期　物性工学主専攻
+        id === "FF49928" || // 卒業研究A 春学期 物性工学主専攻
+        id === "FF49938" || // 卒業研究A 秋学期 物性工学主専攻
+        id === "FF49948" || // 卒業研究B 春学期 物性工学主専攻
+        id === "FF49958" // 卒業研究B 秋学期 物性工学主専攻
       );
     case "mme":
       return (
-        id === "FF59928" || // 卒業研究A 春学期　物性・分子工学主専攻
-        id === "FF59938" || // 卒業研究A 秋学期　物性・分子工学主専攻
-        id === "FF59948" || // 卒業研究B 春学期　物性・分子工学主専攻
-        id === "FF59958" // 卒業研究B 秋学期　物性・分子工学主専攻
+        id === "FF59928" || // 卒業研究A 春学期 物性・分子工学主専攻
+        id === "FF59938" || // 卒業研究A 秋学期 物性・分子工学主専攻
+        id === "FF59948" || // 卒業研究B 春学期 物性・分子工学主専攻
+        id === "FF59958" // 卒業研究B 秋学期 物性・分子工学主専攻
       );
     default:
       unreachable(specialty);
@@ -147,15 +148,15 @@ function isB2(id: string, specialty: Specialty): boolean {
 
 function isB3(id: string, specialty: Specialty): boolean {
   if (
-    id === "FF13103" || // インターンシップⅠ
-    id === "FF13203" || // インターンシップⅡ
-    id === "FF14003" || // 応用理工学特別実習Ⅰ
-    id === "FF14103" || // 応用理工学特別実習Ⅱ
+    id === "FF13103" || // インターンシップI
+    id === "FF13203" || // インターンシップII
+    id === "FF14003" || // 応用理工学特別実習I
+    id === "FF14103" || // 応用理工学特別実習II
     id === "FF22001" || // 応用物理特論
     id === "FF32201" || // 電子・量子工学特論
     id === "FF42001" || // 物性工学特論
     id === "FF52101" || // 物質・分子工学特論
-    id.startsWith("FF00")
+    id.startsWith("FA00")
   ) {
     return true;
   }
@@ -177,17 +178,21 @@ function isB3(id: string, specialty: Specialty): boolean {
   }
 }
 
-function classifyC1D2(id: string, year: number): string | undefined {
+function classifyC1D2(
+  id: string,
+  year: number,
+  mode: Mode,
+): string | undefined {
   // 応用理工学概論
-  if (id === "FF17011") {
-    return "c1";
-  }
+  if (id === "FF17011") return "c1";
+  // 微積分1 (2023年度のみ救済として開講)
+  if (year === 2023 && id === "FF18764") return "c1";
   if (
-    // 2023年度は、2024.5年度のD2に含まれる科目をc1に含む
-    id === "FA01111" || // 数学リテラシー1 学籍番号奇数!!A!!
-    id === "FA01121" || // 数学リテラシー1 学籍番号偶数!!A!!
-    id === "FA01211" || // 数学リテラシー2学籍番号奇数
-    id === "FA01221" || // 数学リテラシー2 学籍番号偶数
+    // 2023年度は、2024, 2025年度のd2に含まれる科目をc1に含む
+    id === "FA01111" || // 数学リテラシー1 学籍番号奇数 !!A!!
+    id === "FA01121" || // 数学リテラシー1 学籍番号偶数 !!A!!
+    id === "FA01211" || // 数学リテラシー2 学籍番号奇数 !!A!!
+    id === "FA01221" || // 数学リテラシー2 学籍番号偶数 !!A!!
     id === "FA01311" || // 微積分1 学籍番号奇数 !!A!!
     id === "FA01321" || // 微積分1 学籍番号偶数 !!A!!
     id === "FA01411" || // 微積分2 学籍番号奇数 !!A!!
@@ -207,8 +212,12 @@ function classifyC1D2(id: string, year: number): string | undefined {
     id === "FCB1361" || // 電磁気学2 !!A!!
     id === "FCB1381" || // 電磁気学3 !!A!!
     id === "FE11171" || // 化学1 !!A!!
-    id === "FE11281" || // 化学2 !!A!!
-    id === "FE11291" // 化学3 !!A!!
+    id === "FE11181" || // 化学2 !!A!!
+    id === "FE11191" || // 化学3 !!A!!
+    (mode === "real" &&
+      (id === "FE11271" || // 化学1 (2024年度まで) !!A!!
+        id === "FE11281" || // 化学2 (2024年度まで) !!A!!
+        id === "FE11291")) // 化学3 (2024年度まで) !!A!!
   ) {
     if (year === 2023) return "c1";
     else return "d2";
@@ -239,10 +248,10 @@ function isC2(id: string): boolean {
     id === "FF18654" || // 電磁気学C 3・4クラス
     id === "FF18761" || // 化学A
     id === "FF18771" || // 化学B
-    id === "FF19303" || // 応用理工物理学実験　2班対象
-    id === "FF19313" || // 応用理工物理学実験　1班対象
-    id === "FF19203" || // 応用理工化学実験　1班対象
-    id === "FF19213" // 応用理工化学実験　2班対象
+    id === "FF19303" || // 応用理工物理学実験 2班対象
+    id === "FF19313" || // 応用理工物理学実験 1班対象
+    id === "FF19203" || // 応用理工化学実験 1班対象
+    id === "FF19213" // 応用理工化学実験 2班対象
   );
 }
 
@@ -281,7 +290,7 @@ function isD1(id: string): boolean {
   return id.startsWith("FF15");
 }
 
-function isE1(id: string, mode: "known" | "real"): boolean {
+function isE1(id: string, mode: Mode): boolean {
   return (
     id === "1115102" || // ファーストイヤーセミナー 1クラス
     id === "1115202" || // ファーストイヤーセミナー 2クラス
@@ -301,7 +310,7 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string, mode: "known" | "real"): boolean {
+function isE4(id: string, mode: Mode): boolean {
   return (
     id === "6115101" || // 情報リテラシー(講義) !!A!!
     id === "6415102" || // 情報リテラシー(演習) 1班 !!A!!
@@ -329,7 +338,7 @@ function isF3(id: string): boolean {
 
 function isH1(id: string): boolean {
   // TODO: 思いつくものは除いておく
-  return !(isFirstYearSeminar(id) || isIzanai(id) || isCompulsoryPe4(id));
+  return !isKyoutsuu(id);
 }
 
 function isH2(id: string): boolean {
@@ -337,18 +346,72 @@ function isH2(id: string): boolean {
   return isKyoushoku(id) || isHakubutsukan(id) || isJiyuukamoku(id);
 }
 
+const COMPULSORY_NAMES = new Set([
+  "基礎実験学",
+  "応用物理専攻実験A",
+  "応用物理専攻実験B",
+  "電子・量子工学専攻実験A",
+  "電子・量子工学専攻実験B",
+  "物性工学専攻実験A",
+  "物性工学専攻実験B",
+  "物性・分子工学専攻実験A",
+  "物性・分子工学専攻実験B",
+  "卒業研究A",
+  "卒業研究B",
+  "応用理工学概論",
+  "数学リテラシー1",
+  "数学リテラシー2",
+  "微積分1",
+  "微積分2",
+  "微積分3",
+  "線形代数1",
+  "線形代数2",
+  "線形代数3",
+  "力学1",
+  "力学2",
+  "力学3",
+  "電磁気学1",
+  "電磁気学2",
+  "電磁気学3",
+  "化学1",
+  "化学2",
+  "化学3",
+  "熱力学",
+  "解析学A",
+  "解析学B",
+  "解析学C",
+  "線形代数A",
+  "線形代数B",
+  "力学A",
+  "電磁気学A",
+  "電磁気学B",
+  "電磁気学C",
+  "化学A",
+  "化学B",
+  "応用理工化学実験",
+  "応用理工物理学実験",
+  "専門英語1",
+  "専門英語2",
+  "専門英語3",
+  "ファーストイヤーセミナー",
+  "学問への誘い",
+  "情報リテラシー(講義)",
+  "情報リテラシー(演習)",
+  "データサイエンス",
+]);
+
 function classify(
   id: CourseId,
   name: string,
   year: number,
   specialty: Specialty,
-  mode: "known" | "real",
+  mode: Mode,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isA2(id, specialty)) return "a2";
   if (isA3(id, specialty)) return "a3";
-  const c1d2 = classifyC1D2(id, year);
+  const c1d2 = classifyC1D2(id, year, mode);
   if (c1d2 !== undefined) return c1d2;
   if (isC2(id)) return "c2";
   if (isC3(id, specialty)) return "c3";
@@ -356,6 +419,8 @@ function classify(
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id, mode)) return "e4";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   if (isD1(id)) return "d1";
   if (isB1(id, specialty)) return "b1";
