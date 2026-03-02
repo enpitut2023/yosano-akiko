@@ -453,6 +453,7 @@ export const creditRequirementsEes2025: SetupCreditRequirements = {
   elective: 91,
 };
 
+// TODO:b1の部分18~44.5だと思われる
 export const creditRequirementsEes2024: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
