@@ -56,6 +56,8 @@ async function main() {
       "src/2023/meds-ms/index.ts",
       "src/2023/meds-ims/index.ts",
       "src/2023/meds-mspis/index.ts",
+      "src/2023/bres/index.ts",
+      "src/2023/bres-as/index.ts",
 
       "src/2024/coins/index.ts",
       "src/2024/coins-cs/index.ts",
@@ -90,6 +92,8 @@ async function main() {
       "src/2024/meds-ms/index.ts",
       "src/2024/meds-ims/index.ts",
       "src/2024/meds-mspis/index.ts",
+      "src/2024/bres/index.ts",
+      "src/2024/bres-as/index.ts",
 
       "src/2025/coins/index.ts",
       "src/2025/coins-cs/index.ts",
@@ -124,6 +128,8 @@ async function main() {
       "src/2025/meds-ms/index.ts",
       "src/2025/meds-ims/index.ts",
       "src/2025/meds-mspis/index.ts",
+      "src/2025/bres/index.ts",
+      "src/2025/bres-as/index.ts",
 
       "src/app.scss",
       "src/styles.scss",

@@ -147,6 +147,13 @@ export function isArt(id: string): boolean {
 }
 
 /**
+ * 国語I
+ */
+export function isJapanese1(id: string): boolean {
+  return id.startsWith("51");
+}
+
+/**
  * 国語
  */
 export function isJapanese(id: string): boolean {
