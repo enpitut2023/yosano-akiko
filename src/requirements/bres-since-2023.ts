@@ -16,11 +16,12 @@ import {
   isDataScience,
   isElectivePe,
   isFirstYearSeminar,
+  isForeignLanguage,
   isGakushikiban,
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
   isIzanai,
-  isJapanese,
+  isJapanese1,
   isJapaneseAsForeignLanguage,
   isNonCompulsoryEnglish,
 } from "@/requirements/common";
@@ -440,7 +441,7 @@ function classifyColumnE(
         return "e2";
       if (isCompulsoryEnglishById(id)) return "e3";
       if (isInfo(id, mode)) return "e4";
-      if (isJapanese(id)) return "e5";
+      if (isJapanese1(id)) return "e5";
       break;
     case "as":
       if (isE1(id, mode, specialty)) return "e1";
@@ -480,7 +481,7 @@ function classifyColumnF(
         if (isGakushikiban(id)) return "f1";
         if (isElectivePe(id)) return "f2";
         if (isArt(id)) return "f3";
-        if (isNonCompulsoryEnglish(id)) return "f4";
+        if (isForeignLanguage(id)) return "f4";
       } else {
         if (isGakushikiban(id)) return "f1";
         if (isElectivePe(id) || isArt(id) || isCompulsoryEnglishById(id))
@@ -494,10 +495,11 @@ function classifyColumnF(
         if (isElectivePe(id)) return "f2";
         if (isArtAs(id)) return "f3";
         if (isNonCompulsoryEnglish(id)) return "f4";
-        if (isJapanese(id)) return "f5";
+        if (isJapaneseAsForeignLanguage(id)) return "f5";
       } else {
         if (isGakushikiban(id)) return "f1";
-        if (isElectivePe(id) || isArtAs(id) || isJapanese(id)) return "f2";
+        if (isElectivePe(id) || isArtAs(id) || isJapaneseAsForeignLanguage(id))
+          return "f2";
       }
       break;
     default:
