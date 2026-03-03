@@ -16,6 +16,7 @@ import {
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
   isIzanai,
+  isJapaneseAsForeignLanguage,
 } from "@/requirements/common";
 import { unreachable } from "@/util";
 
@@ -304,8 +305,16 @@ function isE2(id: string): boolean {
   return isCompulsoryPe1(id) || isCompulsoryPe2(id);
 }
 
-function isE3(name: string): boolean {
-  return isCompulsoryEnglishByName(name);
+function isE3(id: string, name: string, specialty: Specialty): boolean {
+  switch (specialty) {
+    case "ms":
+    case "ims":
+      return isCompulsoryEnglishByName(name);
+    case "mspis":
+      return isJapaneseAsForeignLanguage(id);
+    default:
+      unreachable(specialty);
+  }
 }
 
 function isE4(id: string, mode: Mode): boolean {
@@ -379,7 +388,7 @@ function classify(
   // 必修
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
-  if (isE3(name)) return "e3";
+  if (isE3(id, name, specialty)) return "e3";
   if (isE4(id, mode)) return "e4";
   if (isG1(id)) return "g1";
   if (isG2(id)) return "g2";
@@ -426,11 +435,14 @@ export function classifyFakeCourses(
   cs: FakeCourse[],
   _opts: ClassifyOptions,
   _tableYear: number,
-  _specialty: Specialty,
+  specialty: Specialty,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {
-    if (isE3(c.name)) {
+    if (
+      (specialty === "ms" || specialty === "ims") &&
+      isCompulsoryEnglishByName(c.name)
+    ) {
       fakeCourseIdToCellId.set(c.id, "e3");
     }
   }
