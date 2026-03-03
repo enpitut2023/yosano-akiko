@@ -1,4 +1,3 @@
-import { is } from "zod/locales";
 import {
   CourseId,
   FakeCourse,
@@ -14,70 +13,60 @@ import {
   isCompulsoryPe1,
   isCompulsoryPe2,
   isCompulsoryPe3,
-  isCompulsoryPe4,
   isDataScience,
   isElectivePe,
   isFirstYearSeminar,
-  isForeignLanguage,
   isGakushikiban,
-  isHakubutsukan,
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
   isIzanai,
   isJapanese,
-  isJiyuukamoku,
-  isKyoushoku,
+  isJapaneseAsForeignLanguage,
   isNonCompulsoryEnglish,
-  isSecondForeignLanguage,
 } from "@/requirements/common";
 import { unreachable } from "@/util";
 
-export type Specialty = "as" | "les";
+export type Specialty = "none" | "as";
 type Mode = "known" | "real";
 
 function isThesis(id: string): boolean {
   return (
     id === "EC51958" || // 卒業研究Ⅰ 春
     id === "EC51968" || // 卒業研究Ⅰ 秋
-    id === "EC51978" || // 卒業研究Ⅱ春
-    id === "EC51988" // 卒業研究Ⅱ秋
+    id === "EC51978" || // 卒業研究Ⅱ 春
+    id === "EC51988" // 卒業研究Ⅱ 秋
   );
 }
+
 function isJapanExpertAgronomistInternship(id: string): boolean {
   return (
-    id === "EC00103" || id === "EC00203" //Japan-Expert アグロノミストインターンシップ
+    id === "EC00103" || id === "EC00203" // Japan-Expert アグロノミストインターンシップ
   );
 }
+
 function isA1(id: string, tableYear: number): boolean {
-  switch (tableYear) {
-    case 2023:
-      return (
-        //専門語学がクラスごとに分かれている
-        id === "EC13112" || //1クラス，春
-        id === "EC13122" || //1クラス，秋
-        id === "EC13212" || //2クラス，春
-        id === "EC13222" || //2クラス，秋
-        id === "EC13312" || //3クラス，春
-        id === "EC13322" || //3クラス，秋
-        id === "EC13412" || //4クラス，春
-        id === "EC13422" || //4クラス，秋
-        id === "EC13512" || //5クラス，春
-        id === "EC13522" || //5クラス，秋
-        id === "EC13802" //生物資源学類長が特別に認めた者，通年
-      );
-      break;
-    case 2024:
-    case 2025:
-      //専門語学(春，秋)
-      return id === "EC13112" || id === "EC13122";
-      break;
-    default:
-      return false;
+  // 専門語学(英語)I
+  if (tableYear === 2023) {
+    return (
+      id === "EC13112" || // 1クラス 春
+      id === "EC13122" || // 1クラス 秋
+      id === "EC13212" || // 2クラス 春
+      id === "EC13222" || // 2クラス 秋
+      id === "EC13312" || // 3クラス 春
+      id === "EC13322" || // 3クラス 秋
+      id === "EC13412" || // 4クラス 春
+      id === "EC13422" || // 4クラス 秋
+      id === "EC13512" || // 5クラス 春
+      id === "EC13522" || // 5クラス 秋
+      id === "EC13802" // 生物資源学類長が特別に認めた者，通年
+    );
   }
+  // 春と秋
+  return id === "EC13112" || id === "EC13122";
 }
 
 function isA2(id: string): boolean {
-  return id === "EC14502"; // 専門語学II
+  return id === "EC14502"; // 専門語学(英語)II
 }
 
 function classifyColumnA(
@@ -87,11 +76,12 @@ function classifyColumnA(
   tableYear: number,
 ): string | undefined {
   switch (specialty) {
-    case "as":
+    case "none":
       if (isA1(id, tableYear)) return "a1";
       if (isA2(id)) return "a2";
       if (isThesis(id)) return "a3";
-    case "les":
+      break;
+    case "as":
       if (isA1(id, tableYear)) return "a1";
       if (isA2(id)) return "a2";
       if (isJapanExpertAgronomistInternship(id)) return "a3";
@@ -102,29 +92,29 @@ function classifyColumnA(
   }
 }
 
-// B列
-function isB1(id: string, specialty: Specialty): boolean {
-  // TODO:以下の条件の実装が必要か
-  //  基幹科目8から16単位を習得すること
-  //  実験・実習・演習科目を3単位以上取得すること
+function isB1(id: string): boolean {
+  // TODO: 「基幹科目8から16単位を習得すること。また、実験・実習・演習科目を3単
+  // 位以上を修得すること。」という条件は未実装。
   return id.startsWith("EC2");
 }
-function isB2(id: string, specialty: Specialty): boolean {
-  // TODO:以下の条件の実装が必要か
-  // as : 実験・実習・演習科目を4単位以上取得すること
-  // les : 実験・実習・演習科目を3単位以上取得すること
+
+function isB2(id: string): boolean {
+  // TODO: 以下の条件は未実装。
+  // none: 実験・実習・演習科目を4単位以上取得すること
+  // as: 実験・実習・演習科目を3単位以上取得すること
   return id.startsWith("EC3");
 }
+
 function isB3(id: string, specialty: Specialty): boolean {
   switch (specialty) {
-    case "as":
+    case "none":
       return (
         /^EC[234]/.test(id) ||
         id.startsWith("BB") ||
         /^E[BEG]/.test(id) ||
         /^F[FH]/.test(id)
       );
-    case "les":
+    case "as":
       return (
         /^EC[234]/.test(id) ||
         id.startsWith("BB") ||
@@ -132,32 +122,27 @@ function isB3(id: string, specialty: Specialty): boolean {
         /^EG[56]/.test(id) ||
         /^F[FH]/.test(id)
       );
+    default:
+      unreachable(specialty);
   }
 }
 
-// C列
-function isBiologicalResourcesPractice(id: string, tableYear: number): boolean {
-  switch (tableYear) {
-    // 2023,2024では，生物資源科学演習がクラスごとに分かれている
-    case 2023:
-    case 2024:
-      return (
-        id === "EC11212" || // 生物資源科学演習（1クラス)
-        id === "EC11222" || // 生物資源科学演習（2クラス)
-        id === "EC11232" || // 生物資源科学演習（3クラス)
-        id === "EC11242" || // 生物資源科学演習（4クラス)
-        id === "EC11252" || // 生物資源科学演習（5クラス)
-        id === "EC11262" // 生物資源科学演習（総合学域群→生物資源学類）
-      );
-      break;
-    case 2025:
-      // 2025では，生物資源科学演習がクラス分けされない
-      return (
-        id === "EC11212" || id === "EC11262" // 生物資源科学演習（総合学域群→生物資源学類）
-      );
-      break;
-    default:
-      return false;
+/**
+ * 生物資源科学演習
+ */
+function isBiologicalResourcesPractice(id: string, isNative: boolean): boolean {
+  if (isNative) {
+    // 2023, 2024年度はクラスごとに分かれているが、2025年度は分かれていない。今
+    // 後クラス分けが復活する可能性を考えて広くとっておく。
+    return (
+      id === "EC11212" || // 1クラス
+      id === "EC11222" || // 2クラス
+      id === "EC11232" || // 3クラス
+      id === "EC11242" || // 4クラス
+      id === "EC11252" // 5クラス
+    );
+  } else {
+    return id === "EC11262"; // 総合学域群から生物資源学類に移行した学生に限る
   }
 }
 
@@ -168,23 +153,21 @@ function isJapanExpertOverview(id: string): boolean {
 function classifyColumnC(
   id: string,
   specialty: Specialty,
-  _mode: Mode,
-  tableYear: number,
+  isNative: boolean,
 ): string | undefined {
   switch (specialty) {
-    case "as":
-      if (isBiologicalResourcesPractice(id, tableYear)) return "c1";
+    case "none":
+      if (isBiologicalResourcesPractice(id, isNative)) return "c1";
       break;
-    case "les":
+    case "as":
       if (isJapanExpertOverview(id)) return "c1";
-      if (isBiologicalResourcesPractice(id, tableYear)) return "c2";
+      if (isBiologicalResourcesPractice(id, isNative)) return "c2";
       break;
     default:
       return unreachable(specialty);
   }
 }
 
-// D列
 function isD1(id: string): boolean {
   return (
     id === "EC12301" || // 生物資源の開発・生産と持続利用
@@ -193,10 +176,159 @@ function isD1(id: string): boolean {
     id === "EC12201" // 生物資源学にみる食品科学・技術の最前線
   );
 }
+
 function isD2(id: string): boolean {
-  //TODO: 数学リテラシー1・2・3，微積分，微分積分A，
-  // 線形代数1・2・3，線形代数A，力学1・2・3，電磁気学1・2・3，工学システム概論について不明
+  const mathLit = // 数学リテラシー1・2・3
+    id === "FA01111" ||
+    id === "FA01121" ||
+    id === "FA01131" ||
+    id === "FA01141" ||
+    id === "FA01151" ||
+    id === "FA01161" ||
+    id === "FA01171" ||
+    id === "FA01181" ||
+    id === "FA01191" ||
+    id === "FA011A1" ||
+    id === "FA011B1" ||
+    id === "FA011C1" ||
+    id === "FA011D1" ||
+    id === "FA011E1" ||
+    id === "FA01211" ||
+    id === "FA01221" ||
+    id === "FA01231" ||
+    id === "FA01241" ||
+    id === "FA01251" ||
+    id === "FA01261" ||
+    id === "FA01271" ||
+    id === "FA01281" ||
+    id === "FA01291" ||
+    id === "FA012A1" ||
+    id === "FA012B1" ||
+    id === "FA012C1" ||
+    id === "FA012D1" ||
+    id === "FA012E1" ||
+    id === "FBA1701" ||
+    id === "FBA1711";
+
+  const calc = // 微積分1・2・3，微分積分A
+    id === "FA01311" ||
+    id === "FA01321" ||
+    id === "FA01331" ||
+    id === "FA01341" ||
+    id === "FA01351" ||
+    id === "FA01361" ||
+    id === "FA01371" ||
+    id === "FA01381" ||
+    id === "FA01391" ||
+    id === "FA013A1" ||
+    id === "FA013C1" ||
+    id === "FA013D1" ||
+    id === "FA01411" ||
+    id === "FA01421" ||
+    id === "FA01431" ||
+    id === "FA01441" ||
+    id === "FA01451" ||
+    id === "FA01461" ||
+    id === "FA01471" ||
+    id === "FA01481" ||
+    id === "FA01491" ||
+    id === "FA014A1" ||
+    id === "FA014C1" ||
+    id === "FA014D1" ||
+    id === "FA01511" ||
+    id === "FA01521" ||
+    id === "FA01531" ||
+    id === "FA01541" ||
+    id === "FA01551" ||
+    id === "FA01561" ||
+    id === "FA01571" ||
+    id === "FA01581" ||
+    id === "FA01591" ||
+    id === "FA015A1" ||
+    id === "FA015C1" ||
+    id === "FA015D1" ||
+    id === "GA15311" ||
+    id === "GA15321" ||
+    id === "GA15331" ||
+    id === "GA15341";
+
+  const linAlg = // 線形代数1・2・3，線形代数A
+    id === "FA01611" ||
+    id === "FA01621" ||
+    id === "FA01631" ||
+    id === "FA01641" ||
+    id === "FA01651" ||
+    id === "FA01661" ||
+    id === "FA01671" ||
+    id === "FA01681" ||
+    id === "FA01691" ||
+    id === "FA016A1" ||
+    id === "FA016C1" ||
+    id === "FA016D1" ||
+    id === "FA01711" ||
+    id === "FA01721" ||
+    id === "FA01731" ||
+    id === "FA01741" ||
+    id === "FA01751" ||
+    id === "FA01761" ||
+    id === "FA01771" ||
+    id === "FA01781" ||
+    id === "FA01791" ||
+    id === "FA017A1" ||
+    id === "FA017C1" ||
+    id === "FA017D1" ||
+    id === "FA01811" ||
+    id === "FA01821" ||
+    id === "FA01831" ||
+    id === "FA01841" ||
+    id === "FA01851" ||
+    id === "FA01861" ||
+    id === "FA01871" ||
+    id === "FA01881" ||
+    id === "FA01891" ||
+    id === "FA018A1" ||
+    id === "FA018C1" ||
+    id === "FA018D1" ||
+    id === "FF18724" ||
+    id === "FF18734" ||
+    id === "GA15211" ||
+    id === "GA15221" ||
+    id === "GA15231" ||
+    id === "GA15241";
+
+  const dynamics = // 力学1・2・3
+    id === "FCB1201" ||
+    id === "FCB1211" ||
+    id === "FCB1221" ||
+    id === "FCB1231" ||
+    id === "FCB1241" ||
+    id === "FCB1251" ||
+    id === "FCB1261" ||
+    id === "FCB1271" ||
+    id === "FCB1281" ||
+    id === "FCB1291";
+
+  const eleMag = // 電磁気学1・2・3
+    id === "FCB1301" ||
+    id === "FCB1311" ||
+    id === "FCB1321" ||
+    id === "FCB1331" ||
+    id === "FCB1341" ||
+    id === "FCB1351" ||
+    id === "FCB1361" ||
+    id === "FCB1371" ||
+    id === "FCB1381" ||
+    id === "FCB1391";
+
+  const engSys = id === "FG10641" || id === "FG16051"; // 工学システム概論
+
   return (
+    mathLit ||
+    calc ||
+    linAlg ||
+    dynamics ||
+    eleMag ||
+    engSys ||
     id === "EC12131" || // 化学
     id === "EC12171" || // 物理学
     id === "EC12173" || // 生物学実験
@@ -252,36 +384,31 @@ function isD2(id: string): boolean {
   );
 }
 
-// E列
-function isE1As(id: string, mode: "known" | "real"): boolean {
+function isE1(id: string, mode: Mode, specialty: Specialty): boolean {
+  let fys: boolean;
+  switch (specialty) {
+    case "none":
+      fys =
+        id === "1110102" || // ファーストイヤーセミナー 1クラス
+        id === "1110202" || // ファーストイヤーセミナー 2クラス
+        id === "1110302" || // ファーストイヤーセミナー 3クラス
+        id === "1110402" || // ファーストイヤーセミナー 4クラス
+        id === "1110502"; // ファーストイヤーセミナー 5クラス
+      break;
+    case "as":
+      // Japan-Expertファーストイヤーセミナー
+      fys = id === "1122502";
+      break;
+    default:
+      unreachable(specialty);
+  }
   return (
-    id === "1110102" || // ファーストイヤーセミナー 1クラス
-    id === "1110202" || // ファーストイヤーセミナー 2クラス
-    id === "1110302" || // ファーストイヤーセミナー 3クラス
-    id === "1110402" || // ファーストイヤーセミナー 4クラス
-    id === "1110502" || // ファーストイヤーセミナー 5クラス
+    fys ||
     id === "1227291" || // 学問への誘い 1クラス
     id === "1227301" || // 学問への誘い 2クラス
     id === "1227311" || // 学問への誘い 3クラス
     id === "1227321" || // 学問への誘い 4クラス
     id === "1227331" || // 学問への誘い 5クラス
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
-  );
-}
-function isE1Les(id: string, mode: "known" | "real"): boolean {
-  // les では// Japan-ExpertファーストイヤーセミナーもE1に含まれる
-  return (
-    id === "1110102" || // ファーストイヤーセミナー 1クラス
-    id === "1110202" || // ファーストイヤーセミナー 2クラス
-    id === "1110302" || // ファーストイヤーセミナー 3クラス
-    id === "1110402" || // ファーストイヤーセミナー 4クラス
-    id === "1110502" || // ファーストイヤーセミナー 5クラス
-    id === "1227291" || // 学問への誘い 1クラス
-    id === "1227301" || // 学問への誘い 2クラス
-    id === "1227311" || // 学問への誘い 3クラス
-    id === "1227321" || // 学問への誘い 4クラス
-    id === "1227331" || // 学問への誘い 5クラス
-    id === "1122502" || // Japan-Expertファーストイヤーセミナー
     (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
@@ -299,6 +426,7 @@ function isInfo(id: string, mode: Mode): boolean {
         isDataScience(id)))
   );
 }
+
 function classifyColumnE(
   id: string,
   specialty: Specialty,
@@ -306,26 +434,38 @@ function classifyColumnE(
   _tableYear: number,
 ): string | undefined {
   switch (specialty) {
-    case "as":
-      if (isE1As(id, mode)) return "e1";
+    case "none":
+      if (isE1(id, mode, specialty)) return "e1";
       if (isCompulsoryPe1(id) || isCompulsoryPe2(id) || isCompulsoryPe3(id))
         return "e2";
       if (isCompulsoryEnglishById(id)) return "e3";
       if (isInfo(id, mode)) return "e4";
       if (isJapanese(id)) return "e5";
       break;
-    case "les":
-      if (isE1Les(id, mode)) return "e1";
+    case "as":
+      if (isE1(id, mode, specialty)) return "e1";
       if (isCompulsoryPe1(id) || isCompulsoryPe2(id) || isCompulsoryPe3(id))
         return "e2";
-      // TODO: 外国人向けの履修要件?となっており、第一外国語と第二外国語の扱いをどうするか要確認
-      if (isCompulsoryEnglishById(id)) return "e3";
-      if (isSecondForeignLanguage(id)) return "e4";
+      // TODO: 第一外国語と第二外国語の扱いは要確認 !!B!!
+      if (isJapaneseAsForeignLanguage(id)) return "e3";
+      if (isCompulsoryEnglishById(id)) return "e4";
       if (isInfo(id, mode)) return "e5";
       break;
     default:
       return unreachable(specialty);
   }
+}
+
+function isArtAs(id: string): boolean {
+  return (
+    isArt(id) &&
+    !(
+      id === "4004013" || // 芸術(日本画実習)
+      id === "4006012" || // 芸術(書A)
+      id === "4006022" || // 芸術(書B)
+      id === "4006032" // 芸術(書C)
+    )
+  );
 }
 
 function classifyColumnF(
@@ -335,7 +475,7 @@ function classifyColumnF(
   tableYear: number,
 ): string | undefined {
   switch (specialty) {
-    case "as":
+    case "none":
       if (tableYear <= 2024) {
         if (isGakushikiban(id)) return "f1";
         if (isElectivePe(id)) return "f2";
@@ -346,52 +486,31 @@ function classifyColumnF(
         if (isElectivePe(id) || isArt(id) || isCompulsoryEnglishById(id))
           return "f2";
       }
-      return;
-    case "les":
-      //lesでは第一外国語（日本語）が追加される．
+      break;
+    case "as":
+      // asでは第一外国語（日本語）が追加される．
       if (tableYear <= 2024) {
         if (isGakushikiban(id)) return "f1";
         if (isElectivePe(id)) return "f2";
-        if (
-          !(
-            id === "4004013" || // 芸術(日本画実習)
-            id === "4006012" || // 芸術(書A)
-            id === "4006022" || // 芸術(書B)
-            id === "4006032"
-          ) && // 芸術(書C)
-          isArt(id)
-        )
-          return "f3";
+        if (isArtAs(id)) return "f3";
         if (isNonCompulsoryEnglish(id)) return "f4";
         if (isJapanese(id)) return "f5";
       } else {
         if (isGakushikiban(id)) return "f1";
-        if (
-          isElectivePe(id) ||
-          (!(
-            id === "4004013" || // 芸術(日本画実習)
-            id === "4006012" || // 芸術(書A)
-            id === "4006022" || // 芸術(書B)
-            id === "4006032"
-          ) && // 芸術(書C)
-            isArt(id)) ||
-          isJapanese(id)
-        )
-          return "f2";
+        if (isElectivePe(id) || isArtAs(id) || isJapanese(id)) return "f2";
       }
-      return;
+      break;
     default:
       return unreachable(specialty);
   }
 }
 
-// H列
-function isH1As(id: string): boolean {
+function isH1(id: string): boolean {
   return !/^(EC|EB|EE|EG|EZA|BB|FF|FH|[12346])/.test(id);
 }
 
-function isH1Les(id: string): boolean {
-  //TODO: 言語の科学　科目番号不明
+function isH1As(id: string): boolean {
+  // TODO: 言語の科学の科目番号不明 !!B!!
   return (
     id === "HC30071" || // 看護生命倫理
     id === "AE56A21" || // 共生のための日本語教育
@@ -405,23 +524,18 @@ function isH1Les(id: string): boolean {
   );
 }
 
-function isH2Les(id: string): boolean {
+function isH2As(id: string): boolean {
   return !/^(EC|EB|EE|EG[56]|EZA|BB|FF|FH|[12346])/.test(id);
 }
 
-function classifyColumnH(
-  id: string,
-  specialty: Specialty,
-  _mode: Mode,
-  _tableYear: number,
-): string | undefined {
+function classifyColumnH(id: string, specialty: Specialty): string | undefined {
   switch (specialty) {
+    case "none":
+      if (isH1(id)) return "h1";
+      break;
     case "as":
       if (isH1As(id)) return "h1";
-      break;
-    case "les":
-      if (isH1Les(id)) return "h1";
-      if (isH2Les(id)) return "h2";
+      if (isH2As(id)) return "h2";
       break;
     default:
       return unreachable(specialty);
@@ -431,37 +545,44 @@ function classifyColumnH(
 function classifyColumns(
   id: string,
   specialty: Specialty,
+  isNative: boolean,
   mode: Mode,
   tableYear: number,
 ): string | undefined {
   // 必修
   const a = classifyColumnA(id, specialty, mode, tableYear);
   if (a !== undefined) return a;
-  const c = classifyColumnC(id, specialty, mode, tableYear);
+  const c = classifyColumnC(id, specialty, isNative);
   if (c !== undefined) return c;
   const e = classifyColumnE(id, specialty, mode, tableYear);
   if (e !== undefined) return e;
   // 選択
-  if (isB1(id, specialty)) return "b1";
-  if (isB2(id, specialty)) return "b2";
+  if (isB1(id)) return "b1";
+  if (isB2(id)) return "b2";
   if (isB3(id, specialty)) return "b3";
   if (isD1(id)) return "d1";
   if (isD2(id)) return "d2";
   const f = classifyColumnF(id, specialty, mode, tableYear);
   if (f !== undefined) return f;
-  const h = classifyColumnH(id, specialty, mode, tableYear);
+  const h = classifyColumnH(id, specialty);
   if (h !== undefined) return h;
 }
 
 export function classifyKnownCourses(
   cs: KnownCourse[],
-  _opts: ClassifyOptions,
-  _tableYear: number,
+  opts: ClassifyOptions,
+  tableYear: number,
   specialty: Specialty,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classifyColumns(c.id, specialty, "known", _tableYear);
+    const cellId = classifyColumns(
+      c.id,
+      specialty,
+      opts.isNative,
+      "known",
+      tableYear,
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -471,13 +592,19 @@ export function classifyKnownCourses(
 
 export function classifyRealCourses(
   cs: RealCourse[],
-  _opts: ClassifyOptions,
-  _tableYear: number,
+  opts: ClassifyOptions,
+  tableYear: number,
   specialty: Specialty,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classifyColumns(c.id, specialty, "real", _tableYear);
+    const cellId = classifyColumns(
+      c.id,
+      specialty,
+      opts.isNative,
+      "real",
+      tableYear,
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -489,15 +616,27 @@ export function classifyFakeCourses(
   cs: FakeCourse[],
   _opts: ClassifyOptions,
   _tableYear: number,
-  _specialty: Specialty,
+  specialty: Specialty,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
-  for (const _c of cs) {
+  for (const c of cs) {
+    if (isCompulsoryEnglishByName(c.name)) {
+      switch (specialty) {
+        case "none":
+          fakeCourseIdToCellId.set(c.id, "e3");
+          break;
+        case "as":
+          fakeCourseIdToCellId.set(c.id, "e4");
+          break;
+        default:
+          unreachable(specialty);
+      }
+    }
   }
   return fakeCourseIdToCellId;
 }
 
-export const creditRequirementsAsSince2023: SetupCreditRequirements = {
+export const creditRequirementsSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 2, max: 2 },
@@ -532,7 +671,7 @@ export const creditRequirementsAsSince2023: SetupCreditRequirements = {
   elective: 95,
 };
 
-export const creditRequirementsLesSince2023: SetupCreditRequirements = {
+export const creditRequirementsAsSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 2, max: 2 },
@@ -571,7 +710,7 @@ export const creditRequirementsLesSince2023: SetupCreditRequirements = {
   elective: 89,
 };
 
-export const creditRequirementsAsSince2025: SetupCreditRequirements = {
+export const creditRequirementsSince2025: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 2, max: 2 },
@@ -604,7 +743,7 @@ export const creditRequirementsAsSince2025: SetupCreditRequirements = {
   elective: 95,
 };
 
-export const creditRequirementsLesSince2025: SetupCreditRequirements = {
+export const creditRequirementsAsSince2025: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 2, max: 2 },
