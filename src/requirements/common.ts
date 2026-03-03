@@ -133,6 +133,13 @@ export function isForeignLanguage(id: string): boolean {
 }
 
 /**
+ * 外国語としての日本語
+ */
+export function isJapaneseAsForeignLanguage(id: string): boolean {
+  return id.startsWith("39");
+}
+
+/**
  * 芸術
  */
 export function isArt(id: string): boolean {

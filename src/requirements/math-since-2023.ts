@@ -184,7 +184,7 @@ function isF2(id: string): boolean {
 
 function isH1(id: string): boolean {
   if (isKyoushoku(id)) {
-    // TODO: 事務に聞いていないので完全に合っているかは不明
+    // TODO: 支援室に聞いていないので完全に合っているかは不明 !!B!!
     return (
       id.startsWith("9450") || // 数学科教育概論
       id.startsWith("9451") || // 数学教育内容論

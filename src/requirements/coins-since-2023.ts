@@ -26,6 +26,7 @@ import {
 import { arrayRemove, assert, unreachable } from "@/util";
 
 export type Specialty = "scs" | "cs" | "mimt";
+type Mode = "known" | "real";
 
 const COURSE_ID_TO_GB_COURSE_ID = new Map([
   // コンピュータグラフィックス基礎 → コンピュータグラフィックス基礎
@@ -135,7 +136,8 @@ function isB2(id: string): boolean {
     id === "GB13332" || //情報科学特別演習
     id.startsWith("GB2") ||
     id.startsWith("GB3") ||
-    id.startsWith("GB4")
+    id.startsWith("GB4") ||
+    id.startsWith("GA4")
   );
 }
 
@@ -178,19 +180,19 @@ function isC6(id: string): boolean {
   return id === "GB19061";
 }
 
-function isC7(id: string, native: boolean): boolean {
+function isC7(id: string, isNative: boolean): boolean {
   return (
     id === "GA18212" ||
     // 移行生はFHから始まるプロ入Aをcoinsのプロ入Aとして使える
-    (!native && (id === "FH60474" || id === "FH60484" || id === "FH60494"))
+    (!isNative && (id === "FH60474" || id === "FH60484" || id === "FH60494"))
   );
 }
 
-function isC8(id: string, native: boolean): boolean {
+function isC8(id: string, isNative: boolean): boolean {
   return (
     id === "GA18312" ||
     // 移行生はFHから始まるプロ入Bをcoinsのプロ入Bとして使える
-    (!native && (id === "FH60574" || id === "FH60584" || id === "FH60594"))
+    (!isNative && (id === "FH60574" || id === "FH60584" || id === "FH60594"))
   );
 }
 
@@ -240,40 +242,26 @@ function isD3(id: string): boolean {
     id !== "GB13312" && //情報特別演習I
     id !== "GB13322" && //情報特別演習II
     id !== "GB13332" && //情報科学特別演習
-    id.startsWith("GB1") &&
-    !id.startsWith("GB19") && //他列に含まれない
-    //必修を除外
-    !(
-      id.startsWith("GB102") ||
-      id.startsWith("GB104") ||
-      id.startsWith("GB108") ||
-      id.startsWith("GB119") ||
-      id.startsWith("GB122") ||
-      id.startsWith("GB120")
-    )
+    id.startsWith("GB1")
   );
 }
 
 function isD4(id: string): boolean {
-  return (
-    id.startsWith("GA1") &&
-    //必修を除外
-    !(id.startsWith("GA15") || id.startsWith("GA18"))
-  );
+  return id.startsWith("GA1");
 }
 
-function isE1(id: string, mode: "known" | "real"): boolean {
+function isE1(id: string, mode: Mode): boolean {
   return (
-    //学問への誘い
-    id === "1227571" || //1クラス
-    id === "1227581" || //2クラス
-    id === "1227591" || //3クラス
-    id === "1227601" || //4クラス
-    //ファーストイヤーセミナー
-    id === "1118102" || //1クラス
-    id === "1118202" || //2クラス
-    id === "1118302" || //3クラス
-    id === "1118402" || //4クラス
+    // 学問への誘い
+    id === "1227571" || // 1クラス
+    id === "1227581" || // 2クラス
+    id === "1227591" || // 3クラス
+    id === "1227601" || // 4クラス
+    // ファーストイヤーセミナー
+    id === "1118102" || // 1クラス
+    id === "1118202" || // 2クラス
+    id === "1118302" || // 3クラス
+    id === "1118402" || // 4クラス
     (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
@@ -287,7 +275,7 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string, mode: "known" | "real"): boolean {
+function isE4(id: string, mode: Mode): boolean {
   return (
     id === "6124101" || // 情報リテラシー(講義)
     id === "6424102" || // 情報リテラシー(演習) 2023年度は情報1班対象 以降は全員対象
@@ -312,30 +300,52 @@ function isF2(id: string): boolean {
 }
 
 function isH1(id: string): boolean {
-  return !(
-    id.startsWith("E") ||
-    id.startsWith("F") ||
-    id.startsWith("G") ||
-    id.startsWith("H") ||
-    isKyoutsuu(id) ||
-    isKyoushoku(id)
-  );
+  return !(/^[EFGH]/.test(id) || isKyoutsuu(id) || isKyoushoku(id));
 }
 
 function isH2(id: string): boolean {
-  return (
-    id.startsWith("E") ||
-    id.startsWith("F") ||
-    id.startsWith("GC") ||
-    id.startsWith("GE") ||
-    id.startsWith("H")
-  );
+  return /^(E|F|GC|GE|H)/.test(id);
 }
+
+const COMPULSORY_NAMES = new Set([
+  "ソフトウェアサイエンス実験A",
+  "ソフトウェアサイエンス実験B",
+  "情報システム実験A",
+  "情報システム実験B",
+  "知能情報メディア実験A",
+  "知能情報メディア実験B",
+  "卒業研究A",
+  "卒業研究B",
+  "特別卒業研究A",
+  "特別卒業研究B",
+  "専門語学A",
+  "専門語学B",
+  "特別専門語学A",
+  "特別専門語学B",
+  "情報数学A",
+  "線形代数A",
+  "線形代数B",
+  "微分積分A",
+  "微分積分B",
+  "専門英語基礎",
+  "プログラミング入門A",
+  "プログラミング入門B",
+  "コンピュータとプログラミング",
+  "データ構造とアルゴリズム",
+  "データ構造とアルゴリズム実験",
+  "論理回路",
+  "論理回路演習",
+  "ファーストイヤーセミナー",
+  "学問への誘い",
+  "情報リテラシー(講義)",
+  "情報リテラシー(演習)",
+  "データサイエンス",
+]);
 
 function classify(
   id: string,
   name: string,
-  mode: "known" | "real",
+  mode: Mode,
   isNative: boolean,
   specialty: Specialty,
 ): string | undefined {
@@ -369,6 +379,7 @@ function classify(
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id, mode)) return "e4";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
 
   // 選択
   if (isB1(id)) return "b1";
@@ -379,18 +390,18 @@ function classify(
   if (isD4(id)) return "d4";
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
-  if (isH1(id)) return "h1";
   if (isH2(id)) return "h2";
+  if (isH1(id)) return "h1"; // 「...以外」なので最後
 }
 
 export function classifyKnownCourses(
   cs: KnownCourse[],
-  _opts: ClassifyOptions,
+  opts: ClassifyOptions,
   specialty: Specialty,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "known", true, specialty);
+    const cellId = classify(c.id, c.name, "known", opts.isNative, specialty);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }

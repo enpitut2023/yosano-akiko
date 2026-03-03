@@ -273,15 +273,33 @@ export type Akiko = {
 };
 
 export function akikoNew(
-  knownCourses: Map<CourseId, KnownCourse>,
-  realCourses: Map<CourseId, RealCourse>,
-  fakeCourses: Map<FakeCourseId, FakeCourse>,
+  knownCoursesArray: KnownCourse[],
+  realCoursesArray: RealCourse[],
+  fakeCoursesArray: FakeCourse[],
   mightTakeCourseIds: CourseId[],
   courseIdToCellId: Map<CourseId, CellId>,
   realCoursePositions: Map<CourseId, CellId>,
   fakeCoursePositions: Map<FakeCourseId, CellId>,
   creditRequirements: CreditRequirements,
 ): Akiko | undefined {
+  const knownCourses = new Map(knownCoursesArray.map((c) => [c.id, c]));
+
+  realCoursesArray = Array.from(realCoursesArray);
+  // Make sure to use the latest grade
+  realCoursesArray.sort((a, b) => a.takenYear - b.takenYear);
+  const realCourses = new Map<CourseId, RealCourse>();
+  for (const c of realCoursesArray) {
+    realCourses.set(c.id, c);
+  }
+
+  fakeCoursesArray = Array.from(fakeCoursesArray);
+  // Make sure to use the latest grade
+  fakeCoursesArray.sort((a, b) => a.takenYear - b.takenYear);
+  const fakeCourses = new Map<FakeCourseId, FakeCourse>();
+  for (const c of fakeCoursesArray) {
+    fakeCourses.set(c.id, c);
+  }
+
   const coursePositions = new Map<CourseId, CoursePosition>();
   for (let [courseId, cellId] of courseIdToCellId) {
     coursePositions.set(courseId, { cellId, listKind: "wont-take" });
