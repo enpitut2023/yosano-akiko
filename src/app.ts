@@ -7,10 +7,8 @@ import {
   ColumnCreditStats,
   ColumnId,
   CourseId,
-  CreditRequirements,
   ElectiveCreditStats,
   FakeCourse,
-  FakeCourseId,
   RealCourse,
   akikoGetCreditStats,
   akikoGetMightTakeCourseIds,
@@ -21,12 +19,15 @@ import {
   courseIdCompare,
   fakeCourseIdCompare,
   isCellId,
-  isColumnId,
   isCourseId,
   isFakeCourseId,
   isGrade,
 } from "@/akiko";
-import { ClassifyOptions, SetupParams } from "@/app-setup";
+import {
+  SetupParams,
+  classifyCoursesOrFail,
+  createCreditRequirementsOrFail,
+} from "@/app-setup";
 import { CourseLists } from "@/course-lists";
 import { parseImportedCsv } from "@/csv";
 import warningIcon from "@/icons/warning.svg";
@@ -424,68 +425,25 @@ export function setup(params: SetupParams): void {
   const localDataKey = `${params.major}_${params.requirementsTableYear}`;
   const localData = localDataLoad(localDataKey) ?? localDataDefault();
 
-  const knownCourses = new Map(params.knownCourses.map((c) => [c.id, c]));
-  const creditRequirements: CreditRequirements = {
-    cells: new Map(),
-    columns: new Map(),
-    compulsoryMin: params.creditRequirements.compulsory,
-    electiveMin: params.creditRequirements.elective,
-  };
-  for (const [id, cell] of Object.entries(params.creditRequirements.cells)) {
-    assert(isCellId(id), `Bad cell id: "${id}"`);
-    creditRequirements.cells.set(id, cell);
-  }
-  for (const [id, col] of Object.entries(params.creditRequirements.columns)) {
-    assert(isColumnId(id), `Bad column id: "${id}"`);
-    creditRequirements.columns.set(id, col);
-  }
+  const creditRequirements = createCreditRequirementsOrFail(
+    params.creditRequirements,
+  );
 
   const createAkiko = (): Akiko => {
-    const sortedRealCourses = Array.from(localData.realCourses);
-    sortedRealCourses.sort((a, b) => a.takenYear - b.takenYear);
-    const realCourses = new Map(localData.realCourses.map((c) => [c.id, c]));
-    for (const c of sortedRealCourses) {
-      realCourses.set(c.id, c);
-    }
-
-    const sortedFakeCourses = Array.from(localData.fakeCourses);
-    sortedFakeCourses.sort((a, b) => a.takenYear - b.takenYear);
-    const fakeCourses = new Map(localData.fakeCourses.map((c) => [c.id, c]));
-    for (const c of sortedFakeCourses) {
-      fakeCourses.set(c.id, c);
-    }
-
-    const courseIdToCellId = new Map<CourseId, CellId>();
-    const realCoursePositions = new Map<CourseId, CellId>();
-    const fakeCoursePositions = new Map<FakeCourseId, CellId>();
-
-    const classifyOptions: ClassifyOptions = { isNative: localData.native };
-    for (const [courseId, cellId] of params.classifyKnownCourses(
-      params.knownCourses,
-      classifyOptions,
-    )) {
-      assert(isCellId(cellId), `Bad cell id: "${cellId}"`);
-      courseIdToCellId.set(courseId, cellId);
-    }
-    for (const [courseId, cellId] of params.classifyRealCourses(
-      localData.realCourses,
-      classifyOptions,
-    )) {
-      assert(isCellId(cellId), `Bad cell id: "${cellId}"`);
-      realCoursePositions.set(courseId, cellId);
-    }
-    for (const [fakeCourseId, cellId] of params.classifyFakeCourses(
-      localData.fakeCourses,
-      classifyOptions,
-    )) {
-      assert(isCellId(cellId), `Bad cell id: "${cellId}"`);
-      fakeCoursePositions.set(fakeCourseId, cellId);
-    }
-
+    const { courseIdToCellId, realCoursePositions, fakeCoursePositions } =
+      classifyCoursesOrFail(
+        params.knownCourses,
+        localData.realCourses,
+        localData.fakeCourses,
+        localData.native,
+        params.classifyKnownCourses,
+        params.classifyRealCourses,
+        params.classifyFakeCourses,
+      );
     const akiko = akikoNew(
-      knownCourses,
-      realCourses,
-      fakeCourses,
+      params.knownCourses,
+      localData.realCourses,
+      localData.fakeCourses,
       localData.mightTakeCourseIds,
       courseIdToCellId,
       realCoursePositions,
@@ -497,7 +455,7 @@ export function setup(params: SetupParams): void {
   };
 
   let akiko = createAkiko();
-  let selectedCellId: CellId | undefined = undefined;
+  let selectedCellId: CellId | undefined;
   let filterString = "";
 
   const cellIdToRect = new Map<CellId, Rect>();

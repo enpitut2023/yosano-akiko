@@ -114,8 +114,7 @@ function isD1(id: string, mode: "known" | "real"): boolean {
   return (
     isD1Native(id) ||
     id === "FCB1401" || // 物理学概論
-    // TODO: 別学類のD1該当科目を取ってしまっていたら一応成績には反映されるだろ
-    // うと判断。支援室に要確認。
+    // TODO: 別学類のD1該当科目を取ってしまっていたら一応成績には反映されるだろうと判断。支援室に要確認。 !!B!!
     (mode === "real" && isD1Foreign(id))
   );
 }
@@ -270,8 +269,7 @@ function isD2(id: string, mode: "known" | "real", tableYear: number): boolean {
   // ため、記述していない。
   return (
     isD2Native(id, tableYear) ||
-    // TODO: 別学類のD2該当科目を取ってしまっていたら一応成績には反映されるだろ
-    // うと判断。支援室に要確認。
+    // TODO: 別学類のD2該当科目を取ってしまっていたら一応成績には反映されるだろうと判断。支援室に要確認。 !!B!!
     (mode === "real" && isD2Foreign(id, tableYear))
   );
 }
@@ -292,8 +290,7 @@ function isE1(id: string, mode: "known" | "real"): boolean {
   return (
     id === "1113102" || // ファーストイヤーセミナー
     id === "1227391" || // 学問への誘い
-    // TODO: 別学類のE1該当科目を取ってしまっていたら一応成績には反映されるだろ
-    // うと判断。支援室に要確認。
+    // TODO: 別学類のE1該当科目を取ってしまっていたら一応成績には反映されるだろうと判断。支援室に要確認。 !!B!!
     (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
@@ -328,7 +325,7 @@ function isH1(id: string): boolean {
 
 function isH2(id: string): boolean {
   if (isKyoushoku(id)) {
-    // TODO: 事務に聞いていないので完全に合っているかは不明
+    // TODO: 支援室に聞いていないので完全に合っているかは不明 !!B!!
     return (
       id.startsWith("9450") || // 数学科教育概論
       id.startsWith("9451") || // 数学教育内容論

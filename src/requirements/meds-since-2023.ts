@@ -16,7 +16,6 @@ import {
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
   isIzanai,
-  isKyoushoku,
 } from "@/requirements/common";
 import { unreachable } from "@/util";
 
@@ -24,7 +23,7 @@ export type Specialty = "ms" | "ims" | "mspis";
 type Mode = "known" | "real";
 
 function classifyColumnAMs(id: string): string | undefined {
-  // !!A!!は全て国際医療科学主専攻G30コース学生向け
+  // !!A!!はその他の科目が全て国際医療科学主専攻G30コース学生向け
   if (
     id === "HE30001" || // 臨床病態学 2023年以降
     id === "HE40151" // 臨床病態学 2022年度入学者までが対象 2023年のみ開講
@@ -125,9 +124,9 @@ function classifyColumnCMs(id: string): string | undefined {
   if (id === "HE24221") return "c18"; // 医科学英語論文講読の基礎
 }
 
-function classifyColumnD1Ms(id: string): string | undefined {
+function isD1Ms(id: string): boolean {
   // TODO: その他学類長が指定する科目 !!B!!
-  if (
+  return (
     id === "HE20142" || // イメージング総論
     id === "HE21101" || // 生命倫理学
     id === "HE21001" || // 医学史
@@ -135,12 +134,11 @@ function classifyColumnD1Ms(id: string): string | undefined {
     id === "HC22101" || // 医療経済学
     id === "HE22121" || // 医療経済学 HC22101と同一
     id === "HE23053" // キャリアデザイン研修
-  )
-    return "d1";
+  );
 }
 
-function classifyColumnD2Ms(id: string): string | undefined {
-  if (
+function isD2Ms(id: string): boolean {
+  return (
     id === "HE41170" || // 国際生命医科学研修 Iと書いてあるけどIがつく科目なし !!B!!
     id === "HE41190" || // 国際生命医科学研修II
     id === "HE41200" || // 国際生命医科学研修III
@@ -150,8 +148,7 @@ function classifyColumnD2Ms(id: string): string | undefined {
     id === "HE41215" || // 国際生命医科学II
     id === "HE41225" || // 国際生命医科学III
     id === "HE22031" // 実践英語(TOEFL対策)
-  )
-    return "d2";
+  );
 }
 
 function classifyColumnAImsMspis(id: string): string | undefined {
@@ -359,10 +356,8 @@ function classify(
       if (c !== undefined) return c;
       const b = classifyColumnBMs(id, tableYear);
       if (b !== undefined) return b;
-      const d1 = classifyColumnD1Ms(id);
-      if (d1 !== undefined) return d1;
-      const d2 = classifyColumnD2Ms(id);
-      if (d2 !== undefined) return d2;
+      if (isD1Ms(id)) return "d1";
+      if (isD2Ms(id)) return "d2";
       break;
     }
     case "ims":
@@ -527,37 +522,36 @@ export const creditRequirementsMsSince2023: SetupCreditRequirements = {
 
 export const creditRequirementsImsMspisSince2023: SetupCreditRequirements = {
   cells: {
-a1: { min: 1, max: 1 },
-a2: { min: 6, max: 6 },
-a3: { min: 1, max: 1 },
-a4: { min: 1, max: 1 },
-a5: { min: 1, max: 1 },
-a6: { min: 2, max: 2 },
-a7: { min: 8, max: 8 },
-b1: { min: 55, max: 55 },
-c1: { min: 1, max: 1 },
-d1: { min: 27, max: 27 },
-e1: { min: 2, max: 2 },
-e2: { min: 2, max: 2 },
-e3: { min: 4, max: 4 },
-e4: { min: 4, max: 4 },
-f1: { min: 1, max: 1 },
-g1: { min: 1, max: 1 },
-g2: { min: 1, max: 1 },
-h1: { min: 3, max: 3 },
-h2: { min: 3, max: 3 },
+    a1: { min: 1, max: 1 },
+    a2: { min: 6, max: 6 },
+    a3: { min: 1, max: 1 },
+    a4: { min: 1, max: 1 },
+    a5: { min: 1, max: 1 },
+    a6: { min: 2, max: 2 },
+    a7: { min: 8, max: 8 },
+    b1: { min: 55, max: 55 },
+    c1: { min: 1, max: 1 },
+    d1: { min: 27, max: 27 },
+    e1: { min: 2, max: 2 },
+    e2: { min: 2, max: 2 },
+    e3: { min: 4, max: 4 },
+    e4: { min: 4, max: 4 },
+    f1: { min: 1, max: 1 },
+    g1: { min: 1, max: 1 },
+    g2: { min: 1, max: 1 },
+    h1: { min: 3, max: 3 },
+    h2: { min: 3, max: 3 },
   },
   columns: {
-a: { min: 20, max: 20 },
-b: { min: 55, max: 55 },
-c: { min: 1, max: 1 },
-d: { min: 27, max: 27 },
-e: { min: 12, max: 12 },
-f: { min: 1, max: 1 },
-g: { min: 2, max: 2 },
-h: { min: 6, max: 6 },
+    a: { min: 20, max: 20 },
+    b: { min: 55, max: 55 },
+    c: { min: 1, max: 1 },
+    d: { min: 27, max: 27 },
+    e: { min: 12, max: 12 },
+    f: { min: 1, max: 1 },
+    g: { min: 2, max: 2 },
+    h: { min: 6, max: 6 },
   },
   compulsory: 35,
   elective: 89,
 };
-

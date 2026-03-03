@@ -1,9 +1,12 @@
 import "./chem";
+import "./cis";
 import "./coens";
 import "./coins";
 import "./esys";
 import "./klis";
 import "./mast";
 import "./math";
+import "./pe";
 import "./physics";
 import "./pops";
+import "./psy";

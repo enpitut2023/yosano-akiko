@@ -180,7 +180,7 @@ function isH3(id: string): boolean {
 function classify(
   id: CourseId,
   name: string,
-  _year: number,
+  _tableYear: number,
   specialty: Specialty,
   _isNative: boolean,
   mode: Mode,
@@ -210,7 +210,7 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
   specialty: Specialty,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
@@ -218,7 +218,7 @@ export function classifyKnownCourses(
     const cellId = classify(
       c.id,
       c.name,
-      year,
+      tableYear,
       specialty,
       opts.isNative,
       "known",
@@ -233,7 +233,7 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
   specialty: Specialty,
 ): Map<CourseId, string> {
   cs = Array.from(cs);
@@ -242,7 +242,7 @@ export function classifyRealCourses(
     const cellId = classify(
       c.id,
       c.name,
-      year,
+      tableYear,
       specialty,
       opts.isNative,
       "real",
@@ -258,7 +258,7 @@ export function classifyRealCourses(
 export function classifyFakeCourses(
   cs: FakeCourse[],
   _opts: ClassifyOptions,
-  _year: number,
+  _tableYear: number,
   specialty: Specialty,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();

@@ -11,15 +11,22 @@ import {
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
+  isDataScience,
   isElectivePe,
+  isFirstYearSeminar,
   isForeignLanguage,
   isGakushikiban,
   isHakubutsukan,
+  isInfoLiteracyExercise,
+  isInfoLiteracyLecture,
+  isIzanai,
   isJapanese,
   isJiyuukamoku,
   isKyoushoku,
   isKyoutsuu,
 } from "@/requirements/common";
+
+type Mode = "known" | "real";
 
 function isA1(id: string): boolean {
   // 卒業研究A
@@ -57,7 +64,7 @@ function isB1(id: string) {
   return id.startsWith("GC5") || id.startsWith("GA4");
 }
 
-function classifyColumnC(id: CourseId, year: number): string | undefined {
+function classifyColumnC(id: CourseId, tableYear: number): string | undefined {
   if (id === "GA15331") return "c1"; // 微分積分A
   if (id === "GC11701") return "c2"; // 微分積分B
   if (id === "GA15231") return "c3"; // 線形代数A
@@ -67,7 +74,7 @@ function classifyColumnC(id: CourseId, year: number): string | undefined {
   if (id === "GA18222") return "c7"; // プログラミング入門A
   if (id === "GA18322") return "c8"; // プログラミング入門B
   let offset = 0;
-  if (year >= 2025) {
+  if (tableYear >= 2025) {
     offset = 1;
     if (id === "GC12104") {
       return "c9";
@@ -104,40 +111,45 @@ function isD1(id: string) {
   );
 }
 
-function isE1(id: string) {
+function isE1(id: string, mode: Mode) {
   return (
     id === "1119102" || // ファーストイヤーセミナー
-    id === "1227611" //学問への誘い
+    id === "1227611" || // 学問への誘い
+    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
 
-function isE2(id: string) {
+function isE2(id: string, mode: Mode) {
   return (
     id === "6525102" || // データサイエンス
     id === "6425102" || // 情報リテラシー(演習)
     id === "6114101" || // 情報リテラシー(講義) 2023
-    id === "6125101" // 情報リテラシー(講義) 2024, 2025
+    id === "6125101" || // 情報リテラシー(講義) 2024, 2025
+    (mode === "real" &&
+      (isInfoLiteracyLecture(id) ||
+        isInfoLiteracyExercise(id) ||
+        isDataScience(id)))
   );
 }
 
 function isE3(id: string): boolean {
-  return isCompulsoryPe1(id) || isCompulsoryPe2(id); // 必修 体育
+  return isCompulsoryPe1(id) || isCompulsoryPe2(id);
 }
 
 function isE4(name: string): boolean {
-  return isCompulsoryEnglishByName(name); // 必修　外国語(英語)
+  return isCompulsoryEnglishByName(name);
 }
 
 function isF1(id: string) {
-  return isGakushikiban(id); // 学士基盤科目
+  return isGakushikiban(id);
 }
 
 function isF2(id: string) {
-  return isElectivePe(id); // 選択　体育
+  return isElectivePe(id);
 }
 
 function isF3(id: string) {
-  return isForeignLanguage(id); // 選択　外国語
+  return isForeignLanguage(id);
 }
 
 function isF4(id: string) {
@@ -145,7 +157,7 @@ function isF4(id: string) {
 }
 
 function isF5(id: string) {
-  return isArt(id); // 選択 芸術
+  return isArt(id);
 }
 
 function isH1(id: string) {
@@ -160,11 +172,39 @@ function isH3(id: string): boolean {
   return isHakubutsukan(id) || isJiyuukamoku(id);
 }
 
+const COMPULSORY_NAMES = new Set([
+  "卒業研究A",
+  "卒業研究B",
+  "情報メディア実験A",
+  "情報メディア実験B",
+  "専門英語A",
+  "専門英語B",
+  "微分積分A",
+  "微分積分B",
+  "線形代数A",
+  "線形代数B",
+  "情報数学A",
+  "確率と統計",
+  "プログラミング入門A",
+  "プログラミング入門B",
+  "プログラミング",
+  "コンピュータシステムとOS",
+  "データ構造とアルゴリズム",
+  "データ構造とアルゴリズム実習",
+  "データ工学概論",
+  "ファーストイヤーセミナー",
+  "学問への誘い",
+  "情報リテラシー(講義)",
+  "情報リテラシー(演習)",
+  "データサイエンス",
+]);
+
 function classify(
   id: CourseId,
   name: string,
-  year: number,
+  tableYear: number,
   _isNative: boolean,
+  mode: Mode,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
@@ -173,11 +213,13 @@ function classify(
   if (isA4(id)) return "a4";
   if (isA5(id)) return "a5";
   if (isA6(id)) return "a6";
-  if (classifyColumnC(id, year) !== undefined) return classifyColumnC(id, year);
-  if (isE1(id)) return "e1";
-  if (isE2(id)) return "e2";
+  const c = classifyColumnC(id, tableYear);
+  if (c !== undefined) return c;
+  if (isE1(id, mode)) return "e1";
+  if (isE2(id, mode)) return "e2";
   if (isE3(id)) return "e3";
   if (isE4(name)) return "e4";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
   // 選択
   if (isB1(id)) return "b1";
   if (isD1(id)) return "d1";
@@ -194,11 +236,11 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   _opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, year, true);
+    const cellId = classify(c.id, c.name, tableYear, true, "known");
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -209,12 +251,12 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
-  year: number,
+  tableYear: number,
 ): Map<CourseId, string> {
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, year, opts.isNative);
+    const cellId = classify(c.id, c.name, tableYear, opts.isNative, "real");
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -226,7 +268,7 @@ export function classifyRealCourses(
 export function classifyFakeCourses(
   cs: FakeCourse[],
   _opts: ClassifyOptions,
-  _year: number,
+  _tableYear: number,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {

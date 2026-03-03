@@ -1,22 +1,19 @@
+import { readFileSync } from "node:fs";
 import {
   BaseCreditStats,
-  CellId,
-  CourseId,
-  CreditRequirements,
   CreditStats,
-  FakeCourseId,
   akikoGetCreditStats,
   akikoNew,
-  isCellId,
-  isColumnId,
-} from "./akiko";
+} from "@/akiko";
 import {
   ClassifyFakeCourses,
   ClassifyRealCourses,
   SetupCreditRequirements,
-} from "./app-setup";
-import { parseImportedCsv } from "./csv";
-import { assert } from "./util";
+  classifyCoursesOrFail,
+  createCreditRequirementsOrFail,
+} from "@/app-setup";
+import { parseImportedCsv } from "@/csv";
+import { assert } from "@/util";
 
 function indent(s: string, n: number): string {
   return s
@@ -35,66 +32,52 @@ export function getCreditStats(params: {
   const result = parseImportedCsv(params.csv);
   assert(result.kind === "ok");
 
-  const sortedRealCourses = Array.from(result.realCourses);
-  sortedRealCourses.sort((a, b) => a.takenYear - b.takenYear);
-  const realCourses = new Map(result.realCourses.map((c) => [c.id, c]));
-  for (const c of sortedRealCourses) {
-    realCourses.set(c.id, c);
-  }
-
-  const sortedFakeCourses = Array.from(result.fakeCourses);
-  sortedFakeCourses.sort((a, b) => a.takenYear - b.takenYear);
-  const fakeCourses = new Map(result.fakeCourses.map((c) => [c.id, c]));
-  for (const c of sortedFakeCourses) {
-    fakeCourses.set(c.id, c);
-  }
-
-  const creditRequirements: CreditRequirements = {
-    cells: new Map(),
-    columns: new Map(),
-    compulsoryMin: params.creditRequirements.compulsory,
-    electiveMin: params.creditRequirements.elective,
-  };
-  for (const [id, cell] of Object.entries(params.creditRequirements.cells)) {
-    assert(isCellId(id), `Bad cell id: "${id}"`);
-    creditRequirements.cells.set(id, cell);
-  }
-  for (const [id, col] of Object.entries(params.creditRequirements.columns)) {
-    assert(isColumnId(id), `Bad column id: "${id}"`);
-    creditRequirements.columns.set(id, col);
-  }
-
-  const realCoursePositions = new Map<CourseId, CellId>();
-  const fakeCoursePositions = new Map<FakeCourseId, CellId>();
-
-  for (const [courseId, cellId] of params.classifyRealCourses(
-    result.realCourses,
-    { isNative: params.isNative },
-  )) {
-    assert(isCellId(cellId), `Bad cell id: "${cellId}"`);
-    realCoursePositions.set(courseId, cellId);
-  }
-  for (const [fakeCourseId, cellId] of params.classifyFakeCourses(
-    result.fakeCourses,
-    { isNative: params.isNative },
-  )) {
-    assert(isCellId(cellId), `Bad cell id: "${cellId}"`);
-    fakeCoursePositions.set(fakeCourseId, cellId);
-  }
-
+  const { courseIdToCellId, realCoursePositions, fakeCoursePositions } =
+    classifyCoursesOrFail(
+      [],
+      result.realCourses,
+      result.fakeCourses,
+      params.isNative,
+      () => new Map(),
+      params.classifyRealCourses,
+      params.classifyFakeCourses,
+    );
   const akiko = akikoNew(
-    new Map(),
-    realCourses,
-    fakeCourses,
     [],
-    new Map(),
+    result.realCourses,
+    result.fakeCourses,
+    [],
+    courseIdToCellId,
     realCoursePositions,
     fakeCoursePositions,
-    creditRequirements,
+    createCreditRequirementsOrFail(params.creditRequirements),
   );
   assert(akiko !== undefined);
 
   return akikoGetCreditStats(akiko);
+}
+
+export type RunTestParams = {
+  isNative: boolean;
+  creditRequirements: SetupCreditRequirements;
+  classifyRealCourses: ClassifyRealCourses;
+  classifyFakeCourses: ClassifyFakeCourses;
+  want: WantCreditStats;
+} & ({ csvPath: string } | { csv: string });
+
+export function runTest(params: RunTestParams): void {
+  const csv =
+    "csv" in params
+      ? params.csv
+      : readFileSync(params.csvPath, { encoding: "utf8" });
+  const got = getCreditStats({
+    csv,
+    isNative: params.isNative,
+    creditRequirements: params.creditRequirements,
+    classifyRealCourses: params.classifyRealCourses,
+    classifyFakeCourses: params.classifyFakeCourses,
+  });
+  assertCreditStatsEqual(got, params.want);
 }
 
 /**
