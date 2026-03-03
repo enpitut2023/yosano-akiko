@@ -339,6 +339,10 @@ function main(): void {
     { year: 2023, major: "ds" },
     { year: 2023, major: "cis-ir" },
     { year: 2023, major: "cis-id" },
+    { year: 2023, major: "med" },
+    { year: 2023, major: "med-new" },
+    { year: 2023, major: "med-2" },
+    { year: 2023, major: "med-2-new" },
 
     { year: 2024, major: "coins", checked: true },
     { year: 2024, major: "coins-cs", checked: true },
@@ -369,6 +373,10 @@ function main(): void {
     { year: 2024, major: "ds" },
     { year: 2024, major: "cis-ir" },
     { year: 2024, major: "cis-id" },
+    { year: 2024, major: "med" },
+    { year: 2024, major: "med-new" },
+    { year: 2024, major: "med-2" },
+    { year: 2024, major: "med-2-new" },
 
     { year: 2025, major: "coins", checked: true },
     { year: 2025, major: "coins-cs", checked: true },
@@ -399,6 +407,10 @@ function main(): void {
     { year: 2025, major: "ds" },
     { year: 2025, major: "cis-ir" },
     { year: 2025, major: "cis-id" },
+    { year: 2025, major: "med" },
+    { year: 2025, major: "med-new" },
+    { year: 2025, major: "med-2" },
+    { year: 2025, major: "med-2-new" },
   ];
 
   const indexTemplate = readFileSync("src/index.html", {
