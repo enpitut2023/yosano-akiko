@@ -6,6 +6,7 @@ import "./esys";
 import "./klis";
 import "./mast";
 import "./math";
+import "./pe";
 import "./physics";
 import "./pops";
 import "./psy";
