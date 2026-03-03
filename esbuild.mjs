@@ -53,6 +53,9 @@ async function main() {
       "src/2023/cis-ir/index.ts",
       "src/2023/cis-id/index.ts",
       "src/2023/pe/index.ts",
+      "src/2023/meds-ms/index.ts",
+      "src/2023/meds-ims/index.ts",
+      "src/2023/meds-mspis/index.ts",
 
       "src/2024/coins/index.ts",
       "src/2024/coins-cs/index.ts",
@@ -84,6 +87,9 @@ async function main() {
       "src/2024/cis-ir/index.ts",
       "src/2024/cis-id/index.ts",
       "src/2024/pe/index.ts",
+      "src/2024/meds-ms/index.ts",
+      "src/2024/meds-ims/index.ts",
+      "src/2024/meds-mspis/index.ts",
 
       "src/2025/coins/index.ts",
       "src/2025/coins-cs/index.ts",
@@ -115,6 +121,9 @@ async function main() {
       "src/2025/cis-ir/index.ts",
       "src/2025/cis-id/index.ts",
       "src/2025/pe/index.ts",
+      "src/2025/meds-ms/index.ts",
+      "src/2025/meds-ims/index.ts",
+      "src/2025/meds-mspis/index.ts",
 
       "src/app.scss",
       "src/styles.scss",
