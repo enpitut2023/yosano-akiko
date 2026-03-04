@@ -8,6 +8,8 @@ import {
 import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
 import {
   isArt,
+  isCompulsoryPe1,
+  isCompulsoryPe2,
   isDataScience,
   isFirstYearSeminar,
   isGakushikiban,
@@ -231,17 +233,16 @@ function classifyColumnD(id: CourseId, specialty: Specialty, mode: "known" | "re
   if (id === "HC22101") return "d" + (1 + offset_h) // 医療経済学 HE22121と同一。 !!A!!どちらでも構わないか
   if (id === "HC22251") return "d" + (2 + offset_h) // 環境保健
   if (specialty === "nurse-n") {
-    if (mode === "known" && id === "BB00301") {
-      return "d" + (3 + offset_h)
-    }
     if (
-      mode === "real" &&
-      (id === "BB00101" ||
-        id === "BB00201" ||
-        id === "BB00301" ||
-        id === "BB00401" ||
-        id === "BB00501" ||
-        id === "BB00601")
+      (mode === "known" && id === "BB00301") ||
+      (mode === "real" &&
+        (id === "BB00101" ||
+          id === "BB00201" ||
+          id === "BB00301" ||
+          id === "BB00401" ||
+          id === "BB00501" ||
+          id === "BB00601")
+      )
     ) {
       return "d" + (3 + offset_h) // 日本国憲法!!A!!他の学類対象の日本国憲法を取る可能性があるか
     }
@@ -251,35 +252,38 @@ function classifyColumnD(id: CourseId, specialty: Specialty, mode: "known" | "re
 }
 
 function isE1(id: string, specialty: Specialty, mode: "known" | "real"): boolean {
-  ファーストイヤーセミナー
-  1122102 Aクラス
-  1122202 Bクラス
-  1122302 Cクラス
-  1122402 Dクラス!!A!!2025年度に存在しないが正しいか
-  if (specialty === "nurse-h")
-  Japan-Expertファーストイヤーセミナー
-    1122502 Japan-Expert(学士)プログラム生に限る
-  学問への誘い
-  1227731 Aクラス
-  1227741 Bクラス
-  1227751 Cクラス
-  1227761 Dクラス!!A!!2025年度に存在しないが正しいか
-  (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+  return (
+    // ファーストイヤーセミナー
+    id === "1122102" || // Aクラス
+    id === "1122202" || // Bクラス
+    id === "1122302" || // Cクラス
+    id === "1122402" || // Dクラス !!A!!2025年度に存在しないが正しいか
+    // Japan-Expertファーストイヤーセミナー
+    (specialty === "nurse-h" && (
+      id === "1122502" // Japan-Expert(学士)プログラム生に限る
+    )) ||
+    // 学問への誘い
+    id === "1227731" || // Aクラス
+    id === "1227741" || // Bクラス
+    id === "1227751" || // Cクラス
+    id === "1227761" || // Dクラス !!A!!2025年度に存在しないが正しいか
+    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+  );
 }
 
 function isE2(id: string): boolean {
-  return isCompulsoryPe1(id) || isCompulsoryPe2(id); !!A!!基礎体育の時に種目が違うか、応用の時に種目が同じかチェック
+  return isCompulsoryPe1(id) || isCompulsoryPe2(id); // !!A!!基礎体育の時に種目が違うか、応用の時に種目が同じかチェック
 }
 
 function isE3(id: string, specialty: Specialty): boolean {
   return (
     (
-      (specialty === "nurse-n" || specialty === "nurse-phn") && 看護師または保健師
-      isEnglish(id)第１外国語（英語）!!A!!これは必修英語と第一外国語（英語）全部含めるのか
+      (specialty === "nurse-n" || specialty === "nurse-phn") && // 看護師または保健師
+      // 第１外国語（英語）!!A!!これは必修英語と第一外国語（英語）全部含めるのか
     ) ||
     (
-      specialty === "nurse-h" && ヘルスケア
-      !!A!!第１外国語（日本語）とは
+      specialty === "nurse-h" && // ヘルスケア
+      // !!A!!第１外国語（日本語）とは
     )
   );
 }
@@ -287,7 +291,7 @@ function isE3(id: string, specialty: Specialty): boolean {
 function isE4(id: string, specialty: Specialty, mode: "known" | "real"): boolean {
   return (
     (
-      (specialty === "nurse-n" || specialty === "nurse-phn") && 看護師または保健師
+      (specialty === "nurse-n" || specialty === "nurse-phn") &&// 看護師または保健師
       (
         id === "6118101" || // 情報リテラシー(講義)
         id === "6418102" || // 情報リテラシー(演習) 看護2班対象
@@ -301,8 +305,8 @@ function isE4(id: string, specialty: Specialty, mode: "known" | "real"): boolean
       )
     ) ||
     (
-      specialty === "nurse-h" && ヘルスケア
-      isEnglish(id))第２外国語（英語）!!A!!これは必修英語と第一外国語（英語）全部含めるのか
+      specialty === "nurse-h" && // ヘルスケア
+      // 第２外国語（英語）!!A!!これは必修英語と第一外国語（英語）全部含めるのか
   );
 }
 
@@ -332,14 +336,20 @@ function isE5(id: string, specialty: Specialty, mode: "known" | "real"): boolean
 function isF1(id: string, specialty: Specialty): boolean {
   return (
     isGakushikiban(id) ||
-    (specialty === "nurse-h" && isSecondForeignLanguage(id))!!A!!第２外国語（初修外国語）はこれで正しいか
+    (specialty === "nurse-h" && isSecondForeignLanguage(id)) // !!A!!第２外国語（初修外国語）はこれで正しいか
   );
 }
 
-function isG1(id) {
-  AB00221 哲学通論BII 全学対象 *哲学通論AII,CII,DIIと同一科目
-  AB00311 哲学通論CI 全学対象 *哲学通論AI,BI,DIと同一科目
-  AB60A11 哲学通論-a ★2018年度以前入学者の人文・文化学群コアカリキュラム(人文学類生は学群コアカリキュラムとしては履修できない)
-  AB60A21 哲学通論-b
-  !!A!!どれが該当するか
+function isG1(id: string, specialty: Specialty) {
+  return (
+    (specialty === "nurse-n" || specialty === "nurse-phn") &&
+    (
+      id === "AB00221" || // 哲学通論BII 全学対象 *哲学通論AII,CII,DIIと同一科目
+      id === "AB00311" || // 哲学通論CI 全学対象 *哲学通論AI,BI,DIと同一科目
+      id === "AB60A11" || // 哲学通論-a ★2018年度以前入学者の人文・文化学群コアカリキュラム(人文学類生は学群コアカリキュラムとしては履修できない)
+      id === "AB60A21" // 哲学通論-b
+      // !!A!!どれが該当するか
+    )
+  );
 }
+
