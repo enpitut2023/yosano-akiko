@@ -3,7 +3,7 @@ import {
   classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
-  creditRequirementsSince2023,
+  creditRequirementsS2023,
 } from "@/requirements/css-since-2023";
 import { KnownCourse } from "../../akiko";
 import { setup } from "../../app";
@@ -16,7 +16,7 @@ const SPECIALTY: Specialty = "s";
 setup({
   knownCourses: courses as KnownCourse[],
   knownCourseYear: 2025,
-  creditRequirements: creditRequirementsSince2023,
+  creditRequirements: creditRequirementsS2023,
   major: "css-s",
   requirementsTableYear: YEAR,
   cellIdToRectRecord,

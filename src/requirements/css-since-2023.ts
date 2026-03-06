@@ -7,23 +7,21 @@ import {
 } from "@/akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
 import {
+  isArt,
   isCompulsoryEnglishByName,
-  isSecondForeignLanguage,
   isCompulsoryPe1,
   isCompulsoryPe2,
   isDataScience,
+  isElectivePe,
   isFirstYearSeminar,
+  isForeignLanguage,
   isGakushikiban,
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
   isIzanai,
-  isKyoushoku,
-  isElectivePe,
-  isForeignLanguage,
   isJapanese,
-  isJiyuukamoku,
-  isHakubutsukan,
-  isArt,
+  isKyoushoku,
+  isSecondForeignLanguage,
 } from "@/requirements/common";
 import { unreachable } from "@/util";
 
@@ -37,165 +35,68 @@ export type Specialty =
   // Economics（経済学）
   | "e";
 
-
 // TODO:
 // 全ての主専攻で2023→2024,2025で、h2にVから始まる科目が追加され、単位数の上限が20→34まで増えた。
 // 全ての主専攻で2023→2024,2025で、h3の単位数の上限が10→26まで増えた。
 // TODO:
 // ps（政治学）の2023,2024→2025で、b1,b2がまとめてb1となっている。（BB32、BB31→BB3）
 
-
-function isA1(id: string, specialty: Specialty): boolean {
-  switch (specialty) {
-    case "s":
-      return (
-        id === "BB11998" // 卒業論文
-      );
-    case "l":
-    case "ps":
-    case "e":
-      return false;
-    default:
-      unreachable(specialty);
+function classifyColumnA(id: string, specialty: Specialty): string | undefined {
+  if (specialty === "s") {
+    if (id === "BB11998") return "a1"; // 卒業論文
+    if (id === "BB11997") return "a2"; // 卒業論文演習
+    if (
+      id === "BB11932" || // 社会学研究法A,
+      id === "BB11942"
+    )
+      return "a3"; // 社会学研究法B
   }
 }
 
-function isA2(id: string, specialty: Specialty): boolean {
+function classifyColumnB(
+  id: string,
+  specialty: Specialty,
+  tableYear: number,
+): string | undefined {
+  const bb1 = id.startsWith("BB1");
+  const bb2 = id.startsWith("BB2");
+  const bb3 = id.startsWith("BB3");
+  const bb4 = id.startsWith("BB4");
   switch (specialty) {
     case "s":
-      return (
-        id === "BB11997" // 卒業論文演習
-      );
+      // TODO:BB1から始まる科目が該当するのだが、「社会調査実習、社会学演習から12単位修得すること。（必ず社会学演習を6単位以上含めること）」というB1の中にも単位数の制限がある。
+      if (bb1) return "b1";
+      if (bb2 || bb3 || bb4) return "b2";
+      break;
     case "l":
-    case "ps":
-    case "e":
-      return false;
-    default:
-      unreachable(specialty);
-  }
-}
-
-function isA3(id: string, specialty: Specialty): boolean {
-  switch (specialty) {
-    case "s":
-      return (
-        id === "BB11932" || // 社会学研究法A
-        id === "BB11942" // 社会学研究法B
-      );
-    case "l":
-    case "ps":
-    case "e":
-      return false;
-    default:
-      unreachable(specialty);
-  }
-}
-
-function isB1(id: string, specialty: Specialty, tableYear: number): boolean {
-  switch (specialty) {
-    // TODO:BB1から始まる科目が該当するのだが、「社会調査実習、社会学演習から12単位修得すること。（必ず社会学演習を6単位以上含めること）」というB1の中にも単位数の制限がある。
-    case "s":
-      return (
-        id.startsWith("BB1")
-      );
-    // TODO:BB2から始まる科目が該当するのだが、「憲法I、憲法II、民法総則、刑法総論から4単位以上習得すること。ＢＢ２の演習科目から6単位以上修得すること」というB1の中にも単位数の制限がある。
-    case "l":
-      return (
-        id.startsWith("BB2")
-      );
-    // TODO:2025年度だけ、BB3から始まる科目（ただし、BB32を6単位以上含めること）という制限がある。
-    case "ps":
-      if (tableYear == 2023 || tableYear == 2024) {
-        // 2023, 2024
-        return (
-          id.startsWith("BB32")
-        );
-      } else {
-        // 2025
-        return (
-          id.startsWith("BB3")
-        )
-      };
-
-
-    // TODO:BB4から始まる科目が該当するのだが、「(ただしミクロ経済学、マクロ経済学、経済統計論のうちから4単位以上、さらに経済学演習を8単位以上含めること)」という制限がある。
-    // TODO:BC,FHから始まる科目が該当するのだが、「（これらのうち別途指定する科目のみ）」という制限がある。これらのうち別途指定する科目って何？
-    case "e":
-      return (
-        id.startsWith("BB4") ||
-        id.startsWith("BC") ||
-        id.startsWith("FH")
-      );
-    default:
-      unreachable(specialty);
-  }
-}
-
-function isB2(id: string, specialty: Specialty): boolean {
-  switch (specialty) {
-    // BB2,BB3,BB4から始まる科目。（専門基礎科目として指定されている科目を除く）
-    case "s":
-      return (
-        (id.startsWith("BB2") ||
-          id.startsWith("BB3") ||
-          id.startsWith("BB4")) &&
-        !isC1(id, specialty) &&
-        !isD1(id, specialty) &&
-        !isD2(id)
-      );
-    // BB1,BB3,BB4から始まる科目。（専門基礎科目として指定されている科目を除く）
-    case "l":
-      return (
-        (id.startsWith("BB1") ||
-          id.startsWith("BB3") ||
-          id.startsWith("BB4")) &&
-        !isC1(id, specialty) &&
-        !isD1(id, specialty) &&
-        !isD2(id)
-      );
-    case "ps":
-      return (
-        id.startsWith("BB31")
-      );
-    // BB1,BB2,BB3から始まる科目。（専門基礎科目として指定されている科目を除く）
-    case "e":
-      return (
-        (id.startsWith("BB1") ||
-          id.startsWith("BB2") ||
-          id.startsWith("BB3")) &&
-        !isC1(id, specialty) &&
-        !isD1(id, specialty) &&
-        !isD2(id)
-      );
-    default:
-      unreachable(specialty);
-  }
-}
-
-function isB3(id: string, specialty: Specialty): boolean {
-  switch (specialty) {
-    case "s":
-      return false;
-    case "l":
-      return (
+      // TODO:BB2から始まる科目が該当するのだが、「憲法I、憲法II、民法総則、刑法総論から4単位以上習得すること。ＢＢ２の演習科目から6単位以上修得すること」というB1の中にも単位数の制限がある。
+      if (bb2) return "b1";
+      if (bb1 || bb3 || bb4) return "b2";
+      if (
         id.startsWith("AB00") ||
         id.startsWith("AB60") ||
         id.startsWith("BC11")
-      );
-    // BB1,BB2,BB4から始まる科目。（専門基礎科目として指定されている科目を除く）
+      ) return "b3"
+      break;
     case "ps":
-      return (
-        id.startsWith("BB1") ||
-        id.startsWith("BB2") ||
-        id.startsWith("BB4") &&
-        !isC1(id, specialty) &&
-        !isD1(id, specialty) &&
-        !isD2(id)
-      );
+      // TODO:2025年度だけ、BB3から始まる科目（ただし、BB32を6単位以上含めること）という制限がある。
+      if (tableYear == 2023 || tableYear == 2024) {
+        // 2023, 2024
+        if (id.startsWith("BB32")) return "b1";
+        if (id.startsWith("BB31")) return "b2";
+        if (bb1 || bb2 || bb4) return "b3";
+      } else {
+        // 2025
+        if (id.startsWith("BB3")) return "b1";
+        if (bb1 || bb2 || bb4) return "b2";
+      }
+      break;
     case "e":
-      return false;
-    default:
-      unreachable(specialty);
+      // TODO:BB4から始まる科目が該当するのだが、「(ただしミクロ経済学、マクロ経済学、経済統計論のうちから4単位以上、さらに経済学演習を8単位以上含めること)」という制限がある。
+      // TODO:BC,FHから始まる科目が該当するのだが、「（これらのうち別途指定する科目のみ）」という制限がある。これらのうち別途指定する科目って何？
+      if (bb4 || id.startsWith("BC") || id.startsWith("FH")) return "b1";
+      if (bb1 || bb2 || bb3) return "b2";
+      break;
   }
 }
 
@@ -293,7 +194,6 @@ function isD2(id: string): boolean {
   );
 }
 
-
 function isD3(id: string): boolean {
   return (
     id === "BA91012" || // 社会学の最前線チュートリアル
@@ -330,11 +230,11 @@ function isE4(id: string): boolean {
 
 function isE5(id: string, mode: "known" | "real"): boolean {
   return (
-    id === "6104101" || // 情報リテラシー(講義) !!A!!
-    id === "6404102" || // 情報リテラシー(演習) 1班 !!A!!
-    id === "6404202" || // 情報リテラシー(演習) 2班 !!A!!
-    id === "6504102" || // データサイエンス 1班 !!A!!
-    id === "6504202" || // データサイエンス 2班 !!A!!
+    id === "6104101" || // 情報リテラシー(講義)
+    id === "6404102" || // 情報リテラシー(演習) 1班
+    id === "6404202" || // 情報リテラシー(演習) 2班
+    id === "6504102" || // データサイエンス 1班
+    id === "6504202" || // データサイエンス 2班
     (mode === "real" &&
       (isInfoLiteracyLecture(id) ||
         isInfoLiteracyExercise(id) ||
@@ -355,7 +255,7 @@ function isF3(id: string): boolean {
 }
 
 function isF4(id: string): boolean {
- return isJapanese(id);
+  return isJapanese(id);
 }
 
 function isF5(id: string): boolean {
@@ -363,175 +263,22 @@ function isF5(id: string): boolean {
 }
 
 function isH1(id: string): boolean {
-  //教職に関する科目
   return isKyoushoku(id);
 }
 
 function isH2(id: string, specialty: Specialty, tableYear: number): boolean {
-  switch (specialty) {
-    // Ａ、ＢＣ、Ｃ、Ｈ、Ｗ、Ｙ、８、９９から始まる科目
-    case "s":
-      if (tableYear == 2023) {
-        // 2023
-        return (
-          id.startsWith("A") ||
-          id.startsWith("BC") ||
-          id.startsWith("C") ||
-          id.startsWith("H") ||
-          id.startsWith("W") ||
-          id.startsWith("Y") ||
-          id.startsWith("8") ||
-          id.startsWith("99")
-        );
-      } else {
-        // 2024,2025
-        return (
-          id.startsWith("A") ||
-          id.startsWith("BC") ||
-          id.startsWith("C") ||
-          id.startsWith("H") ||
-          id.startsWith("W") ||
-          id.startsWith("Y") ||
-          id.startsWith("V") ||
-          id.startsWith("8") ||
-          id.startsWith("99")
-        );
-      };
-
-    // Ａ、ＢＣ、Ｃ、Ｈ、Ｗ、Ｙ、８、９９から始まる科目(ＡＢ００、ＡＢ６０、ＢＣ１１は除く)
-    case "l":
-      if (tableYear == 2023) {
-        // 2023
-        return (
-          (id.startsWith("A") && !(id.startsWith("AB00") || id.startsWith("AB60"))) ||
-          (id.startsWith("BC") && !(id.startsWith("BC11"))) ||
-          id.startsWith("C") ||
-          id.startsWith("H") ||
-          id.startsWith("W") ||
-          id.startsWith("Y") ||
-          id.startsWith("8") ||
-          id.startsWith("99")
-        );
-      } else {
-        // 2024,2025
-        return (
-          (id.startsWith("A") && !(id.startsWith("AB00") || id.startsWith("AB60"))) ||
-          (id.startsWith("BC") && !(id.startsWith("BC11"))) ||
-          id.startsWith("C") ||
-          id.startsWith("H") ||
-          id.startsWith("W") ||
-          id.startsWith("Y") ||
-          id.startsWith("V") ||
-          id.startsWith("8") ||
-          id.startsWith("99")
-        )
-      };
-    // Ａ、ＢＣ、Ｃ、Ｈ、Ｗ、Ｙ、８、９９から始まる科目
-    case "ps":
-      if (tableYear == 2023) {
-        // 2023
-        return (
-          id.startsWith("A") ||
-          id.startsWith("BC") ||
-          id.startsWith("C") ||
-          id.startsWith("H") ||
-          id.startsWith("W") ||
-          id.startsWith("Y") ||
-          id.startsWith("8") ||
-          id.startsWith("99")
-        );
-      } else {
-        // 2024,2025
-        return (
-          id.startsWith("A") ||
-          id.startsWith("BC") ||
-          id.startsWith("C") ||
-          id.startsWith("H") ||
-          id.startsWith("W") ||
-          id.startsWith("Y") ||
-          id.startsWith("V") ||
-          id.startsWith("8") ||
-          id.startsWith("99")
-        )
-      };
-
-    // Ａ、ＢＣ、Ｃ、Ｈ、Ｗ、Ｙ、８、９９（専門科目として指定されている科目を除く）
-    // TODO:BCのうち別途指定する科目のみ除くっぽい
-    case "e":
-      if (tableYear == 2023) {
-        // 2023
-        return (
-          id.startsWith("A") ||
-          (id.startsWith("BC") && !(id.startsWith("BC00000"))) ||
-          id.startsWith("C") ||
-          id.startsWith("H") ||
-          id.startsWith("W") ||
-          id.startsWith("Y") ||
-          id.startsWith("8") ||
-          id.startsWith("99")
-        );
-      } else {
-        // 2024,2025
-        return (
-          id.startsWith("A") ||
-          (id.startsWith("BC") && !(id.startsWith("BC00000"))) ||
-          id.startsWith("C") ||
-          id.startsWith("H") ||
-          id.startsWith("W") ||
-          id.startsWith("Y") ||
-          id.startsWith("V") ||
-          id.startsWith("8") ||
-          id.startsWith("99")
-        )
-      };
-    default:
-      unreachable(specialty);
-  }
+  if (tableYear >= 2024 && id.startsWith("V")) return true;
+  if (specialty === "l" && /^(AB00|AB60|BC11)/.test(id)) return false;
+  return /^(BC|A|C|H|W|Y|8|99)/.test(id);
 }
 
-
-function isH3(id: string, specialty: Specialty): boolean {
-  switch (specialty) {
-    // Ｅ、Ｆ、Ｇから始まる科目
-    case "s":
-      return (
-        id.startsWith("E") ||
-        id.startsWith("F") ||
-        id.startsWith("G")
-      );
-    // Ｅ、Ｆ、Ｇから始まる科目
-    case "l":
-      return (
-        id.startsWith("E") ||
-        id.startsWith("F") ||
-        id.startsWith("G")
-      );
-    // Ｅ、Ｆ、Ｇから始まる科目
-    case "ps":
-      return (
-        id.startsWith("E") ||
-        id.startsWith("F") ||
-        id.startsWith("G")
-      );
-    // Ｅ、Ｆ、Ｇから始まる科目（専門科目として指定されている科目を除く）
-    // TODO:FH全てじゃなくて別途指定する科目のみかも
-    case "e":
-      return (
-        id.startsWith("E") ||
-        (id.startsWith("F") && !(id.startsWith("FH"))) ||
-        id.startsWith("G") 
-      );
-    default:
-      unreachable(specialty);
-  }
+function isH3(id: string): boolean {
+  return id.startsWith("E") || id.startsWith("F") || id.startsWith("G");
 }
 
 function isH4(id: string): boolean {
   // ＢＡ（専門基礎科目として指定されている科目を除く）、 ＢＥから始まる科目
-  return (
-    (id.startsWith("BA") && !(id === "BA91012" || id === "BA91022" || id === "BA91032" || id === "BA91042")) ||
-    id.startsWith("BE")
-  );
+  return id.startsWith("BA") || id.startsWith("BE");
 }
 
 function classify(
@@ -542,9 +289,8 @@ function classify(
   mode: "known" | "real",
 ): string | undefined {
   // 必修
-  if (isA1(id, specialty)) return "a1";
-  if (isA2(id, specialty)) return "a2";
-  if (isA3(id, specialty)) return "a3";
+  const a = classifyColumnA(id, specialty);
+  if (a !== undefined) return a;
   if (isC1(id, specialty)) return "c1";
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
@@ -552,12 +298,11 @@ function classify(
   if (isE4(id)) return "e4";
   if (isE5(id, mode)) return "e5";
   // 選択
-  if (isB1(id, specialty, tableYear)) return "b1";
-  if (isB2(id, specialty)) return "b2";
-  if (isB3(id, specialty)) return "b3";
   if (isD1(id, specialty)) return "d1";
   if (isD2(id)) return "d2";
   if (isD3(id)) return "d3";
+  const b = classifyColumnB(id, specialty, tableYear);
+  if (b !== undefined) return b;
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
   if (isF3(id)) return "f3";
@@ -565,7 +310,7 @@ function classify(
   if (isF5(id)) return "f5";
   if (isH1(id)) return "h1";
   if (isH2(id, specialty, tableYear)) return "h2";
-  if (isH3(id, specialty)) return "h3";
+  if (isH3(id)) return "h3";
   if (isH4(id)) return "h4";
 }
 
@@ -617,7 +362,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-export const creditRequirementsS20242025: SetupCreditRequirements = {
+export const creditRequirementsSSince2024: SetupCreditRequirements = {
   cells: {
     a1: { min: 6, max: 6 },
     a2: { min: 4, max: 4 },
@@ -695,8 +440,7 @@ export const creditRequirementsS2023: SetupCreditRequirements = {
   elective: 94,
 };
 
-// TODO:aが無い主専攻なので書いてないけど大丈夫？
-export const creditRequirementsL20242025: SetupCreditRequirements = {
+export const creditRequirementsLSince2024: SetupCreditRequirements = {
   cells: {
     b1: { min: 40, max: 62 },
     b2: { min: 21, max: 42 },
@@ -768,7 +512,6 @@ export const creditRequirementsL2023: SetupCreditRequirements = {
   elective: 106,
 };
 
-// TODO:aが無い主専攻なので書いてないけど大丈夫？
 export const creditRequirementsPs2025: SetupCreditRequirements = {
   cells: {
     b1: { min: 30, max: 53 },
@@ -876,8 +619,7 @@ export const creditRequirementsPs2023: SetupCreditRequirements = {
   elective: 106,
 };
 
-// TODO:aが無い主専攻なので書いてないけど大丈夫？
-export const creditRequirementsE20242025: SetupCreditRequirements = {
+export const creditRequirementsESince2024: SetupCreditRequirements = {
   cells: {
     b1: { min: 32, max: 62 },
     b2: { min: 29, max: 50 },
