@@ -394,6 +394,8 @@ input[name="student-type"]:checked + span {
   & > span {
     align-self: center;
     justify-self: right;
+    transform-origin: top left;
+    text-wrap: nowrap;
   }
 }
 

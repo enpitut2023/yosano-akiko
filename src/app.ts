@@ -31,7 +31,7 @@ import {
 import { CourseLists } from "@/course-lists";
 import { parseImportedCsv } from "@/csv";
 import warningIcon from "@/icons/warning.svg";
-import { assert } from "@/util";
+import { assert, partitionPointFloat } from "@/util";
 
 type LocalDataV1ImportedCourse = {
   id: string;
@@ -308,17 +308,23 @@ class Debouncer {
   }
 }
 
+function creditBoundsToString(min: number, max: number | undefined): string {
+  if (max === undefined) return `${min}~`;
+  if (min === max) return min.toString();
+  return `${min}~${max}`;
+}
+
 function cellCreditStatsDisplay(c: CellCreditStats): {
   brief: string;
   warning: string | undefined;
 } {
-  let brief = "計 ";
+  let brief = "計:";
   if (c.effectiveMightTake === 0) {
     brief += c.effectiveTaken.toString();
   } else {
-    brief += `${c.effectiveTaken} → ${c.effectiveTaken + c.effectiveMightTake}`;
+    brief += `${c.effectiveTaken}→${c.effectiveTaken + c.effectiveMightTake}`;
   }
-  brief += " 単位";
+  brief += "　要:" + creditBoundsToString(c.min, c.max);
 
   let warning: string | undefined;
   if (c.overflowTotal > 0) {
@@ -332,13 +338,13 @@ function columnCreditStatsDisplay(c: ColumnCreditStats): {
   brief: string;
   warning: string | undefined;
 } {
-  let brief = "計 ";
+  let brief = "計:";
   if (c.effectiveMightTake === 0) {
     brief += c.effectiveTaken.toString();
   } else {
-    brief += `${c.effectiveTaken} → ${c.effectiveTaken + c.effectiveMightTake}`;
+    brief += `${c.effectiveTaken}→${c.effectiveTaken + c.effectiveMightTake}`;
   }
-  brief += " 単位";
+  brief += "　要:" + creditBoundsToString(c.min, c.max);
 
   let warning: string | undefined;
   if (c.overflowTotal > 0) {
@@ -352,13 +358,13 @@ function electiveCreditStatsDisplay(c: ElectiveCreditStats): {
   brief: string;
   warning: string | undefined;
 } {
-  let brief = "選択科目計 ";
+  let brief = "選択科目計:";
   if (c.effectiveMightTake === 0) {
     brief += c.effectiveTaken.toString();
   } else {
-    brief += `${c.effectiveTaken} → ${c.effectiveTaken + c.effectiveMightTake}`;
+    brief += `${c.effectiveTaken}→${c.effectiveTaken + c.effectiveMightTake}`;
   }
-  brief += " 単位";
+  brief += "　要:" + creditBoundsToString(c.min, c.max);
 
   let warning: string | undefined;
   if (c.overflowTotal > 0) {
@@ -786,6 +792,19 @@ export function setup(params: SetupParams): void {
         );
         root.style.setProperty("--green-percentage", `${green}%`);
         root.style.setProperty("--yellow-percentage", `${yellow}%`);
+
+        const BORDER = 1;
+        const PADDING = 5;
+        const maxWidth =
+          root.getBoundingClientRect().width - (BORDER + PADDING) * 2;
+        span.style.removeProperty("transform");
+        if (span.getBoundingClientRect().width > maxWidth) {
+          const sx = partitionPointFloat(0, 1, 0.001, (sx) => {
+            span.style.transform = `scaleX(${sx})`;
+            return span.getBoundingClientRect().width < maxWidth;
+          });
+          span.style.transform = `scaleX(${sx})`;
+        }
       }
 
       const d = electiveCreditStatsDisplay(creditStats.elective);
