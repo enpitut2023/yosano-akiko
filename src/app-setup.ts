@@ -120,4 +120,5 @@ export type SetupParams = {
     cs: FakeCourse[],
     opts: ClassifyOptions,
   ) => Map<FakeCourseId, string>;
+  getRemark?: (cellId: CellId) => string | undefined;
 };

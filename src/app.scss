@@ -108,6 +108,10 @@ main {
 #cell-detail {
   grid-row: 2/3;
   border-top: 1px dashed black;
+
+  &.no-cell-selected {
+    display: none;
+  }
 }
 
 #left-bar,

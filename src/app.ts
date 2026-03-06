@@ -252,25 +252,6 @@ function localDataStore(key: string, l: LocalDataV2): void {
   localStorage.setItem(key, JSON.stringify(l));
 }
 
-function updateCellDetail(
-  root: HTMLElement,
-  cell: CellCreditStats | undefined,
-): void {
-  const p = mustQuerySelector(root, "p");
-  root.classList.toggle("no-cell-selected", cell === undefined);
-  if (cell === undefined) {
-    p.textContent = "マスを選択してください";
-  } else {
-    const { brief, warning } = cellCreditStatsDisplay(cell);
-    let content = "選択されたマスの単位：" + brief;
-    if (warning !== undefined) {
-      content += "<br>⚠️ ";
-      content += warning;
-    }
-    p.innerHTML = content;
-  }
-}
-
 function mustGetElementById(id: string): HTMLElement {
   const e = document.getElementById(id);
   if (e === null) {
@@ -490,6 +471,9 @@ export function setup(params: SetupParams): void {
   const leftBar = mustGetElementById("left-bar");
   const rightBar = mustGetElementById("right-bar");
   const cellDetail = mustGetElementById("cell-detail");
+  const cellCreditsP = mustGetElementById("cell-credits");
+  const cellRemarkTitle = mustGetElementById("cell-remark-title");
+  const cellRemarkContent = mustGetElementById("cell-remark-content");
 
   const filterInput = mustGetElementByIdOfType("filter", HTMLInputElement);
   const filterAction = new Debouncer(500, () => {
@@ -762,12 +746,22 @@ export function setup(params: SetupParams): void {
 
     // 単位合計
     {
+      cellDetail.classList.toggle(
+        "no-cell-selected",
+        selectedCellId === undefined,
+      );
       if (selectedCellId === undefined) {
-        updateCellDetail(cellDetail, undefined);
+        cellCreditsP.textContent = "マスを選択してください";
       } else {
         const cell = creditStats.cells.get(selectedCellId);
         assert(cell !== undefined);
-        updateCellDetail(cellDetail, cell);
+        const { brief, warning } = cellCreditStatsDisplay(cell);
+        let content = "選択されたマスの単位：" + brief;
+        if (warning !== undefined) {
+          content += "<br>⚠️ ";
+          content += warning;
+        }
+        cellCreditsP.innerHTML = content;
       }
 
       for (const [
@@ -804,6 +798,22 @@ export function setup(params: SetupParams): void {
       overallCreditSumSpan.textContent = d.brief;
       overallCreditSumElement.style.setProperty("--green-percentage", `${g}%`);
       overallCreditSumElement.style.setProperty("--yellow-percentage", `${y}%`);
+    }
+
+    // 備考
+    {
+      let remark: string | undefined;
+      if (selectedCellId !== undefined && params.getRemark !== undefined) {
+        remark = params.getRemark(selectedCellId);
+      }
+      if (remark !== undefined) {
+        cellRemarkTitle.style.removeProperty("display");
+        cellRemarkContent.style.removeProperty("display");
+        cellRemarkContent.textContent = remark;
+      } else {
+        cellRemarkTitle.style.display = "none";
+        cellRemarkContent.style.display = "none";
+      }
     }
 
     // 総合からの移行
