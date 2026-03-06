@@ -52,6 +52,8 @@ async function main() {
       "src/2023/ds/index.ts",
       "src/2023/cis-ir/index.ts",
       "src/2023/cis-id/index.ts",
+      "src/2023/art/index.ts",
+      "src/2023/art-jad/index.ts",
 
       "src/2024/coins/index.ts",
       "src/2024/coins-cs/index.ts",
@@ -82,6 +84,8 @@ async function main() {
       "src/2024/ds/index.ts",
       "src/2024/cis-ir/index.ts",
       "src/2024/cis-id/index.ts",
+      "src/2024/art/index.ts",
+      "src/2024/art-jad/index.ts",
 
       "src/2025/coins/index.ts",
       "src/2025/coins-cs/index.ts",
@@ -112,6 +116,8 @@ async function main() {
       "src/2025/ds/index.ts",
       "src/2025/cis-ir/index.ts",
       "src/2025/cis-id/index.ts",
+      "src/2025/art/index.ts",
+      "src/2025/art-jad/index.ts",
 
       "src/app.scss",
       "src/styles.scss",
