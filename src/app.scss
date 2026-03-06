@@ -275,6 +275,17 @@ input[name="student-type"]:checked + span {
 #control > #import-grades-button {
   --fill: #e3ecfd;
   --outline: #b8cff9;
+  height: 80px;
+
+  & > img {
+    justify-self: right;
+  }
+  & > .label {
+    justify-self: left;
+  }
+  & > .remark {
+    grid-column: 1/3;
+  }
 }
 #csv {
   display: none;
