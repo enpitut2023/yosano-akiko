@@ -322,7 +322,7 @@ function cellCreditStatsDisplay(c: CellCreditStats): {
 
   let warning: string | undefined;
   if (c.overflowTotal > 0) {
-    warning = `このマスは合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、${c.overflowTotal}単位無駄になります。`;
+    warning = `このマスは合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、残りの${c.overflowTotal}単位は卒業単位に含まれません。`;
   }
 
   return { brief, warning };
@@ -342,7 +342,7 @@ function columnCreditStatsDisplay(c: ColumnCreditStats): {
 
   let warning: string | undefined;
   if (c.overflowTotal > 0) {
-    warning = `この列は合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、${c.overflowTotal}単位無駄になります。`;
+    warning = `この列は合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、残りの${c.overflowTotal}単位は卒業単位に含まれません。`;
   }
 
   return { brief, warning };
@@ -362,7 +362,7 @@ function electiveCreditStatsDisplay(c: ElectiveCreditStats): {
 
   let warning: string | undefined;
   if (c.overflowTotal > 0) {
-    warning = `選択科目全体は合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、${c.overflowTotal}単位無駄になります。`;
+    warning = `選択科目全体は合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、残りの${c.overflowTotal}単位は卒業単位に含まれません。`;
   }
 
   return { brief, warning };
