@@ -1,4 +1,5 @@
 import {
+  CellId,
   CourseId,
   FakeCourse,
   FakeCourseId,
@@ -308,6 +309,21 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  specialty: Specialty,
+): string | undefined {
+  if (id === "b1") {
+    const n: { [K in Specialty]: number } = {
+      ses: 2,
+      mse: 2,
+      urp: 7,
+    };
+    return `「演習を${n[specialty]}単位以上含むこと」という条件はチェックされません。`;
+  }
 }
 
 export const creditRequirementsSes: SetupCreditRequirements = {
