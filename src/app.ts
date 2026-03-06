@@ -252,43 +252,24 @@ function localDataStore(key: string, l: LocalDataV2): void {
   localStorage.setItem(key, JSON.stringify(l));
 }
 
-class CreditSumView extends HTMLElement {
-  private p: HTMLElement | undefined;
-
-  constructor() {
-    super();
-  }
-
-  protected connectedCallback(): void {
-    this.innerHTML = `
-      <h2>単位数</h2>
-      <p></p>
-    `;
-    const p = this.querySelector("p");
-    assert(p !== null);
-    this.p = p;
-  }
-
-  public update(cell: CellCreditStats | undefined): void {
-    if (this.p === undefined) {
-      return;
+function updateCellDetail(
+  root: HTMLElement,
+  cell: CellCreditStats | undefined,
+): void {
+  const p = mustQuerySelector(root, "p");
+  root.classList.toggle("no-cell-selected", cell === undefined);
+  if (cell === undefined) {
+    p.textContent = "マスを選択してください";
+  } else {
+    const { brief, warning } = cellCreditStatsDisplay(cell);
+    let content = "選択されたマスの単位：" + brief;
+    if (warning !== undefined) {
+      content += "<br>⚠️ ";
+      content += warning;
     }
-
-    this.classList.toggle("no-cell-selected", cell === undefined);
-    if (cell === undefined) {
-      this.p.textContent = "マスを選択してください";
-    } else {
-      const { brief, warning } = cellCreditStatsDisplay(cell);
-      let content = "選択されたマスの単位：" + brief;
-      if (warning !== undefined) {
-        content += "<br>⚠️ ";
-        content += warning;
-      }
-      this.p.innerHTML = content;
-    }
+    p.innerHTML = content;
   }
 }
-window.customElements.define("credit-sum-view", CreditSumView);
 
 function mustGetElementById(id: string): HTMLElement {
   const e = document.getElementById(id);
@@ -508,8 +489,7 @@ export function setup(params: SetupParams): void {
 
   const leftBar = mustGetElementById("left-bar");
   const rightBar = mustGetElementById("right-bar");
-  const creditSumView = document.getElementsByTagName("credit-sum-view")?.[0];
-  assert(creditSumView instanceof CreditSumView);
+  const cellDetail = mustGetElementById("cell-detail");
 
   const filterInput = mustGetElementByIdOfType("filter", HTMLInputElement);
   const filterAction = new Debouncer(500, () => {
@@ -659,7 +639,7 @@ export function setup(params: SetupParams): void {
   };
 
   new ResizeObserver(updateBarsToggleButtonPosition).observe(
-    requirementsElement,
+    mustGetElementById("table-view"),
   );
 
   barsToggleButton.addEventListener("click", () => {
@@ -783,11 +763,11 @@ export function setup(params: SetupParams): void {
     // 単位合計
     {
       if (selectedCellId === undefined) {
-        creditSumView.update(undefined);
+        updateCellDetail(cellDetail, undefined);
       } else {
         const cell = creditStats.cells.get(selectedCellId);
         assert(cell !== undefined);
-        creditSumView.update(cell);
+        updateCellDetail(cellDetail, cell);
       }
 
       for (const [
