@@ -58,24 +58,3 @@ export function arrayRetain<T>(ts: T[], predicate: (t: T) => boolean): void {
     ts.push(t);
   }
 }
-
-export function partitionPointFloat(
-  low: number,
-  high: number,
-  threshold: number,
-  predicate: (x: number) => boolean,
-): number {
-  assert(low < high);
-  assert(!predicate(high));
-
-  while (high - low > threshold) {
-    const mid = (low + high) / 2;
-    if (predicate(mid)) {
-      low = mid;
-    } else {
-      high = mid;
-    }
-  }
-
-  return high;
-}

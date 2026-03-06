@@ -31,7 +31,7 @@ import {
 import { CourseLists } from "@/course-lists";
 import { parseImportedCsv } from "@/csv";
 import warningIcon from "@/icons/warning.svg";
-import { assert, partitionPointFloat } from "@/util";
+import { assert } from "@/util";
 
 type LocalDataV1ImportedCourse = {
   id: string;
@@ -797,14 +797,8 @@ export function setup(params: SetupParams): void {
         const PADDING = 5;
         const maxWidth =
           root.getBoundingClientRect().width - (BORDER + PADDING) * 2;
-        span.style.removeProperty("transform");
-        if (span.getBoundingClientRect().width > maxWidth) {
-          const sx = partitionPointFloat(0, 1, 0.001, (sx) => {
-            span.style.transform = `scaleX(${sx})`;
-            return span.getBoundingClientRect().width < maxWidth;
-          });
-          span.style.transform = `scaleX(${sx})`;
-        }
+        const spanWidth = span.getBoundingClientRect().width;
+        span.style.transform = `scaleX(${Math.min(maxWidth / spanWidth, 1)})`;
       }
 
       const d = electiveCreditStatsDisplay(creditStats.elective);
