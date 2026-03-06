@@ -26,6 +26,7 @@ import {
   isJapanese,
   isJiyuukamoku,
   isKyoushoku,
+  isKyoutsuu,
 } from "./common";
 
 export type Specialty =
@@ -223,10 +224,10 @@ function isH2(id: string): boolean {
   return /^[EFGH]/.test(id);
 }
 
-function isH3(_id: string): boolean {
+function isH3(id: string): boolean {
   // 上記以外の他学群又は他学類の授業科目
   // TODO: 適当に思いつくものは除いておきたい
-  return true;
+  return !isKyoutsuu(id);
 }
 
 function isH4(id: string): boolean {
@@ -238,7 +239,7 @@ function classify(
   name: string,
   _tableYear: number,
   specialty: Specialty,
-  mode: "known" | "real",
+  mode: Mode,
 ): string | undefined {
   // 必修
   const a = classifyColumnA(id, specialty);
