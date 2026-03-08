@@ -15,6 +15,7 @@
   import trashIcon from "$lib/icons/trash.svg";
   import searchIcon from "$lib/icons/search.svg";
   import akikoPng from "$lib/images/akiko.png";
+  import { assert } from "@/util.js";
 
   let { data } = $props();
   let app = $derived(new AkikoApp(data.config));
@@ -162,6 +163,31 @@
       Math.min(1, (taken + mightTake) / min) * 100,
     ];
   };
+
+  let columnSpanEls = $state<Record<string, HTMLSpanElement | undefined>>({});
+  let overallSpanEl = $state<HTMLSpanElement | undefined>();
+
+  function scaleSpan(span: HTMLSpanElement) {
+    assert(span.parentElement !== null);
+    const BORDER = 1;
+    const PADDING = 5;
+    span.style.transform = "";
+    const maxWidth =
+      span.parentElement.getBoundingClientRect().width - (BORDER + PADDING) * 2;
+    const spanWidth = span.getBoundingClientRect().width;
+    if (spanWidth > 0) {
+      span.style.transform = `scaleX(${Math.min(maxWidth / spanWidth, 1)})`;
+    }
+  }
+
+  $effect(() => {
+    for (const [colId] of app.stats.columns.entries()) {
+      if (["a", "c", "e", "g"].includes(colId)) continue;
+      const span = columnSpanEls[colId];
+      if (span) scaleSpan(span);
+    }
+    if (app.stats.elective && overallSpanEl) scaleSpan(overallSpanEl);
+  });
 </script>
 
 {#snippet courseRow(c: any, draggable = false)}
@@ -278,7 +304,7 @@
     </div>
     <div id="credit-sums-container">
       <div id="column-credit-sums" style="--x: {scrollX}px">
-        {#each Array.from(app.stats.columns.entries()) as [colId, s]}
+        {#each app.stats.columns.entries() as [colId, s]}
           {#if !["a", "c", "e", "g"].includes(colId)}
             {@const rect = cellRects.find(
               (r) => r.id === ((colId + "1") as CellId),
@@ -296,7 +322,7 @@
                 onclick={() => display.warning && alert(display.warning)}
               >
                 <img src={warningIcon} width="20" alt="warning" />
-                <span>{display.brief}</span>
+                <span bind:this={columnSpanEls[colId]}>{display.brief}</span>
               </div>
             {/if}
           {/if}
@@ -317,7 +343,9 @@
           onclick={() => display.warning && alert(display.warning)}
         >
           <img src={warningIcon} width="20" alt="warning" />
-          <span>選択科目計:{display.brief.split("計:")[1]}</span>
+          <span bind:this={overallSpanEl}
+            >選択科目計:{display.brief.split("計:")[1]}</span
+          >
         </div>
       {/if}
     </div>
