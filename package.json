@@ -4,13 +4,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "npm run lint-grade-csvs && npm t && vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint-grade-csvs": "tsx scripts/lint-grade-csvs.ts",
-    "test": "tsx src-old/tests/index.ts",
+    "test": "tsx src/lib/tests/index.ts",
     "format": "prettier -w ."
   },
   "devDependencies": {
