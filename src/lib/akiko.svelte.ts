@@ -19,6 +19,7 @@ import {
   classifyCoursesOrFail,
 } from "./app-setup";
 import { assert } from "./util";
+import { type LocalDataV2, localDataFromJson } from "./local-data";
 
 export class AkikoApp {
   knownCourses: KnownCourse[];
@@ -163,11 +164,7 @@ export class AkikoApp {
     const json = localStorage.getItem(this.localDataKey);
     if (json) {
       try {
-        const data = JSON.parse(json);
-        // Basic validation/migration (simplified for now)
-        if (data.version === 2) {
-          return data;
-        }
+        return localDataFromJson(json);
       } catch (e) {
         console.error("Failed to load local data", e);
       }
@@ -177,16 +174,14 @@ export class AkikoApp {
 
   save() {
     if (typeof window === "undefined") return;
-    localStorage.setItem(
-      this.localDataKey,
-      JSON.stringify({
-        version: 2,
-        mightTakeCourseIds: Array.from(this.mightTakeCourseIds),
-        realCourses: Array.from(this.realCourses),
-        fakeCourses: Array.from(this.fakeCourses),
-        native: this.native,
-      }),
-    );
+    const data: LocalDataV2 = {
+      version: 2,
+      mightTakeCourseIds: Array.from(this.mightTakeCourseIds),
+      realCourses: Array.from(this.realCourses),
+      fakeCourses: Array.from(this.fakeCourses),
+      native: this.native,
+    };
+    localStorage.setItem(this.localDataKey, JSON.stringify(data));
   }
 
   // Actions
