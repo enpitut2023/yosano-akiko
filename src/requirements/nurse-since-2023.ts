@@ -19,9 +19,12 @@ import {
   isJapanese,
   isSecondForeignLanguage,
 } from "@/requirements/common";
+import { table } from "node:console";
 import { crc32 } from "node:zlib";
+import { optional } from "zod";
 
 export type Specialty = "nurse-n" | "nurse-phn" | "nurse-h";
+type Mode = "known" | "real";
 
 function classifyColumnA(id: CourseId, specialty: Specialty): string | undefined {
   let offset_phn = 0;
@@ -140,7 +143,7 @@ function classifyColumnA(id: CourseId, specialty: Specialty): string | undefined
   }
 }
 
-function classifyColumnC(id: CourseId, specialty: Specialty, mode: "known" | "real"): string | undefined {
+function classifyColumnC(id: CourseId, specialty: Specialty, mode: Mode): string | undefined {
   let offset_phn = 0;
   let offset_h = 0;
 
@@ -177,10 +180,12 @@ function classifyColumnC(id: CourseId, specialty: Specialty, mode: "known" | "re
   if (id === "HC22021") return "c" + (20 + offset_phn + offset_h) // 疫学
   if (id === "HC22151") return "c" + (21 + offset_phn + offset_h) // 障害理解
   if (id === "HC22091") return "c" + (22 + offset_phn + offset_h) // 国際保健学
-  if (mode === "known" && id === "BB00301") {
-    return "c" + (32 + offset_phn + offset_h)
+  if ((specialty === "nurse-phn" || specialty === "nurse-h") && 
+    mode === "known" && id === "BB00301"
+  ) {
+    return "c" + (23 + offset_phn + offset_h)
   }
-  if (
+  if ((specialty === "nurse-phn" || specialty === "nurse-h") &&
     mode === "real" &&
     (id === "BB00101" ||
       id === "BB00201" ||
@@ -189,13 +194,13 @@ function classifyColumnC(id: CourseId, specialty: Specialty, mode: "known" | "re
       id === "BB00501" ||
       id === "BB00601")
   ) {
-    return "c" + (32 + offset_phn + offset_h) // 日本国憲法!!A!!他の学類対象の日本国憲法を取る可能性があるか
+    return "c" + (23 + offset_phn + offset_h) // 日本国憲法!!A!!他の学類対象の日本国憲法を取る可能性があるか
   }
 
   return undefined
 }
 
-function classifyColumnD(id: CourseId, specialty: Specialty, mode: "known" | "real"): string | undefined {
+function classifyColumnD(id: CourseId, specialty: Specialty, mode: Mode): string | undefined {
   let offset_h = 0;
 
   // 障害科学分野
@@ -251,7 +256,7 @@ function classifyColumnD(id: CourseId, specialty: Specialty, mode: "known" | "re
   return undefined
 }
 
-function isE1(id: string, specialty: Specialty, mode: "known" | "real"): boolean {
+function isE1(id: string, specialty: Specialty, mode: Mode): boolean {
   return (
     // ファーストイヤーセミナー
     id === "1122102" || // Aクラス
@@ -279,21 +284,20 @@ function isE3(id: string, specialty: Specialty): boolean {
   return (
     (
       (specialty === "nurse-n" || specialty === "nurse-phn") && // 看護師または保健師
-      // 第１外国語（英語）!!A!!これは必修英語と第一外国語（英語）全部含めるのか
+      false // 第１外国語（英語）!!A!!これは必修英語と第一外国語（英語）全部含めるのか
     ) ||
     (
       specialty === "nurse-h" && // ヘルスケア
-      // !!A!!第１外国語（日本語）とは
+      false // !!A!!第１外国語（日本語）とは
     )
   );
 }
 
-function isE4(id: string, specialty: Specialty, mode: "known" | "real"): boolean {
+function isE4(id: string, specialty: Specialty, mode: Mode): boolean {
   return (
     (
       (specialty === "nurse-n" || specialty === "nurse-phn") &&// 看護師または保健師
-      (
-        id === "6118101" || // 情報リテラシー(講義)
+      (id === "6118101" || // 情報リテラシー(講義)
         id === "6418102" || // 情報リテラシー(演習) 看護2班対象
         id === "6419102" || // 情報リテラシー(演習) 医療, 看護1班対象
         id === "6518102" || // データサイエンス 看護2班対象
@@ -301,16 +305,16 @@ function isE4(id: string, specialty: Specialty, mode: "known" | "real"): boolean
         (mode === "real" &&
           (isInfoLiteracyLecture(id) ||
             isInfoLiteracyExercise(id) ||
-            isDataScience(id)))
-      )
+            isDataScience(id))))
     ) ||
     (
       specialty === "nurse-h" && // ヘルスケア
-      // 第２外国語（英語）!!A!!これは必修英語と第一外国語（英語）全部含めるのか
+      false// 第２外国語（英語）!!A!!これは必修英語と第一外国語（英語）全部含めるのか
+    )
   );
 }
 
-function isE5(id: string, specialty: Specialty, mode: "known" | "real"): boolean {
+function isE5(id: string, specialty: Specialty, mode: Mode): boolean {
   return (
     (
       (specialty === "nurse-n" || specialty === "nurse-phn") && //看護師または保健師
@@ -340,7 +344,7 @@ function isF1(id: string, specialty: Specialty): boolean {
   );
 }
 
-function isG1(id: string, specialty: Specialty) {
+function isG1(id: string, specialty: Specialty): boolean {
   return (
     (specialty === "nurse-n" || specialty === "nurse-phn") &&
     (
@@ -353,3 +357,487 @@ function isG1(id: string, specialty: Specialty) {
   );
 }
 
+function isH1(id: string, tableYear: number): boolean {
+  return (
+    (tableYear === 2023 || tableYear === 2024) && (
+      id === "EC12131" || // 化学 「化学」(EC12101)、「化学Ⅰ」(EC12111)及び「化学II」(EC12121)を修得済みの者は履修できない。!!A!!EC12101との違いは何か。
+      id === "EC12171" // 物理学 「物理学」(EC12081)、「物理学I」(EC12181)及び「物理学II」(EC12191)を修得した者は履修できない。!!A!!EC12081との違いは何か。
+      // !!A!!リザードンにない、生物学とは何か
+      // !!A!!「共通科目は除く」とは「学類共通（専門基礎科目）」を除くという意味で正しいか
+      // CC21~27 || CE21~32 人間学群心理学類及び障害科学類開設の授業科目(共通科目は除く)!!A!!「心理学類生に限る。」が含まれている。「人間学群生に限る。」が含まれている。卒業研究などが入っている。
+      // 体育専門学群開設の授業科目(共通科目は除く)!!A!!どれを指しているかわからない
+      // AB7~9 人文・文化学群人文学類開設の授業科目のうち「哲学､倫理学、宗教学」分野の授業科目(共通科目は除く)!!A!!卒業研究などが入っている
+      // 教育職員免許法に定める教科に関する専門的事項の「哲学、倫理学、宗教学」に対応する科目として人文・文化学群比較文化学類が開設する授業科目!!A!!どれを指しているかわからない
+    ) ||
+    (tableYear === 2025 && (
+      // 他学類の開設科目(専門科目および専門基礎科目に該当する科目は除く)!!A!!どれを指しているかわからない
+      false
+    ))
+  );
+}
+
+function classifyColumnH(id: string, speciality: Specialty, tableYear: number): string | undefined {
+  if (isH1(id, tableYear)) return "h1";
+  // JEプログラム他コース提供科目
+  if (speciality === "nurse-h") {
+    if (id === "EC12301") return "h2" // 生物資源の開発・生産と持続利用
+    if (id === "EC12501") return "h3" // 生物資源としての遺伝子とゲノム
+    if (id === "EC12401") return "h4" // 生物資源と環境
+    if (id === "EC12201") return "h5" // 生物資源学にみる食品科学・技術の最前線
+    if (id === "4004013") return "h6" // 芸術(日本画実習)
+    if (id === "4006012") return "h7" // 芸術(書A)
+    if (id === "4006022") return "h8" // 芸術(書B)
+    if (id === "4006032") return "h9" // 芸術(書C)
+    if (id === "AE56A21") return "h10" // 共生のための日本語教育
+    if (id === "AE56A11") return "h11" // 共生のための社会言語学
+    if (id === "AE56A31") return "h12" // 共生のための人類学
+    if (id === "AE56A41") return "h13" // 共生のための歴史学
+  }
+
+  return undefined
+}
+
+function classify(
+  id: CourseId,
+  specialty: Specialty,
+  _isNative: boolean,
+  mode: Mode,
+  tableYear: number,
+): string | undefined {
+  // 必修
+  const a = classifyColumnA(id, specialty);
+  if (a !== undefined) return a;
+  const c = classifyColumnC(id, specialty, mode);
+  if (c !== undefined) return c;
+  if (isE1(id, specialty, mode)) return "e1";
+  if (isE2(id)) return "e2";
+  if (isE3(id, specialty)) return "e3";
+  if (isE4(id, specialty, mode)) return "e4";
+  if (isE5(id, specialty, mode)) return "e5";
+  if (isG1(id, specialty)) return "g1";
+  // 選択
+  const d = classifyColumnD(id, specialty, mode);
+  if (d !== undefined) return d;
+  if (isF1(id, specialty)) return "f1";
+  const h = classifyColumnH(id, specialty, tableYear);
+  if (h !== undefined) return h;
+}
+
+export function classifyKnownCourses(
+  cs: KnownCourse[],
+  opts: ClassifyOptions,
+  tableYear: number,
+  specialty: Specialty,
+): Map<CourseId, string> {
+  const courseIdToCellId = new Map<CourseId, string>();
+  for (const c of cs) {
+    const cellId = classify(c.id, specialty, opts.isNative, "known", tableYear);
+    if (cellId !== undefined) {
+      courseIdToCellId.set(c.id, cellId);
+    }
+  }
+  return courseIdToCellId;
+}
+
+export function classifyRealCourses(
+  cs: RealCourse[],
+  opts: ClassifyOptions,
+  tableYear: number,
+  specialty: Specialty,
+): Map<CourseId, string> {
+  const courseIdToCellId = new Map<CourseId, string>();
+  for (const c of cs) {
+    const cellId = classify(c.id, specialty, opts.isNative, "real", tableYear);
+    if (cellId !== undefined) {
+      courseIdToCellId.set(c.id, cellId);
+    }
+  }
+  return courseIdToCellId;
+}
+
+export function classifyFakeCourses(
+  _cs: FakeCourse[],
+  _opts: ClassifyOptions,
+  _tableYear: number,
+  _specialty: Specialty,
+) {
+  return undefined; // FakeCoursesがよくわからん
+}
+
+export const creditRequirementsN: SetupCreditRequirements = {
+  cells: {
+    a1: { min: 1, max: 1 },
+    a2: { min: 3, max: 3 },
+    a3: { min: 2, max: 2 },
+    a4: { min: 2, max: 2 },
+    a5: { min: 2, max: 2 },
+    a6: { min: 1, max: 1 },
+    a7: { min: 1, max: 1 },
+    a8: { min: 2, max: 2 },
+    a9: { min: 1, max: 1 },
+    a10: { min: 3, max: 3 },
+    a11: { min: 2, max: 2 },
+    a12: { min: 2, max: 2 },
+    a13: { min: 2, max: 2 },
+    a14: { min: 1, max: 1 },
+    a15: { min: 2, max: 2 },
+    a16: { min: 1, max: 1 },
+    a17: { min: 1, max: 1 },
+    a18: { min: 1, max: 1 },
+    a19: { min: 2, max: 2 },
+    a20: { min: 2, max: 2 },
+    a21: { min: 1, max: 1 },
+    a22: { min: 2, max: 2 },
+    a23: { min: 2, max: 2 },
+    a24: { min: 1, max: 1 },
+    a25: { min: 2, max: 2 },
+    a26: { min: 2, max: 2 },
+    a27: { min: 2, max: 2 },
+    a28: { min: 1, max: 1 },
+    a29: { min: 1, max: 1 },
+    a30: { min: 2, max: 2 },
+    a31: { min: 1, max: 1 },
+    a32: { min: 2, max: 2 },
+    a33: { min: 1, max: 1 },
+    a34: { min: 1, max: 1 },
+    a35: { min: 1, max: 1 },
+    a36: { min: 1, max: 1 },
+    a37: { min: 1, max: 1 },
+    a38: { min: 1, max: 1 },
+    a39: { min: 2, max: 2 },
+    a40: { min: 2, max: 2 },
+    a41: { min: 4, max: 4 },
+    a42: { min: 2, max: 2 },
+    a43: { min: 2, max: 2 },
+    a44: { min: 1, max: 1 },
+    a45: { min: 2, max: 2 },
+
+    c1: { min: 1, max: 1 },
+    c2: { min: 1, max: 1 },
+    c3: { min: 1, max: 1 },
+    c4: { min: 1, max: 1 },
+    c5: { min: 1, max: 1 },
+    c6: { min: 2, max: 2 },
+    c7: { min: 2, max: 2 },
+    c8: { min: 1, max: 1 },
+    c9: { min: 1, max: 1 },
+    c10: { min: 1, max: 1 },
+    c11: { min: 2, max: 2 },
+    c12: { min: 2, max: 2 },
+    c13: { min: 2, max: 2 },
+    c14: { min: 1, max: 1 },
+    c15: { min: 1, max: 1 },
+    c16: { min: 1, max: 1 },
+    c17: { min: 2, max: 2 },
+    c18: { min: 1, max: 1 },
+    c19: { min: 1, max: 1 },
+    c20: { min: 2, max: 2 },
+    c21: { min: 1, max: 1 },
+    c22: { min: 1, max: 1 },
+
+    d1: { min: 1, max: 1 },
+
+    e1: { min: 2, max: 2 },
+    e2: { min: 2, max: 2 },
+    e3: { min: 4, max: 4 },
+    e4: { min: 4, max: 4 },
+    e5: { min: 1, max: 1 },
+
+    f1: { min: 1, max: 1 },
+
+    g1: { min: 2, max: 2 },
+
+    h1: { min: 4, max: 4 },
+  },
+  columns: {
+    a: { min: 74, max: 74 },
+    b: { min: 0, max: 0 },
+    c: { min: 29, max: 29 },
+    d: { min: 1, max: 1 },
+    e: { min: 13, max: 13 },
+    f: { min: 1, max: 1 },
+    g: { min: 2, max: 2 },
+    h: { min: 4, max: 4 },
+  },
+  compulsory: 118, // !!A!!必修の合計は118で正しいか、116は関係ないか
+  elective: 6,
+};
+
+export const creditRequirementsPhn: SetupCreditRequirements = {
+  cells: {
+    a1: { min: 1, max: 1 },
+    a2: { min: 3, max: 3 },
+    a3: { min: 2, max: 2 },
+    a4: { min: 2, max: 2 },
+    a5: { min: 2, max: 2 },
+    a6: { min: 1, max: 1 },
+    a7: { min: 1, max: 1 },
+    a8: { min: 2, max: 2 },
+    a9: { min: 1, max: 1 },
+    a10: { min: 3, max: 3 },
+    a11: { min: 2, max: 2 },
+    a12: { min: 2, max: 2 },
+    a13: { min: 2, max: 2 },
+    a14: { min: 1, max: 1 },
+    a15: { min: 2, max: 2 },
+    a16: { min: 1, max: 1 },
+    a17: { min: 1, max: 1 },
+    a18: { min: 1, max: 1 },
+    a19: { min: 2, max: 2 },
+    a20: { min: 2, max: 2 },
+    a21: { min: 1, max: 1 },
+    a22: { min: 2, max: 2 },
+    a23: { min: 2, max: 2 },
+    a24: { min: 1, max: 1 },
+    a25: { min: 2, max: 2 },
+    a26: { min: 2, max: 2 },
+    a27: { min: 2, max: 2 },
+    a28: { min: 1, max: 1 },
+    a29: { min: 1, max: 1 },
+    a30: { min: 2, max: 2 },
+    a31: { min: 1, max: 1 },
+    a32: { min: 2, max: 2 },
+    a33: { min: 1, max: 1 },
+    a34: { min: 1, max: 1 },
+    a35: { min: 1, max: 1 },
+    a36: { min: 1, max: 1 },
+    a37: { min: 1, max: 1 },
+    a38: { min: 1, max: 1 },
+    a39: { min: 2, max: 2 },
+    a40: { min: 2, max: 2 },
+    a41: { min: 2, max: 2 },
+    a42: { min: 2, max: 2 },
+    a43: { min: 1, max: 1 },
+    a44: { min: 2, max: 2 },
+
+    a45: { min: 2, max: 2 },
+    a46: { min: 4, max: 4 },
+    a47: { min: 4, max: 4 },
+    a48: { min: 2, max: 2 },
+    a49: { min: 3, max: 3 },
+
+    c1: { min: 1, max: 1 },
+    c2: { min: 1, max: 1 },
+    c3: { min: 1, max: 1 },
+    c4: { min: 1, max: 1 },
+    c5: { min: 1, max: 1 },
+    c6: { min: 2, max: 2 },
+    c7: { min: 2, max: 2 },
+    c8: { min: 1, max: 1 },
+    c9: { min: 1, max: 1 },
+    c10: { min: 1, max: 1 },
+    c11: { min: 2, max: 2 },
+    c12: { min: 2, max: 2 },
+    c13: { min: 2, max: 2 },
+    c14: { min: 1, max: 1 },
+    c15: { min: 1, max: 1 },
+    c16: { min: 1, max: 1 },
+    c17: { min: 2, max: 2 },
+    c18: { min: 1, max: 1 },
+    c19: { min: 1, max: 1 },
+    c20: { min: 2, max: 2 },
+    c21: { min: 1, max: 1 },
+    c22: { min: 1, max: 1 },
+    c23: { min: 2, max: 2 },
+
+    d1: { min: 1, max: 1 },
+
+    e1: { min: 2, max: 2 },
+    e2: { min: 2, max: 2 },
+    e3: { min: 4, max: 4 },
+    e4: { min: 4, max: 4 },
+    e5: { min: 1, max: 1 },
+
+    f1: { min: 1, max: 1 },
+
+    g1: { min: 2, max: 2 },
+
+    h1: { min: 4, max: 4 },
+  },
+  columns: {
+    a: { min: 85, max: 85 },
+    b: { min: 0, max: 0 },
+    c: { min: 31, max: 31 },
+    d: { min: 1, max: 1 },
+    e: { min: 13, max: 13 },
+    f: { min: 1, max: 1 },
+    g: { min: 2, max: 2 },
+    h: { min: 4, max: 4 },
+  },
+  compulsory: 131,
+  elective: 6,
+};
+
+export const creditRequirementsH2023: SetupCreditRequirements = {
+  cells: {
+    a1: { min: 1, max: 1 },
+    a2: { min: 3, max: 3 },
+    a3: { min: 2, max: 2 },
+    a4: { min: 2, max: 2 },
+    a5: { min: 2, max: 2 },
+    a6: { min: 1, max: 1 },
+    a7: { min: 1, max: 1 },
+    a8: { min: 3, max: 3 },
+    a9: { min: 2, max: 2 },
+    a10: { min: 1, max: 1 },
+    a11: { min: 2, max: 2 },
+    a12: { min: 1, max: 1 },
+    a13: { min: 2, max: 2 },
+    a14: { min: 1, max: 1 },
+    a15: { min: 2, max: 2 },
+    a16: { min: 1, max: 1 },
+    a17: { min: 2, max: 2 },
+    a18: { min: 2, max: 2 },
+    a19: { min: 1, max: 1 },
+    a20: { min: 1, max: 1 },
+    a21: { min: 2, max: 2 },
+    a22: { min: 1, max: 1 },
+    a23: { min: 1, max: 1 },
+    a24: { min: 1, max: 1 },
+    a25: { min: 1, max: 1 },
+    a26: { min: 1, max: 1 },
+    a27: { min: 2, max: 2 },
+    a28: { min: 2, max: 2 },
+    a29: { min: 1, max: 1 },
+    a30: { min: 4, max: 4 },
+    a31: { min: 4, max: 4 },
+    a32: { min: 4, max: 4 },
+
+    c1: { min: 1, max: 1 }, // Japan-Expert総論
+    c2: { min: 1, max: 1 },
+    c3: { min: 1, max: 1 },
+    c4: { min: 1, max: 1 },
+    c5: { min: 1, max: 1 },
+    c6: { min: 1, max: 1 },
+    c7: { min: 2, max: 2 },
+    c8: { min: 2, max: 2 },
+    c9: { min: 1, max: 1 },
+    c10: { min: 1, max: 1 },
+    c11: { min: 1, max: 1 },
+    c12: { min: 2, max: 2 },
+    c13: { min: 2, max: 2 },
+    c14: { min: 2, max: 2 },
+    c15: { min: 1, max: 1 },
+    c16: { min: 1, max: 1 },
+    c17: { min: 1, max: 1 },
+    c18: { min: 2, max: 2 },
+    c19: { min: 1, max: 1 },
+    c20: { min: 1, max: 1 },
+    c21: { min: 2, max: 2 },
+    c22: { min: 1, max: 1 },
+    c23: { min: 1, max: 1 },
+    c24: { min: 2, max: 2 },
+
+    d1: { min: 10, max: 10 },
+    d2: { min: 1, max: 1 },
+
+    e1: { min: 3, max: 3 },
+    e2: { min: 2, max: 2 },
+    e3: { min: 17, max: 17 },
+    e4: { min: 4, max: 4 },
+    e5: { min: 4, max: 4 },
+
+    f1: { min: 1, max: 4 },
+
+    h1: { min: 5, max: 8 },
+    h2: { min: 1, max: 1 },
+  },
+  columns: {
+    a: { min: 57, max: 57 },
+    b: { min: 0, max: 0 },
+    c: { min: 32, max: 32 },
+    d: { min: 11, max: 11 },
+    e: { min: 30, max: 30 },
+    f: { min: 1, max: 4 },
+    h: { min: 6, max: 9 },
+  },
+  compulsory: 119,
+  elective: 18,
+};
+
+export const creditRequirementsHSince2024: SetupCreditRequirements = {
+  cells: {
+    a1: { min: 1, max: 1 },
+    a2: { min: 3, max: 3 },
+    a3: { min: 2, max: 2 },
+    a4: { min: 2, max: 2 },
+    a5: { min: 2, max: 2 },
+    a6: { min: 1, max: 1 },
+    a7: { min: 1, max: 1 },
+    a8: { min: 3, max: 3 },
+    a9: { min: 2, max: 2 },
+    a10: { min: 1, max: 1 },
+    a11: { min: 2, max: 2 },
+    a12: { min: 1, max: 1 },
+    a13: { min: 2, max: 2 },
+    a14: { min: 1, max: 1 },
+    a15: { min: 2, max: 2 },
+    a16: { min: 1, max: 1 },
+    a17: { min: 2, max: 2 },
+    a18: { min: 2, max: 2 },
+    a19: { min: 1, max: 1 },
+    a20: { min: 1, max: 1 },
+    a21: { min: 2, max: 2 },
+    a22: { min: 1, max: 1 },
+    a23: { min: 1, max: 1 },
+    a24: { min: 1, max: 1 },
+    a25: { min: 1, max: 1 },
+    a26: { min: 1, max: 1 },
+    a27: { min: 2, max: 2 },
+    a28: { min: 2, max: 2 },
+    a29: { min: 1, max: 1 },
+    a30: { min: 4, max: 4 },
+    a31: { min: 4, max: 4 },
+    a32: { min: 4, max: 4 },
+
+    c1: { min: 1, max: 1 }, // Japan-Expert総論
+    c2: { min: 1, max: 1 },
+    c3: { min: 1, max: 1 },
+    c4: { min: 1, max: 1 },
+    c5: { min: 1, max: 1 },
+    c6: { min: 1, max: 1 },
+    c7: { min: 2, max: 2 },
+    c8: { min: 2, max: 2 },
+    c9: { min: 1, max: 1 },
+    c10: { min: 1, max: 1 },
+    c11: { min: 1, max: 1 },
+    c12: { min: 2, max: 2 },
+    c13: { min: 2, max: 2 },
+    c14: { min: 2, max: 2 },
+    c15: { min: 1, max: 1 },
+    c16: { min: 1, max: 1 },
+    c17: { min: 1, max: 1 },
+    c18: { min: 2, max: 2 },
+    c19: { min: 1, max: 1 },
+    c20: { min: 1, max: 1 },
+    c21: { min: 2, max: 2 },
+    c22: { min: 1, max: 1 },
+    c23: { min: 1, max: 1 },
+    c24: { min: 2, max: 2 },
+
+    d1: { min: 10, max: 10 },
+    d2: { min: 1, max: 1 },
+
+    e1: { min: 3, max: 3 },
+    e2: { min: 2, max: 2 },
+    e3: { min: 15, max: 15 },
+    e4: { min: 4, max: 4 },
+    e5: { min: 4, max: 4 },
+
+    f1: { min: 1, max: 4 },
+
+    h1: { min: 5, max: 8 },
+    h2: { min: 1, max: 1 },
+  },
+  columns: {
+    a: { min: 57, max: 57 },
+    b: { min: 0, max: 0 },
+    c: { min: 32, max: 32 },
+    d: { min: 11, max: 11 },
+    e: { min: 28, max: 28 },
+    f: { min: 1, max: 4 },
+    h: { min: 6, max: 9 },
+  },
+  compulsory: 117,
+  elective: 18,
+};
