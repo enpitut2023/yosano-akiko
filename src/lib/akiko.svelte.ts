@@ -5,8 +5,13 @@ import {
   type FakeCourse,
   type KnownCourse,
   type CreditRequirements,
+  type BaseCreditStats,
   akikoGetCreditStats,
   akikoNew,
+  akikoGetUnclassifiedRealCourses,
+  akikoGetUnclassifiedFakeCourses,
+  courseIdCompare,
+  fakeCourseIdCompare,
 } from "./akiko";
 import {
   type SetupParams,
@@ -53,6 +58,70 @@ export class AkikoApp {
           this.fakeCourses = saved.fakeCourses;
           this.mightTakeCourseIds = saved.mightTakeCourseIds;
           this.native = saved.native;
+        }
+
+        if (import.meta.env.DEV) {
+          $effect(() => {
+            const akiko = this.akiko;
+            const rcs = akikoGetUnclassifiedRealCourses(akiko);
+            const fcs = akikoGetUnclassifiedFakeCourses(akiko);
+            rcs.sort((a, b) => courseIdCompare(a.id, b.id));
+            fcs.sort((a, b) => fakeCourseIdCompare(a.id, b.id));
+            let s = "マスに振り分けられなかった授業\n";
+            for (const rc of rcs) {
+              s += [rc.id, rc.name, rc.takenYear, rc.credit, rc.grade].join(" ");
+              s += "\n";
+            }
+            for (const fc of fcs) {
+              s += [fc.id, fc.name, fc.takenYear, fc.credit, fc.grade].join(" ");
+              s += "\n";
+            }
+            console.log(s);
+
+            function createWantBaseCreditStats(
+              s: BaseCreditStats,
+            ): Record<string, number> {
+              const o: Record<string, number> = {};
+              if (s.rawTaken > 0) {
+                if (s.overflowTaken === 0) {
+                  o.taken = s.rawTaken;
+                } else {
+                  o.rawTaken = s.rawTaken;
+                  o.effectiveTaken = s.effectiveTaken;
+                }
+              }
+              if (s.rawMightTake > 0) {
+                if (s.overflowMightTake === 0) {
+                  o.mightTake = s.rawMightTake;
+                } else {
+                  o.rawMightTake = s.rawMightTake;
+                  o.effectiveMightTake = s.effectiveMightTake;
+                }
+              }
+              return o;
+            }
+
+            const stats = this.stats;
+            const cells: Record<string, object> = {};
+            for (const [cellId, stat] of stats.cells) {
+              const cell = createWantBaseCreditStats(stat);
+              if (Object.keys(cell).length > 0) {
+                cells[cellId] = cell;
+              }
+            }
+            const columns: Record<string, object> = {};
+            for (const [colId, stat] of stats.columns) {
+              const col = createWantBaseCreditStats(stat);
+              if (Object.keys(col).length > 0) {
+                columns[colId] = col;
+              }
+            }
+            const compulsory = createWantBaseCreditStats(stats.compulsory);
+            const elective = createWantBaseCreditStats(stats.elective);
+            console.log(
+              JSON.stringify({ cells, columns, compulsory, elective }),
+            );
+          });
         }
       }
     } catch (e) {
