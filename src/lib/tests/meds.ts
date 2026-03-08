@@ -9,11 +9,11 @@ function test1(): void {
   runTest({
     csvPath: "grade-csvs/2024/meds-ims-1.csv",
     isNative: true,
+    tableYear: 2024,
+    major: "meds-ims",
     creditRequirements: creditRequirementsImsMspisSince2023,
-    classifyRealCourses: (cs, opts) =>
-      classifyRealCourses(cs, opts, 2024, "ims"),
-    classifyFakeCourses: (cs, opts) =>
-      classifyFakeCourses(cs, opts, 2024, "ims"),
+    classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts),
+    classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts),
     want: {
       cells: {
         a1: { mightTake: 1 },

@@ -6,6 +6,7 @@ import {
   type RealCourse,
 } from "@/akiko";
 import type { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
+import type { Major } from "@/constants";
 import {
   isArt,
   isCompulsoryEnglishById,
@@ -24,7 +25,14 @@ import {
 } from "@/requirements/common";
 import { unreachable } from "@/util";
 
-export type Specialty = "none" | "jltt";
+type Specialty = "none" | "jltt";
+
+function majorToSpecialtyOrFail(m: Major): Specialty {
+  if (m === "jpjp") return "none";
+  if (m === "jpjp-jltt") return "jltt";
+  throw new Error(`Bad major: ${m}`);
+}
+
 type Mode = "known" | "real";
 
 function isA1(id: string): boolean {
@@ -210,15 +218,14 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   opts: ClassifyOptions,
-  tableYear: number,
-  specialty: Specialty,
 ): Map<CourseId, string> {
+  const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(
       c.id,
       c.name,
-      tableYear,
+      opts.tableYear,
       specialty,
       opts.isNative,
       "known",
@@ -233,16 +240,14 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
-  tableYear: number,
-  specialty: Specialty,
 ): Map<CourseId, string> {
-  cs = Array.from(cs);
+  const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(
       c.id,
       c.name,
-      tableYear,
+      opts.tableYear,
       specialty,
       opts.isNative,
       "real",
@@ -254,13 +259,11 @@ export function classifyRealCourses(
   return courseIdToCellId;
 }
 
-// TODO:
 export function classifyFakeCourses(
   cs: FakeCourse[],
-  _opts: ClassifyOptions,
-  _tableYear: number,
-  specialty: Specialty,
+  opts: ClassifyOptions,
 ): Map<FakeCourseId, string> {
+  const specialty = majorToSpecialtyOrFail(opts.major);
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {
     if (isCompulsoryEnglishByName(c.name)) {

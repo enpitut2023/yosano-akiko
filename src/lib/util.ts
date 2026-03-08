@@ -20,6 +20,12 @@ export function tryParseInt(s: string): number | undefined {
   }
 }
 
+export function strictParseInt(s: string): number | undefined {
+  if (!/^-?[0-9]+$/.test(s)) return undefined;
+  const x = parseInt(s);
+  if (!isNaN(x)) return x;
+}
+
 export function tryParseFloat(s: string): number | undefined {
   const n = parseFloat(s);
   if (!isNaN(n)) {

@@ -7,6 +7,7 @@ import {
   type RealCourse,
 } from "@/akiko";
 import type { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
+import type { Major } from "@/constants";
 import { unreachable } from "@/util";
 import {
   isArt,
@@ -29,10 +30,18 @@ import {
   isKyoutsuu,
 } from "./common";
 
-export type Specialty =
+type Specialty =
   | "ses" // Social and Economic Sciences
   | "mse" // Management Science and Engineering
   | "urp"; // Urban and Regional Planning
+
+function majorToSpecialtyOrFail(m: Major): Specialty {
+  if (m === "pops-ses") return "ses";
+  if (m === "pops-mse") return "mse";
+  if (m === "pops-urp") return "urp";
+  throw new Error(`Bad major: ${m}`);
+}
+
 type Mode = "known" | "real";
 
 function isThesis(id: string): boolean {
@@ -266,13 +275,12 @@ function classify(
 
 export function classifyKnownCourses(
   cs: KnownCourse[],
-  _opts: ClassifyOptions,
-  tableYear: number,
-  specialty: Specialty,
+  opts: ClassifyOptions,
 ): Map<CourseId, string> {
+  const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, tableYear, specialty, "known");
+    const cellId = classify(c.id, c.name, opts.tableYear, specialty, "known");
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -282,14 +290,12 @@ export function classifyKnownCourses(
 
 export function classifyRealCourses(
   cs: RealCourse[],
-  _opts: ClassifyOptions,
-  tableYear: number,
-  specialty: Specialty,
+  opts: ClassifyOptions,
 ): Map<CourseId, string> {
-  cs = Array.from(cs);
+  const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, tableYear, specialty, "real");
+    const cellId = classify(c.id, c.name, opts.tableYear, specialty, "real");
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -299,10 +305,9 @@ export function classifyRealCourses(
 
 export function classifyFakeCourses(
   cs: FakeCourse[],
-  _opts: ClassifyOptions,
-  _tableYear: number,
-  _specialty: Specialty,
+  opts: ClassifyOptions,
 ): Map<FakeCourseId, string> {
+  const _specialty = majorToSpecialtyOrFail(opts.major);
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {
     if (isCompulsoryEnglishByName(c.name)) {

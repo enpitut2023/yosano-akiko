@@ -9,11 +9,13 @@ function test1(): void {
   runTest({
     csvPath: "grade-csvs/2023/klis-rm-1.csv",
     isNative: true,
+    tableYear: 2023,
+    major: "klis-rm",
     creditRequirements,
     classifyRealCourses: (cs, opts) =>
-      classifyRealCourses(cs, opts, 2023, "rm"),
+      classifyRealCourses(cs, opts),
     classifyFakeCourses: (cs, opts) =>
-      classifyFakeCourses(cs, opts, 2023, "rm"),
+      classifyFakeCourses(cs, opts),
     want: {
       cells: {
         a3: { taken: 1 },
@@ -62,11 +64,13 @@ function test2(): void {
   runTest({
     csvPath: "grade-csvs/2023/klis-system-1.csv",
     isNative: true,
+    tableYear: 2023,
+    major: "klis-system",
     creditRequirements,
     classifyRealCourses: (cs, opts) =>
-      classifyRealCourses(cs, opts, 2023, "system"),
+      classifyRealCourses(cs, opts),
     classifyFakeCourses: (cs, opts) =>
-      classifyFakeCourses(cs, opts, 2023, "system"),
+      classifyFakeCourses(cs, opts),
     want: {
       cells: {
         a3: { taken: 1 },
@@ -116,11 +120,13 @@ function test3(): void {
   runTest({
     csvPath: "grade-csvs/2023/klis-science-1.csv",
     isNative: true,
+    tableYear: 2023,
+    major: "klis-science",
     creditRequirements,
     classifyRealCourses: (cs, opts) =>
-      classifyRealCourses(cs, opts, 2023, "science"),
+      classifyRealCourses(cs, opts),
     classifyFakeCourses: (cs, opts) =>
-      classifyFakeCourses(cs, opts, 2023, "science"),
+      classifyFakeCourses(cs, opts),
     want: {
       cells: {
         a3: { taken: 1 },

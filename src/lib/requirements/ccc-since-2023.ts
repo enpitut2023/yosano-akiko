@@ -6,6 +6,7 @@ import {
   type RealCourse,
 } from "@/akiko";
 import type { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
+import type { Major } from "@/constants";
 import {
   isArt,
   isCompulsoryEnglishByName,
@@ -215,7 +216,6 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   opts: ClassifyOptions,
-  _tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
@@ -230,7 +230,6 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
-  _tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
@@ -245,7 +244,6 @@ export function classifyRealCourses(
 export function classifyFakeCourses(
   cs: FakeCourse[],
   _opts: ClassifyOptions,
-  _tableYear: number,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {

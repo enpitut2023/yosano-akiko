@@ -9,11 +9,11 @@ function test1(): void {
   runTest({
     csvPath: "grade-csvs/2023/pops-ses-1.csv",
     isNative: true,
+    tableYear: 2023,
+    major: "pops-ses",
     creditRequirements: creditRequirementsSes,
-    classifyRealCourses: (cs, opts) =>
-      classifyRealCourses(cs, opts, 2023, "ses"),
-    classifyFakeCourses: (cs, opts) =>
-      classifyFakeCourses(cs, opts, 2023, "ses"),
+    classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts),
+    classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts),
     want: {
       cells: {
         b1: { taken: 30 },
@@ -53,11 +53,11 @@ function test2(): void {
   runTest({
     csvPath: "grade-csvs/2024/pops-ses-1.csv",
     isNative: true,
+    tableYear: 2024,
+    major: "pops-ses",
     creditRequirements: creditRequirementsSes,
-    classifyRealCourses: (cs, opts) =>
-      classifyRealCourses(cs, opts, 2024, "ses"),
-    classifyFakeCourses: (cs, opts) =>
-      classifyFakeCourses(cs, opts, 2024, "ses"),
+    classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts),
+    classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts),
     want: {
       cells: {
         b1: { taken: 16, mightTake: 4 },

@@ -6,6 +6,7 @@ import {
   type RealCourse,
 } from "@/akiko";
 import type { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
+import type { Major } from "@/constants";
 import {
   isArt,
   isCompulsoryEnglishByName,
@@ -176,12 +177,11 @@ function classify(
 
 export function classifyKnownCourses(
   cs: KnownCourse[],
-  _opts: ClassifyOptions,
-  tableYear: number,
+  opts: ClassifyOptions,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "known", tableYear);
+    const cellId = classify(c.id, c.name, "known", opts.tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -191,8 +191,7 @@ export function classifyKnownCourses(
 
 export function classifyRealCourses(
   cs: RealCourse[],
-  _opts: ClassifyOptions,
-  tableYear: number,
+  opts: ClassifyOptions,
 ): Map<CourseId, string> {
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
@@ -243,7 +242,7 @@ export function classifyRealCourses(
   }
 
   for (const c of cs) {
-    let cellId = classify(c.id, c.name, "real", tableYear);
+    let cellId = classify(c.id, c.name, "real", opts.tableYear);
     if (cellId !== undefined) {
       if (cellId === "e4") cellId = "f2";
       courseIdToCellId.set(c.id, cellId);
@@ -255,7 +254,6 @@ export function classifyRealCourses(
 export function classifyFakeCourses(
   cs: FakeCourse[],
   _opts: ClassifyOptions,
-  _tableYear: number,
 ): Map<FakeCourseId, string> {
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {

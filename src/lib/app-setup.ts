@@ -9,11 +9,16 @@ import {
   type KnownCourse,
   type RealCourse,
 } from "./akiko";
+import type { Major } from "./constants";
 import { assert } from "./util";
 
 type Rect = { x: number; y: number; width: number; height: number };
 
-export type ClassifyOptions = { isNative: boolean };
+export type ClassifyOptions = {
+  isNative: boolean;
+  tableYear: number;
+  major: Major;
+};
 
 export type SetupCreditRequirements = {
   cells: Record<string, { min: number; max: number | undefined }>;
@@ -62,6 +67,8 @@ export function classifyCoursesOrFail(
   realCourses: RealCourse[],
   fakeCourses: FakeCourse[],
   isNative: boolean,
+  tableYear: number,
+  major: Major,
   classifyKnownCourses: ClassifyKnownCourses,
   classifyRealCourses: ClassifyRealCourses,
   classifyFakeCourses: ClassifyFakeCourses,
@@ -74,7 +81,7 @@ export function classifyCoursesOrFail(
   const realCoursePositions = new Map<CourseId, CellId>();
   const fakeCoursePositions = new Map<FakeCourseId, CellId>();
 
-  const classifyOptions: ClassifyOptions = { isNative };
+  const classifyOptions: ClassifyOptions = { isNative, tableYear, major };
   for (const [courseId, cellId] of classifyKnownCourses(
     knownCourses,
     classifyOptions,
@@ -104,7 +111,7 @@ export type SetupParams = {
   knownCourses: KnownCourse[];
   knownCourseYear: number;
   creditRequirements: SetupCreditRequirements;
-  major: string;
+  major: Major;
   requirementsTableYear: number;
   cellIdToRectRecord: Record<string, Rect>;
   tableViewBox?: Rect;

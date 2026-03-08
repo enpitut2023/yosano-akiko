@@ -59,6 +59,11 @@ export const MAJORS = [
 ] as const;
 export type Major = (typeof MAJORS)[number];
 
+const MAJOR_SET = new Set<string>(MAJORS);
+export function isMajor(s: string): s is Major {
+  return MAJOR_SET.has(s);
+}
+
 export const MAJOR_TO_JA = {
   "help-p": "人文学類 哲学主専攻",
   "help-h": "人文学類 史学主専攻",

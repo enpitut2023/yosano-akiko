@@ -1,9 +1,13 @@
 import { getConfig } from "$lib/config";
-import { instances } from "$lib/constants";
+import { instances, isMajor } from "$lib/constants";
+import { assert, strictParseInt } from "@/util";
 import type { EntryGenerator, PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ params }) => {
-  const config = await getConfig(params.year, params.major);
+  const tableYear = strictParseInt(params.year);
+  assert(tableYear !== undefined);
+  assert(isMajor(params.major));
+  const config = await getConfig(tableYear, params.major);
   return {
     year: params.year,
     major: params.major,

@@ -6,6 +6,7 @@ import {
   type RealCourse,
 } from "@/akiko";
 import type { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
+import type { Major } from "@/constants";
 import {
   isArt,
   isCompulsoryEnglishById,
@@ -28,11 +29,18 @@ import {
 } from "@/requirements/common";
 import { unreachable } from "@/util";
 
-export type Specialty =
+type Specialty =
   // Intelligent Engineering Systems
   | "ies"
   // Engineering Mechanics and Energy
   | "eme";
+
+function majorToSpecialtyOrFail(m: Major): Specialty {
+  if (m === "esys-ies") return "ies";
+  if (m === "esys-eme") return "eme";
+  throw new Error(`Bad major: ${m}`);
+}
+
 type Mode = "known" | "real";
 
 /**
@@ -711,9 +719,8 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   opts: ClassifyOptions,
-  _tableYear: number,
-  specialty: Specialty,
 ): Map<CourseId, string> {
+  const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, specialty, opts.isNative, "known");
@@ -727,9 +734,8 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
-  _tableYear: number,
-  specialty: Specialty,
 ): Map<CourseId, string> {
+  const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, specialty, opts.isNative, "real");
@@ -743,8 +749,6 @@ export function classifyRealCourses(
 export function classifyFakeCourses(
   _cs: FakeCourse[],
   _opts: ClassifyOptions,
-  _tableYear: number,
-  _specialty: Specialty,
 ): Map<FakeCourseId, string> {
   return new Map();
 }

@@ -14,6 +14,7 @@ import {
 } from "@/app-setup";
 import { parseImportedCsv } from "@/csv";
 import { assert } from "@/util";
+import type { Major } from "@/constants";
 
 function indent(s: string, n: number): string {
   return s
@@ -25,6 +26,8 @@ function indent(s: string, n: number): string {
 export function getCreditStats(params: {
   csv: string;
   isNative: boolean;
+  tableYear: number;
+  major: Major;
   creditRequirements: SetupCreditRequirements;
   classifyRealCourses: ClassifyRealCourses;
   classifyFakeCourses: ClassifyFakeCourses;
@@ -38,6 +41,8 @@ export function getCreditStats(params: {
       result.realCourses,
       result.fakeCourses,
       params.isNative,
+      params.tableYear,
+      params.major,
       () => new Map(),
       params.classifyRealCourses,
       params.classifyFakeCourses,
@@ -59,6 +64,8 @@ export function getCreditStats(params: {
 
 export type RunTestParams = {
   isNative: boolean;
+  tableYear: number;
+  major: Major;
   creditRequirements: SetupCreditRequirements;
   classifyRealCourses: ClassifyRealCourses;
   classifyFakeCourses: ClassifyFakeCourses;
@@ -73,6 +80,8 @@ export function runTest(params: RunTestParams): void {
   const got = getCreditStats({
     csv,
     isNative: params.isNative,
+    tableYear: params.tableYear,
+    major: params.major,
     creditRequirements: params.creditRequirements,
     classifyRealCourses: params.classifyRealCourses,
     classifyFakeCourses: params.classifyFakeCourses,

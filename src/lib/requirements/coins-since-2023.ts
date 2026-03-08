@@ -6,6 +6,7 @@ import {
   type RealCourse,
 } from "@/akiko";
 import type { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
+import type { Major } from "@/constants";
 import {
   isArt,
   isCompulsoryEnglishByName,
@@ -25,7 +26,15 @@ import {
 } from "@/requirements/common";
 import { arrayRemove, assert, unreachable } from "@/util";
 
-export type Specialty = "scs" | "cs" | "mimt";
+type Specialty = "scs" | "cs" | "mimt";
+
+function majorToSpecialtyOrFail(m: Major): Specialty {
+  if (m === "coins") return "scs";
+  if (m === "coins-cs") return "cs";
+  if (m === "coins-mimt") return "mimt";
+  throw new Error(`Bad major: ${m}`);
+}
+
 type Mode = "known" | "real";
 
 const COURSE_ID_TO_GB_COURSE_ID = new Map([
@@ -397,8 +406,8 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   opts: ClassifyOptions,
-  specialty: Specialty,
 ): Map<CourseId, string> {
+  const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, "known", opts.isNative, specialty);
@@ -501,8 +510,8 @@ function handleFaCalculus(cs: RealCourse[], map: Map<CourseId, string>): void {
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
-  specialty: Specialty,
 ): Map<CourseId, string> {
+  const specialty = majorToSpecialtyOrFail(opts.major);
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
 
@@ -522,9 +531,9 @@ export function classifyRealCourses(
 
 export function classifyFakeCourses(
   cs: FakeCourse[],
-  _opts: ClassifyOptions,
-  _specialty: Specialty,
+  opts: ClassifyOptions,
 ): Map<FakeCourseId, string> {
+  const specialty = majorToSpecialtyOrFail(opts.major);
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {
     if (isE3(c.name)) {

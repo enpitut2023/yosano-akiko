@@ -19,13 +19,14 @@ import {
   classifyCoursesOrFail,
 } from "./app-setup";
 import { assert } from "./util";
+import { type Major } from "./constants";
 import { type LocalDataV2, localDataFromJson } from "./local-data";
 
 export class AkikoApp {
   knownCourses: KnownCourse[];
   knownCourseYear: number;
   creditRequirements: CreditRequirements;
-  major: string;
+  major: Major;
   requirementsTableYear: number;
 
   // Reactive State
@@ -139,6 +140,8 @@ export class AkikoApp {
         this.realCourses,
         this.fakeCourses,
         this.native,
+        this.requirementsTableYear,
+        this.major,
         this.params.classifyKnownCourses,
         this.params.classifyRealCourses,
         this.params.classifyFakeCourses,
