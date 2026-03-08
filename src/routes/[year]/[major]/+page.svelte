@@ -183,6 +183,13 @@
     ];
   };
 
+  let metaTitle = $derived(
+    `あきこ - ${data.year}年度 ${MAJOR_TO_JA[data.major]}`,
+  );
+  let metaDescription = $derived(
+    `${data.year}年度入学の${MAJOR_TO_JA[data.major]}の学生向け履修サポートツールです。単位の計算・授業探し・Twinsへの登録を楽に終わらせましょう！`,
+  );
+
   let leftBarEl = $state<HTMLDivElement | undefined>();
   let rightBarEl = $state<HTMLDivElement | undefined>();
   let dropGuide = $state<
@@ -214,6 +221,17 @@
     if (app.stats.elective && overallSpanEl) scaleSpan(overallSpanEl);
   });
 </script>
+
+<svelte:head>
+  <title>{metaTitle}</title>
+  <meta name="description" content={metaDescription} />
+  <meta property="og:title" content={metaTitle} />
+  <meta property="og:description" content={metaDescription} />
+  <meta
+    property="og:image"
+    content="https://github.com/user-attachments/assets/be6c928e-36fa-48e4-ac5b-5a0406a0adb2"
+  />
+</svelte:head>
 
 {#snippet courseRow(
   c: any,
