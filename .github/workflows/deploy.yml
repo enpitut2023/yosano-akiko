@@ -14,10 +14,9 @@ jobs:
       url: ${{ steps.deploy-pages-step.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - run: npm i
-      - run: AKIKO_RELEASE=1 ./scripts/build.sh
+      - run: npm i && npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: "dist"
+          path: "build"
       - uses: actions/deploy-pages@v4
         id: deploy-pages-step
