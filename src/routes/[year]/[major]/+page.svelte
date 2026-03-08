@@ -54,11 +54,30 @@
     return `https://kdb.tsukuba.ac.jp/syllabi/${year}/${courseId}/jpn`;
   }
 
-  function handleDragStart(event: DragEvent, courseId: string, cellId: string) {
+  function handleDragStart(
+    event: DragEvent,
+    courseId: string,
+    cellId: string,
+    listKind: "wont-take" | "might-take",
+  ) {
     if (event.dataTransfer) {
       event.dataTransfer.setData("text/plain", `${courseId},${cellId}`);
       event.dataTransfer.dropEffect = "move";
     }
+    const target = listKind === "wont-take" ? rightBarEl : leftBarEl;
+    if (target) {
+      const r = target.getBoundingClientRect();
+      dropGuide = {
+        left: r.left,
+        top: r.top,
+        width: r.width,
+        height: r.height,
+      };
+    }
+  }
+
+  function handleDragEnd() {
+    dropGuide = undefined;
   }
 
   function handleDrop(
@@ -164,6 +183,12 @@
     ];
   };
 
+  let leftBarEl = $state<HTMLDivElement | undefined>();
+  let rightBarEl = $state<HTMLDivElement | undefined>();
+  let dropGuide = $state<
+    { left: number; top: number; width: number; height: number } | undefined
+  >();
+
   let columnSpanEls = $state<Record<string, HTMLSpanElement | undefined>>({});
   let overallSpanEl = $state<HTMLSpanElement | undefined>();
 
@@ -190,13 +215,18 @@
   });
 </script>
 
-{#snippet courseRow(c: any, draggable = false)}
+{#snippet courseRow(
+  c: any,
+  draggable = false,
+  listKind: "wont-take" | "might-take" = "wont-take",
+)}
   <tr
     class="course"
     class:hide-in-wont-take={!c.visible}
     {draggable}
     ondragstart={(e) =>
-      draggable && handleDragStart(e, c.id, app.selectedCellId!)}
+      draggable && handleDragStart(e, c.id, app.selectedCellId!, listKind)}
+    ondragend={handleDragEnd}
   >
     <td class="id-name">
       <span>{c.id}</span><br />
@@ -221,6 +251,7 @@
   courses: any[],
   showFields: string,
   containerState: string,
+  listKind: "wont-take" | "might-take" = "wont-take",
 )}
   <h2>{title}</h2>
   <div class="course-container {showFields}" data-state={containerState}>
@@ -244,6 +275,7 @@
             c,
             containerState === "contains-courses" &&
               title !== "単位取得済みの授業",
+            listKind,
           )}
         {/each}
       </tbody>
@@ -353,6 +385,7 @@
 
   <div id="left-bar-side">
     <div
+      bind:this={leftBarEl}
       id="left-bar"
       ondragover={(e) => {
         e.preventDefault();
@@ -378,6 +411,7 @@
           : groupedCourses.wontTake.length === 0
             ? "no-courses"
             : "contains-courses",
+        "wont-take",
       )}
     </div>
     <div id="cell-detail" class:no-cell-selected={!app.selectedCellId}>
@@ -402,6 +436,7 @@
   </div>
 
   <div
+    bind:this={rightBarEl}
     id="right-bar"
     ondragover={(e) => {
       e.preventDefault();
@@ -455,6 +490,7 @@
         : groupedCourses.mightTake.length === 0
           ? "no-courses"
           : "contains-courses",
+      "might-take",
     )}
     {@render courseTable(
       "単位取得済みの授業",
@@ -468,6 +504,15 @@
     )}
   </div>
 </main>
+
+{#if dropGuide}
+  <div
+    id="drop-guide"
+    style="left:{dropGuide.left}px; top:{dropGuide.top}px; width:{dropGuide.width}px; height:{dropGuide.height}px"
+  >
+    ここに授業をドロップ
+  </div>
+{/if}
 
 <button
   id="bars-toggle"
@@ -857,5 +902,15 @@
     right: 5px;
     bottom: 5px;
     width: 300px;
+  }
+
+  #drop-guide {
+    display: grid;
+    position: fixed;
+    background-color: rgba(255, 255, 255, 0.9);
+    outline: 8px dashed hsla(0, 0%, 70%, 0.8);
+    outline-offset: -20px;
+    place-items: center;
+    pointer-events: none;
   }
 </style>
