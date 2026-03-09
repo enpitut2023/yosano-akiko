@@ -50,7 +50,7 @@ export async function getConfig(
 
   let req: any;
   if (major.startsWith("coins")) {
-    req = await import("./requirements/coins-since-2023");
+    req = await import("./requirements/coins-since-2021");
   } else if (major.startsWith("klis")) {
     req = await import("./requirements/klis-since-2023");
   } else if (major === "mast") {

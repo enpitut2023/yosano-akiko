@@ -2,7 +2,7 @@ import {
   classifyFakeCourses,
   classifyRealCourses,
   getCreditRequirements,
-} from "@/requirements/coins-since-2023";
+} from "@/requirements/coins-since-2021";
 import { runTest } from "./util";
 
 function test2(): void {
