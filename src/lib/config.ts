@@ -54,7 +54,7 @@ export async function getConfig(
   } else if (major.startsWith("klis")) {
     req = await import("./requirements/klis-since-2023");
   } else if (major === "mast") {
-    req = await import("./requirements/mast-since-2023");
+    req = await import("./requirements/mast-since-2021");
   } else if (major === "math") {
     req = await import("./requirements/math-since-2023");
   } else if (major === "physics") {
