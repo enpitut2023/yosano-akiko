@@ -8,7 +8,6 @@
     gradeIsPass,
     isCellId,
     isCourseId,
-    type CourseId,
     type CellId,
   } from "$lib/akiko";
   import warningIcon from "$lib/icons/warning.svg";
@@ -304,7 +303,7 @@
           {#if showFields.includes("show-term")}<th class="term">学期</th>{/if}
           {#if showFields.includes("show-when")}<th class="when">時限</th>{/if}
           {#if showFields.includes("show-expects")}<th class="expects"
-              >標準履修年次</th
+              >標準<br />履修<br />年次</th
             >{/if}
         </tr>
       </thead>
@@ -347,8 +346,8 @@
         >
         <nav>
           <a href="/#app-page-links">学類一覧に戻る</a>
-          <a href="/docs/help.html">あきこの使い方</a>
-          <a href="/docs/{data.config.docsPageName || 'help'}.html"
+          <a href="/docs/help">あきこの使い方</a>
+          <a href="/docs/{data.config.docsPageName || 'help'}"
             >未対応の部分など</a
           >
           <a

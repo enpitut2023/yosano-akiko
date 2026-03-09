@@ -7,7 +7,7 @@ import type {
   CellId,
 } from "./akiko";
 import type { ClassifyOptions, SetupCreditRequirements } from "./app-setup";
-import { type Major } from "./constants";
+import { MAJOR_TO_DOCS_PAGE_NAME, type Major } from "./constants";
 import { courses } from "./current-courses.js";
 import { assert } from "./util.js";
 
@@ -105,5 +105,6 @@ export async function getConfig(
     classifyFakeCourses: req.classifyFakeCourses,
     getRemark: req.getRemark,
     tableViewBox: req.tableViewBox,
+    docsPageName: MAJOR_TO_DOCS_PAGE_NAME[major],
   };
 }
