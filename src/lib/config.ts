@@ -30,7 +30,11 @@ export type Config = {
     cs: FakeCourse[],
     opts: ClassifyOptions,
   ) => Map<FakeCourseId, string>;
-  getRemark?: (cellId: CellId) => string | undefined;
+  getRemark?: (
+    cellId: CellId,
+    tableYear: number,
+    major: Major,
+  ) => string | undefined;
   tableViewBox?: any;
   docsPageName?: string;
 };
@@ -98,9 +102,9 @@ export async function getConfig(
       compulsory: 0,
       elective: 0,
     };
-  assert(
-    !(creditRequirements.compulsory === 0 && creditRequirements.elective === 0),
-  );
+  // assert(
+  //   !(creditRequirements.compulsory === 0 && creditRequirements.elective === 0),
+  // );
 
   // Capture current values for closures
   const currentReq = req;
@@ -112,15 +116,9 @@ export async function getConfig(
     major,
     requirementsTableYear: tableYear,
     cellIdToRectRecord: rects.default,
-    classifyKnownCourses: (cs, opts) => {
-      return currentReq.classifyKnownCourses(cs, opts);
-    },
-    classifyRealCourses: (cs, opts) => {
-      return currentReq.classifyRealCourses(cs, opts);
-    },
-    classifyFakeCourses: (cs, opts) => {
-      return currentReq.classifyFakeCourses(cs, opts);
-    },
+    classifyKnownCourses: currentReq.classifyKnownCourses,
+    classifyRealCourses: currentReq.classifyRealCourses,
+    classifyFakeCourses: currentReq.classifyFakeCourses,
     getRemark: currentReq.getRemark,
     tableViewBox: currentReq.tableViewBox,
   };

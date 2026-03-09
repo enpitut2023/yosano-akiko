@@ -411,7 +411,6 @@
       }}
       ondrop={(e) => handleDrop(e, "wont-take")}
     >
-      <h2>当てはまる授業</h2>
       <search>
         <div><img src={searchIcon} width="15px" alt="search" /></div>
         <input
@@ -443,7 +442,11 @@
           </p>
         {/if}
         {#if data.config.getRemark}
-          {@const remark = data.config.getRemark(app.selectedCellId)}
+          {@const remark = data.config.getRemark(
+            app.selectedCellId,
+            data.year,
+            data.major,
+          )}
           {#if remark}
             <h2>備考</h2>
             <p>{remark}</p>
@@ -463,7 +466,7 @@
     ondrop={(e) => handleDrop(e, "might-take")}
   >
     <div id="control">
-      <label class="button" style="cursor: pointer">
+      <label id="import-grades-button" class="button" style="cursor: pointer">
         <img src={importIcon} width="15px" alt="import" />
         <span class="label">TWINSの成績データをインポート</span>
         <span class="remark">※成績が外部に送信されることはありません</span>
@@ -653,8 +656,7 @@
   #left-bar,
   #right-bar,
   #cell-detail {
-    padding-left: 1em;
-    padding-right: 1em;
+    padding: 15px;
   }
 
   #right-bar > .separator {
@@ -809,6 +811,22 @@
 
     &:hover {
       background-color: var(--outline);
+    }
+  }
+
+  #control > #import-grades-button {
+    --fill: #e3ecfd;
+    --outline: #b8cff9;
+    height: 80px;
+
+    & > img {
+      justify-self: right;
+    }
+    & > .label {
+      justify-self: left;
+    }
+    & > .remark {
+      grid-column: 1/3;
     }
   }
 

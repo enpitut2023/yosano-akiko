@@ -9,7 +9,7 @@ export const load: PageLoad = async ({ params }) => {
   assert(isMajor(params.major));
   const config = await getConfig(tableYear, params.major);
   return {
-    year: params.year,
+    year: tableYear,
     major: params.major,
     config,
   };

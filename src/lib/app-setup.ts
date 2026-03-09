@@ -127,5 +127,9 @@ export type SetupParams = {
     cs: FakeCourse[],
     opts: ClassifyOptions,
   ) => Map<FakeCourseId, string>;
-  getRemark?: (cellId: CellId) => string | undefined;
+  getRemark?: (
+    cellId: CellId,
+    tableYear: number,
+    major: Major,
+  ) => string | undefined;
 };
