@@ -88,26 +88,22 @@ export async function getConfig(
   } else if (major.startsWith("bres")) {
     req = await import("./requirements/bres-since-2023");
   } else {
-    throw new Error();
+    throw new Error(`Bad major: ${major}`);
   }
 
-  let rects: any;
-  rects = await import(`./${tableYear}/${major}/cell-id-to-rect.json`);
-
-  // Capture current values for closures
-  const currentReq = req;
+  const rects = await import(`./${tableYear}/${major}/cell-id-to-rect.json`);
 
   return {
     knownCourses: courses as KnownCourse[],
     knownCourseYear: 2025,
-    getCreditRequirements: currentReq.getCreditRequirements,
+    getCreditRequirements: req.getCreditRequirements,
     major,
     requirementsTableYear: tableYear,
     cellIdToRectRecord: rects.default,
-    classifyKnownCourses: currentReq.classifyKnownCourses,
-    classifyRealCourses: currentReq.classifyRealCourses,
-    classifyFakeCourses: currentReq.classifyFakeCourses,
-    getRemark: currentReq.getRemark,
-    tableViewBox: currentReq.tableViewBox,
+    classifyKnownCourses: req.classifyKnownCourses,
+    classifyRealCourses: req.classifyRealCourses,
+    classifyFakeCourses: req.classifyFakeCourses,
+    getRemark: req.getRemark,
+    tableViewBox: req.tableViewBox,
   };
 }

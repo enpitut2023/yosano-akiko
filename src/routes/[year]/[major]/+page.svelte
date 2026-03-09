@@ -205,26 +205,38 @@
   let columnSpanEls = $state<Record<string, HTMLSpanElement | undefined>>({});
   let overallSpanEl = $state<HTMLSpanElement | undefined>();
 
-  function scaleSpan(span: HTMLSpanElement) {
-    assert(span.parentElement !== null);
-    const BORDER = 1;
-    const PADDING = 5;
-    span.style.transform = "";
-    const maxWidth =
-      span.parentElement.getBoundingClientRect().width - (BORDER + PADDING) * 2;
-    const spanWidth = span.getBoundingClientRect().width;
-    if (spanWidth > 0) {
-      span.style.transform = `scaleX(${Math.min(maxWidth / spanWidth, 1)})`;
-    }
-  }
-
   $effect(() => {
+    const spans: HTMLSpanElement[] = [];
     for (const [colId] of app.stats.columns.entries()) {
       if (["a", "c", "e", "g"].includes(colId)) continue;
       const span = columnSpanEls[colId];
-      if (span) scaleSpan(span);
+      if (span) spans.push(span);
     }
-    if (app.stats.elective && overallSpanEl) scaleSpan(overallSpanEl);
+    if (app.stats.elective && overallSpanEl) spans.push(overallSpanEl);
+
+    const BORDER = 1;
+    const PADDING = 5;
+
+    // Batch write: clear all transforms first
+    for (const span of spans) {
+      span.style.transform = "";
+    }
+
+    // Batch read: measure all at once (single reflow)
+    const measurements = spans.map((span) => {
+      assert(span.parentElement !== null);
+      const maxWidth =
+        span.parentElement.getBoundingClientRect().width - (BORDER + PADDING) * 2;
+      const spanWidth = span.getBoundingClientRect().width;
+      return { span, maxWidth, spanWidth };
+    });
+
+    // Batch write: apply all transforms
+    for (const { span, maxWidth, spanWidth } of measurements) {
+      if (spanWidth > 0) {
+        span.style.transform = `scaleX(${Math.min(maxWidth / spanWidth, 1)})`;
+      }
+    }
   });
 </script>
 
