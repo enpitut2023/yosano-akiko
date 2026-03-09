@@ -268,7 +268,10 @@
   >
     <td class="id-name">
       <span>{c.id}</span><br />
-      <a href={getSyllabusUrl(c.id, c.takenYear)} target="_blank"
+      <a
+        href={getSyllabusUrl(c.id, c.takenYear)}
+        target="_blank"
+        draggable="false"
         >{c.name}{c.grade && gradeIsPass(c.grade) ? ` (${c.takenYear})` : ""}</a
       >
       {#if c.grade}<br /><span
