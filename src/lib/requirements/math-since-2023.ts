@@ -229,7 +229,13 @@ export function classifyKnownCourses(
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, opts.isNative, "known", opts.tableYear);
+    const cellId = classify(
+      c.id,
+      c.name,
+      opts.isNative,
+      "known",
+      opts.tableYear,
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -259,7 +265,13 @@ export function classifyRealCourses(
       continue;
     }
 
-    const cellId = classify(c.id, c.name, opts.isNative, "real", opts.tableYear);
+    const cellId = classify(
+      c.id,
+      c.name,
+      opts.isNative,
+      "real",
+      opts.tableYear,
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }

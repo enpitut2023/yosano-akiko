@@ -254,7 +254,13 @@ export function classifyRealCourses(
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, opts.tableYear, opts.isNative, "real");
+    const cellId = classify(
+      c.id,
+      c.name,
+      opts.tableYear,
+      opts.isNative,
+      "real",
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }

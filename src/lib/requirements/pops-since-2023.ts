@@ -443,9 +443,13 @@ export function getCreditRequirements(
 ): SetupCreditRequirements {
   const specialty = majorToSpecialtyOrFail(major);
   switch (specialty) {
-    case "ses": return reqSes;
-    case "mse": return reqMse;
-    case "urp": return reqUrp;
-    default: return unreachable(specialty);
+    case "ses":
+      return reqSes;
+    case "mse":
+      return reqMse;
+    case "urp":
+      return reqUrp;
+    default:
+      return unreachable(specialty);
   }
 }

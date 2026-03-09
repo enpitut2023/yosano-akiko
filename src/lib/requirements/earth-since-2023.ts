@@ -350,7 +350,6 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-
 const reqGs2025: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },

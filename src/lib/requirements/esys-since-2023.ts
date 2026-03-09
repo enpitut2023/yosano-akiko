@@ -889,8 +889,11 @@ export function getCreditRequirements(
 ): SetupCreditRequirements {
   const specialty = majorToSpecialtyOrFail(major);
   switch (specialty) {
-    case "ies": return reqIes;
-    case "eme": return reqEme;
-    default: return unreachable(specialty);
+    case "ies":
+      return reqIes;
+    case "eme":
+      return reqEme;
+    default:
+      return unreachable(specialty);
   }
 }

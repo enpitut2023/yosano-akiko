@@ -14,7 +14,10 @@ import { assert } from "./util.js";
 export type Config = {
   knownCourses: KnownCourse[];
   knownCourseYear: number;
-  getCreditRequirements: (tableYear: number, major: Major) => SetupCreditRequirements;
+  getCreditRequirements: (
+    tableYear: number,
+    major: Major,
+  ) => SetupCreditRequirements;
   major: Major;
   requirementsTableYear: number;
   cellIdToRectRecord: Record<string, any>;

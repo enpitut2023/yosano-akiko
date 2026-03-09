@@ -361,8 +361,11 @@ export function getCreditRequirements(
 ): SetupCreditRequirements {
   const specialty = majorToSpecialtyOrFail(major);
   switch (specialty) {
-    case "none": return reqNormal;
-    case "jltt": return reqJapanExpert;
-    default: return unreachable(specialty);
+    case "none":
+      return reqNormal;
+    case "jltt":
+      return reqJapanExpert;
+    default:
+      return unreachable(specialty);
   }
 }

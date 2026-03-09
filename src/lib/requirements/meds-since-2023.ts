@@ -580,9 +580,12 @@ export function getCreditRequirements(
 ): SetupCreditRequirements {
   const specialty = majorToSpecialtyOrFail(major);
   switch (specialty) {
-    case "ms": return reqMs;
+    case "ms":
+      return reqMs;
     case "ims":
-    case "mspis": return reqImsMspis;
-    default: return unreachable(specialty);
+    case "mspis":
+      return reqImsMspis;
+    default:
+      return unreachable(specialty);
   }
 }

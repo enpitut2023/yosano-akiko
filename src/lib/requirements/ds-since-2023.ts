@@ -278,7 +278,6 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-
 const reqSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },

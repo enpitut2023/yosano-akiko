@@ -46,7 +46,10 @@ export class AkikoApp {
       this.knownCourses = params.knownCourses;
       this.knownCourseYear = params.knownCourseYear;
       this.creditRequirements = createCreditRequirementsOrFail(
-        params.getCreditRequirements(params.requirementsTableYear, params.major),
+        params.getCreditRequirements(
+          params.requirementsTableYear,
+          params.major,
+        ),
       );
       this.major = params.major;
       this.requirementsTableYear = params.requirementsTableYear;
@@ -71,11 +74,15 @@ export class AkikoApp {
             fcs.sort((a, b) => fakeCourseIdCompare(a.id, b.id));
             let s = "マスに振り分けられなかった授業\n";
             for (const rc of rcs) {
-              s += [rc.id, rc.name, rc.takenYear, rc.credit, rc.grade].join(" ");
+              s += [rc.id, rc.name, rc.takenYear, rc.credit, rc.grade].join(
+                " ",
+              );
               s += "\n";
             }
             for (const fc of fcs) {
-              s += [fc.id, fc.name, fc.takenYear, fc.credit, fc.grade].join(" ");
+              s += [fc.id, fc.name, fc.takenYear, fc.credit, fc.grade].join(
+                " ",
+              );
               s += "\n";
             }
             console.log(s);

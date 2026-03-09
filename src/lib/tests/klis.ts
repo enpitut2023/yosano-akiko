@@ -12,10 +12,8 @@ function test1(): void {
     tableYear: 2023,
     major: "klis-rm",
     getCreditRequirements,
-    classifyRealCourses: (cs, opts) =>
-      classifyRealCourses(cs, opts),
-    classifyFakeCourses: (cs, opts) =>
-      classifyFakeCourses(cs, opts),
+    classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts),
+    classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts),
     want: {
       cells: {
         a3: { taken: 1 },
@@ -67,10 +65,8 @@ function test2(): void {
     tableYear: 2023,
     major: "klis-system",
     getCreditRequirements,
-    classifyRealCourses: (cs, opts) =>
-      classifyRealCourses(cs, opts),
-    classifyFakeCourses: (cs, opts) =>
-      classifyFakeCourses(cs, opts),
+    classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts),
+    classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts),
     want: {
       cells: {
         a3: { taken: 1 },
@@ -123,10 +119,8 @@ function test3(): void {
     tableYear: 2023,
     major: "klis-science",
     getCreditRequirements,
-    classifyRealCourses: (cs, opts) =>
-      classifyRealCourses(cs, opts),
-    classifyFakeCourses: (cs, opts) =>
-      classifyFakeCourses(cs, opts),
+    classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts),
+    classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts),
     want: {
       cells: {
         a3: { taken: 1 },
