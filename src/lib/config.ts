@@ -7,7 +7,11 @@ import type {
   CellId,
 } from "./akiko";
 import type { ClassifyOptions, SetupCreditRequirements } from "./app-setup";
-import { MAJOR_TO_DOCS_PAGE_NAME, type Major } from "./constants";
+import {
+  MAJOR_TO_DOCS_PAGE_NAME,
+  type DocsPageName,
+  type Major,
+} from "./constants";
 import { courses } from "./current-courses.js";
 import { assert } from "./util.js";
 
@@ -39,7 +43,6 @@ export type Config = {
     major: Major,
   ) => string | undefined;
   tableViewBox?: any;
-  docsPageName?: string;
 };
 
 export async function getConfig(
@@ -105,6 +108,5 @@ export async function getConfig(
     classifyFakeCourses: req.classifyFakeCourses,
     getRemark: req.getRemark,
     tableViewBox: req.tableViewBox,
-    docsPageName: MAJOR_TO_DOCS_PAGE_NAME[major],
   };
 }

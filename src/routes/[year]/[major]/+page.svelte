@@ -1,6 +1,6 @@
 <script lang="ts">
   import { AkikoApp } from "$lib/akiko.svelte";
-  import { MAJOR_TO_JA } from "$lib/constants";
+  import { MAJOR_TO_DOCS_PAGE_NAME, MAJOR_TO_JA } from "$lib/constants";
   import { parseImportedCsv } from "$lib/csv";
   import {
     akikoIsCourseVisible,
@@ -346,8 +346,8 @@
         >
         <nav>
           <a href="/#app-page-links">学類一覧に戻る</a>
-          <a href="/docs/help">あきこの使い方</a>
-          <a href="/docs/{data.config.docsPageName || 'help'}"
+          <a href="/docs">あきこの使い方</a>
+          <a href="/docs/{MAJOR_TO_DOCS_PAGE_NAME[data.config.major]}"
             >未対応の部分など</a
           >
           <a

@@ -26,6 +26,12 @@
 <svelte:head>
   <title>{meta.title}</title>
   <meta name="description" content={meta.description} />
+  <meta property="og:title" content={meta.title} />
+  <meta property="og:description" content={meta.description} />
+  <meta
+    property="og:image"
+    content="https://github.com/user-attachments/assets/be6c928e-36fa-48e4-ac5b-5a0406a0adb2"
+  />
 </svelte:head>
 
 {#if ContentComponent}
