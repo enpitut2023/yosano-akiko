@@ -4,11 +4,18 @@
   import { parseImportedCsv } from "$lib/csv";
   import {
     akikoIsCourseVisible,
+    columnIdIsElective,
     courseIdCompare,
     gradeIsPass,
     isCellId,
     isCourseId,
+    type CellCreditStats,
     type CellId,
+    type ColumnCreditStats,
+    type CourseId,
+    type ElectiveCreditStats,
+    type FakeCourse,
+    type Grade,
   } from "$lib/akiko";
   import warningIcon from "$lib/icons/warning.svg";
   import importIcon from "$lib/icons/import.svg";
@@ -17,6 +24,18 @@
   import searchIcon from "$lib/icons/search.svg";
   import akikoPng from "$lib/images/akiko.png";
   import { assert } from "@/util.js";
+
+  type UiCourse = {
+    id: CourseId;
+    name: string;
+    credit: string | undefined;
+    term: string | undefined;
+    when: string | undefined;
+    expects: string | undefined;
+    grade: Grade | undefined;
+    takenYear: number | undefined;
+    visible: boolean;
+  };
 
   let { data } = $props();
   let app = $derived(new AkikoApp(data.config));
@@ -105,55 +124,65 @@
     }
   }
 
-  // Grouped courses for the UI
-  const groupedCourses = $derived.by(() => {
-    const wontTake: any[] = [];
-    const mightTake: any[] = [];
-    const taken: any[] = [];
-    const fake: any[] = [];
+  // Sorted course lists — does NOT depend on filterString, so typing in the
+  // search box won't trigger a re-sort.
+  const sortedGroupedCourses = $derived.by(() => {
+    const wontTake: UiCourse[] = [];
+    const mightTake: UiCourse[] = [];
+    const taken: UiCourse[] = [];
+    const fake: FakeCourse[] = [];
 
     if (!app.selectedCellId) return { wontTake, mightTake, taken, fake };
 
-    const cellId = app.selectedCellId;
     for (const [courseId, pos] of app.akiko.coursePositions) {
-      if (pos.cellId !== cellId) continue;
+      if (pos.cellId !== app.selectedCellId) continue;
 
       const kc = app.akiko.knownCourses.get(courseId);
       const rc = app.akiko.realCourses.get(courseId);
-      const visible = akikoIsCourseVisible(
-        app.akiko,
-        courseId,
-        app.filterString,
-      );
 
-      const courseData = {
+      const ui: UiCourse = {
         id: courseId,
-        name: kc?.name || rc?.name || "（不明）",
-        credit: rc?.credit ?? kc?.credit ?? 0,
+        name: rc?.name || kc?.name || "（不明）",
+        credit: (rc?.credit ?? kc?.credit)?.toString() ?? "-",
         term: kc?.term,
         when: kc?.when,
         expects: kc?.expects,
         grade: rc?.grade,
-        takenYear: rc?.takenYear ?? app.knownCourseYear,
-        visible,
+        takenYear: rc?.takenYear,
+        visible: false,
       };
 
-      if (pos.listKind === "wont-take") wontTake.push(courseData);
-      else if (pos.listKind === "might-take") mightTake.push(courseData);
-      else if (pos.listKind === "taken") taken.push(courseData);
+      if (pos.listKind === "wont-take") wontTake.push(ui);
+      else if (pos.listKind === "might-take") mightTake.push(ui);
+      else if (pos.listKind === "taken") taken.push(ui);
     }
 
     for (const [fakeId, cid] of app.akiko.fakeCoursePositions) {
-      if (cid !== cellId) continue;
+      if (cid !== app.selectedCellId) continue;
       const fc = app.akiko.fakeCourses.get(fakeId);
       if (fc) fake.push(fc);
     }
 
+    const compare = (a: UiCourse, b: UiCourse) => courseIdCompare(a.id, b.id);
     return {
-      wontTake: wontTake.sort((a, b) => courseIdCompare(a.id, b.id)),
-      mightTake: mightTake.sort((a, b) => courseIdCompare(a.id, b.id)),
-      taken: taken.sort((a, b) => courseIdCompare(a.id, b.id)),
+      wontTake: wontTake.sort(compare),
+      mightTake: mightTake.sort(compare),
+      taken: taken.sort(compare),
       fake,
+    };
+  });
+
+  // Adds the `visible` flag — only this re-runs when filterString changes.
+  const groupedCourses = $derived.by(() => {
+    const addVisible = (c: UiCourse): UiCourse => ({
+      ...c,
+      visible: akikoIsCourseVisible(app.akiko, c.id, app.filterString),
+    });
+    return {
+      wontTake: sortedGroupedCourses.wontTake.map(addVisible),
+      mightTake: sortedGroupedCourses.mightTake.map(addVisible),
+      taken: sortedGroupedCourses.taken.map(addVisible),
+      fake: sortedGroupedCourses.fake,
     };
   });
 
@@ -165,20 +194,71 @@
     a.click();
   }
 
-  const creditBoundsToString = (min: number, max: number | undefined) => {
+  function creditBoundsToString(min: number, max: number | undefined): string {
     if (max === undefined) return `${min}~`;
     if (min === max) return min.toString();
     return `${min}~${max}`;
-  };
+  }
 
-  const getStatsDisplay = (s: any) => {
-    let brief = `計:${s.effectiveMightTake === 0 ? s.effectiveTaken : `${s.effectiveTaken}→${s.effectiveTaken + s.effectiveMightTake}`}　要:${creditBoundsToString(s.min, s.max)}`;
-    let warning =
-      s.overflowTotal > 0
-        ? `このマスは合計で${s.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${s.rawTotal}単位なので、残りの${s.overflowTotal}単位は卒業単位に含まれません。`
-        : undefined;
+  function cellCreditStatsDisplay(c: CellCreditStats): {
+    brief: string;
+    warning: string | undefined;
+  } {
+    let brief = "計:";
+    if (c.effectiveMightTake === 0) {
+      brief += c.effectiveTaken.toString();
+    } else {
+      brief += `${c.effectiveTaken}→${c.effectiveTaken + c.effectiveMightTake}`;
+    }
+    brief += "　要:" + creditBoundsToString(c.min, c.max);
+
+    let warning: string | undefined;
+    if (c.overflowTotal > 0) {
+      warning = `このマスは合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、残りの${c.overflowTotal}単位は卒業単位に含まれません。`;
+    }
+
     return { brief, warning };
-  };
+  }
+
+  function columnCreditStatsDisplay(c: ColumnCreditStats): {
+    brief: string;
+    warning: string | undefined;
+  } {
+    let brief = "計:";
+    if (c.effectiveMightTake === 0) {
+      brief += c.effectiveTaken.toString();
+    } else {
+      brief += `${c.effectiveTaken}→${c.effectiveTaken + c.effectiveMightTake}`;
+    }
+    brief += "　要:" + creditBoundsToString(c.min, c.max);
+
+    let warning: string | undefined;
+    if (c.overflowTotal > 0) {
+      warning = `この列は合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、残りの${c.overflowTotal}単位は卒業単位に含まれません。`;
+    }
+
+    return { brief, warning };
+  }
+
+  function electiveCreditStatsDisplay(c: ElectiveCreditStats): {
+    brief: string;
+    warning: string | undefined;
+  } {
+    let brief = "選択科目計:";
+    if (c.effectiveMightTake === 0) {
+      brief += c.effectiveTaken.toString();
+    } else {
+      brief += `${c.effectiveTaken}→${c.effectiveTaken + c.effectiveMightTake}`;
+    }
+    brief += "　要:" + creditBoundsToString(c.min, c.max);
+
+    let warning: string | undefined;
+    if (c.overflowTotal > 0) {
+      warning = `選択科目全体は合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、残りの${c.overflowTotal}単位は卒業単位に含まれません。`;
+    }
+
+    return { brief, warning };
+  }
 
   const getPercentage = (taken: number, mightTake: number, min: number) => {
     if (min === 0) return [100, 100];
@@ -207,7 +287,7 @@
   $effect(() => {
     const spans: HTMLSpanElement[] = [];
     for (const [colId] of app.stats.columns.entries()) {
-      if (["a", "c", "e", "g"].includes(colId)) continue;
+      if (!columnIdIsElective(colId)) continue;
       const span = columnSpanEls[colId];
       if (span) spans.push(span);
     }
@@ -225,7 +305,8 @@
     const measurements = spans.map((span) => {
       assert(span.parentElement !== null);
       const maxWidth =
-        span.parentElement.getBoundingClientRect().width - (BORDER + PADDING) * 2;
+        span.parentElement.getBoundingClientRect().width -
+        (BORDER + PADDING) * 2;
       const spanWidth = span.getBoundingClientRect().width;
       return { span, maxWidth, spanWidth };
     });
@@ -251,7 +332,7 @@
 </svelte:head>
 
 {#snippet courseRow(
-  c: any,
+  c: UiCourse,
   draggable = false,
   listKind: "wont-take" | "might-take" = "wont-take",
 )}
@@ -269,7 +350,7 @@
     <td class="id-name">
       <span>{c.id}</span><br />
       <a
-        href={getSyllabusUrl(c.id, c.takenYear)}
+        href={getSyllabusUrl(c.id, c.takenYear ?? data.year)}
         target="_blank"
         draggable="false"
         >{c.name}{c.grade && gradeIsPass(c.grade) ? ` (${c.takenYear})` : ""}</a
@@ -289,7 +370,7 @@
 
 {#snippet courseTable(
   title: string,
-  courses: any[],
+  courses: UiCourse[],
   showFields: string,
   containerState: string,
   listKind: "wont-take" | "might-take" = "wont-take",
@@ -383,12 +464,12 @@
     <div id="credit-sums-container">
       <div id="column-credit-sums" style="--x: {scrollX}px">
         {#each app.stats.columns.entries() as [colId, s]}
-          {#if !["a", "c", "e", "g"].includes(colId)}
+          {#if columnIdIsElective(colId)}
             {@const rect = cellRects.find(
               (r) => r.id === ((colId + "1") as CellId),
             )}
             {#if rect}
-              {@const display = getStatsDisplay(s)}
+              {@const display = columnCreditStatsDisplay(s)}
               {@const [green, yellow] = getPercentage(
                 s.effectiveTaken,
                 s.effectiveMightTake,
@@ -408,7 +489,7 @@
       </div>
       {#if app.stats.elective}
         {@const s = app.stats.elective}
-        {@const display = getStatsDisplay(s)}
+        {@const display = electiveCreditStatsDisplay(s)}
         {@const [green, yellow] = getPercentage(
           s.effectiveTaken,
           s.effectiveMightTake,
@@ -421,9 +502,7 @@
           onclick={() => display.warning && alert(display.warning)}
         >
           <img src={warningIcon} width="20" alt="warning" />
-          <span bind:this={overallSpanEl}
-            >選択科目計:{display.brief.split("計:")[1]}</span
-          >
+          <span bind:this={overallSpanEl}>{display.brief}</span>
         </div>
       {/if}
     </div>
@@ -464,7 +543,7 @@
       {#if app.selectedCellId}
         {@const stats = app.stats.cells.get(app.selectedCellId)}
         {#if stats}
-          {@const display = getStatsDisplay(stats)}
+          {@const display = cellCreditStatsDisplay(stats)}
           <p>
             {@html `選択されたマスの単位：${display.brief}${display.warning ? `<br>⚠️ ${display.warning}` : ""}`}
           </p>

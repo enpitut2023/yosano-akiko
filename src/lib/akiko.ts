@@ -37,6 +37,10 @@ export function columnIdIsCompulsory(id: ColumnId): boolean {
   return id === "a" || id === "c" || id === "e" || id === "g";
 }
 
+export function columnIdIsElective(id: ColumnId): boolean {
+  return !columnIdIsCompulsory(id);
+}
+
 export type CourseId = Nominal<string, "CourseId">;
 
 export function isCourseId(s: string): s is CourseId {
