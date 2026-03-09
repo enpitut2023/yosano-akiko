@@ -330,6 +330,11 @@
           <a href="/docs/{data.config.docsPageName || 'help'}.html"
             >未対応の部分など</a
           >
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSfUbueFsF6fbyJxCohNTqh5S8bYdxNgqx_HQ76RCR5TJQkpyQ/viewform?usp=dialog"
+            target="_blank"
+            rel="noreferrer">ご意見はこちらから</a
+          >
         </nav>
       </div>
       {#each cellRects as r}
