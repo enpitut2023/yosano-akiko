@@ -3,34 +3,39 @@
     instances,
     MAJOR_TO_JA,
     MAJOR_TO_DOCS_PAGE_NAME,
-    type Major,
+    type Instance,
+    majorCompare,
   } from "$lib/constants";
+  import { assert } from "@/util";
 
   const description =
     "筑波大生向けの履修サポートWebツールです。単位の計算・授業探し・Twinsへの登録を楽に終わらせましょう！";
 
-  // Group instances by year
-  const yearToInstances = new Map<number, any[]>();
+  const yearToInstances = new Map<number, Instance[]>();
   for (const i of instances) {
-    if (!yearToInstances.has(i.year)) {
-      yearToInstances.set(i.year, []);
+    let is = yearToInstances.get(i.year);
+    if (is === undefined) {
+      yearToInstances.set(i.year, [i]);
+    } else {
+      is.push(i);
     }
-    yearToInstances.get(i.year)?.push(i);
   }
 
   const years = Array.from(yearToInstances.keys()).sort((a, b) => b - a);
 
   const sections = years.map((year) => {
-    const sortedInstances = yearToInstances.get(year) || [];
+    const is = yearToInstances.get(year);
+    assert(is !== undefined);
+    is.sort((a, b) => majorCompare(a.major, b.major));
     return {
       year,
-      instances: sortedInstances.map((i, index) => ({
+      instances: is.map((i, index) => ({
         ...i,
-        majorJa: MAJOR_TO_JA[i.major as Major],
+        majorJa: MAJOR_TO_JA[i.major],
         gap:
           index > 0 &&
-          MAJOR_TO_DOCS_PAGE_NAME[sortedInstances[index - 1].major as Major] !==
-            MAJOR_TO_DOCS_PAGE_NAME[i.major as Major],
+          MAJOR_TO_DOCS_PAGE_NAME[is[index - 1].major] !==
+            MAJOR_TO_DOCS_PAGE_NAME[i.major],
       })),
     };
   });
