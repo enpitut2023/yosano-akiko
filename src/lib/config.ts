@@ -46,7 +46,7 @@ export async function getConfig(
   tableYear: number,
   major: Major,
 ): Promise<Config> {
-  assert(tableYear >= 2023);
+  assert(tableYear >= 2021);
 
   let req: any;
   if (major.startsWith("coins")) {

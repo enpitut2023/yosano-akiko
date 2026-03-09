@@ -264,10 +264,13 @@ export type Instance = {
 };
 
 export const instances: Instance[] = [
-  // { year: 2021, major: "coins", comment: "（選択科目のみ対応）" },
-  // { year: 2021, major: "mast", comment: "（選択科目のみ対応）" },
-  //
-  // { year: 2022, major: "coins", comment: "（選択科目のみ対応）" },
+  { year: 2021, major: "coins", checked: true },
+  { year: 2021, major: "coins-cs", checked: true },
+  { year: 2021, major: "coins-mimt", checked: true },
+
+  { year: 2022, major: "coins", checked: true },
+  { year: 2022, major: "coins-cs", checked: true },
+  { year: 2022, major: "coins-mimt", checked: true },
 
   { year: 2023, major: "coins", checked: true },
   { year: 2023, major: "coins-cs", checked: true },

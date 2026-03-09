@@ -228,14 +228,15 @@ function isC13(id: string): boolean {
   return id === "GB12017";
 }
 
-function isD1(id: string): boolean {
+function isD1(id: string, tableYear: number): boolean {
   return (
     id === "GB11601" || //確率論
     id === "GB11621" || //統計学
     id === "GB12301" || //数値計算法
     id === "GB12601" || //論理と形式化
     id === "GB12801" || //論理システム
-    id === "GB12812" //論理システム演習
+    id === "GB12812" || //論理システム演習
+    (tableYear === 2021 && id === "GB11404") // 電磁気学
   );
 }
 
@@ -357,6 +358,7 @@ function classify(
   mode: Mode,
   isNative: boolean,
   specialty: Specialty,
+  tableYear: number,
 ): string | undefined {
   if (mode === "known") {
     // コードシェアの読み替え前は表示しない
@@ -393,7 +395,7 @@ function classify(
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";
-  if (isD1(id)) return "d1";
+  if (isD1(id, tableYear)) return "d1";
   if (isD2(id)) return "d2";
   if (isD3(id)) return "d3";
   if (isD4(id)) return "d4";
@@ -410,7 +412,14 @@ export function classifyKnownCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "known", opts.isNative, specialty);
+    const cellId = classify(
+      c.id,
+      c.name,
+      "known",
+      opts.isNative,
+      specialty,
+      opts.tableYear,
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -521,7 +530,14 @@ export function classifyRealCourses(
   }
 
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "real", opts.isNative, specialty);
+    const cellId = classify(
+      c.id,
+      c.name,
+      "real",
+      opts.isNative,
+      specialty,
+      opts.tableYear,
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -543,55 +559,81 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-const req: SetupCreditRequirements = {
+const SHARED_CELLS = {
+  a1: { min: 6, max: 6 },
+  a2: { min: 6, max: 6 },
+  a3: { min: 4, max: 4 },
+  b2: { min: 0, max: 18 },
+  c1: { min: 2, max: 2 },
+  c2: { min: 2, max: 2 },
+  c3: { min: 2, max: 2 },
+  c4: { min: 2, max: 2 },
+  c5: { min: 2, max: 2 },
+  c6: { min: 1, max: 1 },
+  c7: { min: 2, max: 2 },
+  c8: { min: 1, max: 1 },
+  c9: { min: 3, max: 3 },
+  c10: { min: 3, max: 3 },
+  c11: { min: 2, max: 2 },
+  c12: { min: 2, max: 2 },
+  c13: { min: 2, max: 2 },
+  d2: { min: 2, max: undefined },
+  d4: { min: 8, max: undefined },
+  e1: { min: 2, max: 2 },
+  e2: { min: 2, max: 2 },
+  e3: { min: 4, max: 4 },
+  e4: { min: 4, max: 4 },
+  f1: { min: 1, max: undefined },
+  f2: { min: 0, max: 4 },
+  h1: { min: 6, max: undefined },
+  h2: { min: 0, max: 4 },
+} as const satisfies SetupCreditRequirements["cells"];
+
+const SHARED_COLUMNS = {
+  a: { min: 16, max: 16 },
+  c: { min: 26, max: 26 },
+  e: { min: 12, max: 12 },
+  f: { min: 1, max: 5 },
+  h: { min: 6, max: 10 },
+} as const satisfies SetupCreditRequirements["columns"];
+
+const reqSince2021: SetupCreditRequirements = {
   cells: {
-    a1: { min: 6, max: 6 },
-    a2: { min: 6, max: 6 },
-    a3: { min: 4, max: 4 },
-    b1: { min: 16, max: undefined },
-    b2: { min: 0, max: 18 },
-    c1: { min: 2, max: 2 },
-    c2: { min: 2, max: 2 },
-    c3: { min: 2, max: 2 },
-    c4: { min: 2, max: 2 },
-    c5: { min: 2, max: 2 },
-    c6: { min: 1, max: 1 },
-    c7: { min: 2, max: 2 },
-    c8: { min: 1, max: 1 },
-    c9: { min: 3, max: 3 },
-    c10: { min: 3, max: 3 },
-    c11: { min: 2, max: 2 },
-    c12: { min: 2, max: 2 },
-    c13: { min: 2, max: 2 },
-    d1: { min: 8, max: undefined },
-    d2: { min: 2, max: undefined },
-    d3: { min: 4, max: undefined },
-    d4: { min: 8, max: undefined },
-    e1: { min: 2, max: 2 },
-    e2: { min: 2, max: 2 },
-    e3: { min: 4, max: 4 },
-    e4: { min: 4, max: 4 },
-    f1: { min: 1, max: undefined },
-    f2: { min: 0, max: 4 },
-    h1: { min: 6, max: undefined },
-    h2: { min: 0, max: 4 },
+    ...SHARED_CELLS,
+    b1: { min: 18, max: undefined },
+    d1: { min: 10, max: undefined },
+    d3: { min: 0, max: undefined },
   },
   columns: {
-    a: { min: 16, max: 16 },
+    ...SHARED_COLUMNS,
+    b: { min: 36, max: 36 },
+    d: { min: 24, max: 24 },
+  },
+  compulsory: 54,
+  elective: 71,
+};
+
+const reqSince2022: SetupCreditRequirements = {
+  cells: {
+    ...SHARED_CELLS,
+    b1: { min: 16, max: undefined },
+    d1: { min: 8, max: undefined },
+    d3: { min: 4, max: undefined },
+  },
+  columns: {
+    ...SHARED_COLUMNS,
     b: { min: 34, max: 34 },
-    c: { min: 26, max: 26 },
     d: { min: 26, max: 26 },
-    e: { min: 12, max: 12 },
-    f: { min: 1, max: 5 },
-    h: { min: 6, max: 10 },
   },
   compulsory: 54,
   elective: 71,
 };
 
 export function getCreditRequirements(
-  _tableYear: number,
+  tableYear: number,
   _major: Major,
 ): SetupCreditRequirements {
-  return req;
+  if (tableYear >= 2022) return reqSince2022;
+  if (tableYear >= 2021) return reqSince2021;
+  throw new Error(`Bad table year: ${tableYear}`);
 }
