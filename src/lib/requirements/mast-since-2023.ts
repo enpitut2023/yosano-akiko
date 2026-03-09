@@ -281,7 +281,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-const reqSince2023: SetupCreditRequirements = {
+const reqSince2021: SetupCreditRequirements = {
   cells: {
     a1: { min: 3, max: 3 },
     a2: { min: 3, max: 3 },
@@ -385,6 +385,6 @@ export function getCreditRequirements(
   _major: Major,
 ): SetupCreditRequirements {
   if (tableYear >= 2025) return reqSince2025;
-  if (tableYear >= 2023) return reqSince2023;
+  if (tableYear >= 2021) return reqSince2021;
   throw new Error(`Bad table year: ${tableYear}`);
 }
