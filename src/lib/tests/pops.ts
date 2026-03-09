@@ -1,7 +1,7 @@
 import {
   classifyFakeCourses,
   classifyRealCourses,
-  creditRequirementsSes,
+  getCreditRequirements,
 } from "@/requirements/pops-since-2023";
 import { runTest } from "./util";
 
@@ -11,9 +11,9 @@ function test1(): void {
     isNative: true,
     tableYear: 2023,
     major: "pops-ses",
-    creditRequirements: creditRequirementsSes,
-    classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts),
-    classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts),
+    getCreditRequirements,
+    classifyRealCourses,
+    classifyFakeCourses,
     want: {
       cells: {
         b1: { taken: 30 },
@@ -55,9 +55,9 @@ function test2(): void {
     isNative: true,
     tableYear: 2024,
     major: "pops-ses",
-    creditRequirements: creditRequirementsSes,
-    classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts),
-    classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts),
+    getCreditRequirements,
+    classifyRealCourses,
+    classifyFakeCourses,
     want: {
       cells: {
         b1: { taken: 16, mightTake: 4 },

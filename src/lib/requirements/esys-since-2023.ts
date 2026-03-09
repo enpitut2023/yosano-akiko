@@ -753,7 +753,7 @@ export function classifyFakeCourses(
   return new Map();
 }
 
-export const creditRequirementsIes: SetupCreditRequirements = {
+const reqIes: SetupCreditRequirements = {
   cells: {
     a1: { min: 3, max: 3 },
     a2: { min: 4, max: 4 },
@@ -818,7 +818,7 @@ export const creditRequirementsIes: SetupCreditRequirements = {
   elective: 56,
 };
 
-export const creditRequirementsEme: SetupCreditRequirements = {
+const reqEme: SetupCreditRequirements = {
   cells: {
     a1: { min: 4, max: 4 },
     a2: { min: 6, max: 6 },
@@ -882,3 +882,15 @@ export const creditRequirementsEme: SetupCreditRequirements = {
   compulsory: 69,
   elective: 56,
 };
+
+export function getCreditRequirements(
+  _tableYear: number,
+  major: Major,
+): SetupCreditRequirements {
+  const specialty = majorToSpecialtyOrFail(major);
+  switch (specialty) {
+    case "ies": return reqIes;
+    case "eme": return reqEme;
+    default: return unreachable(specialty);
+  }
+}

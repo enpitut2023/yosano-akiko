@@ -110,7 +110,6 @@ export function classifyCoursesOrFail(
 export type SetupParams = {
   knownCourses: KnownCourse[];
   knownCourseYear: number;
-  creditRequirements: SetupCreditRequirements;
   major: Major;
   requirementsTableYear: number;
   cellIdToRectRecord: Record<string, Rect>;
@@ -127,6 +126,10 @@ export type SetupParams = {
     cs: FakeCourse[],
     opts: ClassifyOptions,
   ) => Map<FakeCourseId, string>;
+  getCreditRequirements: (
+    tableYear: number,
+    major: Major,
+  ) => SetupCreditRequirements;
   getRemark?: (
     cellId: CellId,
     tableYear: number,

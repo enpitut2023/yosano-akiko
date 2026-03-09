@@ -1,7 +1,7 @@
 import {
   classifyFakeCourses,
   classifyRealCourses,
-  creditRequirementsSince2024,
+  getCreditRequirements,
 } from "@/requirements/coens-since-2023";
 import { runTest } from "./util";
 
@@ -11,9 +11,9 @@ function test1(): void {
     isNative: true,
     tableYear: 2024,
     major: "coens-ap",
-    creditRequirements: creditRequirementsSince2024,
-    classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts),
-    classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts),
+    getCreditRequirements,
+    classifyRealCourses,
+    classifyFakeCourses,
     want: {
       cells: {
         a1: { taken: 1 },

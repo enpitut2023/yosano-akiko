@@ -6,6 +6,7 @@ import {
   type RealCourse,
 } from "@/akiko";
 import type { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
+import type { Major } from "@/constants";
 import {
   isArt,
   isCompulsoryEnglishByName,
@@ -416,7 +417,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-export const creditRequirementsSince2023: SetupCreditRequirements = {
+const reqSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 6, max: 6 },
@@ -450,7 +451,7 @@ export const creditRequirementsSince2023: SetupCreditRequirements = {
   elective: 91,
 };
 
-export const creditRequirementsSince2025: SetupCreditRequirements = {
+const reqSince2025: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 6, max: 6 },
@@ -483,3 +484,12 @@ export const creditRequirementsSince2025: SetupCreditRequirements = {
   compulsory: 33,
   elective: 91,
 };
+
+export function getCreditRequirements(
+  tableYear: number,
+  _major: Major,
+): SetupCreditRequirements {
+  if (tableYear >= 2025) return reqSince2025;
+  if (tableYear >= 2023) return reqSince2023;
+  throw new Error(`Bad table year: ${tableYear}`);
+}

@@ -488,7 +488,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-export const creditRequirementsSince2024: SetupCreditRequirements = {
+const reqSince2024: SetupCreditRequirements = {
   cells: {
     a1: { min: 1, max: 1 },
     a2: { min: 4, max: 4 },
@@ -524,7 +524,7 @@ export const creditRequirementsSince2024: SetupCreditRequirements = {
   elective: 75,
 };
 
-export const creditRequirementsSince2023: SetupCreditRequirements = {
+const reqSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 1, max: 1 },
     a2: { min: 4, max: 4 },
@@ -558,3 +558,12 @@ export const creditRequirementsSince2023: SetupCreditRequirements = {
   compulsory: 66,
   elective: 58,
 };
+
+export function getCreditRequirements(
+  tableYear: number,
+  _major: Major,
+): SetupCreditRequirements {
+  if (tableYear >= 2024) return reqSince2024;
+  if (tableYear >= 2023) return reqSince2023;
+  throw new Error(`Bad table year: ${tableYear}`);
+}

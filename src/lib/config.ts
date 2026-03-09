@@ -6,7 +6,7 @@ import type {
   FakeCourseId,
   CellId,
 } from "./akiko";
-import type { ClassifyOptions } from "./app-setup";
+import type { ClassifyOptions, SetupCreditRequirements } from "./app-setup";
 import { type Major } from "./constants";
 import { courses } from "./current-courses.js";
 import { assert } from "./util.js";
@@ -14,7 +14,7 @@ import { assert } from "./util.js";
 export type Config = {
   knownCourses: KnownCourse[];
   knownCourseYear: number;
-  creditRequirements: any;
+  getCreditRequirements: (tableYear: number, major: Major) => SetupCreditRequirements;
   major: Major;
   requirementsTableYear: number;
   cellIdToRectRecord: Record<string, any>;
@@ -91,28 +91,13 @@ export async function getConfig(
   let rects: any;
   rects = await import(`./${tableYear}/${major}/cell-id-to-rect.json`);
 
-  const creditRequirements = req.creditRequirements ||
-    (tableYear >= 2025
-      ? req.creditRequirementsSince2025
-      : req.creditRequirementsSince2023) ||
-    req.creditRequirementsSince2023 ||
-    req.creditRequirementsSince2025 || {
-      cells: {},
-      columns: {},
-      compulsory: 0,
-      elective: 0,
-    };
-  // assert(
-  //   !(creditRequirements.compulsory === 0 && creditRequirements.elective === 0),
-  // );
-
   // Capture current values for closures
   const currentReq = req;
 
   return {
     knownCourses: (courses as any) || [],
     knownCourseYear: 2025,
-    creditRequirements,
+    getCreditRequirements: currentReq.getCreditRequirements,
     major,
     requirementsTableYear: tableYear,
     cellIdToRectRecord: rects.default,

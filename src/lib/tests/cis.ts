@@ -1,7 +1,7 @@
 import {
   classifyFakeCourses,
   classifyRealCourses,
-  creditRequirementsSince2023,
+  getCreditRequirements,
 } from "@/requirements/cis-since-2023";
 import { runTest } from "./util";
 
@@ -11,9 +11,9 @@ function test1(): void {
     isNative: true,
     tableYear: 2024,
     major: "cis-ir",
-    creditRequirements: creditRequirementsSince2023,
-    classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts),
-    classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts),
+    getCreditRequirements,
+    classifyRealCourses,
+    classifyFakeCourses,
     want: {
       cells: {
         b1: { taken: 14, mightTake: 5 },

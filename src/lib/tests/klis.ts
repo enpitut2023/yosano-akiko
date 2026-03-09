@@ -1,7 +1,7 @@
 import {
   classifyFakeCourses,
   classifyRealCourses,
-  creditRequirements,
+  getCreditRequirements,
 } from "@/requirements/klis-since-2023";
 import { runTest } from "./util";
 
@@ -11,7 +11,7 @@ function test1(): void {
     isNative: true,
     tableYear: 2023,
     major: "klis-rm",
-    creditRequirements,
+    getCreditRequirements,
     classifyRealCourses: (cs, opts) =>
       classifyRealCourses(cs, opts),
     classifyFakeCourses: (cs, opts) =>
@@ -66,7 +66,7 @@ function test2(): void {
     isNative: true,
     tableYear: 2023,
     major: "klis-system",
-    creditRequirements,
+    getCreditRequirements,
     classifyRealCourses: (cs, opts) =>
       classifyRealCourses(cs, opts),
     classifyFakeCourses: (cs, opts) =>
@@ -122,7 +122,7 @@ function test3(): void {
     isNative: true,
     tableYear: 2023,
     major: "klis-science",
-    creditRequirements,
+    getCreditRequirements,
     classifyRealCourses: (cs, opts) =>
       classifyRealCourses(cs, opts),
     classifyFakeCourses: (cs, opts) =>

@@ -329,7 +329,7 @@ export function getRemark(
   }
 }
 
-export const creditRequirementsSes: SetupCreditRequirements = {
+const reqSes: SetupCreditRequirements = {
   cells: {
     a1: { min: 8, max: 8 },
     b1: { min: 16, max: undefined },
@@ -364,7 +364,7 @@ export const creditRequirementsSes: SetupCreditRequirements = {
   elective: 95,
 };
 
-export const creditRequirementsMse: SetupCreditRequirements = {
+const reqMse: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 8, max: 8 },
@@ -400,7 +400,7 @@ export const creditRequirementsMse: SetupCreditRequirements = {
   elective: 93,
 };
 
-export const creditRequirementsUrp: SetupCreditRequirements = {
+const reqUrp: SetupCreditRequirements = {
   cells: {
     a1: { min: 3, max: 3 },
     a2: { min: 4, max: 4 },
@@ -436,3 +436,16 @@ export const creditRequirementsUrp: SetupCreditRequirements = {
   compulsory: 36,
   elective: 88,
 };
+
+export function getCreditRequirements(
+  _tableYear: number,
+  major: Major,
+): SetupCreditRequirements {
+  const specialty = majorToSpecialtyOrFail(major);
+  switch (specialty) {
+    case "ses": return reqSes;
+    case "mse": return reqMse;
+    case "urp": return reqUrp;
+    default: return unreachable(specialty);
+  }
+}

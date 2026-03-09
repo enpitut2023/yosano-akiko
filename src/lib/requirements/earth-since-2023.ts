@@ -351,7 +351,7 @@ export function classifyFakeCourses(
 }
 
 
-export const creditRequirementsGs2025: SetupCreditRequirements = {
+const reqGs2025: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
     a2: { min: 2, max: 2 },
@@ -381,7 +381,7 @@ export const creditRequirementsGs2025: SetupCreditRequirements = {
   elective: 91,
 };
 
-export const creditRequirementsGs2024: SetupCreditRequirements = {
+const reqGs2024: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
     a2: { min: 2, max: 2 },
@@ -411,7 +411,7 @@ export const creditRequirementsGs2024: SetupCreditRequirements = {
   elective: 91,
 };
 
-export const creditRequirementsGs2023: SetupCreditRequirements = {
+const reqGs2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
     a2: { min: 2, max: 2 },
@@ -441,7 +441,7 @@ export const creditRequirementsGs2023: SetupCreditRequirements = {
   elective: 91,
 };
 
-export const creditRequirementsEes2025: SetupCreditRequirements = {
+const reqEes2025: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
     a2: { min: 2, max: 2 },
@@ -470,7 +470,7 @@ export const creditRequirementsEes2025: SetupCreditRequirements = {
   elective: 91,
 };
 
-export const creditRequirementsEes2024: SetupCreditRequirements = {
+const reqEes2024: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
     a2: { min: 2, max: 2 },
@@ -500,7 +500,7 @@ export const creditRequirementsEes2024: SetupCreditRequirements = {
   elective: 91,
 };
 
-export const creditRequirementsEes2023: SetupCreditRequirements = {
+const reqEes2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
     a2: { min: 2, max: 2 },
@@ -529,3 +529,25 @@ export const creditRequirementsEes2023: SetupCreditRequirements = {
   compulsory: 33,
   elective: 91,
 };
+
+export function getCreditRequirements(
+  tableYear: number,
+  major: Major,
+): SetupCreditRequirements {
+  const specialty = majorToSpecialtyOrFail(major);
+  switch (specialty) {
+    case "gs":
+      if (tableYear >= 2025) return reqGs2025;
+      if (tableYear >= 2024) return reqGs2024;
+      if (tableYear >= 2023) return reqGs2023;
+      break;
+    case "ees":
+      if (tableYear >= 2025) return reqEes2025;
+      if (tableYear >= 2024) return reqEes2024;
+      if (tableYear >= 2023) return reqEes2023;
+      break;
+    default:
+      return unreachable(specialty);
+  }
+  throw new Error(`Bad table year: ${tableYear}`);
+}

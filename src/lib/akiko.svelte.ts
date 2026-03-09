@@ -46,7 +46,7 @@ export class AkikoApp {
       this.knownCourses = params.knownCourses;
       this.knownCourseYear = params.knownCourseYear;
       this.creditRequirements = createCreditRequirementsOrFail(
-        params.creditRequirements,
+        params.getCreditRequirements(params.requirementsTableYear, params.major),
       );
       this.major = params.major;
       this.requirementsTableYear = params.requirementsTableYear;

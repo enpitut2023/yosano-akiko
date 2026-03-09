@@ -1,7 +1,7 @@
 import {
   classifyFakeCourses,
   classifyRealCourses,
-  creditRequirementsSince2023,
+  getCreditRequirements,
 } from "@/requirements/bres-since-2023";
 import { runTest } from "./util";
 
@@ -11,7 +11,7 @@ function test1(): void {
     isNative: true,
     tableYear: 2023,
     major: "bres",
-    creditRequirements: creditRequirementsSince2023,
+    getCreditRequirements,
     classifyRealCourses,
     classifyFakeCourses,
     want: {

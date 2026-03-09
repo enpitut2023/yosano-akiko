@@ -273,7 +273,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-export const creditRequirementsNormal: SetupCreditRequirements = {
+const reqNormal: SetupCreditRequirements = {
   cells: {
     a1: { min: 6, max: 6 },
     b1: { min: 35, max: 55 },
@@ -313,7 +313,7 @@ export const creditRequirementsNormal: SetupCreditRequirements = {
   elective: 98,
 };
 
-export const creditRequirementsJapanExpert: SetupCreditRequirements = {
+const reqJapanExpert: SetupCreditRequirements = {
   cells: {
     a1: { min: 6, max: 6 },
     b1: { min: 32, max: 52 },
@@ -354,3 +354,15 @@ export const creditRequirementsJapanExpert: SetupCreditRequirements = {
   compulsory: 37,
   elective: 98,
 };
+
+export function getCreditRequirements(
+  _tableYear: number,
+  major: Major,
+): SetupCreditRequirements {
+  const specialty = majorToSpecialtyOrFail(major);
+  switch (specialty) {
+    case "none": return reqNormal;
+    case "jltt": return reqJapanExpert;
+    default: return unreachable(specialty);
+  }
+}

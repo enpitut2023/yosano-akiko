@@ -395,7 +395,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-export const creditRequirements: SetupCreditRequirements = {
+const req: SetupCreditRequirements = {
   cells: {
     a1: { min: 3, max: 3 },
     a2: { min: 3, max: 3 },
@@ -439,3 +439,10 @@ export const creditRequirements: SetupCreditRequirements = {
   compulsory: 41,
   elective: 83,
 };
+
+export function getCreditRequirements(
+  _tableYear: number,
+  _major: Major,
+): SetupCreditRequirements {
+  return req;
+}

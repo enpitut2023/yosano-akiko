@@ -66,7 +66,7 @@ export type RunTestParams = {
   isNative: boolean;
   tableYear: number;
   major: Major;
-  creditRequirements: SetupCreditRequirements;
+  getCreditRequirements: (tableYear: number, major: Major) => SetupCreditRequirements;
   classifyRealCourses: ClassifyRealCourses;
   classifyFakeCourses: ClassifyFakeCourses;
   want: WantCreditStats;
@@ -82,7 +82,7 @@ export function runTest(params: RunTestParams): void {
     isNative: params.isNative,
     tableYear: params.tableYear,
     major: params.major,
-    creditRequirements: params.creditRequirements,
+    creditRequirements: params.getCreditRequirements(params.tableYear, params.major),
     classifyRealCourses: params.classifyRealCourses,
     classifyFakeCourses: params.classifyFakeCourses,
   });

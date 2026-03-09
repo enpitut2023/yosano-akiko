@@ -642,7 +642,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-export const creditRequirementsSince2023: SetupCreditRequirements = {
+const reqSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 2, max: 2 },
@@ -677,7 +677,7 @@ export const creditRequirementsSince2023: SetupCreditRequirements = {
   elective: 95,
 };
 
-export const creditRequirementsAsSince2023: SetupCreditRequirements = {
+const reqAsSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 2, max: 2 },
@@ -716,7 +716,7 @@ export const creditRequirementsAsSince2023: SetupCreditRequirements = {
   elective: 89,
 };
 
-export const creditRequirementsSince2025: SetupCreditRequirements = {
+const reqSince2025: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 2, max: 2 },
@@ -749,7 +749,7 @@ export const creditRequirementsSince2025: SetupCreditRequirements = {
   elective: 95,
 };
 
-export const creditRequirementsAsSince2025: SetupCreditRequirements = {
+const reqAsSince2025: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 2, max: 2 },
@@ -784,3 +784,23 @@ export const creditRequirementsAsSince2025: SetupCreditRequirements = {
   compulsory: 47,
   elective: 89,
 };
+
+export function getCreditRequirements(
+  tableYear: number,
+  major: Major,
+): SetupCreditRequirements {
+  const specialty = majorToSpecialtyOrFail(major);
+  switch (specialty) {
+    case "none":
+      if (tableYear >= 2025) return reqSince2025;
+      if (tableYear >= 2023) return reqSince2023;
+      break;
+    case "as":
+      if (tableYear >= 2025) return reqAsSince2025;
+      if (tableYear >= 2023) return reqAsSince2023;
+      break;
+    default:
+      unreachable(specialty);
+  }
+  throw new Error(`Bad table year: ${tableYear}`);
+}
