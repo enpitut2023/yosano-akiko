@@ -11,7 +11,9 @@ export function isCellId(s: string): s is CellId {
 }
 
 export function cellIdToColumnId(id: CellId): ColumnId {
-  return id[0] as ColumnId;
+  const col = id[0];
+  assert(isColumnId(col));
+  return col;
 }
 
 export function cellIdToRow(id: CellId): number {

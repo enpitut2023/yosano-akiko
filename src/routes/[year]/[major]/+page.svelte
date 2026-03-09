@@ -1,11 +1,13 @@
 <script lang="ts">
   import { AkikoApp } from "$lib/akiko.svelte";
-  import { MAJOR_TO_JA, type Major } from "$lib/constants";
+  import { MAJOR_TO_JA } from "$lib/constants";
   import { parseImportedCsv } from "$lib/csv";
   import {
     akikoIsCourseVisible,
     courseIdCompare,
     gradeIsPass,
+    isCellId,
+    isCourseId,
     type CourseId,
     type CellId,
   } from "$lib/akiko";
@@ -27,17 +29,21 @@
     data.config.tableViewBox ? 2048 / data.config.tableViewBox.width : 1,
   );
   const cellRects = $derived(
-    Object.entries(data.config.cellIdToRectRecord).map(([id, rect]) => ({
-      id: id as CellId,
-      x: rect.x * scale,
-      y: rect.y * scale,
-      width: rect.width * scale,
-      height: rect.height * scale,
-    })),
+    Object.entries(data.config.cellIdToRectRecord).map(([id, rect]) => {
+      assert(isCellId(id), `Bad cell id: "${id}"`);
+      return {
+        id,
+        x: rect.x * scale,
+        y: rect.y * scale,
+        width: rect.width * scale,
+        height: rect.height * scale,
+      };
+    }),
   );
 
   function handleCsvUpload(event: Event) {
-    const input = event.target as HTMLInputElement;
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) return;
     const file = input.files?.[0];
     if (!file) return;
     file.text().then((csv) => {
@@ -87,7 +93,8 @@
     event.preventDefault();
     const data = event.dataTransfer?.getData("text/plain");
     if (!data) return;
-    const [courseId, _cellId] = data.split(",") as [CourseId, CellId];
+    const courseId = data.split(",")[0];
+    if (!isCourseId(courseId)) return;
     if (targetListKind === "might-take") {
       if (!app.mightTakeCourseIds.includes(courseId)) {
         app.mightTakeCourseIds = [...app.mightTakeCourseIds, courseId];
@@ -242,8 +249,11 @@
     class="course"
     class:hide-in-wont-take={!c.visible}
     {draggable}
-    ondragstart={(e) =>
-      draggable && handleDragStart(e, c.id, app.selectedCellId!, listKind)}
+    ondragstart={(e) => {
+      if (!draggable) return;
+      assert(app.selectedCellId !== undefined);
+      handleDragStart(e, c.id, app.selectedCellId, listKind);
+    }}
     ondragend={handleDragEnd}
   >
     <td class="id-name">
@@ -322,7 +332,7 @@
         <a href="/" class="akiko"><img src={akikoPng} alt="あきこ" /></a>
         <span
           >このページは <strong>{data.year}</strong> 年度入学の
-          <strong>{MAJOR_TO_JA[data.major as Major]}</strong> の学生向けですよ〜</span
+          <strong>{MAJOR_TO_JA[data.major]}</strong> の学生向けですよ〜</span
         >
         <nav>
           <a href="/#app-page-links">学類一覧に戻る</a>
@@ -412,7 +422,7 @@
       id="left-bar"
       ondragover={(e) => {
         e.preventDefault();
-        e.dataTransfer!.dropEffect = "move";
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
       }}
       ondrop={(e) => handleDrop(e, "wont-take")}
     >

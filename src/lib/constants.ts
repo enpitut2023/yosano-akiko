@@ -166,6 +166,10 @@ export const DOCS_PAGE_NAMES = [
 ] as const;
 export type DocsPageName = (typeof DOCS_PAGE_NAMES)[number];
 
+export function isDocsPageName(s: string): s is DocsPageName {
+  return (DOCS_PAGE_NAMES as readonly string[]).includes(s);
+}
+
 export const MAJOR_TO_DOCS_PAGE_NAME = {
   "help-p": "help",
   "help-h": "help",

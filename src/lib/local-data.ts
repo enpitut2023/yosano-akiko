@@ -201,7 +201,7 @@ export function localDataFromJson(json: string): LocalDataV2 | undefined {
   const x: unknown = JSON.parse(json);
   const v1 = localDataV1Parser.safeParse(x);
   if (v1.success) {
-    return localDataV1ToV2(v1.data as LocalDataV1);
+    return localDataV1ToV2(v1.data);
   }
   return localDataV2Parse(x);
 }

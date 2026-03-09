@@ -98,7 +98,7 @@ export async function getConfig(
   const currentReq = req;
 
   return {
-    knownCourses: (courses as any) || [],
+    knownCourses: courses as KnownCourse[],
     knownCourseYear: 2025,
     getCreditRequirements: currentReq.getCreditRequirements,
     major,

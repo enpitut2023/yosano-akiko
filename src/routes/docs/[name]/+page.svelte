@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { getDocMeta, type DocsPageName } from "$lib/constants";
+  import { getDocMeta } from "$lib/constants";
 
   let { data } = $props();
-  const meta = $derived(getDocMeta(data.name as DocsPageName));
+  const meta = $derived(getDocMeta(data.name));
 
   let ContentComponent = $state<any>(null);
 

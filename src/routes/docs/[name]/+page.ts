@@ -1,7 +1,9 @@
-import { DOCS_PAGE_NAMES } from "$lib/constants";
+import { DOCS_PAGE_NAMES, isDocsPageName } from "$lib/constants";
+import { error } from "@sveltejs/kit";
 import type { EntryGenerator, PageLoad } from "./$types";
 
 export const load: PageLoad = ({ params }) => {
+  if (!isDocsPageName(params.name)) error(404);
   return { name: params.name };
 };
 
