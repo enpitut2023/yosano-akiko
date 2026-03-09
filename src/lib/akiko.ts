@@ -56,13 +56,23 @@ export function courseIdCompare(a: CourseId, b: CourseId): number {
 export type FakeCourseId = Nominal<number, "FakeCourseId">;
 
 export function isFakeCourseId(n: number): n is FakeCourseId {
-  return Number.isSafeInteger(n) && n >= 0;
+  return Number.isSafeInteger(n);
 }
 
-let nextFakeCourseId = 0;
-export function fakeCourseIdNewUnique(): FakeCourseId {
-  const id = nextFakeCourseId;
-  nextFakeCourseId++;
+function djb2(s: string): number {
+  let hash = 5381;
+  for (let i = 0; i < s.length; i++) {
+    hash = ((hash << 5) + hash + s.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+export function fakeCourseIdFromContent(
+  name: string,
+  credit: number | undefined,
+  takenYear: number,
+): FakeCourseId {
+  const id = djb2(`${name}|${credit}|${takenYear}`);
   assert(isFakeCourseId(id));
   return id;
 }

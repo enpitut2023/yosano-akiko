@@ -65,6 +65,10 @@ export class AkikoApp {
           this.native = saved.native;
         }
 
+        $effect(() => {
+          this.save();
+        });
+
         if (import.meta.env.DEV) {
           $effect(() => {
             const akiko = this.akiko;
@@ -201,7 +205,6 @@ export class AkikoApp {
     } else {
       this.mightTakeCourseIds = [...this.mightTakeCourseIds, id];
     }
-    this.save();
   }
 
   reset() {
@@ -218,6 +221,5 @@ export class AkikoApp {
   importCSV(real: RealCourse[], fake: FakeCourse[]) {
     this.realCourses = real;
     this.fakeCourses = fake;
-    this.save();
   }
 }

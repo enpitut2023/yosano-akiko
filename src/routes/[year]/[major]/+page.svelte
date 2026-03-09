@@ -104,7 +104,6 @@
         (id) => id !== courseId,
       );
     }
-    app.save();
   }
 
   // Grouped courses for the UI
@@ -494,7 +493,6 @@
             name="student-type"
             bind:group={app.native}
             value={true}
-            onchange={() => app.save()}
           /> <span>1年生からこの学類に所属している</span></label
         ><br />
         <label
@@ -503,7 +501,6 @@
             name="student-type"
             bind:group={app.native}
             value={false}
-            onchange={() => app.save()}
           /> <span>総合学域群からこの学類に移行した</span></label
         >
       </div>
@@ -553,21 +550,26 @@
 <button
   id="bars-toggle"
   style="left: {barsVisible
-    ? 'calc(100vw - 740px - 30px)'
-    : 'calc(100vw - 30px)'}"
+    ? 'calc(100vw - 2 * var(--sidebar-width) - var(--toggle-width))'
+    : 'calc(100vw - var(--toggle-width))'}"
   onclick={() => (barsVisible = !barsVisible)}
 >
   {barsVisible ? "⏵" : "⏴"}
 </button>
 
 <style lang="scss">
+  :global(:root) {
+    --sidebar-width: 370px;
+    --toggle-width: 30px;
+  }
+
   main {
     position: fixed;
     inset: 0;
     font-size: 14px;
 
     display: grid;
-    grid-template-columns: auto 370px 370px;
+    grid-template-columns: auto var(--sidebar-width) var(--sidebar-width);
     grid-template-rows: 100vh;
 
     &.bars-hidden {
@@ -785,8 +787,8 @@
     margin: 0;
     padding: 0;
     border-radius: 0 0 0 10px;
-    width: 30px;
-    height: 30px;
+    width: var(--toggle-width);
+    height: var(--toggle-width);
     font-size: 20px;
     text-align: center;
     background-color: white;
