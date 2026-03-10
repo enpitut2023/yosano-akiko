@@ -1,5 +1,6 @@
 import { KnownCourse } from "@/akiko";
 import {
+  getRemark,
   Specialty,
   classifyFakeCourses,
   classifyKnownCourses,
@@ -26,4 +27,5 @@ setup({
     classifyRealCourses(cs, opts, YEAR, SPECIALTY),
   classifyFakeCourses: (cs, opts) =>
     classifyFakeCourses(cs, opts, YEAR, SPECIALTY),
+  getRemark: (id) => getRemark(id, YEAR, SPECIALTY),
 });
