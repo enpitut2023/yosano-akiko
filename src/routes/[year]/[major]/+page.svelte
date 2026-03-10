@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve, asset } from "$app/paths";
   import { AkikoApp } from "$lib/akiko.svelte";
   import { MAJOR_TO_DOCS_PAGE_NAME, MAJOR_TO_JA } from "$lib/constants";
   import { parseImportedCsv } from "$lib/csv";
@@ -17,12 +18,6 @@
     type FakeCourse,
     type Grade,
   } from "$lib/akiko";
-  import warningIcon from "$lib/icons/warning.svg";
-  import importIcon from "$lib/icons/import.svg";
-  import exportIcon from "$lib/icons/export.svg";
-  import trashIcon from "$lib/icons/trash.svg";
-  import searchIcon from "$lib/icons/search.svg";
-  import akikoPng from "$lib/images/akiko.png";
   import { assert } from "@/util.js";
 
   type UiCourse = {
@@ -412,7 +407,7 @@
       onscroll={(e) => (scrollX = -e.currentTarget.scrollLeft)}
     >
       <img
-        src="/{data.year}/{data.major}/table.svg"
+        src={asset(`/${data.year}/${data.major}/table.svg`)}
         alt="Table"
         width={data.config.tableViewBox
           ? scale * data.config.tableViewBox.width
@@ -423,16 +418,20 @@
         draggable="false"
       />
       <div id="title">
-        <a href="/" class="akiko"><img src={akikoPng} alt="あきこ" /></a>
+        <a href={resolve("/")} class="akiko"
+          ><img src={asset("/images/akiko.png")} alt="あきこ" /></a
+        >
         <span
           >このページは <strong>{data.year}</strong> 年度入学の
           <strong>{MAJOR_TO_JA[data.major]}</strong> の学生向けですよ〜</span
         >
         <nav>
-          <a href="/#app-page-links">学類一覧に戻る</a>
-          <a href="/docs">あきこの使い方</a>
-          <a href="/docs/{MAJOR_TO_DOCS_PAGE_NAME[data.config.major]}"
-            >未対応の部分など</a
+          <a href="{resolve('/')}#app-page-links">学類一覧に戻る</a>
+          <a href={resolve("/docs")}>あきこの使い方</a>
+          <a
+            href={resolve("/docs/[name]", {
+              name: MAJOR_TO_DOCS_PAGE_NAME[data.config.major],
+            })}>未対応の部分など</a
           >
           <a
             href="https://docs.google.com/forms/d/e/1FAIpQLSfUbueFsF6fbyJxCohNTqh5S8bYdxNgqx_HQ76RCR5TJQkpyQ/viewform?usp=dialog"
@@ -480,7 +479,11 @@
                 data-message-on-click={display.warning}
                 onclick={() => display.warning && alert(display.warning)}
               >
-                <img src={warningIcon} width="20" alt="warning" />
+                <img
+                  src={asset("/icons/warning.svg")}
+                  width="20"
+                  alt="warning"
+                />
                 <span bind:this={columnSpanEls[colId]}>{display.brief}</span>
               </div>
             {/if}
@@ -501,7 +504,7 @@
           data-message-on-click={display.warning}
           onclick={() => display.warning && alert(display.warning)}
         >
-          <img src={warningIcon} width="20" alt="warning" />
+          <img src={asset("/icons/warning.svg")} width="20" alt="warning" />
           <span bind:this={overallSpanEl}>{display.brief}</span>
         </div>
       {/if}
@@ -519,7 +522,9 @@
       ondrop={(e) => handleDrop(e, "wont-take")}
     >
       <search>
-        <div><img src={searchIcon} width="15px" alt="search" /></div>
+        <div>
+          <img src={asset("/icons/search.svg")} width="15px" alt="search" />
+        </div>
         <input
           type="text"
           placeholder="科目番号・科目名で検索"
@@ -574,7 +579,7 @@
   >
     <div id="control">
       <label id="import-grades-button" class="button" style="cursor: pointer">
-        <img src={importIcon} width="15px" alt="import" />
+        <img src={asset("/icons/import.svg")} width="15px" alt="import" />
         <span class="label">TWINSの成績データをインポート</span>
         <span class="remark">※成績が外部に送信されることはありません</span>
         <input type="file" id="csv" accept=".csv" onchange={handleCsvUpload} />
@@ -598,11 +603,11 @@
         >
       </div>
       <button class="button" onclick={exportMightTake}
-        ><img src={exportIcon} width="15px" alt="export" />
+        ><img src={asset("/icons/export.svg")} width="15px" alt="export" />
         <span>取る授業一覧を出力</span></button
       >
       <button id="reset" class="button" onclick={() => app.reset()}
-        ><img src={trashIcon} width="15px" alt="reset" />
+        ><img src={asset("/icons/trash.svg")} width="15px" alt="reset" />
         <span>リセット</span></button
       >
     </div>

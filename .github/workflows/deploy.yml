@@ -14,7 +14,9 @@ jobs:
       url: ${{ steps.deploy-pages-step.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - run: npm i && npm run build
+      - env:
+          BASE_PATH: "/${{ github.event.repository.name }}"
+        run: npm i && npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: "build"

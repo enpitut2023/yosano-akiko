@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve, asset } from "$app/paths";
   import {
     instances,
     MAJOR_TO_JA,
@@ -55,29 +56,32 @@
 <h1>あきこ</h1>
 
 <div class="dialog student">
-  <img src="/images/student-stressed-1.png" alt="困っている学生" />
+  <img src={asset("/images/student-stressed-1.png")} alt="困っている学生" />
   <span>学生</span>
   <span>筑波大は履修しないといけない授業を探すのが難しいな...</span>
 </div>
 <div class="dialog student">
-  <img src="/images/student-stressed-2.png" alt="もっと困っている学生" />
+  <img
+    src={asset("/images/student-stressed-2.png")}
+    alt="もっと困っている学生"
+  />
   <span>学生</span>
   <span>どれぐらい単位が取れているかも自分で計算しないといけない...</span>
 </div>
 <div class="dialog akiko">
-  <img src="/images/akiko.png" alt="あきこ" />
+  <img src={asset("/images/akiko.png")} alt="あきこ" />
   <span>あきこ</span>
   <span>履修を手伝ってほしいのね〜</span>
 </div>
 <div class="dialog student">
-  <img src="/images/student-relieved.png" alt="嬉しい学生" />
+  <img src={asset("/images/student-relieved.png")} alt="嬉しい学生" />
   <span>学生</span>
   <span>あきこさん！ありがとう！！！</span>
 </div>
 
 <h2 id="app-page-links">年度・学類一覧</h2>
 <div class="dialog akiko" style="margin-bottom: 20px">
-  <img src="/images/akiko.png" alt="あきこ" />
+  <img src={asset("/images/akiko.png")} alt="あきこ" />
   <span>あきこ</span>
   <span>まずは入学年度と学類を教えてね〜</span>
 </div>
@@ -94,7 +98,12 @@
     <ul>
       {#each s.instances as i}
         <li class:gap={i.gap}>
-          <a href="/{s.year}/{i.major}">{i.majorJa}</a>
+          <a
+            href={resolve("/[year]/[major]", {
+              year: s.year.toString(),
+              major: i.major,
+            })}>{i.majorJa}</a
+          >
           {#if i.checked}<span>✅</span>{/if}
           {#if i.comment}<span>{i.comment}</span>{/if}
         </li>

@@ -75,7 +75,13 @@ function parseImportedCourse(row: unknown): ImportedCourse | undefined {
   if (isCourseId(id) && grade !== "free") {
     return { id, name, credit, takenYear, grade };
   } else if (id === "" && grade === "free") {
-    return { id: fakeCourseIdFromContent(name, credit, takenYear), name, credit, takenYear, grade };
+    return {
+      id: fakeCourseIdFromContent(name, credit, takenYear),
+      name,
+      credit,
+      takenYear,
+      grade,
+    };
   }
 }
 

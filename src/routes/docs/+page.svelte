@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { asset } from "$app/paths";
   const title = "あきこの使い方";
   const description = "あきこの使い方やTWINSとの連携方法などの説明です。";
 </script>
@@ -29,13 +30,13 @@
   マスを選択すると、当てはまる授業の一覧が「当てはまる授業」の欄に表示されます。
   それぞれのマスに該当する授業だけを見ることで、履修する授業を楽に探すことができます。
 </p>
-<img src="/docs/images/cell-selected.png" />
+<img src={asset("/docs/images/cell-selected.png")} />
 <p>
   表示された授業を右側にドラッグ&ドロップすることで、「取る授業」に移動することができます。
   移動された授業の単位は「取る」単位として計上されます。
   また、TWINSからダウンロードできる成績データをあきこにインポートすることで、現在の自分の履修状況を踏まえた授業探しが可能になります。
 </p>
-<img src="/docs/images/grades-imported.png" />
+<img src={asset("/docs/images/grades-imported.png")} />
 <p>
   すでに成績がついている授業は「単位取得済みの授業」、まだ履修中で成績がついていない授業は「取る授業」となります。
   単位の取得状況や合計を考慮することで、履修する授業がさらに探しやすくなります。
@@ -46,15 +47,15 @@
   <li>TWINSにログインします。</li>
   <li>
     「成績」の中にある「成績照会」タブを開きます。
-    <img src="/docs/images/grades-tab.png" />
+    <img src={asset("/docs/images/grades-tab.png")} />
   </li>
   <li>
     ページの一番下にある「ダウンロード」ボタンを押します。
-    <img src="/docs/images/download-button.png" />
+    <img src={asset("/docs/images/download-button.png")} />
   </li>
   <li>
     ファイル形式を「CSV」、文字コードを「Unicode」、BOM有無を「BOMなし」にして「出力」ボタンを押します。
-    <img src="/docs/images/export-button.png" />
+    <img src={asset("/docs/images/export-button.png")} />
   </li>
 </ol>
 <p>
@@ -72,15 +73,15 @@
   <li>TWINSにログインします。</li>
   <li>
     「履修」の中にある「履修登録・登録状況照会」タブを開きます。
-    <img src="/docs/images/register-tab.png" />
+    <img src={asset("/docs/images/register-tab.png")} />
   </li>
   <li>
     履修登録期間中の学期を選択すると現れる「アップロード」ボタンを押します。
-    <img src="/docs/images/upload-button.png" />
+    <img src={asset("/docs/images/upload-button.png")} />
   </li>
   <li>
     あきこで出力したCSVファイルを選択して「登録」ボタンを押します。
-    <img src="/docs/images/register-button.png" />
+    <img src={asset("/docs/images/register-button.png")} />
   </li>
 </ol>
 
