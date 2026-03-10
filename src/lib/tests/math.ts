@@ -2,7 +2,7 @@ import {
   classifyFakeCourses,
   classifyRealCourses,
   getCreditRequirements,
-} from "@/requirements/math-since-2023";
+} from "$lib/requirements/math-since-2023";
 import { runTest } from "./util";
 
 function test1(): void {

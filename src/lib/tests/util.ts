@@ -4,17 +4,17 @@ import {
   type CreditStats,
   akikoGetCreditStats,
   akikoNew,
-} from "@/akiko";
+} from "$lib/akiko";
 import {
   type ClassifyFakeCourses,
   type ClassifyRealCourses,
   type SetupCreditRequirements,
   classifyCoursesOrFail,
   createCreditRequirementsOrFail,
-} from "@/app-setup";
-import { parseImportedCsv } from "@/csv";
-import { assert } from "@/util";
-import type { Major } from "@/constants";
+} from "$lib/app-setup";
+import { parseImportedCsv } from "$lib/csv";
+import { assert } from "$lib/util";
+import type { Major } from "$lib/constants";
 
 function indent(s: string, n: number): string {
   return s

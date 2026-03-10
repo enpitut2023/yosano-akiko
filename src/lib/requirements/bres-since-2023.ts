@@ -4,9 +4,9 @@ import {
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
-} from "@/akiko";
-import type { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
-import type { Major } from "@/constants";
+} from "$lib/akiko";
+import type { ClassifyOptions, SetupCreditRequirements } from "$lib/app-setup";
+import type { Major } from "$lib/constants";
 import {
   isArt,
   isCompulsoryEnglishById,
@@ -25,8 +25,8 @@ import {
   isJapanese1,
   isJapaneseAsForeignLanguage,
   isNonCompulsoryEnglish,
-} from "@/requirements/common";
-import { unreachable } from "@/util";
+} from "$lib/requirements/common";
+import { unreachable } from "$lib/util";
 
 type Specialty = "none" | "as";
 function majorToSpecialtyOrFail(m: Major): Specialty {

@@ -7,7 +7,7 @@
     type Instance,
     majorCompare,
   } from "$lib/constants";
-  import { assert } from "@/util";
+  import { assert } from "$lib/util";
 
   const description =
     "筑波大生向けの履修サポートWebツールです。単位の計算・授業探し・Twinsへの登録を楽に終わらせましょう！";

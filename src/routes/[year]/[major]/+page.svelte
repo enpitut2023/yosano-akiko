@@ -18,7 +18,7 @@
     type FakeCourse,
     type Grade,
   } from "$lib/akiko";
-  import { assert } from "@/util.js";
+  import { assert } from "$lib/util.js";
 
   type UiCourse = {
     id: CourseId;

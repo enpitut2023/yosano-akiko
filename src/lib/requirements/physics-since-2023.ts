@@ -4,9 +4,9 @@ import {
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
-} from "@/akiko";
-import type { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
-import type { Major } from "@/constants";
+} from "$lib/akiko";
+import type { ClassifyOptions, SetupCreditRequirements } from "$lib/app-setup";
+import type { Major } from "$lib/constants";
 import {
   isArt,
   isCompulsoryEnglishByName,
@@ -22,7 +22,7 @@ import {
   isIzanai,
   isJapanese,
   isKyoushoku,
-} from "@/requirements/common";
+} from "$lib/requirements/common";
 
 function isA1(id: string): boolean {
   return id === "FCC2733";

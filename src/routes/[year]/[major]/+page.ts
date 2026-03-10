@@ -1,6 +1,6 @@
 import { getConfig } from "$lib/config";
 import { instances, isMajor } from "$lib/constants";
-import { assert, strictParseInt } from "@/util";
+import { assert, strictParseInt } from "$lib/util";
 import type { EntryGenerator, PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ params }) => {

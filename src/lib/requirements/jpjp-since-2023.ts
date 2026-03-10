@@ -4,9 +4,9 @@ import {
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
-} from "@/akiko";
-import type { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
-import type { Major } from "@/constants";
+} from "$lib/akiko";
+import type { ClassifyOptions, SetupCreditRequirements } from "$lib/app-setup";
+import type { Major } from "$lib/constants";
 import {
   isArt,
   isCompulsoryEnglishById,
@@ -22,8 +22,8 @@ import {
   isInfoLiteracyLecture,
   isJapanese,
   isSecondForeignLanguage,
-} from "@/requirements/common";
-import { unreachable } from "@/util";
+} from "$lib/requirements/common";
+import { unreachable } from "$lib/util";
 
 type Specialty = "none" | "jltt";
 

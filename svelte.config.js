@@ -6,7 +6,6 @@ const config = {
   preprocess: vitePreprocess(),
   kit: {
     adapter: adapter({ fallback: "404.html", strict: true }),
-    alias: { "@": "src/lib" },
     paths: { base: process.env.BASE_PATH ?? "/yosano-akiko" },
   },
   compilerOptions: {
