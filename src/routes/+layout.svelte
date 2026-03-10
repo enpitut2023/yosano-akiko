@@ -31,6 +31,10 @@
 <style lang="scss">
   @use "$lib/fonts.scss";
 
+  :global(:root) {
+    --content-max-width: 800px;
+  }
+
   :global {
     body,
     button,
@@ -52,6 +56,7 @@
     body {
       margin: 0;
       padding: 0;
+      padding-bottom: 50vh;
     }
   }
 </style>

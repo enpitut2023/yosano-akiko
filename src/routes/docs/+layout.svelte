@@ -8,8 +8,7 @@
   :global {
     body {
       margin: auto;
-      max-width: min(100%, 800px);
-      padding-bottom: 50vh;
+      max-width: min(100%, var(--content-max-width));
     }
 
     h2 {

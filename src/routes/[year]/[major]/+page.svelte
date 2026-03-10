@@ -668,6 +668,10 @@
 </button>
 
 <style lang="scss">
+  $color-progress-taken: rgb(51, 204, 51);
+  $color-progress-might-take: rgb(255, 204, 0);
+  $color-hover-overlay: rgba(0, 0, 0, 0.25);
+
   :global(:root) {
     --sidebar-width: 370px;
     --toggle-width: 30px;
@@ -806,10 +810,10 @@
       inset: calc(-1 * var(--border-width));
       background: linear-gradient(
         90deg,
-        rgba(51, 204, 51) 0%,
-        rgba(51, 204, 51) var(--green-percentage),
-        rgba(255, 204, 0) var(--green-percentage),
-        rgba(255, 204, 0) var(--yellow-percentage),
+        $color-progress-taken 0%,
+        $color-progress-taken var(--green-percentage),
+        $color-progress-might-take var(--green-percentage),
+        $color-progress-might-take var(--yellow-percentage),
         transparent var(--yellow-percentage),
         transparent 100%
       );
@@ -817,7 +821,7 @@
     }
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.25);
+      background-color: $color-hover-overlay;
     }
 
     &.selected {
@@ -840,7 +844,7 @@
 
   table {
     width: 100%;
-    margin-bottom: 2rem;
+    margin-bottom: 30px;
 
     .term,
     .when,
@@ -998,10 +1002,10 @@
     $alpha: 0.4;
     background: linear-gradient(
       90deg,
-      rgba(51, 204, 51, $alpha) 0%,
-      rgba(51, 204, 51, $alpha) var(--green-percentage),
-      rgba(255, 204, 0, $alpha) var(--green-percentage),
-      rgba(255, 204, 0, $alpha) var(--yellow-percentage),
+      rgba($color-progress-taken, $alpha) 0%,
+      rgba($color-progress-taken, $alpha) var(--green-percentage),
+      rgba($color-progress-might-take, $alpha) var(--green-percentage),
+      rgba($color-progress-might-take, $alpha) var(--yellow-percentage),
       transparent var(--yellow-percentage),
       transparent 100%
     );
@@ -1012,7 +1016,7 @@
       }
 
       &:hover {
-        background-color: rgba(0, 0, 0, 0.25);
+        background-color: $color-hover-overlay;
       }
     }
 

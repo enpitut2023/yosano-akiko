@@ -114,11 +114,10 @@
 
 <style lang="scss">
   :global(body) {
-    max-width: 800px;
+    max-width: var(--content-max-width);
     margin: auto;
     padding-left: 10px;
     padding-right: 10px;
-    padding-bottom: 50vh;
   }
 
   h1 {
