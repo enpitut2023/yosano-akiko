@@ -1,54 +1,13 @@
-import type {
-  KnownCourse,
-  CourseId,
-  RealCourse,
-  FakeCourse,
-  FakeCourseId,
-  CellId,
-} from "./akiko";
-import type { ClassifyOptions, SetupCreditRequirements } from "./app-setup";
-import {
-  MAJOR_TO_DOCS_PAGE_NAME,
-  type DocsPageName,
-  type Major,
-} from "./constants";
+import type { KnownCourse } from "./akiko";
+import { type SetupParams } from "./app-setup";
+import { type Major } from "./constants";
 import { courses } from "./current-courses.js";
 import { assert } from "./util.js";
-
-export type Config = {
-  knownCourses: KnownCourse[];
-  knownCourseYear: number;
-  getCreditRequirements: (
-    tableYear: number,
-    major: Major,
-  ) => SetupCreditRequirements;
-  major: Major;
-  requirementsTableYear: number;
-  cellIdToRectRecord: Record<string, any>;
-  classifyKnownCourses: (
-    cs: KnownCourse[],
-    opts: ClassifyOptions,
-  ) => Map<CourseId, string>;
-  classifyRealCourses: (
-    cs: RealCourse[],
-    opts: ClassifyOptions,
-  ) => Map<CourseId, string>;
-  classifyFakeCourses: (
-    cs: FakeCourse[],
-    opts: ClassifyOptions,
-  ) => Map<FakeCourseId, string>;
-  getRemark?: (
-    cellId: CellId,
-    tableYear: number,
-    major: Major,
-  ) => string | undefined;
-  tableViewBox?: any;
-};
 
 export async function getConfig(
   tableYear: number,
   major: Major,
-): Promise<Config> {
+): Promise<SetupParams> {
   assert(tableYear >= 2021);
 
   let req: any;

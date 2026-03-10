@@ -23,7 +23,7 @@
   type UiCourse = {
     id: CourseId;
     name: string;
-    credit: string | undefined;
+    credit: number | undefined;
     term: string | undefined;
     when: string | undefined;
     expects: string | undefined;
@@ -138,7 +138,7 @@
       const ui: UiCourse = {
         id: courseId,
         name: rc?.name || kc?.name || "（不明）",
-        credit: (rc?.credit ?? kc?.credit)?.toString() ?? "-",
+        credit: rc?.credit ?? kc?.credit,
         term: kc?.term,
         when: kc?.when,
         expects: kc?.expects,
@@ -356,7 +356,7 @@
             : `評価：${c.grade.toUpperCase()}`}</span
         >{/if}
     </td>
-    <td class="credit">{c.credit}</td>
+    <td class="credit">{c.credit ?? "-"}</td>
     <td class="term">{c.term || "-"}</td>
     <td class="when">{c.when || "-"}</td>
     <td class="expects">{c.expects || "-"}</td>
@@ -366,38 +366,43 @@
 {#snippet courseTable(
   title: string,
   courses: UiCourse[],
-  showFields: string,
-  containerState: string,
-  listKind: "wont-take" | "might-take" = "wont-take",
+  state: "no-cell-selected" | "no-courses" | "contains-courses",
+  showTerm: boolean,
+  showWhen: boolean,
+  showExpects: boolean,
+  listKind: "wont-take" | "might-take" | "taken",
 )}
   <h2>{title}</h2>
-  <div class="course-container {showFields}" data-state={containerState}>
-    <p class="select-cell">マスを選択してください</p>
-    <p class="no-courses">該当する授業がありません</p>
-    <table>
+  {#if state === "no-cell-selected"}
+    <p>マスを選択してください</p>
+  {:else if state === "no-courses"}
+    <p>該当する授業がありません</p>
+  {:else}
+    <table
+      class:show-term={showTerm}
+      class:show-when={showWhen}
+      class:show-expects={showExpects}
+    >
       <thead>
         <tr class="course">
           <th class="id-name">科目</th>
           <th class="credit">単位</th>
-          {#if showFields.includes("show-term")}<th class="term">学期</th>{/if}
-          {#if showFields.includes("show-when")}<th class="when">時限</th>{/if}
-          {#if showFields.includes("show-expects")}<th class="expects"
-              >標準<br />履修<br />年次</th
-            >{/if}
+          <th class="term">学期</th>
+          <th class="when">時限</th>
+          <th class="expects">標準<br />履修<br />年次</th>
         </tr>
       </thead>
       <tbody>
         {#each courses as c}
           {@render courseRow(
             c,
-            containerState === "contains-courses" &&
-              title !== "単位取得済みの授業",
-            listKind,
+            listKind !== "taken",
+            listKind !== "taken" ? listKind : "wont-take",
           )}
         {/each}
       </tbody>
     </table>
-  </div>
+  {/if}
 {/snippet}
 
 <main class:bars-hidden={!barsVisible}>
@@ -534,12 +539,14 @@
       {@render courseTable(
         "当てはまる授業",
         groupedCourses.wontTake,
-        "show-id-name show-credit show-term show-when show-expects",
         !app.selectedCellId
           ? "no-cell-selected"
           : groupedCourses.wontTake.length === 0
             ? "no-courses"
             : "contains-courses",
+        true,
+        true,
+        true,
         "wont-take",
       )}
     </div>
@@ -615,23 +622,28 @@
     {@render courseTable(
       "取る授業",
       groupedCourses.mightTake,
-      "show-id-name show-credit show-term show-when",
       !app.selectedCellId
         ? "no-cell-selected"
         : groupedCourses.mightTake.length === 0
           ? "no-courses"
           : "contains-courses",
+      true,
+      true,
+      false,
       "might-take",
     )}
     {@render courseTable(
       "単位取得済みの授業",
       groupedCourses.taken,
-      "show-id-name show-credit",
       !app.selectedCellId
         ? "no-cell-selected"
         : groupedCourses.taken.length === 0
           ? "no-courses"
           : "contains-courses",
+      false,
+      false,
+      false,
+      "taken",
     )}
   </div>
 </main>
@@ -815,28 +827,6 @@
     }
   }
 
-  .course-container > p {
-    margin-bottom: 40px;
-  }
-
-  .course-container {
-    & > * {
-      display: none;
-    }
-
-    &[data-state="no-cell-selected"] > p.select-cell {
-      display: revert;
-    }
-
-    &[data-state="no-courses"] > p.no-courses {
-      display: revert;
-    }
-
-    &[data-state="contains-courses"] > table {
-      display: revert;
-    }
-  }
-
   .course.hide-in-wont-take {
     display: none;
   }
@@ -851,6 +841,17 @@
   table {
     width: 100%;
     margin-bottom: 2rem;
+
+    .term,
+    .when,
+    .expects {
+      display: none;
+    }
+    &.show-term .term,
+    &.show-when .when,
+    &.show-expects .expects {
+      display: revert;
+    }
   }
 
   th {
@@ -863,21 +864,6 @@
 
   tbody > tr[draggable="true"] {
     cursor: grab;
-  }
-
-  .course > .id-name,
-  .course > .credit,
-  .course > .term,
-  .course > .when,
-  .course > .expects {
-    display: none;
-  }
-  .course-container.show-id-name .course > .id-name,
-  .course-container.show-credit .course > .credit,
-  .course-container.show-term .course > .term,
-  .course-container.show-when .course > .when,
-  .course-container.show-expects .course > .expects {
-    display: revert;
   }
 
   #bars-toggle {

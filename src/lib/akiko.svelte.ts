@@ -21,6 +21,7 @@ import {
 import { assert } from "./util";
 import { type Major } from "./constants";
 import { type LocalDataV2, localDataFromJson } from "./local-data";
+import { browser, dev } from "$app/environment";
 
 export class AkikoApp {
   knownCourses: KnownCourse[];
@@ -29,7 +30,6 @@ export class AkikoApp {
   major: Major;
   requirementsTableYear: number;
 
-  // Reactive State
   realCourses = $state<RealCourse[]>([]);
   fakeCourses = $state<FakeCourse[]>([]);
   mightTakeCourseIds = $state<CourseId[]>([]);
@@ -41,109 +41,93 @@ export class AkikoApp {
   localDataKey: string;
 
   constructor(params: SetupParams) {
-    try {
-      this.params = params;
-      this.knownCourses = params.knownCourses;
-      this.knownCourseYear = params.knownCourseYear;
-      this.creditRequirements = createCreditRequirementsOrFail(
-        params.getCreditRequirements(
-          params.requirementsTableYear,
-          params.major,
-        ),
-      );
-      this.major = params.major;
-      this.requirementsTableYear = params.requirementsTableYear;
-      this.localDataKey = `${params.major}_${params.requirementsTableYear}`;
+    this.params = params;
+    this.knownCourses = params.knownCourses;
+    this.knownCourseYear = params.knownCourseYear;
+    this.creditRequirements = createCreditRequirementsOrFail(
+      params.getCreditRequirements(params.requirementsTableYear, params.major),
+    );
+    this.major = params.major;
+    this.requirementsTableYear = params.requirementsTableYear;
+    this.localDataKey = `${params.major}_${params.requirementsTableYear}`;
 
-      // Load initial data from localStorage if available
-      if (typeof window !== "undefined") {
-        const saved = this.localDataLoad();
-        if (saved) {
-          this.realCourses = saved.realCourses;
-          this.fakeCourses = saved.fakeCourses;
-          this.mightTakeCourseIds = saved.mightTakeCourseIds;
-          this.native = saved.native;
-        }
-
-        $effect(() => {
-          this.save();
-        });
-
-        if (import.meta.env.DEV) {
-          $effect(() => {
-            const akiko = this.akiko;
-            const rcs = akikoGetUnclassifiedRealCourses(akiko);
-            const fcs = akikoGetUnclassifiedFakeCourses(akiko);
-            rcs.sort((a, b) => courseIdCompare(a.id, b.id));
-            fcs.sort((a, b) => fakeCourseIdCompare(a.id, b.id));
-            let s = "マスに振り分けられなかった授業\n";
-            for (const rc of rcs) {
-              s += [rc.id, rc.name, rc.takenYear, rc.credit, rc.grade].join(
-                " ",
-              );
-              s += "\n";
-            }
-            for (const fc of fcs) {
-              s += [fc.id, fc.name, fc.takenYear, fc.credit, fc.grade].join(
-                " ",
-              );
-              s += "\n";
-            }
-            console.log(s);
-
-            function createWantBaseCreditStats(
-              s: BaseCreditStats,
-            ): Record<string, number> {
-              const o: Record<string, number> = {};
-              if (s.rawTaken > 0) {
-                if (s.overflowTaken === 0) {
-                  o.taken = s.rawTaken;
-                } else {
-                  o.rawTaken = s.rawTaken;
-                  o.effectiveTaken = s.effectiveTaken;
-                }
-              }
-              if (s.rawMightTake > 0) {
-                if (s.overflowMightTake === 0) {
-                  o.mightTake = s.rawMightTake;
-                } else {
-                  o.rawMightTake = s.rawMightTake;
-                  o.effectiveMightTake = s.effectiveMightTake;
-                }
-              }
-              return o;
-            }
-
-            const stats = this.stats;
-            const cells: Record<string, object> = {};
-            for (const [cellId, stat] of stats.cells) {
-              const cell = createWantBaseCreditStats(stat);
-              if (Object.keys(cell).length > 0) {
-                cells[cellId] = cell;
-              }
-            }
-            const columns: Record<string, object> = {};
-            for (const [colId, stat] of stats.columns) {
-              const col = createWantBaseCreditStats(stat);
-              if (Object.keys(col).length > 0) {
-                columns[colId] = col;
-              }
-            }
-            const compulsory = createWantBaseCreditStats(stats.compulsory);
-            const elective = createWantBaseCreditStats(stats.elective);
-            console.log(
-              JSON.stringify({ cells, columns, compulsory, elective }),
-            );
-          });
-        }
+    if (browser) {
+      const saved = this.localDataLoad();
+      if (saved) {
+        this.realCourses = saved.realCourses;
+        this.fakeCourses = saved.fakeCourses;
+        this.mightTakeCourseIds = saved.mightTakeCourseIds;
+        this.native = saved.native;
       }
-    } catch (e) {
-      console.error(`Failed to initialize AkikoApp for ${params.major}`, e);
-      throw e;
+
+      $effect(() => {
+        this.save();
+      });
+
+      if (dev) {
+        $effect(() => {
+          const akiko = this.akiko;
+          const rcs = akikoGetUnclassifiedRealCourses(akiko);
+          const fcs = akikoGetUnclassifiedFakeCourses(akiko);
+          rcs.sort((a, b) => courseIdCompare(a.id, b.id));
+          fcs.sort((a, b) => fakeCourseIdCompare(a.id, b.id));
+          let s = "マスに振り分けられなかった授業\n";
+          for (const rc of rcs) {
+            s += [rc.id, rc.name, rc.takenYear, rc.credit, rc.grade].join(" ");
+            s += "\n";
+          }
+          for (const fc of fcs) {
+            s += [fc.id, fc.name, fc.takenYear, fc.credit, fc.grade].join(" ");
+            s += "\n";
+          }
+          console.log(s);
+
+          function createWantBaseCreditStats(
+            s: BaseCreditStats,
+          ): Record<string, number> {
+            const o: Record<string, number> = {};
+            if (s.rawTaken > 0) {
+              if (s.overflowTaken === 0) {
+                o.taken = s.rawTaken;
+              } else {
+                o.rawTaken = s.rawTaken;
+                o.effectiveTaken = s.effectiveTaken;
+              }
+            }
+            if (s.rawMightTake > 0) {
+              if (s.overflowMightTake === 0) {
+                o.mightTake = s.rawMightTake;
+              } else {
+                o.rawMightTake = s.rawMightTake;
+                o.effectiveMightTake = s.effectiveMightTake;
+              }
+            }
+            return o;
+          }
+
+          const stats = this.stats;
+          const cells: Record<string, object> = {};
+          for (const [cellId, stat] of stats.cells) {
+            const cell = createWantBaseCreditStats(stat);
+            if (Object.keys(cell).length > 0) {
+              cells[cellId] = cell;
+            }
+          }
+          const columns: Record<string, object> = {};
+          for (const [colId, stat] of stats.columns) {
+            const col = createWantBaseCreditStats(stat);
+            if (Object.keys(col).length > 0) {
+              columns[colId] = col;
+            }
+          }
+          const compulsory = createWantBaseCreditStats(stats.compulsory);
+          const elective = createWantBaseCreditStats(stats.elective);
+          console.log(JSON.stringify({ cells, columns, compulsory, elective }));
+        });
+      }
     }
   }
 
-  // Derived state replaces manual updates
   akiko = $derived.by(() => {
     const { courseIdToCellId, realCoursePositions, fakeCoursePositions } =
       classifyCoursesOrFail(
@@ -173,7 +157,6 @@ export class AkikoApp {
 
   stats = $derived.by(() => akikoGetCreditStats(this.akiko));
 
-  // Persistence
   localDataLoad() {
     const json = localStorage.getItem(this.localDataKey);
     if (json) {
@@ -198,7 +181,6 @@ export class AkikoApp {
     localStorage.setItem(this.localDataKey, JSON.stringify(data));
   }
 
-  // Actions
   toggleMightTake(id: CourseId) {
     if (this.mightTakeCourseIds.includes(id)) {
       this.mightTakeCourseIds = this.mightTakeCourseIds.filter((x) => x !== id);
@@ -208,11 +190,9 @@ export class AkikoApp {
   }
 
   reset() {
-    if (
-      window.confirm(
-        "インポートした成績データや「取る授業」に移動した授業などが全てリセットされます。本当にリセットしますか？",
-      )
-    ) {
+    const msg =
+      "インポートした成績データや「取る授業」に移動した授業などが全てリセットされます。本当にリセットしますか？";
+    if (window.confirm(msg)) {
       localStorage.removeItem(this.localDataKey);
       window.location.reload();
     }
