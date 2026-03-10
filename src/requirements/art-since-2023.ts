@@ -4,6 +4,7 @@ import {
   FakeCourseId,
   KnownCourse,
   RealCourse,
+  gradeIsPass,
 } from "@/akiko";
 import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
 import {
@@ -484,28 +485,31 @@ export function classifyRealCourses(
   // d3はartなら3単位まで、jadなら2単位まで、それ以降はd5に回す。
   let d3Total = 0;
   const d3Max = specialty === "art" ? 3 : 2;
+  console.log(d3Max);
   for (const c of cs) {
     let cellId = classify(c.id, c.name, "real", tableYear, specialty);
     if (cellId !== undefined) {
-      if (specialty === "jad" && cellId === "e3") {
+      if (specialty === "jad" && cellId === "e3" && gradeIsPass(c.grade)) {
         if (e3Total < 15) {
           e3Total += c.credit ?? 0;
         } else {
           cellId = "f3";
         }
       }
-      if (cellId === "d2") {
+      if (cellId === "d2" && gradeIsPass(c.grade)) {
         if (d2Total < 3) {
           d2Total += c.credit ?? 0;
         } else {
-          cellId = "d5";
+          cellId = "d4";
         }
       }
-      if (cellId === "d3") {
+      if (cellId === "d3" && gradeIsPass(c.grade)) {
         if (d3Total < d3Max) {
           d3Total += c.credit ?? 0;
+          console.log(c.name);
+          console.log(d3Total);
         } else {
-          cellId = "d5";
+          cellId = "d4";
         }
       }
       courseIdToCellId.set(c.id, cellId);
