@@ -4,6 +4,7 @@ import {
   classifyKnownCourses,
   classifyRealCourses,
   creditRequirementsSince2023,
+  getRemark,
 } from "@/requirements/bres-since-2023";
 import { KnownCourse } from "../../akiko";
 import { setup } from "../../app";
@@ -26,4 +27,5 @@ setup({
     classifyRealCourses(cs, opts, YEAR, SPECIALTY),
   classifyFakeCourses: (cs, opts) =>
     classifyFakeCourses(cs, opts, YEAR, SPECIALTY),
+  getRemark: (id) => getRemark(id, YEAR, SPECIALTY),
 });
