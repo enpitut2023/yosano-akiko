@@ -310,6 +310,10 @@ function main(): void {
 
     { year: 2022, major: "coins", comment: "（選択科目のみ対応）" },
 
+    { year: 2023, major: "help-p" },
+    { year: 2023, major: "help-h" },
+    { year: 2023, major: "help-af" },
+    { year: 2023, major: "help-l" },
     { year: 2023, major: "coins", checked: true },
     { year: 2023, major: "coins-cs", checked: true },
     { year: 2023, major: "coins-mimt", checked: true },
@@ -346,6 +350,10 @@ function main(): void {
     { year: 2023, major: "bres" },
     { year: 2023, major: "bres-as" },
 
+    { year: 2024, major: "help-p" },
+    { year: 2024, major: "help-h" },
+    { year: 2024, major: "help-af" },
+    { year: 2024, major: "help-l" },
     { year: 2024, major: "coins", checked: true },
     { year: 2024, major: "coins-cs", checked: true },
     { year: 2024, major: "coins-mimt", checked: true },
@@ -382,6 +390,10 @@ function main(): void {
     { year: 2024, major: "bres" },
     { year: 2024, major: "bres-as" },
 
+    { year: 2025, major: "help-p" },
+    { year: 2025, major: "help-h" },
+    { year: 2025, major: "help-af" },
+    { year: 2025, major: "help-l" },
     { year: 2025, major: "coins", checked: true },
     { year: 2025, major: "coins-cs", checked: true },
     { year: 2025, major: "coins-mimt", checked: true },

@@ -23,6 +23,10 @@ async function main() {
 
       "src/2022/coins/index.ts",
 
+      "src/2023/help-p/index.ts",
+      "src/2023/help-h/index.ts",
+      "src/2023/help-af/index.ts",
+      "src/2023/help-l/index.ts",
       "src/2023/coins/index.ts",
       "src/2023/coins-cs/index.ts",
       "src/2023/coins-mimt/index.ts",
@@ -59,6 +63,10 @@ async function main() {
       "src/2023/bres/index.ts",
       "src/2023/bres-as/index.ts",
 
+      "src/2024/help-p/index.ts",
+      "src/2024/help-h/index.ts",
+      "src/2024/help-af/index.ts",
+      "src/2024/help-l/index.ts",
       "src/2024/coins/index.ts",
       "src/2024/coins-cs/index.ts",
       "src/2024/coins-mimt/index.ts",
@@ -95,6 +103,10 @@ async function main() {
       "src/2024/bres/index.ts",
       "src/2024/bres-as/index.ts",
 
+      "src/2025/help-p/index.ts",
+      "src/2025/help-h/index.ts",
+      "src/2025/help-af/index.ts",
+      "src/2025/help-l/index.ts",
       "src/2025/coins/index.ts",
       "src/2025/coins-cs/index.ts",
       "src/2025/coins-mimt/index.ts",
