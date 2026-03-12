@@ -1,4 +1,5 @@
 import {
+  CellId,
   CourseId,
   FakeCourse,
   FakeCourseId,
@@ -234,15 +235,15 @@ function isA5Ies(id: string): boolean {
   );
 }
 
-function isA6Ies(id: string): boolean {
+function isA6Ies(id: string, tableYear: number): boolean {
   return (
     isAcademicEnglishA(id) ||
     //専門英語B
     id === "FG20222" ||
-    id === "FG30222" ||
+    (tableYear === 2023 && id === "FG30222") ||
     //専門英語演習
     id === "FG20232" ||
-    id === "FG30232"
+    (tableYear === 2023 && id === "FG30232")
   );
 }
 
@@ -271,15 +272,15 @@ function isA4Eme(id: string): boolean {
   );
 }
 
-function isA5Eme(id: string): boolean {
+function isA5Eme(id: string, tableYear: number): boolean {
   return (
     isAcademicEnglishA(id) ||
     //専門英語B
     id === "FG40222" ||
-    id === "FG50222" ||
+    (tableYear === 2023 && id === "FG50222" )||
     //専門英語演習
     id === "FG40232" ||
-    id === "FG50232"
+    (tableYear === 2023 && id === "FG50232")
   );
 }
 
@@ -290,7 +291,7 @@ function isA6Eme(id: string): boolean {
   );
 }
 
-function classifyColumnA(id: string, specialty: Specialty): string | undefined {
+function classifyColumnA(id: string, specialty: Specialty, tableYear: number): string | undefined {
   switch (specialty) {
     case "ies":
       if (isA1Ies(id)) return "a1";
@@ -298,14 +299,14 @@ function classifyColumnA(id: string, specialty: Specialty): string | undefined {
       if (isA3Ies(id)) return "a3";
       if (isA4Ies(id)) return "a4";
       if (isA5Ies(id)) return "a5";
-      if (isA6Ies(id)) return "a6";
+      if (isA6Ies(id, tableYear)) return "a6";
       break;
     case "eme":
       if (isA1Eme(id)) return "a1";
       if (isA2Eme(id)) return "a2";
       if (isA3Eme(id)) return "a3";
       if (isA4Eme(id)) return "a4";
-      if (isA5Eme(id)) return "a5";
+      if (isA5Eme(id, tableYear)) return "a5";
       if (isA6Eme(id)) return "a6";
       break;
     default:
@@ -657,9 +658,10 @@ function classify(
   specialty: Specialty,
   isNative: boolean,
   mode: Mode,
+  tableYear: number
 ): string | undefined {
   // 必修
-  const a = classifyColumnA(id, specialty);
+  const a = classifyColumnA(id, specialty, tableYear);
   if (a !== undefined) return a;
   if (isC1(id)) return "c1";
   if (isC2(id)) return "c2";
@@ -711,12 +713,12 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   opts: ClassifyOptions,
-  _tableYear: number,
+  tableYear: number,
   specialty: Specialty,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, specialty, opts.isNative, "known");
+    const cellId = classify(c.id, specialty, opts.isNative, "known", tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -727,12 +729,12 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
-  _tableYear: number,
+  tableYear: number,
   specialty: Specialty,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, specialty, opts.isNative, "real");
+    const cellId = classify(c.id, specialty, opts.isNative, "real", tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -747,6 +749,18 @@ export function classifyFakeCourses(
   _specialty: Specialty,
 ): Map<FakeCourseId, string> {
   return new Map();
+}
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  _specialty: Specialty,
+): string | undefined {
+  if (id === "c3" || id === "c4" ) {
+    return `注13の総合学域群からの移行生の線形代数Aの読み替えは反映されません。`;
+  }
+  else if(id === "c6" || id === "c7"){
+    return `注13の総合学域群からの移行生の微積分Aの読み替えは反映されません。`
+  }
 }
 
 export const creditRequirementsIes: SetupCreditRequirements = {
