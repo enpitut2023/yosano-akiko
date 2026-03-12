@@ -1,4 +1,5 @@
 import {
+  CellId,
   CourseId,
   FakeCourse,
   FakeCourseId,
@@ -532,6 +533,16 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  _specialty: Specialty,
+): string | undefined {
+  if (id === "h1" || id === "h2") {
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここではないマスの単位としてカウントされる場合があるので気をつけてください。`
+  }
 }
 
 export const creditRequirements: SetupCreditRequirements = {
