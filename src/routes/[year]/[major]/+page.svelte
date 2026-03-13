@@ -550,7 +550,7 @@
 
     <div id="import-tab" class:active={activeTab === "import"}>
       <div id="control">
-        <label id="import-grades-button" class="button" style="cursor: pointer">
+        <label id="import-grades-button" class="button">
           <img src={asset("/icons/import.svg")} width="15px" alt="import" />
           <span>TWINSの成績データをインポート</span>
           <input
@@ -836,7 +836,6 @@
       color: #444;
       border: 1px solid currentColor;
       border-radius: 10px;
-      cursor: pointer;
 
       &:hover {
         background-color: oklch(95% 0 0);
@@ -1012,30 +1011,36 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-  }
 
-  #control .button {
-    --fill: hsl(0, 0%, 92%);
-    --outline: hsl(0, 0%, 85%);
-    display: grid;
-    place-content: center;
-    place-items: center;
-    gap: 10px;
-    grid-template-columns: auto auto;
-    width: 100%;
-    height: 40px;
-    background-color: var(--fill);
-    border: 1px solid var(--outline);
-    border-radius: 10px;
+    & .button {
+      --bg-l: 0.92;
+      --bg-c: 0.05;
+      --border-l: 0.85;
+      --border-c: 0.1;
+      --h: 270;
+      display: grid;
+      place-content: center;
+      place-items: center;
+      gap: 10px;
+      grid-template-columns: auto auto;
+      width: 100%;
+      height: 40px;
+      background-color: oklch(var(--bg-l) var(--bg-c) var(--h));
+      border: 1px solid oklch(var(--border-l) var(--border-c) var(--h));
+      border-radius: 10px;
 
-    &:hover {
-      background-color: var(--outline);
+      &:hover {
+        background-color: oklch(var(--border-l) var(--border-c) var(--h));
+      }
     }
-  }
 
-  #control > #import-grades-button {
-    --fill: #e3ecfd;
-    --outline: #b8cff9;
+    & label.button {
+      box-sizing: border-box;
+    }
+
+    & #reset {
+      --h: 10;
+    }
   }
 
   #csv {
@@ -1046,12 +1051,6 @@
     padding: 10px;
     background-color: hsl(0, 0%, 97%);
     border-radius: 10px;
-  }
-
-  #control > #reset {
-    --fill: #fce3eb;
-    --outline: #f9b8ce;
-    height: 30px;
   }
 
   #left-bar > search {
