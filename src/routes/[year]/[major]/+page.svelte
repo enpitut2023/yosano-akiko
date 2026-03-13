@@ -1,5 +1,7 @@
 <script lang="ts">
   import { resolve, asset } from "$app/paths";
+  import HowToImportFromTwins from "$lib/HowToImportFromTwins.svelte";
+  import HowToExportForTwins from "$lib/HowToExportForTwins.svelte";
   import { AkikoApp } from "$lib/akiko.svelte";
   import { MAJOR_TO_DOCS_PAGE_NAME, MAJOR_TO_JA } from "$lib/constants";
   import { parseImportedCsv } from "$lib/csv";
@@ -577,6 +579,7 @@
           >
         </div>
       </div>
+      <HowToImportFromTwins />
     </div>
 
     <div id="export-tab" class:active={activeTab === "export"}>
@@ -586,6 +589,7 @@
           <span>取る授業一覧を出力</span></button
         >
       </div>
+      <HowToExportForTwins />
     </div>
 
     <div id="settings-tab" class:active={activeTab === "settings"}>
@@ -852,26 +856,26 @@
 
   #import-tab,
   #export-tab,
-  #settings-tab,
-  #courses-tab {
+  #settings-tab {
     display: none;
-    overflow: hidden;
+    grid-template-rows: 1fr;
+    overflow-y: scroll;
+    padding: 15px;
+    padding-bottom: 50vh;
 
     &.active {
       display: grid;
     }
   }
 
-  #import-tab.active,
-  #export-tab.active,
-  #settings-tab.active {
-    grid-template-rows: 1fr;
-    overflow-y: scroll;
-    padding: 15px;
-  }
+  #courses-tab {
+    display: none;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
 
-  #courses-tab.active {
-    grid-template-columns: var(--sidebar-width) var(--sidebar-width);
+    &.active {
+      display: grid;
+    }
   }
 
   #left-bar {
@@ -997,7 +1001,7 @@
   }
 
   #control {
-    margin-bottom: 30px;
+    margin-bottom: 50px;
   }
   #control > * + * {
     margin-top: 10px;

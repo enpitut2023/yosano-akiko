@@ -11,26 +11,13 @@
       max-width: min(100%, var(--content-max-width));
     }
 
-    h2 {
+    section {
       margin-top: 50px;
-      margin-bottom: 20px;
     }
 
     img {
       width: 100%;
-      margin: 20px 0;
       border: 1px solid oklch(0.7 0 0);
-    }
-
-    p.warning {
-      padding: 10px;
-      background-color: oklch(0.98 0.1 110);
-      border: 1px solid oklch(0.85 0.5 110);
-      border-radius: 10px;
-
-      &::before {
-        content: "⚠️ ";
-      }
     }
   }
 </style>
