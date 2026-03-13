@@ -21,6 +21,7 @@
     type Grade,
   } from "$lib/akiko";
   import { assert } from "$lib/util.js";
+  import Callout from "$lib/Callout.svelte";
 
   type UiCourse = {
     id: CourseId;
@@ -551,8 +552,7 @@
       <div id="control">
         <label id="import-grades-button" class="button" style="cursor: pointer">
           <img src={asset("/icons/import.svg")} width="15px" alt="import" />
-          <span class="label">TWINSの成績データをインポート</span>
-          <span class="remark">※成績が外部に送信されることはありません</span>
+          <span>TWINSの成績データをインポート</span>
           <input
             type="file"
             id="csv"
@@ -560,7 +560,7 @@
             onchange={handleCsvUpload}
           />
         </label>
-        <div id="student-type-container">
+        <div id="student-type-container" style="margin-bottom: 20px;">
           <label
             ><input
               type="radio"
@@ -578,6 +578,13 @@
             /> <span>総合学域群からこの学類に移行した</span></label
           >
         </div>
+        <Callout type="info">
+          成績データは、あきこの開発チームに閲覧されたり、外部に送信されたりすることはありません。
+        </Callout>
+        <Callout type="warning">
+          成績データのファイルは、あきこにインポートする前にExcelやNumbersなどのアプリケーションで開いたり保存しないでください。
+          データの形式が壊れ、あきこに正しくインポートできなくなる場合があります。
+        </Callout>
       </div>
       <HowToImportFromTwins />
     </div>
@@ -1002,9 +1009,9 @@
 
   #control {
     margin-bottom: 50px;
-  }
-  #control > * + * {
-    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 
   #control .button {
@@ -1029,17 +1036,6 @@
   #control > #import-grades-button {
     --fill: #e3ecfd;
     --outline: #b8cff9;
-    height: 80px;
-
-    & > img {
-      justify-self: right;
-    }
-    & > .label {
-      justify-self: left;
-    }
-    & > .remark {
-      grid-column: 1/3;
-    }
   }
 
   #csv {

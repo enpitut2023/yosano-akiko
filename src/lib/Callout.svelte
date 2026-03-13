@@ -15,16 +15,20 @@
 
 <style lang="scss">
   .callout {
-    padding: 10px;
-    border-radius: 10px;
+    --bg-l: 0.98;
+    --bg-c: 0.03;
+    --border-l: 0.85;
+    --border-c: 0.1;
+
+    padding: 10px 15px;
 
     &::before {
-      margin-right: 4px;
+      margin-right: 10px;
     }
 
     &.warning {
-      background-color: oklch(0.98 0.1 110);
-      border: 1px solid oklch(0.85 0.5 110);
+      background-color: oklch(var(--bg-l) var(--bg-c) 100);
+      border: 1px solid oklch(var(--border-l) var(--border-c) 100);
 
       &::before {
         content: "⚠️";
@@ -32,8 +36,8 @@
     }
 
     &.info {
-      background-color: oklch(0.98 0.05 250);
-      border: 1px solid oklch(0.85 0.15 250);
+      background-color: oklch(var(--bg-l) var(--bg-c) 250);
+      border: 1px solid oklch(var(--border-l) var(--border-c) 250);
 
       &::before {
         content: "ℹ️";
