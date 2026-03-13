@@ -578,10 +578,10 @@
             /> <span>総合学域群からこの学類に移行した</span></label
           >
         </div>
-        <Callout type="info">
+        <Callout kind="info">
           成績データは、あきこの開発チームに閲覧されたり、外部に送信されたりすることはありません。
         </Callout>
-        <Callout type="warning">
+        <Callout kind="warning">
           成績データのファイルは、あきこにインポートする前にExcelやNumbersなどのアプリケーションで開いたり保存しないでください。
           データの形式が壊れ、あきこに正しくインポートできなくなる場合があります。
         </Callout>

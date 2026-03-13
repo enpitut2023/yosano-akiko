@@ -30,10 +30,10 @@
       <img src={asset("/docs/images/register-button.png")} alt="登録ボタン" />
     </li>
   </ol>
-  <Callout type="warning">
+  <Callout kind="warning">
     履修中の授業を「取る授業」から「当てはまる授業」に移動してから、TWINSに取る授業一覧をインポートしても、移動した授業の履修解除はされません。
   </Callout>
-  <Callout type="warning">
+  <Callout kind="warning">
     上記の方法では、事前登録の必要がある授業をTWINS上で履修登録することができません。
     そのため、「取る授業」のうち事前登録の授業はCSVファイルに含まれません。
     事前登録の授業を履修する場合は、別途手動で事前登録をする必要があります。

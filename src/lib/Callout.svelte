@@ -2,14 +2,14 @@
   import type { Snippet } from "svelte";
 
   type Props = {
-    type: "warning" | "info";
+    kind: "warning" | "info";
     children: Snippet;
   };
 
-  let { type, children }: Props = $props();
+  let { kind, children }: Props = $props();
 </script>
 
-<div class="callout {type}">
+<div class="callout {kind}">
   {@render children()}
 </div>
 
