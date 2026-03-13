@@ -35,7 +35,10 @@
   let { data } = $props();
   let app = $derived(new AkikoApp(data.config));
 
+  type Tab = "import" | "export" | "courses" | "settings";
+
   let barsVisible = $state(true);
+  let activeTab = $state<Tab>("courses");
   let scrollX = $state(0);
 
   const scale = $derived(
@@ -76,11 +79,10 @@
   function handleDragStart(
     event: DragEvent,
     courseId: string,
-    cellId: string,
     listKind: "wont-take" | "might-take",
   ) {
     if (event.dataTransfer) {
-      event.dataTransfer.setData("text/plain", `${courseId},${cellId}`);
+      event.dataTransfer.setData("text/plain", courseId);
       event.dataTransfer.dropEffect = "move";
     }
     const target = listKind === "wont-take" ? rightBarEl : leftBarEl;
@@ -104,10 +106,8 @@
     targetListKind: "wont-take" | "might-take",
   ) {
     event.preventDefault();
-    const data = event.dataTransfer?.getData("text/plain");
-    if (!data) return;
-    const courseId = data.split(",")[0];
-    if (!isCourseId(courseId)) return;
+    const courseId = event.dataTransfer?.getData("text/plain");
+    if (courseId === undefined || !isCourseId(courseId)) return;
     if (targetListKind === "might-take") {
       if (!app.mightTakeCourseIds.includes(courseId)) {
         app.mightTakeCourseIds = [...app.mightTakeCourseIds, courseId];
@@ -338,7 +338,7 @@
     ondragstart={(e) => {
       if (!draggable) return;
       assert(app.selectedCellId !== undefined);
-      handleDragStart(e, c.id, app.selectedCellId, listKind);
+      handleDragStart(e, c.id, listKind);
     }}
     ondragend={handleDragEnd}
   >
@@ -460,6 +460,7 @@
             onclick={() => {
               app.selectedCellId = r.id;
               barsVisible = true;
+              activeTab = "courses";
             }}
           ></div>
         {/if}
@@ -516,135 +517,181 @@
     </div>
   </div>
 
-  <div id="left-bar-side">
-    <div
-      bind:this={leftBarEl}
-      id="left-bar"
-      ondragover={(e) => {
-        e.preventDefault();
-        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
-      }}
-      ondrop={(e) => handleDrop(e, "wont-take")}
-    >
-      <search>
-        <div>
-          <img src={asset("/icons/search.svg")} width="15px" alt="search" />
-        </div>
-        <input
-          type="text"
-          placeholder="科目番号・科目名で検索"
-          bind:value={app.filterString}
-        />
-      </search>
-      {@render courseTable(
-        "当てはまる授業",
-        groupedCourses.wontTake,
-        !app.selectedCellId
-          ? "no-cell-selected"
-          : groupedCourses.wontTake.length === 0
-            ? "no-courses"
-            : "contains-courses",
-        true,
-        true,
-        true,
-        "wont-take",
-      )}
+  <div id="sidebar">
+    <div id="tab-header">
+      <button
+        class:active={activeTab === "import"}
+        onclick={() => (activeTab = "import")}
+        ><span class="icon" style="--src: url({asset('/icons/math.svg')})"
+        ></span>単位チェック</button
+      >
+      <button
+        class:active={activeTab === "courses"}
+        onclick={() => (activeTab = "courses")}
+        ><span class="icon" style="--src: url({asset('/icons/book.svg')})"
+        ></span>履修を組む</button
+      >
+      <button
+        class:active={activeTab === "export"}
+        onclick={() => (activeTab = "export")}
+        ><span class="icon" style="--src: url({asset('/icons/itf.svg')})"
+        ></span>TWINSに出力</button
+      >
+      <button
+        class:active={activeTab === "settings"}
+        onclick={() => (activeTab = "settings")}
+        ><span class="icon" style="--src: url({asset('/icons/cog.svg')})"
+        ></span>設定</button
+      >
     </div>
-    <div id="cell-detail" class:no-cell-selected={!app.selectedCellId}>
-      <h2>単位数</h2>
-      {#if app.selectedCellId}
-        {@const stats = app.stats.cells.get(app.selectedCellId)}
-        {#if stats}
-          {@const display = cellCreditStatsDisplay(stats)}
-          <p>
-            {@html `選択されたマスの単位：${display.brief}${display.warning ? `<br>⚠️ ${display.warning}` : ""}`}
-          </p>
-        {/if}
-        {#if data.config.getRemark}
-          {@const remark = data.config.getRemark(
-            app.selectedCellId,
-            data.year,
-            data.major,
-          )}
-          {#if remark}
-            <h2>備考</h2>
-            <p>{remark}</p>
-          {/if}
-        {/if}
-      {/if}
-    </div>
-  </div>
 
-  <div
-    bind:this={rightBarEl}
-    id="right-bar"
-    ondragover={(e) => {
-      e.preventDefault();
-      e.dataTransfer!.dropEffect = "move";
-    }}
-    ondrop={(e) => handleDrop(e, "might-take")}
-  >
-    <div id="control">
-      <label id="import-grades-button" class="button" style="cursor: pointer">
-        <img src={asset("/icons/import.svg")} width="15px" alt="import" />
-        <span class="label">TWINSの成績データをインポート</span>
-        <span class="remark">※成績が外部に送信されることはありません</span>
-        <input type="file" id="csv" accept=".csv" onchange={handleCsvUpload} />
-      </label>
-      <div id="student-type-container">
-        <label
-          ><input
-            type="radio"
-            name="student-type"
-            bind:group={app.native}
-            value={true}
-          /> <span>1年生からこの学類に所属している</span></label
-        ><br />
-        <label
-          ><input
-            type="radio"
-            name="student-type"
-            bind:group={app.native}
-            value={false}
-          /> <span>総合学域群からこの学類に移行した</span></label
+    <div id="import-tab" class:active={activeTab === "import"}>
+      <div id="control">
+        <label id="import-grades-button" class="button" style="cursor: pointer">
+          <img src={asset("/icons/import.svg")} width="15px" alt="import" />
+          <span class="label">TWINSの成績データをインポート</span>
+          <span class="remark">※成績が外部に送信されることはありません</span>
+          <input
+            type="file"
+            id="csv"
+            accept=".csv"
+            onchange={handleCsvUpload}
+          />
+        </label>
+        <div id="student-type-container">
+          <label
+            ><input
+              type="radio"
+              name="student-type"
+              bind:group={app.native}
+              value={true}
+            /> <span>1年生からこの学類に所属している</span></label
+          ><br />
+          <label
+            ><input
+              type="radio"
+              name="student-type"
+              bind:group={app.native}
+              value={false}
+            /> <span>総合学域群からこの学類に移行した</span></label
+          >
+        </div>
+      </div>
+    </div>
+
+    <div id="export-tab" class:active={activeTab === "export"}>
+      <div id="control">
+        <button class="button" onclick={exportMightTake}
+          ><img src={asset("/icons/export.svg")} width="15px" alt="export" />
+          <span>取る授業一覧を出力</span></button
         >
       </div>
-      <button class="button" onclick={exportMightTake}
-        ><img src={asset("/icons/export.svg")} width="15px" alt="export" />
-        <span>取る授業一覧を出力</span></button
-      >
-      <button id="reset" class="button" onclick={() => app.reset()}
-        ><img src={asset("/icons/trash.svg")} width="15px" alt="reset" />
-        <span>リセット</span></button
-      >
     </div>
-    <div class="separator"></div>
-    {@render courseTable(
-      "取る授業",
-      groupedCourses.mightTake,
-      !app.selectedCellId
-        ? "no-cell-selected"
-        : groupedCourses.mightTake.length === 0
-          ? "no-courses"
-          : "contains-courses",
-      true,
-      true,
-      false,
-      "might-take",
-    )}
-    {@render courseTable(
-      "単位取得済みの授業",
-      groupedCourses.taken,
-      !app.selectedCellId
-        ? "no-cell-selected"
-        : groupedCourses.taken.length === 0
-          ? "no-courses"
-          : "contains-courses",
-      false,
-      false,
-      false,
-      "taken",
-    )}
+
+    <div id="settings-tab" class:active={activeTab === "settings"}>
+      <div id="control">
+        <button id="reset" class="button" onclick={() => app.reset()}
+          ><img src={asset("/icons/trash.svg")} width="15px" alt="reset" />
+          <span>リセット</span></button
+        >
+      </div>
+    </div>
+
+    <div id="courses-tab" class:active={activeTab === "courses"}>
+      <div
+        bind:this={leftBarEl}
+        id="left-bar"
+        ondragover={(e) => {
+          e.preventDefault();
+          if (e.dataTransfer !== null) e.dataTransfer.dropEffect = "move";
+        }}
+        ondrop={(e) => handleDrop(e, "wont-take")}
+      >
+        <search>
+          <div>
+            <img src={asset("/icons/search.svg")} width="15px" alt="search" />
+          </div>
+          <input
+            type="text"
+            placeholder="科目番号・科目名で検索"
+            bind:value={app.filterString}
+          />
+        </search>
+        {@render courseTable(
+          "当てはまる授業",
+          groupedCourses.wontTake,
+          !app.selectedCellId
+            ? "no-cell-selected"
+            : groupedCourses.wontTake.length === 0
+              ? "no-courses"
+              : "contains-courses",
+          true,
+          true,
+          true,
+          "wont-take",
+        )}
+        <div id="cell-detail" class:no-cell-selected={!app.selectedCellId}>
+          <h2>単位数</h2>
+          {#if app.selectedCellId}
+            {@const stats = app.stats.cells.get(app.selectedCellId)}
+            {#if stats}
+              {@const display = cellCreditStatsDisplay(stats)}
+              <p>
+                {@html `選択されたマスの単位：${display.brief}${display.warning ? `<br>⚠️ ${display.warning}` : ""}`}
+              </p>
+            {/if}
+            {#if data.config.getRemark}
+              {@const remark = data.config.getRemark(
+                app.selectedCellId,
+                data.year,
+                data.major,
+              )}
+              {#if remark}
+                <h2>備考</h2>
+                <p>{remark}</p>
+              {/if}
+            {/if}
+          {/if}
+        </div>
+      </div>
+
+      <div
+        bind:this={rightBarEl}
+        id="right-bar"
+        ondragover={(e) => {
+          e.preventDefault();
+          if (e.dataTransfer !== null) e.dataTransfer.dropEffect = "move";
+        }}
+        ondrop={(e) => handleDrop(e, "might-take")}
+      >
+        {@render courseTable(
+          "取る授業",
+          groupedCourses.mightTake,
+          !app.selectedCellId
+            ? "no-cell-selected"
+            : groupedCourses.mightTake.length === 0
+              ? "no-courses"
+              : "contains-courses",
+          true,
+          true,
+          false,
+          "might-take",
+        )}
+        {@render courseTable(
+          "単位取得済みの授業",
+          groupedCourses.taken,
+          !app.selectedCellId
+            ? "no-cell-selected"
+            : groupedCourses.taken.length === 0
+              ? "no-courses"
+              : "contains-courses",
+          false,
+          false,
+          false,
+          "taken",
+        )}
+      </div>
+    </div>
   </div>
 </main>
 
@@ -683,14 +730,13 @@
     font-size: 14px;
 
     display: grid;
-    grid-template-columns: auto var(--sidebar-width) var(--sidebar-width);
+    grid-template-columns: auto calc(2 * var(--sidebar-width));
     grid-template-rows: 100vh;
 
     &.bars-hidden {
-      grid-template-columns: auto 0 0;
+      grid-template-columns: auto 0;
 
-      & > #left-bar-side,
-      & > #right-bar {
+      & > #sidebar {
         display: none;
       }
     }
@@ -756,27 +802,88 @@
     }
   }
 
-  #left-bar-side {
+  #sidebar {
     grid-column: 2/3;
     display: grid;
-    grid-template-rows: 1fr auto;
-    border-left: 1px dashed black;
+    grid-template-rows: auto 1fr;
+    border-left: 1px solid black;
+    overflow: hidden;
+  }
+
+  #tab-header {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid black;
+
+    & > button {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      background-color: white;
+      color: #444;
+      border: 1px solid currentColor;
+      border-radius: 10px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: oklch(95% 0 0);
+      }
+
+      &.active {
+        $c: oklch(70% 50% 270);
+        background-color: $c;
+        border-color: $c;
+        color: white;
+      }
+
+      & > .icon {
+        width: 15px;
+        height: 15px;
+        background-color: currentColor;
+        mask-image: var(--src);
+        mask-size: contain;
+        mask-repeat: no-repeat;
+        mask-position: center;
+      }
+    }
+  }
+
+  #import-tab,
+  #export-tab,
+  #settings-tab,
+  #courses-tab {
+    display: none;
+    overflow: hidden;
+
+    &.active {
+      display: grid;
+    }
+  }
+
+  #import-tab.active,
+  #export-tab.active,
+  #settings-tab.active {
+    grid-template-rows: 1fr;
+    overflow-y: scroll;
+    padding: 15px;
+  }
+
+  #courses-tab.active {
+    grid-template-columns: var(--sidebar-width) var(--sidebar-width);
   }
 
   #left-bar {
-    grid-row: 1/2;
     overflow-y: scroll;
+    border-right: 1px dashed black;
   }
 
   #right-bar {
-    grid-column: 3/4;
-    border-left: 1px dashed black;
     overflow-y: scroll;
-    padding-top: 20px;
   }
 
   #cell-detail {
-    grid-row: 2/3;
     border-top: 1px dashed black;
 
     &.no-cell-selected {
@@ -788,10 +895,6 @@
   #right-bar,
   #cell-detail {
     padding: 15px;
-  }
-
-  #right-bar > .separator {
-    border-top: 1px dashed black;
   }
 
   .cell {
