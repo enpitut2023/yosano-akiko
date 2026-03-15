@@ -35,6 +35,17 @@
     visible: boolean;
   };
 
+  function expectsToString(es: number[]): string {
+    if (es.length === 0) return "-";
+    if (es.length === 1) return es[0].toString();
+    const from = es[0];
+    const to = es[es.length - 1];
+    for (let i = 0; i < es.length; i++) {
+      if (es[i] !== from + i) return es.join("m");
+    }
+    return `${from}-${to}`;
+  }
+
   let { data } = $props();
   let app = $derived(new AkikoApp(data.config));
 
@@ -144,7 +155,7 @@
         credit: rc?.credit ?? kc?.credit,
         term: kc?.term,
         when: kc?.when,
-        expects: kc?.expects?.join(","), // TODO: better display
+        expects: kc !== undefined ? expectsToString(kc.expects) : undefined,
         grade: rc?.grade,
         takenYear: rc?.takenYear,
         visible: false,
