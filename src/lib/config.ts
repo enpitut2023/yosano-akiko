@@ -1,7 +1,6 @@
-import type { KnownCourse } from "./akiko";
 import { type SetupParams } from "./app-setup";
 import { type Major } from "./constants";
-import { courses } from "./current-courses.js";
+import { knownCourses, knownCourseYear } from "./current-courses";
 import { assert } from "./util.js";
 
 export async function getConfig(
@@ -56,8 +55,8 @@ export async function getConfig(
   const rects = await import(`./${tableYear}/${major}/cell-id-to-rect.json`);
 
   return {
-    knownCourses: courses as KnownCourse[],
-    knownCourseYear: 2025,
+    knownCourses,
+    knownCourseYear,
     getCreditRequirements: req.getCreditRequirements,
     major,
     requirementsTableYear: tableYear,

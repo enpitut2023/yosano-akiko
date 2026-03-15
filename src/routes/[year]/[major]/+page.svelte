@@ -144,7 +144,7 @@
         credit: rc?.credit ?? kc?.credit,
         term: kc?.term,
         when: kc?.when,
-        expects: kc?.expects,
+        expects: kc?.expects?.join(","), // TODO: better display
         grade: rc?.grade,
         takenYear: rc?.takenYear,
         visible: false,
@@ -178,8 +178,8 @@
     });
     return {
       wontTake: sortedGroupedCourses.wontTake.map(addVisible),
-      mightTake: sortedGroupedCourses.mightTake.map(addVisible),
-      taken: sortedGroupedCourses.taken.map(addVisible),
+      mightTake: sortedGroupedCourses.mightTake,
+      taken: sortedGroupedCourses.taken,
       fake: sortedGroupedCourses.fake,
     };
   });
@@ -190,6 +190,13 @@
     a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(content);
     a.download = "科目番号一覧.csv";
     a.click();
+  }
+
+  function gradeDisplay(g: Grade): string {
+    if (g === "wip") return "（履修中）";
+    if (g === "d" || g === "fail") return "（落単済み）";
+    if (g === "pass") return "評価：P";
+    return `評価：${g.toUpperCase()}`;
   }
 
   function creditBoundsToString(min: number, max: number | undefined): string {
@@ -331,12 +338,12 @@
 
 {#snippet courseRow(
   c: UiCourse,
-  draggable = false,
-  listKind: "wont-take" | "might-take" = "wont-take",
+  listKind: "wont-take" | "might-take" | "taken",
 )}
+  {@const draggable = listKind === "wont-take" || listKind === "might-take"}
   <tr
     class="course"
-    class:hide-in-wont-take={!c.visible}
+    class:hide-in-wont-take={listKind === "wont-take" && !c.visible}
     {draggable}
     ondragstart={(e) => {
       if (!draggable) return;
@@ -353,11 +360,7 @@
         draggable="false"
         >{c.name}{c.grade && gradeIsPass(c.grade) ? ` (${c.takenYear})` : ""}</a
       >
-      {#if c.grade}<br /><span
-          >{c.grade === "wip"
-            ? "（履修中）"
-            : `評価：${c.grade.toUpperCase()}`}</span
-        >{/if}
+      {#if c.grade}<br /><span>{gradeDisplay(c.grade)}</span>{/if}
     </td>
     <td class="credit">{c.credit ?? "-"}</td>
     <td class="term">{c.term || "-"}</td>
@@ -397,11 +400,7 @@
       </thead>
       <tbody>
         {#each courses as c}
-          {@render courseRow(
-            c,
-            listKind !== "taken",
-            listKind !== "taken" ? listKind : "wont-take",
-          )}
+          {@render courseRow(c, listKind)}
         {/each}
       </tbody>
     </table>
@@ -618,29 +617,31 @@
         }}
         ondrop={(e) => handleDrop(e, "wont-take")}
       >
-        <search>
-          <div>
-            <img src={asset("/icons/search.svg")} width="15px" alt="search" />
-          </div>
-          <input
-            type="text"
-            placeholder="科目番号・科目名で検索"
-            bind:value={app.filterString}
-          />
-        </search>
-        {@render courseTable(
-          "当てはまる授業",
-          groupedCourses.wontTake,
-          !app.selectedCellId
-            ? "no-cell-selected"
-            : groupedCourses.wontTake.length === 0
-              ? "no-courses"
-              : "contains-courses",
-          true,
-          true,
-          true,
-          "wont-take",
-        )}
+        <div id="left-bar-scroll">
+          <search>
+            <div>
+              <img src={asset("/icons/search.svg")} width="15px" alt="search" />
+            </div>
+            <input
+              type="text"
+              placeholder="科目番号・科目名で検索"
+              bind:value={app.filterString}
+            />
+          </search>
+          {@render courseTable(
+            "当てはまる授業",
+            groupedCourses.wontTake,
+            !app.selectedCellId
+              ? "no-cell-selected"
+              : groupedCourses.wontTake.length === 0
+                ? "no-courses"
+                : "contains-courses",
+            true,
+            true,
+            true,
+            "wont-take",
+          )}
+        </div>
         <div id="cell-detail" class:no-cell-selected={!app.selectedCellId}>
           <h2>単位数</h2>
           {#if app.selectedCellId}
@@ -819,6 +820,13 @@
     grid-template-rows: auto 1fr;
     border-left: 1px solid black;
     overflow: hidden;
+
+    & h2 {
+      margin-top: 0;
+      &:not(:first-of-type) {
+        margin-top: 50px;
+      }
+    }
   }
 
   #tab-header {
@@ -885,8 +893,15 @@
   }
 
   #left-bar {
-    overflow-y: scroll;
+    display: grid;
+    grid-template-rows: 1fr auto;
     border-right: 1px dashed black;
+    overflow: hidden;
+  }
+
+  #left-bar-scroll {
+    overflow-y: scroll;
+    padding: 15px;
   }
 
   #right-bar {
@@ -901,7 +916,6 @@
     }
   }
 
-  #left-bar,
   #right-bar,
   #cell-detail {
     padding: 15px;
@@ -1053,7 +1067,7 @@
     border-radius: 10px;
   }
 
-  #left-bar > search {
+  #left-bar-scroll > search {
     margin-bottom: 30px;
     width: 100%;
     position: relative;

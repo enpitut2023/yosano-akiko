@@ -197,13 +197,17 @@ export function slotToString(s: Slot): string {
   return termToString(s.term) + " " + whenToString(s.when);
 }
 
+export type Availability = "available" | "unavailable" | "indeterminable";
+
 export type KnownCourse = {
   id: CourseId;
   name: string;
   credit: number | undefined;
-  expects: string;
+  expects: number[];
   term: string;
   when: string;
+  slots: Slot[];
+  availability: Availability;
 };
 export type RealCourse = {
   id: CourseId;
