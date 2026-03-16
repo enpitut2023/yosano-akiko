@@ -2,16 +2,16 @@
   import { resolve, asset } from "$app/paths";
   import HowToImportFromTwins from "$lib/HowToImportFromTwins.svelte";
   import HowToExportForTwins from "$lib/HowToExportForTwins.svelte";
-  import { AkikoApp } from "$lib/akiko.svelte";
+  import { SvelteAkiko } from "$lib/akiko.svelte";
   import { MAJOR_TO_DOCS_PAGE_NAME, MAJOR_TO_JA } from "$lib/constants";
   import { parseImportedCsv } from "$lib/csv";
   import {
-    akikoIsCourseVisible,
     columnIdIsElective,
     courseIdCompare,
     gradeIsPass,
     isCellId,
     isCourseId,
+    akikoNew,
     type CellCreditStats,
     type CellId,
     type ColumnCreditStats,
@@ -19,7 +19,18 @@
     type ElectiveCreditStats,
     type FakeCourse,
     type Grade,
+    type RealCourse,
   } from "$lib/akiko";
+  import {
+    createCreditRequirementsOrFail,
+    classifyCoursesOrFail,
+  } from "$lib/app-setup";
+  import {
+    localDataDefault,
+    localDataFromJson,
+    type LocalDataV2,
+  } from "$lib/local-data";
+  import { browser } from "$app/environment";
   import { assert } from "$lib/util.js";
   import Callout from "$lib/Callout.svelte";
 
@@ -47,7 +58,77 @@
   }
 
   let { data } = $props();
-  let app = $derived(new AkikoApp(data.config));
+
+  const localDataKey = $derived(`${data.major}_${data.year}`);
+
+  // TODO: should identify ways loading can fail and let the user know that the
+  // data will be overwritten by the default value
+  function localDataLoad(): LocalDataV2 {
+    if (!browser) return localDataDefault();
+    const json = localStorage.getItem(localDataKey);
+    if (json === null) return localDataDefault();
+    return localDataFromJson(json) ?? localDataDefault();
+  }
+
+  const initialLocalData = localDataLoad();
+  let realCourses = $state<RealCourse[]>(initialLocalData.realCourses);
+  let fakeCourses = $state<FakeCourse[]>(initialLocalData.fakeCourses);
+  let isNative = $state<boolean>(initialLocalData.native);
+  let selectedCellId = $state<CellId | undefined>(undefined);
+  let filterString = $state("");
+
+  const creditRequirements = $derived(
+    createCreditRequirementsOrFail(
+      data.config.getCreditRequirements(data.year, data.major),
+    ),
+  );
+
+  const svelteAkiko = $derived.by(() => {
+    const localData = localDataLoad();
+    const { courseIdToCellId, realCoursePositions, fakeCoursePositions } =
+      classifyCoursesOrFail(
+        data.config.knownCourses,
+        realCourses,
+        fakeCourses,
+        isNative,
+        data.year,
+        data.major,
+        data.config.classifyKnownCourses,
+        data.config.classifyRealCourses,
+        data.config.classifyFakeCourses,
+      );
+    const akiko = akikoNew(
+      data.config.knownCourses,
+      realCourses,
+      fakeCourses,
+      localData.mightTakeCourseIds,
+      courseIdToCellId,
+      realCoursePositions,
+      fakeCoursePositions,
+      creditRequirements,
+    );
+    assert(akiko !== undefined);
+    return new SvelteAkiko(akiko);
+  });
+
+  const creditStats = $derived(svelteAkiko.getCreditStats());
+  const knownCoursesMap = $derived(
+    new Map(data.config.knownCourses.map((c) => [c.id, c])),
+  );
+  const realCoursesMap = $derived(new Map(realCourses.map((c) => [c.id, c])));
+  const fakeCourseMap = $derived(new Map(fakeCourses.map((c) => [c.id, c])));
+
+  $effect(() => {
+    if (!browser) return;
+    const localData: LocalDataV2 = {
+      version: 2,
+      mightTakeCourseIds: svelteAkiko.getMightTakeCourseIds(),
+      realCourses: Array.from(realCourses),
+      fakeCourses: Array.from(fakeCourses),
+      native: isNative,
+    };
+    localStorage.setItem(localDataKey, JSON.stringify(localData));
+  });
 
   type Tab = "import" | "export" | "courses" | "settings";
 
@@ -79,7 +160,8 @@
     file.text().then((csv) => {
       const result = parseImportedCsv(csv);
       if (result.kind === "ok") {
-        app.importCSV(result.realCourses, result.fakeCourses);
+        realCourses = result.realCourses;
+        fakeCourses = result.fakeCourses;
       } else {
         alert("CSVファイルを正しく読み込めませんでした。");
       }
@@ -115,42 +197,25 @@
     dropGuide = undefined;
   }
 
-  function handleDrop(
-    event: DragEvent,
-    targetListKind: "wont-take" | "might-take",
-  ) {
+  function handleDrop(event: DragEvent, dst: "wont-take" | "might-take") {
     event.preventDefault();
     const courseId = event.dataTransfer?.getData("text/plain");
     if (courseId === undefined || !isCourseId(courseId)) return;
-    if (targetListKind === "might-take") {
-      if (!app.mightTakeCourseIds.includes(courseId)) {
-        app.mightTakeCourseIds = [...app.mightTakeCourseIds, courseId];
-      }
-    } else {
-      app.mightTakeCourseIds = app.mightTakeCourseIds.filter(
-        (id) => id !== courseId,
-      );
-    }
+    svelteAkiko.moveCourse(courseId, dst);
   }
 
   // Sorted course lists — does NOT depend on filterString, so typing in the
   // search box won't trigger a re-sort.
   const sortedGroupedCourses = $derived.by(() => {
-    const wontTake: UiCourse[] = [];
-    const mightTake: UiCourse[] = [];
-    const taken: UiCourse[] = [];
-    const fake: FakeCourse[] = [];
+    if (!selectedCellId)
+      return { wontTake: [], mightTake: [], taken: [], fake: [] };
+    const res = svelteAkiko.getCoursesInCell(selectedCellId);
 
-    if (!app.selectedCellId) return { wontTake, mightTake, taken, fake };
-
-    for (const [courseId, pos] of app.akiko.coursePositions) {
-      if (pos.cellId !== app.selectedCellId) continue;
-
-      const kc = app.akiko.knownCourses.get(courseId);
-      const rc = app.akiko.realCourses.get(courseId);
-
-      const ui: UiCourse = {
-        id: courseId,
+    function toUi(id: CourseId): UiCourse {
+      const kc = knownCoursesMap.get(id);
+      const rc = realCoursesMap.get(id);
+      return {
+        id,
         name: rc?.name || kc?.name || "（不明）",
         credit: rc?.credit ?? kc?.credit,
         term: kc?.term,
@@ -160,33 +225,30 @@
         takenYear: rc?.takenYear,
         visible: false,
       };
-
-      if (pos.listKind === "wont-take") wontTake.push(ui);
-      else if (pos.listKind === "might-take") mightTake.push(ui);
-      else if (pos.listKind === "taken") taken.push(ui);
-    }
-
-    for (const [fakeId, cid] of app.akiko.fakeCoursePositions) {
-      if (cid !== app.selectedCellId) continue;
-      const fc = app.akiko.fakeCourses.get(fakeId);
-      if (fc) fake.push(fc);
     }
 
     const compare = (a: UiCourse, b: UiCourse) => courseIdCompare(a.id, b.id);
     return {
-      wontTake: wontTake.sort(compare),
-      mightTake: mightTake.sort(compare),
-      taken: taken.sort(compare),
-      fake,
+      wontTake: res.wontTake.map(toUi).sort(compare),
+      mightTake: res.mightTake.map(toUi).sort(compare),
+      taken: res.taken.map(toUi).sort(compare),
+      fake: res.fake
+        .map((id) => fakeCourseMap.get(id))
+        .filter((fc) => fc !== undefined),
     };
   });
 
   // Adds the `visible` flag — only this re-runs when filterString changes.
   const groupedCourses = $derived.by(() => {
-    const addVisible = (c: UiCourse): UiCourse => ({
-      ...c,
-      visible: akikoIsCourseVisible(app.akiko, c.id, app.filterString),
-    });
+    const addVisible = (c: UiCourse): UiCourse => {
+      if (!filterString) return { ...c, visible: true };
+      const kc = knownCoursesMap.get(c.id);
+      const rc = realCoursesMap.get(c.id);
+      const name = rc?.name || kc?.name || "";
+      const visible =
+        c.id.includes(filterString) || name.includes(filterString);
+      return { ...c, visible };
+    };
     return {
       wontTake: sortedGroupedCourses.wontTake.map(addVisible),
       mightTake: sortedGroupedCourses.mightTake,
@@ -196,11 +258,20 @@
   });
 
   function exportMightTake() {
-    const content = app.mightTakeCourseIds.join("\n");
+    const content = svelteAkiko.getMightTakeCourseIds().join("\n");
     const a = document.createElement("a");
     a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(content);
     a.download = "科目番号一覧.csv";
     a.click();
+  }
+
+  function reset() {
+    const msg =
+      "インポートした成績データや「取る授業」に移動した授業などが全てリセットされます。本当にリセットしますか？";
+    if (window.confirm(msg)) {
+      localStorage.removeItem(localDataKey);
+      window.location.reload();
+    }
   }
 
   function gradeDisplay(g: Grade): string {
@@ -302,12 +373,12 @@
 
   $effect(() => {
     const spans: HTMLSpanElement[] = [];
-    for (const [colId] of app.stats.columns.entries()) {
+    for (const [colId] of creditStats.columns.entries()) {
       if (!columnIdIsElective(colId)) continue;
       const span = columnSpanEls[colId];
       if (span) spans.push(span);
     }
-    if (app.stats.elective && overallSpanEl) spans.push(overallSpanEl);
+    if (creditStats.elective && overallSpanEl) spans.push(overallSpanEl);
 
     const BORDER = 1;
     const PADDING = 5;
@@ -358,7 +429,7 @@
     {draggable}
     ondragstart={(e) => {
       if (!draggable) return;
-      assert(app.selectedCellId !== undefined);
+      assert(selectedCellId !== undefined);
       handleDragStart(e, c.id, listKind);
     }}
     ondragend={handleDragEnd}
@@ -459,19 +530,19 @@
         </nav>
       </div>
       {#each cellRects as r}
-        {@const stats = app.stats.cells.get(r.id)}
-        {#if stats}
+        {@const cellStats = creditStats.cells.get(r.id)}
+        {#if cellStats}
           {@const [green, yellow] = getPercentage(
-            stats.effectiveTaken,
-            stats.effectiveMightTake,
-            stats.min,
+            cellStats.effectiveTaken,
+            cellStats.effectiveMightTake,
+            cellStats.min,
           )}
           <div
             class="cell"
-            class:selected={app.selectedCellId === r.id}
+            class:selected={selectedCellId === r.id}
             style="left:{r.x}px; top:{r.y}px; width:{r.width}px; height:{r.height}px; --green-percentage:{green}%; --yellow-percentage:{yellow}%"
             onclick={() => {
-              app.selectedCellId = r.id;
+              selectedCellId = r.id;
               barsVisible = true;
               activeTab = "courses";
             }}
@@ -481,7 +552,7 @@
     </div>
     <div id="credit-sums-container">
       <div id="column-credit-sums" style="--x: {scrollX}px">
-        {#each app.stats.columns.entries() as [colId, s]}
+        {#each creditStats.columns.entries() as [colId, s]}
           {#if columnIdIsElective(colId)}
             {@const rect = cellRects.find(
               (r) => r.id === ((colId + "1") as CellId),
@@ -509,8 +580,8 @@
           {/if}
         {/each}
       </div>
-      {#if app.stats.elective}
-        {@const s = app.stats.elective}
+      {#if creditStats.elective}
+        {@const s = creditStats.elective}
         {@const display = electiveCreditStatsDisplay(s)}
         {@const [green, yellow] = getPercentage(
           s.effectiveTaken,
@@ -575,7 +646,7 @@
             ><input
               type="radio"
               name="student-type"
-              bind:group={app.native}
+              bind:group={isNative}
               value={true}
             /> <span>1年生からこの学類に所属している</span></label
           ><br />
@@ -583,7 +654,7 @@
             ><input
               type="radio"
               name="student-type"
-              bind:group={app.native}
+              bind:group={isNative}
               value={false}
             /> <span>総合学域群からこの学類に移行した</span></label
           >
@@ -611,7 +682,7 @@
 
     <div id="settings-tab" class:active={activeTab === "settings"}>
       <div id="control">
-        <button id="reset" class="button" onclick={() => app.reset()}
+        <button id="reset" class="button" onclick={() => reset()}
           ><img src={asset("/icons/trash.svg")} width="15px" alt="reset" />
           <span>リセット</span></button
         >
@@ -636,13 +707,13 @@
             <input
               type="text"
               placeholder="科目番号・科目名で検索"
-              bind:value={app.filterString}
+              bind:value={filterString}
             />
           </search>
           {@render courseTable(
             "当てはまる授業",
             groupedCourses.wontTake,
-            !app.selectedCellId
+            !selectedCellId
               ? "no-cell-selected"
               : groupedCourses.wontTake.length === 0
                 ? "no-courses"
@@ -653,19 +724,19 @@
             "wont-take",
           )}
         </div>
-        <div id="cell-detail" class:no-cell-selected={!app.selectedCellId}>
+        <div id="cell-detail" class:no-cell-selected={!selectedCellId}>
           <h2>単位数</h2>
-          {#if app.selectedCellId}
-            {@const stats = app.stats.cells.get(app.selectedCellId)}
-            {#if stats}
-              {@const display = cellCreditStatsDisplay(stats)}
+          {#if selectedCellId}
+            {@const selectedCellStats = creditStats.cells.get(selectedCellId)}
+            {#if selectedCellStats}
+              {@const display = cellCreditStatsDisplay(selectedCellStats)}
               <p>
                 {@html `選択されたマスの単位：${display.brief}${display.warning ? `<br>⚠️ ${display.warning}` : ""}`}
               </p>
             {/if}
             {#if data.config.getRemark}
               {@const remark = data.config.getRemark(
-                app.selectedCellId,
+                selectedCellId,
                 data.year,
                 data.major,
               )}
@@ -690,7 +761,7 @@
         {@render courseTable(
           "取る授業",
           groupedCourses.mightTake,
-          !app.selectedCellId
+          !selectedCellId
             ? "no-cell-selected"
             : groupedCourses.mightTake.length === 0
               ? "no-courses"
@@ -703,7 +774,7 @@
         {@render courseTable(
           "単位取得済みの授業",
           groupedCourses.taken,
-          !app.selectedCellId
+          !selectedCellId
             ? "no-cell-selected"
             : groupedCourses.taken.length === 0
               ? "no-courses"

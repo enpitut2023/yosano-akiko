@@ -1,205 +1,78 @@
 import {
   type CellId,
   type CourseId,
-  type RealCourse,
-  type FakeCourse,
-  type KnownCourse,
-  type CreditRequirements,
-  type BaseCreditStats,
   akikoGetCreditStats,
-  akikoNew,
-  akikoGetUnclassifiedRealCourses,
-  akikoGetUnclassifiedFakeCourses,
-  courseIdCompare,
-  fakeCourseIdCompare,
+  type Akiko,
+  type FakeCourseId,
+  type CreditStats,
+  akikoGetMightTakeCourseIds,
 } from "./akiko";
-import {
-  type SetupParams,
-  createCreditRequirementsOrFail,
-  classifyCoursesOrFail,
-} from "./app-setup";
-import { assert } from "./util";
-import { type Major } from "./constants";
-import { type LocalDataV2, localDataFromJson } from "./local-data";
-import { browser, dev } from "$app/environment";
+import { unreachable } from "./util";
+import { createSubscriber } from "svelte/reactivity";
 
-export class AkikoApp {
-  knownCourses: KnownCourse[];
-  knownCourseYear: number;
-  creditRequirements: CreditRequirements;
-  major: Major;
-  requirementsTableYear: number;
-
-  realCourses = $state<RealCourse[]>([]);
-  fakeCourses = $state<FakeCourse[]>([]);
-  mightTakeCourseIds = $state<CourseId[]>([]);
-  selectedCellId = $state<CellId | undefined>(undefined);
-  native = $state(true);
-  filterString = $state("");
-
-  params: SetupParams;
-  localDataKey: string;
-
-  constructor(params: SetupParams) {
-    this.params = params;
-    this.knownCourses = params.knownCourses;
-    this.knownCourseYear = params.knownCourseYear;
-    this.creditRequirements = createCreditRequirementsOrFail(
-      params.getCreditRequirements(params.requirementsTableYear, params.major),
-    );
-    this.major = params.major;
-    this.requirementsTableYear = params.requirementsTableYear;
-    this.localDataKey = `${params.major}_${params.requirementsTableYear}`;
-
-    if (browser) {
-      const saved = this.localDataLoad();
-      if (saved) {
-        this.realCourses = saved.realCourses;
-        this.fakeCourses = saved.fakeCourses;
-        this.mightTakeCourseIds = saved.mightTakeCourseIds;
-        this.native = saved.native;
-      }
-
-      $effect(() => {
-        this.save();
-      });
-
-      if (dev) {
-        $effect(() => {
-          const akiko = this.akiko;
-          const rcs = akikoGetUnclassifiedRealCourses(akiko);
-          const fcs = akikoGetUnclassifiedFakeCourses(akiko);
-          rcs.sort((a, b) => courseIdCompare(a.id, b.id));
-          fcs.sort((a, b) => fakeCourseIdCompare(a.id, b.id));
-          let s = "マスに振り分けられなかった授業\n";
-          for (const rc of rcs) {
-            s += [rc.id, rc.name, rc.takenYear, rc.credit, rc.grade].join(" ");
-            s += "\n";
-          }
-          for (const fc of fcs) {
-            s += [fc.id, fc.name, fc.takenYear, fc.credit, fc.grade].join(" ");
-            s += "\n";
-          }
-          console.log(s);
-
-          function createWantBaseCreditStats(
-            s: BaseCreditStats,
-          ): Record<string, number> {
-            const o: Record<string, number> = {};
-            if (s.rawTaken > 0) {
-              if (s.overflowTaken === 0) {
-                o.taken = s.rawTaken;
-              } else {
-                o.rawTaken = s.rawTaken;
-                o.effectiveTaken = s.effectiveTaken;
-              }
-            }
-            if (s.rawMightTake > 0) {
-              if (s.overflowMightTake === 0) {
-                o.mightTake = s.rawMightTake;
-              } else {
-                o.rawMightTake = s.rawMightTake;
-                o.effectiveMightTake = s.effectiveMightTake;
-              }
-            }
-            return o;
-          }
-
-          const stats = this.stats;
-          const cells: Record<string, object> = {};
-          for (const [cellId, stat] of stats.cells) {
-            const cell = createWantBaseCreditStats(stat);
-            if (Object.keys(cell).length > 0) {
-              cells[cellId] = cell;
-            }
-          }
-          const columns: Record<string, object> = {};
-          for (const [colId, stat] of stats.columns) {
-            const col = createWantBaseCreditStats(stat);
-            if (Object.keys(col).length > 0) {
-              columns[colId] = col;
-            }
-          }
-          const compulsory = createWantBaseCreditStats(stats.compulsory);
-          const elective = createWantBaseCreditStats(stats.elective);
-          console.log(JSON.stringify({ cells, columns, compulsory, elective }));
-        });
-      }
-    }
-  }
-
-  akiko = $derived.by(() => {
-    const { courseIdToCellId, realCoursePositions, fakeCoursePositions } =
-      classifyCoursesOrFail(
-        this.knownCourses,
-        this.realCourses,
-        this.fakeCourses,
-        this.native,
-        this.requirementsTableYear,
-        this.major,
-        this.params.classifyKnownCourses,
-        this.params.classifyRealCourses,
-        this.params.classifyFakeCourses,
-      );
-    const a = akikoNew(
-      this.knownCourses,
-      this.realCourses,
-      this.fakeCourses,
-      this.mightTakeCourseIds,
-      courseIdToCellId,
-      realCoursePositions,
-      fakeCoursePositions,
-      this.creditRequirements,
-    );
-    assert(a !== undefined);
-    return a;
+export class SvelteAkiko {
+  private update: (() => void) | undefined;
+  private subscribe = createSubscriber((update) => {
+    this.update = update;
+    return () => (this.update = undefined);
   });
 
-  stats = $derived.by(() => akikoGetCreditStats(this.akiko));
+  private akiko: Akiko;
 
-  localDataLoad() {
-    const json = localStorage.getItem(this.localDataKey);
-    if (json) {
-      try {
-        return localDataFromJson(json);
-      } catch (e) {
-        console.error("Failed to load local data", e);
+  constructor(akiko: Akiko) {
+    this.akiko = akiko;
+  }
+
+  // TODO: should return undefined for unknown cell ids
+  getCoursesInCell(cellId: CellId): {
+    wontTake: CourseId[];
+    mightTake: CourseId[];
+    taken: CourseId[];
+    fake: FakeCourseId[];
+  } {
+    this.subscribe();
+    const wontTake: CourseId[] = [];
+    const mightTake: CourseId[] = [];
+    const taken: CourseId[] = [];
+    const fake: FakeCourseId[] = [];
+    for (const [courseId, pos] of this.akiko.coursePositions) {
+      if (pos.cellId !== cellId) continue;
+      switch (pos.listKind) {
+        case "wont-take":
+          wontTake.push(courseId);
+          break;
+        case "might-take":
+          mightTake.push(courseId);
+          break;
+        case "taken":
+          taken.push(courseId);
+          break;
+        default:
+          unreachable(pos.listKind);
       }
     }
-    return undefined;
-  }
-
-  save() {
-    if (typeof window === "undefined") return;
-    const data: LocalDataV2 = {
-      version: 2,
-      mightTakeCourseIds: Array.from(this.mightTakeCourseIds),
-      realCourses: Array.from(this.realCourses),
-      fakeCourses: Array.from(this.fakeCourses),
-      native: this.native,
-    };
-    localStorage.setItem(this.localDataKey, JSON.stringify(data));
-  }
-
-  toggleMightTake(id: CourseId) {
-    if (this.mightTakeCourseIds.includes(id)) {
-      this.mightTakeCourseIds = this.mightTakeCourseIds.filter((x) => x !== id);
-    } else {
-      this.mightTakeCourseIds = [...this.mightTakeCourseIds, id];
+    for (const [fakeCourseId, id] of this.akiko.fakeCoursePositions) {
+      if (cellId === id) fake.push(fakeCourseId);
     }
+    return { wontTake, mightTake, taken, fake };
   }
 
-  reset() {
-    const msg =
-      "インポートした成績データや「取る授業」に移動した授業などが全てリセットされます。本当にリセットしますか？";
-    if (window.confirm(msg)) {
-      localStorage.removeItem(this.localDataKey);
-      window.location.reload();
-    }
+  getMightTakeCourseIds(): CourseId[] {
+    this.subscribe();
+    return akikoGetMightTakeCourseIds(this.akiko);
   }
 
-  importCSV(real: RealCourse[], fake: FakeCourse[]) {
-    this.realCourses = real;
-    this.fakeCourses = fake;
+  getCreditStats(): CreditStats {
+    this.subscribe();
+    return akikoGetCreditStats(this.akiko);
+  }
+
+  // TODO: should return something when no course is found or the course is
+  // already at the destination
+  moveCourse(courseId: CourseId, dst: "wont-take" | "might-take"): void {
+    this.update?.();
+    const pos = this.akiko.coursePositions.get(courseId);
+    if (pos === undefined) return;
+    pos.listKind = dst;
   }
 }

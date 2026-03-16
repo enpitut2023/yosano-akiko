@@ -198,10 +198,25 @@ function localDataV2Parse(x: unknown): LocalDataV2 | undefined {
 }
 
 export function localDataFromJson(json: string): LocalDataV2 | undefined {
-  const x: unknown = JSON.parse(json);
+  let x: unknown;
+  try {
+    x = JSON.parse(json);
+  } catch {
+    return undefined;
+  }
   const v1 = localDataV1Parser.safeParse(x);
   if (v1.success) {
     return localDataV1ToV2(v1.data);
   }
   return localDataV2Parse(x);
+}
+
+export function localDataDefault(): LocalDataV2 {
+  return {
+    version: 2,
+    mightTakeCourseIds: [],
+    realCourses: [],
+    fakeCourses: [],
+    native: true,
+  };
 }
