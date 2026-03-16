@@ -6,6 +6,7 @@ import {
   type FakeCourseId,
   type CreditStats,
   akikoGetMightTakeCourseIds,
+  akikoGetTakenCourseIds,
 } from "./akiko";
 import { unreachable } from "./util";
 import { createSubscriber } from "svelte/reactivity";
@@ -60,6 +61,11 @@ export class SvelteAkiko {
   getMightTakeCourseIds(): CourseId[] {
     this.subscribe();
     return akikoGetMightTakeCourseIds(this.akiko);
+  }
+
+  getTakenCourseIds(): CourseId[] {
+    this.subscribe();
+    return akikoGetTakenCourseIds(this.akiko);
   }
 
   getCreditStats(): CreditStats {

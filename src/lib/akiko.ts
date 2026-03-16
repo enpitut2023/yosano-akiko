@@ -478,9 +478,15 @@ export function akikoGetCreditStats(akiko: Akiko): CreditStats {
 export function akikoGetMightTakeCourseIds(akiko: Akiko): CourseId[] {
   const res: CourseId[] = [];
   for (const [id, { listKind }] of akiko.coursePositions) {
-    if (listKind === "might-take") {
-      res.push(id);
-    }
+    if (listKind === "might-take") res.push(id);
+  }
+  return res;
+}
+
+export function akikoGetTakenCourseIds(akiko: Akiko): CourseId[] {
+  const res: CourseId[] = [];
+  for (const [id, { listKind }] of akiko.coursePositions) {
+    if (listKind === "taken") res.push(id);
   }
   return res;
 }
