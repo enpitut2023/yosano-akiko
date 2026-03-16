@@ -100,7 +100,7 @@
     }
 
     // Group unique bars by column, then greedily layer to avoid overlap.
-    // Sort key: yStart asc, length asc (shorter first), then courseId.
+    // Sort key: length asc (longer first), yStart asc, then courseId.
     const byX = new Map<number, Bar[]>();
     for (const bar of unique) {
       const col = byX.get(bar.x) ?? [];
@@ -109,10 +109,10 @@
     }
     for (const col of byX.values()) {
       col.sort((a, b) => {
-        if (a.yStart !== b.yStart) return a.yStart - b.yStart;
         const aLen = a.yEnd - a.yStart;
         const bLen = b.yEnd - b.yStart;
-        if (aLen !== bLen) return aLen - bLen;
+        if (aLen !== bLen) return  bLen - aLen;
+        if (a.yStart !== b.yStart) return a.yStart - b.yStart;
         return courseIdCompare(a.courseId, b.courseId);
       });
       let remaining = col;
