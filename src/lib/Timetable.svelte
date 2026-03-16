@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+    courseIdCompare,
     termToString,
     type CourseId,
     type Dow,
@@ -44,6 +45,7 @@
     yEnd: number;
     courseId: CourseId;
     courseName: string;
+    nudge: number;
   };
 
   function posKey(term: Term, x: number, y: number): string {
@@ -73,7 +75,7 @@
         if (y < 0 || y > 5) continue;
         const k = posKey(activeTerm, x, y);
         const inner = map.get(k) ?? new Map<CourseId, Bar>();
-        inner.set(courseId, { x, yStart: y, yEnd: y, courseId, courseName: name });
+        inner.set(courseId, { x, yStart: y, yEnd: y, courseId, courseName: name, nudge: 0 });
         map.set(k, inner);
       }
     }
@@ -83,7 +85,7 @@
         const here = map.get(posKey(activeTerm, x, y));
         const above = map.get(posKey(activeTerm, x, y - 1));
         if (!here || !above) continue;
-        for (const [courseId, bar] of here) {
+        for (const [courseId] of here) {
           const barAbove = above.get(courseId);
           if (!barAbove) continue;
           barAbove.yEnd = y;
@@ -92,11 +94,46 @@
       }
     }
 
-    const result = new Set<Bar>();
+    const unique = new Set<Bar>();
     for (const inner of map.values()) {
-      for (const bar of inner.values()) result.add(bar);
+      for (const bar of inner.values()) unique.add(bar);
     }
-    return [...result];
+
+    // Group unique bars by column, then greedily layer to avoid overlap.
+    // Sort key: yStart asc, length asc (shorter first), then courseId.
+    const byX = new Map<number, Bar[]>();
+    for (const bar of unique) {
+      const col = byX.get(bar.x) ?? [];
+      col.push(bar);
+      byX.set(bar.x, col);
+    }
+    for (const col of byX.values()) {
+      col.sort((a, b) => {
+        if (a.yStart !== b.yStart) return a.yStart - b.yStart;
+        const aLen = a.yEnd - a.yStart;
+        const bLen = b.yEnd - b.yStart;
+        if (aLen !== bLen) return aLen - bLen;
+        return courseIdCompare(a.courseId, b.courseId);
+      });
+      let remaining = col;
+      let nudge = 0;
+      while (remaining.length > 0) {
+        const layer: Bar[] = [];
+        const next: Bar[] = [];
+        for (const bar of remaining) {
+          if (layer.some(l => l.yStart <= bar.yEnd && bar.yStart <= l.yEnd)) {
+            next.push(bar);
+          } else {
+            bar.nudge = nudge;
+            layer.push(bar);
+          }
+        }
+        remaining = next;
+        nudge++;
+      }
+    }
+
+    return [...unique].sort((a, b) => a.nudge - b.nudge);
   });
 </script>
 
@@ -123,9 +160,10 @@
     {#each bars as bar}
       <div
         class="bar-outer"
-        style="grid-column: {bar.x + 2}; grid-row: {bar.yStart + 2} / {bar.yEnd + 3}"
+        style="grid-column: {bar.x + 2}; grid-row: {bar.yStart + 2} / {bar.yEnd + 3}; --nudge: {bar.nudge}"
       >
         <div class="bar-inner">
+          <span class="bar-id">{bar.courseId}</span>
           <span class="bar-name">{bar.courseName}</span>
         </div>
       </div>
@@ -183,8 +221,10 @@
 
   .bar-outer {
     padding: 2px;
+    padding-left: calc(2px + var(--nudge, 0) * 10px);
     pointer-events: none;
     overflow: hidden;
+    z-index: var(--nudge, 0);
   }
 
   .bar-inner {
@@ -197,11 +237,18 @@
     overflow: hidden;
   }
 
-  .bar-name {
-    font-size: 9px;
+  .bar-id {
+    font-size: 8px;
+    opacity: 0.7;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     display: block;
+  }
+
+  .bar-name {
+    font-size: 9px;
+    display: block;
+    word-break: break-all;
   }
 </style>
