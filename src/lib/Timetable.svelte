@@ -250,6 +250,7 @@
     overflow: hidden;
     pointer-events: auto;
     user-select: none;
+    cursor: pointer;
 
     &[draggable="true"] { cursor: grab; }
     &[draggable="true"]:active { cursor: grabbing; }

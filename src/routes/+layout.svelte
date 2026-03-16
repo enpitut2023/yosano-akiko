@@ -42,6 +42,11 @@
       font-family: "M PLUS Rounded 1c", sans-serif;
     }
 
+    button,
+    label {
+      cursor: pointer;
+    }
+
     h1,
     h2,
     h3,

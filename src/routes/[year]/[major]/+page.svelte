@@ -1115,6 +1115,7 @@
 
   tbody > tr[draggable="true"] {
     cursor: grab;
+    &:active { cursor: grabbing; }
   }
 
   #bars-toggle {
@@ -1247,6 +1248,8 @@
     );
 
     &[data-message-on-click]:not([data-message-on-click=""]) {
+      cursor: pointer;
+
       & > img {
         display: unset;
       }
