@@ -1,5 +1,6 @@
 <script lang="ts">
   import { resolve, asset } from "$app/paths";
+  import Timetable from "$lib/Timetable.svelte";
   import HowToImportFromTwins from "$lib/HowToImportFromTwins.svelte";
   import HowToExportForTwins from "$lib/HowToExportForTwins.svelte";
   import { SvelteAkiko } from "$lib/akiko.svelte";
@@ -12,7 +13,6 @@
     isCellId,
     isCourseId,
     akikoNew,
-    termToString,
     type CellCreditStats,
     type CellId,
     type ColumnCreditStats,
@@ -21,8 +21,6 @@
     type FakeCourse,
     type Grade,
     type RealCourse,
-    type Term,
-    type Dow,
   } from "$lib/akiko";
   import {
     createCreditRequirementsOrFail,
@@ -135,11 +133,6 @@
 
   type Tab = "import" | "export" | "courses" | "settings";
 
-  const TIMETABLE_TERMS: Term[] = [
-    "spring-a", "spring-b", "spring-c",
-    "autumn-a", "autumn-b", "autumn-c",
-  ];
-  let activeTerm = $state<Term>("spring-a");
   let timetableShowTaken = $state(true);
 
   let barsVisible = $state(true);
@@ -267,38 +260,8 @@
     };
   });
 
-  const DOW_COL: Partial<Record<Dow, number>> = { mon: 0, tue: 1, wed: 2, thu: 3, fri: 4 };
-  const TIMETABLE_DAYS = ["月", "火", "水", "木", "金"] as const;
-  const TIMETABLE_PERIODS = [1, 2, 3, 4, 5, 6] as const;
-
-  // timetable[period - 1][day] = list of { id, name }
-  const timetable = $derived.by(() => {
-    type Entry = { id: CourseId; name: string };
-    const grid: Entry[][][] = Array.from({ length: 6 }, () =>
-      Array.from({ length: 5 }, () => []),
-    );
-    const allIds = svelteAkiko.getMightTakeCourseIds();
-    if (timetableShowTaken) {
-      for (const id of svelteAkiko.getTakenCourseIds()) allIds.push(id)
-    }
-    // TODO: fake courses
-    for (const courseId of allIds) {
-      const kc = knownCoursesMap.get(courseId);
-      if (!kc) continue;
-      const rc = realCoursesMap.get(courseId);
-      const name = rc?.name ?? kc.name;
-      for (const slot of kc.slots) {
-        if (slot.term !== activeTerm) continue;
-        if (slot.when.kind !== "regular") continue;
-        const col = DOW_COL[slot.when.dow];
-        if (col === undefined) continue;
-        const row = slot.when.period - 1;
-        if (row < 0 || row > 5) continue;
-        grid[row][col].push({ id: courseId, name });
-      }
-    }
-    return grid;
-  });
+  const mightTakeCourseIds = $derived(svelteAkiko.getMightTakeCourseIds());
+  const takenCourseIds = $derived(svelteAkiko.getTakenCourseIds());
 
   function exportMightTake() {
     const content = svelteAkiko.getMightTakeCourseIds().join("\n");
@@ -828,35 +791,14 @@
             "taken",
           )}
         </div>
-        <div id="timetable">
-          <div id="timetable-term-tabs">
-            {#each TIMETABLE_TERMS as term}
-              <button
-                class:active={activeTerm === term}
-                onclick={() => (activeTerm = term)}
-              >{termToString(term)}</button>
-            {/each}
-          </div>
-          <div id="timetable-grid">
-            <div class="tt-cell tt-corner"></div>
-            {#each TIMETABLE_DAYS as day}
-              <div class="tt-cell tt-header">{day}</div>
-            {/each}
-            {#each TIMETABLE_PERIODS as period}
-              <div class="tt-cell tt-period">{period}</div>
-              {#each [0, 1, 2, 3, 4] as di}
-                <div class="tt-cell">
-                  {#each timetable[period - 1][di] as entry}
-                    <span class="tt-entry">
-                      <span class="tt-id">{entry.id}</span>
-                      <span class="tt-name">{entry.name}</span>
-                    </span>
-                  {/each}
-                </div>
-              {/each}
-            {/each}
-          </div>
-        </div>
+        <Timetable
+          year={2025}
+          {mightTakeCourseIds}
+          {takenCourseIds}
+          showTaken={timetableShowTaken}
+          {knownCoursesMap}
+          {realCoursesMap}
+        />
       </div>
     </div>
   </div>
@@ -1077,77 +1019,6 @@
     &.no-cell-selected {
       display: none;
     }
-  }
-
-  #timetable {
-    border-top: 1px dashed black;
-    display: grid;
-    grid-template-rows: auto 1fr;
-    overflow: hidden;
-  }
-
-  #timetable-term-tabs {
-    display: flex;
-    border-bottom: 1px solid black;
-
-    & > button {
-      flex: 1;
-      padding: 3px 0;
-      background: none;
-      border: none;
-      border-right: 1px solid black;
-      cursor: pointer;
-      font-size: 11px;
-
-      &:last-child { border-right: none; }
-      &:hover { background-color: oklch(0.95 0 0); }
-      &.active { font-weight: bold; background-color: oklch(0.93 0 0); }
-    }
-  }
-
-  #timetable-grid {
-    display: grid;
-    grid-template-columns: auto repeat(5, 1fr);
-    grid-template-rows: auto repeat(6, 1fr);
-    border-left: 1px solid black;
-    overflow: hidden;
-  }
-
-  .tt-cell {
-    border-right: 1px solid black;
-    border-bottom: 1px solid black;
-    padding: 2px 3px;
-    font-size: 10px;
-    overflow: hidden;
-  }
-
-  .tt-header,
-  .tt-period,
-  .tt-corner {
-    background-color: oklch(0.95 0 0);
-    text-align: center;
-    font-weight: bold;
-  }
-
-  .tt-entry {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-    & + & { margin-top: 2px; border-top: 1px dashed oklch(0.8 0 0); padding-top: 2px; }
-  }
-
-  .tt-id {
-    font-size: 9px;
-    color: oklch(0.5 0 0);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .tt-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .cell {
