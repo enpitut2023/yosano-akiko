@@ -518,11 +518,6 @@
           <a href="{resolve('/')}#app-page-links">学類一覧に戻る</a>
           <a href={resolve("/docs")}>あきこの使い方</a>
           <a
-            href={resolve("/docs/[name]", {
-              name: MAJOR_TO_DOCS_PAGE_NAME[data.config.major],
-            })}>未対応の部分など</a
-          >
-          <a
             href="https://docs.google.com/forms/d/e/1FAIpQLSfUbueFsF6fbyJxCohNTqh5S8bYdxNgqx_HQ76RCR5TJQkpyQ/viewform?usp=dialog"
             target="_blank"
             rel="noreferrer">ご意見はこちらから</a
