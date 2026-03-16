@@ -11,20 +11,28 @@
 
   type Props = {
     year: number;
+    activeTerm: Term;
     mightTakeCourseIds: CourseId[];
     takenCourseIds: CourseId[];
     showTaken: boolean;
     knownCoursesMap: Map<CourseId, KnownCourse>;
     realCoursesMap: Map<CourseId, RealCourse>;
+    onBarClick: (courseId: CourseId) => void;
+    onBarDragStart: (event: DragEvent, courseId: CourseId) => void;
+    onBarDragEnd: () => void;
   };
 
   let {
     year,
+    activeTerm = $bindable(),
     mightTakeCourseIds,
     takenCourseIds,
     showTaken,
     knownCoursesMap,
     realCoursesMap,
+    onBarClick,
+    onBarDragStart,
+    onBarDragEnd,
   }: Props = $props();
 
   const TERMS: Term[] = [
@@ -37,7 +45,6 @@
     mon: 0, tue: 1, wed: 2, thu: 3, fri: 4,
   };
 
-  let activeTerm = $state<Term>("spring-a");
 
   type Bar = {
     x: number;
@@ -162,7 +169,13 @@
         class="bar-outer"
         style="grid-column: {bar.x + 2}; grid-row: {bar.yStart + 2} / {bar.yEnd + 3}; --nudge: {bar.nudge}"
       >
-        <div class="bar-inner">
+        <div
+          class="bar-inner"
+          draggable={mightTakeCourseIds.includes(bar.courseId)}
+          onclick={() => onBarClick(bar.courseId)}
+          ondragstart={(e) => onBarDragStart(e, bar.courseId)}
+          ondragend={() => onBarDragEnd()}
+        >
           <span class="bar-id">{bar.courseId}</span>
           <span class="bar-name">{bar.courseName}</span>
         </div>
@@ -222,9 +235,9 @@
   .bar-outer {
     padding: 2px;
     padding-left: calc(2px + var(--nudge, 0) * 10px);
-    pointer-events: none;
     overflow: hidden;
     z-index: var(--nudge, 0);
+    pointer-events: none;
   }
 
   .bar-inner {
@@ -235,6 +248,12 @@
     border-radius: 3px;
     padding: 1px 3px;
     overflow: hidden;
+    pointer-events: auto;
+    user-select: none;
+
+    &[draggable="true"] { cursor: grab; }
+    &[draggable="true"]:active { cursor: grabbing; }
+    &:hover { filter: brightness(0.9); }
   }
 
   .bar-id {

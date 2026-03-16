@@ -7,6 +7,9 @@ import {
   type CreditStats,
   akikoGetMightTakeCourseIds,
   akikoGetTakenCourseIds,
+  type AkikoMoveCourseDst,
+  type AkikoMoveCourseResult,
+  akikoMoveCourse,
 } from "./akiko";
 import { unreachable } from "./util";
 import { createSubscriber } from "svelte/reactivity";
@@ -58,6 +61,11 @@ export class SvelteAkiko {
     return { wontTake, mightTake, taken, fake };
   }
 
+  getCellId(courseId: CourseId): CellId | undefined {
+    this.subscribe();
+    return this.akiko.coursePositions.get(courseId)?.cellId;
+  }
+
   getMightTakeCourseIds(): CourseId[] {
     this.subscribe();
     return akikoGetMightTakeCourseIds(this.akiko);
@@ -73,12 +81,11 @@ export class SvelteAkiko {
     return akikoGetCreditStats(this.akiko);
   }
 
-  // TODO: should return something when no course is found or the course is
-  // already at the destination
-  moveCourse(courseId: CourseId, dst: "wont-take" | "might-take"): void {
+  moveCourse(
+    courseId: CourseId,
+    dst: AkikoMoveCourseDst,
+  ): AkikoMoveCourseResult {
     this.update?.();
-    const pos = this.akiko.coursePositions.get(courseId);
-    if (pos === undefined) return;
-    pos.listKind = dst;
+    return akikoMoveCourse(this.akiko, courseId, dst);
   }
 }

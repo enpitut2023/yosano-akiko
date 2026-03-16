@@ -14,6 +14,7 @@
     isCourseId,
     akikoNew,
     type CellCreditStats,
+    type Term,
     type CellId,
     type ColumnCreditStats,
     type CourseId,
@@ -123,7 +124,7 @@
     if (!browser) return;
     const localData: LocalDataV2 = {
       version: 2,
-      mightTakeCourseIds: svelteAkiko.getMightTakeCourseIds(),
+      mightTakeCourseIds,
       realCourses: Array.from(realCourses),
       fakeCourses: Array.from(fakeCourses),
       native: isNative,
@@ -134,6 +135,7 @@
   type Tab = "import" | "export" | "courses" | "settings";
 
   let timetableShowTaken = $state(true);
+  let activeTimetableTerm = $state<Term>("spring-a");
 
   let barsVisible = $state(true);
   let activeTab = $state<Tab>("courses");
@@ -204,7 +206,14 @@
     event.preventDefault();
     const courseId = event.dataTransfer?.getData("text/plain");
     if (courseId === undefined || !isCourseId(courseId)) return;
-    svelteAkiko.moveCourse(courseId, dst);
+    svelteAkiko.moveCourse(courseId, dst); // TODO: use the return value
+    if (dst === "might-take") {
+      const slots = knownCoursesMap.get(courseId)?.slots ?? [];
+      const terms = slots.filter((s) => s.when.kind === "regular").map((s) => s.term);
+      if (terms.length > 0 && !terms.includes(activeTimetableTerm)) {
+        activeTimetableTerm = terms[0];
+      }
+    }
   }
 
   // Sorted course lists — does NOT depend on filterString, so typing in the
@@ -264,7 +273,7 @@
   const takenCourseIds = $derived(svelteAkiko.getTakenCourseIds());
 
   function exportMightTake() {
-    const content = svelteAkiko.getMightTakeCourseIds().join("\n");
+    const content = mightTakeCourseIds.join("\n");
     const a = document.createElement("a");
     a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(content);
     a.download = "科目番号一覧.csv";
@@ -793,11 +802,22 @@
         </div>
         <Timetable
           year={2025}
+          bind:activeTerm={activeTimetableTerm}
           {mightTakeCourseIds}
           {takenCourseIds}
           showTaken={timetableShowTaken}
           {knownCoursesMap}
           {realCoursesMap}
+          onBarClick={(courseId) => {
+            const cellId = svelteAkiko.getCellId(courseId);
+            if (cellId !== undefined) {
+              selectedCellId = cellId;
+              barsVisible = true;
+              activeTab = "courses";
+            }
+          }}
+          onBarDragStart={(e, courseId) => handleDragStart(e, courseId, "might-take")}
+          onBarDragEnd={handleDragEnd}
         />
       </div>
     </div>

@@ -529,3 +529,23 @@ export function akikoGetUnclassifiedFakeCourses(akiko: Akiko): FakeCourse[] {
   }
   return fcs;
 }
+
+export type AkikoMoveCourseDst = "wont-take" | "might-take";
+
+export type AkikoMoveCourseResult =
+  | undefined
+  | "no-such-course"
+  | "course-taken"
+  | "course-does-not-move";
+
+export function akikoMoveCourse(
+  akiko: Akiko,
+  courseId: CourseId,
+  dst: AkikoMoveCourseDst,
+): AkikoMoveCourseResult {
+  const pos = akiko.coursePositions.get(courseId);
+  if (pos === undefined) return "no-such-course";
+  if (pos.listKind === "taken") return "course-taken";
+  if (pos.listKind === dst) return "course-does-not-move";
+  pos.listKind = dst;
+}
