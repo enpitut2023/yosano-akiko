@@ -6,7 +6,7 @@ const config = {
   preprocess: vitePreprocess(),
   kit: {
     adapter: adapter({ fallback: "404.html", strict: true }),
-    paths: { base: process.env.BASE_PATH ?? "/yosano-akiko" },
+    paths: { base: process.env.BASE_PATH ?? "/yosano-akiko", relative: false },
   },
   compilerOptions: {
     warningFilter: (warning) => !warning.code.startsWith("a11y_"),
