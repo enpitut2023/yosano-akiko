@@ -1,6 +1,6 @@
 <script lang="ts">
   import { resolve, asset } from "$app/paths";
-  import Timetable from "$lib/Timetable.svelte";
+  import Timetable, { type TimetableTab } from "$lib/Timetable.svelte";
   import HowToImportFromTwins from "$lib/HowToImportFromTwins.svelte";
   import HowToExportForTwins from "$lib/HowToExportForTwins.svelte";
   import { SvelteAkiko } from "$lib/akiko.svelte";
@@ -135,7 +135,7 @@
   type Tab = "import" | "export" | "courses" | "settings";
 
   let timetableShowTaken = $state(true);
-  let activeTimetableTerm = $state<Term>("spring-a");
+  let activeTimetableTerm = $state<TimetableTab>("spring-a");
 
   let barsVisible = $state(true);
   let activeTab = $state<Tab>("courses");
@@ -210,7 +210,7 @@
     if (dst === "might-take") {
       const slots = knownCoursesMap.get(courseId)?.slots ?? [];
       const terms = slots.filter((s) => s.when.kind === "regular").map((s) => s.term);
-      if (terms.length > 0 && !terms.includes(activeTimetableTerm)) {
+      if (terms.length > 0 && (activeTimetableTerm === "other" || !terms.includes(activeTimetableTerm))) {
         activeTimetableTerm = terms[0];
       }
     }

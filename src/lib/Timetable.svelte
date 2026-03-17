@@ -4,14 +4,17 @@
     termToString,
     type CourseId,
     type Dow,
+    type Grade,
     type KnownCourse,
     type RealCourse,
     type Term,
   } from "$lib/akiko";
 
+  export type TimetableTab = Term | "other";
+
   type Props = {
     year: number;
-    activeTerm: Term;
+    activeTerm: TimetableTab;
     mightTakeCourseIds: CourseId[];
     takenCourseIds: CourseId[];
     showTaken: boolean;
@@ -59,7 +62,48 @@
     return `${term}:${x}:${y}`;
   }
 
+  function getSyllabusUrl(courseId: string, takenYear: number | undefined): string {
+    return `https://kdb.tsukuba.ac.jp/syllabi/${takenYear ?? year}/${courseId}/jpn`;
+  }
+
+  function gradeDisplay(g: Grade): string {
+    if (g === "wip") return "（履修中）";
+    if (g === "d" || g === "fail") return "（落単済み）";
+    if (g === "pass") return "評価：P";
+    return `評価：${g.toUpperCase()}`;
+  }
+
+  const TIMETABLE_TERMS = new Set<Term>([
+    "spring-a", "spring-b", "spring-c",
+    "autumn-a", "autumn-b", "autumn-c",
+  ]);
+
+  const otherTabCourses = $derived.by(() => {
+    const ids = [...mightTakeCourseIds];
+    if (showTaken) {
+      for (const id of takenCourseIds) {
+        if (realCoursesMap.get(id)?.takenYear === year) ids.push(id);
+      }
+    }
+    return ids
+      .filter((id) => {
+        const kc = knownCoursesMap.get(id);
+        return kc?.slots.some(
+          (s) => !TIMETABLE_TERMS.has(s.term) || s.when.kind !== "regular"
+        ) ?? false;
+      })
+      .map((id) => ({
+        id,
+        kc: knownCoursesMap.get(id),
+        rc: realCoursesMap.get(id),
+        draggable: mightTakeCourseIds.includes(id),
+      }))
+      .sort((a, b) => courseIdCompare(a.id, b.id));
+  });
+
   const bars = $derived.by(() => {
+    if (activeTerm === "other") return [];
+
     const map = new Map<string, Map<CourseId, Bar>>();
 
     const ids = [...mightTakeCourseIds];
@@ -152,36 +196,79 @@
         onclick={() => (activeTerm = term)}
       >{termToString(term)}</button>
     {/each}
+    <button
+      class:active={activeTerm === "other"}
+      onclick={() => (activeTerm = "other")}
+    >その他</button>
   </div>
-  <div class="grid">
-    <div class="tt-cell tt-corner" style="grid-column: 1; grid-row: 1"></div>
-    {#each DAYS as day, di}
-      <div class="tt-cell tt-header" style="grid-column: {di + 2}; grid-row: 1">{day}</div>
-    {/each}
-    {#each PERIODS as period, pi}
-      <div class="tt-cell tt-period" style="grid-column: 1; grid-row: {pi + 2}">{period}</div>
-      {#each [0, 1, 2, 3, 4] as _, di}
-        <div class="tt-cell" style="grid-column: {di + 2}; grid-row: {pi + 2}"></div>
+  {#if activeTerm === "other"}
+    <div class="other-tab">
+      {#if otherTabCourses.length === 0}
+        <p>該当する授業はありません</p>
+      {:else}
+        <table>
+          <thead>
+            <tr>
+              <th class="id-name">科目</th>
+              <th class="credit">単位</th>
+              <th class="term">学期</th>
+              <th class="when">時限</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each otherTabCourses as { id, kc, rc, draggable }}
+              <tr
+                {draggable}
+                ondragstart={(e) => { if (draggable) onBarDragStart(e, id); }}
+                ondragend={() => onBarDragEnd()}
+              >
+                <td class="id-name">
+                  <span>{id}</span><br />
+                  <a href={getSyllabusUrl(id, rc?.takenYear)} target="_blank" draggable="false"
+                    >{rc?.name ?? kc?.name ?? "（不明）"}</a
+                  >
+                  {#if rc?.grade}<br /><span>{gradeDisplay(rc.grade)}</span>{/if}
+                </td>
+                <td class="credit">{rc?.credit ?? kc?.credit ?? "-"}</td>
+                <td class="term">{kc?.term || "-"}</td>
+                <td class="when">{kc?.when || "-"}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      {/if}
+    </div>
+  {:else}
+    <div class="grid">
+      <div class="tt-cell tt-corner" style="grid-column: 1; grid-row: 1"></div>
+      {#each DAYS as day, di}
+        <div class="tt-cell tt-header" style="grid-column: {di + 2}; grid-row: 1">{day}</div>
       {/each}
-    {/each}
-    {#each bars as bar}
-      <div
-        class="bar-outer"
-        style="grid-column: {bar.x + 2}; grid-row: {bar.yStart + 2} / {bar.yEnd + 3}; --nudge: {bar.nudge}"
-      >
+      {#each PERIODS as period, pi}
+        <div class="tt-cell tt-period" style="grid-column: 1; grid-row: {pi + 2}">{period}</div>
+        {#each [0, 1, 2, 3, 4] as _, di}
+          <div class="tt-cell" style="grid-column: {di + 2}; grid-row: {pi + 2}"></div>
+        {/each}
+      {/each}
+      {#each bars as bar}
         <div
-          class="bar-inner"
-          draggable={mightTakeCourseIds.includes(bar.courseId)}
-          onclick={() => onBarClick(bar.courseId)}
-          ondragstart={(e) => onBarDragStart(e, bar.courseId)}
-          ondragend={() => onBarDragEnd()}
+          class="bar-outer"
+          style="grid-column: {bar.x + 2}; grid-row: {bar.yStart + 2} / {bar.yEnd + 3}; --nudge: {bar.nudge}"
         >
-          <span class="bar-id">{bar.courseId}</span>
-          <span class="bar-name">{bar.courseName}</span>
+          <div
+            class="bar-inner"
+            draggable={mightTakeCourseIds.includes(bar.courseId)}
+            onclick={() => onBarClick(bar.courseId)}
+            ondragstart={(e) => onBarDragStart(e, bar.courseId)}
+            ondragend={() => onBarDragEnd()}
+          >
+            <span class="bar-id">{bar.courseId}</span>
+            <span class="bar-name">{bar.courseName}</span>
+          </div>
         </div>
-      </div>
-    {/each}
-  </div>
+      {/each}
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -216,6 +303,26 @@
     grid-template-columns: auto repeat(5, 1fr);
     grid-template-rows: auto repeat(6, 1fr);
     overflow: hidden;
+  }
+
+  .other-tab {
+    overflow-y: auto;
+    padding: 8px;
+
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+      font-size: 10px;
+    }
+
+    table { width: 100%; }
+
+    th { white-space: nowrap; }
+
+    tbody > tr[draggable="true"] {
+      cursor: grab;
+      &:active { cursor: grabbing; }
+    }
   }
 
   .tt-cell {
