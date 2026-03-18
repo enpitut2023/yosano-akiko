@@ -1,4 +1,5 @@
 import {
+  CellId,
   CourseId,
   FakeCourse,
   FakeCourseId,
@@ -308,6 +309,20 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+): string | undefined {
+  if(id === "e3"){
+    // !!E!!
+    return `注4(表下部参照)には対応していません。`
+  }
+  else if (id === "h1") {
+    // !!C!!
+    return `注5(表下部参照)には対応していません。そのため、あきこでは足りているのに実際は足りてないことがあるので注意してください。また、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`
+  }
 }
 
 export const creditRequirementsSince2023: SetupCreditRequirements = {
