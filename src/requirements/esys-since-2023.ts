@@ -753,13 +753,30 @@ export function classifyFakeCourses(
 export function getRemark(
   id: CellId,
   _tableYear: number,
-  _specialty: Specialty,
+  specialty: Specialty,
 ): string | undefined {
-  if (id === "c3" || id === "c4" ) {
-    return `注13の総合学域群からの移行生の線形代数Aの読み替えは反映されません。`;
+  if(specialty === "ies" && id === "a4" || specialty === "eme" && id === "a3"){
+    // !!F!!
+    return `注5(表下部参照)には対応していません。`
+  }
+  else if (id === "b5"){
+    return `学類長が指定する科目かどうかに関わらず、科目番号の条件に当てはまる科目全てを表示しているため、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`
+  }
+  else if (id === "c3" || id === "c4" ) {
+    // !!D!!
+    return `注13(表下部参照)の総合学域群からの移行生の線形代数Aの読み替えは反映されません。`;
   }
   else if(id === "c6" || id === "c7"){
-    return `注13の総合学域群からの移行生の微積分Aの読み替えは反映されません。`
+    // !!D!!
+    return `注13(表下部参照)の総合学域群からの移行生の微積分Aの読み替えは反映されません。`
+  }
+  else if(id === "e3"){
+    // !!E!!
+    return `注6(表下部参照)には対応していません。`
+  }
+  else if(id === "h1"){
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`
   }
 }
 
