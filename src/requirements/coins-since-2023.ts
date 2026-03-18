@@ -538,10 +538,30 @@ export function classifyFakeCourses(
 export function getRemark(
   id: CellId,
   _tableYear: number,
-  _specialty: Specialty,
+  specialty: Specialty,
 ): string | undefined {
+  if(id === "a1"){
+    // !!F!!
+    return `注10(知能情報メディア主専攻の表下部参照)には対応していません。`
+  }
+  else if(id === "a2"){
+    // !!F!!
+    switch(specialty){
+      case "scs":
+        return `注11(知能情報メディア主専攻の表下部参照)には対応していません。`
+      case "cs":
+        return `注12(知能情報メディア主専攻の表下部参照)には対応していません。`
+      case "mimt":
+        return `注13(知能情報メディア主専攻の表下部参照)には対応していません。`
+    }
+  }
+  if(id === "e2" || id === "f2"){
+    // !!E!!
+    return `注8(知能情報メディア主専攻の表下部参照)には対応していません。`
+  }
   if (id === "h1" || id === "h2") {
-    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここではないマスの単位としてカウントされる場合があるので気をつけてください。`
+    // !!C!!
+    return `注7にもある通り、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので気をつけてください。`
   }
 }
 
