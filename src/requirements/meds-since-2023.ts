@@ -1,4 +1,5 @@
 import {
+  CellId,
   CourseId,
   FakeCourse,
   FakeCourseId,
@@ -447,6 +448,16 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  specialty: Specialty,
+): string | undefined {
+  if(specialty === "ims" && id === "b1"){
+    return `*と**の条件は判定していません。`;
+  }
 }
 
 export const creditRequirementsMsSince2023: SetupCreditRequirements = {
