@@ -1,4 +1,5 @@
 import {
+  CellId,
   CourseId,
   FakeCourse,
   FakeCourseId,
@@ -253,6 +254,21 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  specialty: Specialty,
+): string | undefined {
+  if(id === "b1"){
+    // !!F!!
+    return `*の条件(国際開発学主専攻の表下部参照)には対応していません。`
+  }
+  else if (id === "h1" || id === "h2" || id === "h3") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`
+  }
 }
 
 export const creditRequirementsSince2023: SetupCreditRequirements = {
