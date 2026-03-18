@@ -1,4 +1,5 @@
 import {
+  CellId,
   CourseId,
   FakeCourse,
   FakeCourseId,
@@ -277,6 +278,28 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+): string | undefined {
+  if(id === "a2"){
+    // !!F!!
+    return `注9(表の下部参照)には対応していません。`
+  }
+  if(id === "e4" || id === "f3"){
+    // !!E!!
+    return `注8(表の下部参照)には対応していません。`
+  }
+  if(id === "c1" || id === "c2" || id === "c3" || id === "c4" || id === "c7" || id === "c8"){
+    // !!D!!
+    return `総合学域群からの移行学生に関する注10(表の下部参照)には対応していません。`
+  }
+  if (id === "h1" || id === "h2") {
+    // !!C!!
+    return `注5(表の下部参照)にもある通り、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`
+  }
 }
 
 export const creditRequirementsSince2023: SetupCreditRequirements = {
