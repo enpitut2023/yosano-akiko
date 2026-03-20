@@ -14,6 +14,8 @@ import {
   type AkikoMoveCourseResult,
   akikoMoveCourse,
   type RealCourse,
+  type AkikoExportForTwinsResult,
+  akikoExportForTwins,
 } from "./akiko";
 import { unreachable } from "./util";
 import { createSubscriber } from "svelte/reactivity";
@@ -91,6 +93,11 @@ export class SvelteAkiko {
       real: akikoGetUnclassifiedRealCourses(this.akiko),
       fake: akikoGetUnclassifiedFakeCourses(this.akiko),
     };
+  }
+
+  exportForTwins(): AkikoExportForTwinsResult {
+    this.subscribe();
+    return akikoExportForTwins(this.akiko);
   }
 
   moveCourse(

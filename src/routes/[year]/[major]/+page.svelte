@@ -13,8 +13,8 @@
     isCellId,
     isCourseId,
     akikoNew,
+    slotToString,
     type CellCreditStats,
-    type Term,
     type CellId,
     type ColumnCreditStats,
     type CourseId,
@@ -35,6 +35,18 @@
   import { browser } from "$app/environment";
   import { assert } from "$lib/util.js";
   import Callout from "$lib/Callout.svelte";
+
+  type UiOverlapCourse = {
+    id: CourseId;
+    name: string;
+    cellId: CellId | undefined;
+  };
+
+  type UiOverlapGroup = {
+    slot: string;
+    term: TimetableTab;
+    courses: UiOverlapCourse[];
+  };
 
   type UiCourse = {
     id: CourseId;
@@ -279,6 +291,23 @@
   const mightTakeCourseIds = $derived(svelteAkiko.getMightTakeCourseIds());
   const takenCourseIds = $derived(svelteAkiko.getTakenCourseIds());
   const unclassifiedCourses = $derived(svelteAkiko.getUnclassifiedCourses());
+  const exportForTwinsResult = $derived(svelteAkiko.exportForTwins());
+  const uiOverlaps = $derived.by((): UiOverlapGroup[] => {
+    if (exportForTwinsResult.kind === "ok") return [];
+    return exportForTwinsResult.overlaps.map((overlap) => ({
+      slot: slotToString(overlap.slot),
+      term: overlap.slot.term,
+      courses: overlap.courseIds.map((id) => {
+        const kc = knownCoursesMap.get(id);
+        const rc = realCoursesMap.get(id);
+        return {
+          id,
+          name: rc?.name ?? kc?.name ?? "（不明）",
+          cellId: svelteAkiko.getCellId(id),
+        };
+      }),
+    }));
+  });
 
   function exportMightTake() {
     const content = mightTakeCourseIds.join("\n");
@@ -659,7 +688,7 @@
             onchange={handleCsvUpload}
           />
         </label>
-        <div id="student-type-container" style="margin-bottom: 20px;">
+        <div id="student-type-container" style="margin-bottom: 50px;">
           <label
             ><input
               type="radio"
@@ -692,9 +721,9 @@
                 <tr class="course">
                   <td class="id-name">
                     <span>{c.id}</span><br />
-                    <a
-                      href={getSyllabusUrl(c.id, c.takenYear)}
-                      target="_blank">{c.name}</a>
+                    <a href={getSyllabusUrl(c.id, c.takenYear)} target="_blank"
+                      >{c.name}</a
+                    >
                   </td>
                   <td class="credit">{c.credit ?? "-"}</td>
                   <td class="term">{gradeDisplay(c.grade)}</td>
@@ -726,10 +755,66 @@
 
     <div id="export-tab" class:active={activeTab === "export"}>
       <div id="control">
-        <button class="button" onclick={exportMightTake}
-          ><img src={asset("/icons/export.svg")} width="15px" alt="export" />
-          <span>取る授業一覧を出力</span></button
+        <button
+          class="button"
+          onclick={exportMightTake}
+          style="margin-bottom: 20px"
         >
+          <img src={asset("/icons/export.svg")} width="15px" alt="export" />
+          <span>取る授業一覧を出力</span>
+        </button>
+        {#if uiOverlaps.length > 0}
+          <Callout kind="warning">
+            「取る授業」に時間が被っている授業が存在します。
+            時間が被っている授業をTWINSに登録するすることはできないため、取る授業一覧をTWINSにアップロードするとエラーになります。
+          </Callout>
+          <h2 style="margin-top: 10px; margin-bottom: 0">
+            時間が被っている授業
+          </h2>
+          <table class="show-term">
+            <thead>
+              <tr class="course">
+                <th class="term">時限</th>
+                <th class="id-name">科目</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each uiOverlaps as group}
+                {#each group.courses as course, i}
+                  <tr class="course">
+                    {#if i === 0}
+                      <td
+                        class="term"
+                        rowspan={group.courses.length}
+                        style="white-space: nowrap">{group.slot}</td
+                      >
+                    {/if}
+                    <td class="id-name">
+                      <span>{course.id}</span><br />
+                      <a
+                        href={getSyllabusUrl(course.id, data.year)}
+                        target="_blank">{course.name}</a
+                      >
+                    </td>
+                    <td>
+                      {#if course.cellId !== undefined}
+                        <button
+                          onclick={() => {
+                            selectedCellId = course.cellId;
+                            activeTimetableTerm = group.term;
+                            barsVisible = true;
+                            activeTab = "courses";
+                          }}>表示</button
+                        >
+                      {/if}
+                    </td>
+                  </tr>
+                {/each}
+              {/each}
+            </tbody>
+          </table>
+        {/if}
       </div>
       <HowToExportForTwins />
     </div>
@@ -743,7 +828,12 @@
         </label>
         <label class="settings-row">
           <span>年度</span>
-          <input type="number" bind:value={timetableYear} min="2020" max="2030" />
+          <input
+            type="number"
+            bind:value={timetableYear}
+            min="2020"
+            max="2030"
+          />
         </label>
       </section>
       <section class="settings-section">
@@ -1223,6 +1313,18 @@
 
       &:hover {
         background-color: oklch(var(--border-l) var(--border-c) var(--h));
+      }
+
+      &:disabled {
+        --bg-l: 0.92;
+        --bg-c: 0;
+        --border-l: 0.85;
+        --border-c: 0;
+        color: oklch(0.6 0 0);
+
+        &:hover {
+          background-color: oklch(var(--bg-l) var(--bg-c) var(--h));
+        }
       }
     }
 

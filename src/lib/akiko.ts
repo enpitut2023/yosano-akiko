@@ -104,18 +104,20 @@ export function gradeIsPass(g: Grade): boolean {
   return g === "a+" || g === "a" || g === "b" || g === "c" || g === "pass";
 }
 
-export type Term =
-  | "spring-a"
-  | "spring-b"
-  | "spring-c"
-  | "autumn-a"
-  | "autumn-b"
-  | "autumn-c"
-  | "spring"
-  | "autumn"
-  | "spring-break"
-  | "summer-break"
-  | "all-year";
+export const TERMS = [
+  "spring-a",
+  "spring-b",
+  "spring-c",
+  "autumn-a",
+  "autumn-b",
+  "autumn-c",
+  "spring",
+  "autumn",
+  "spring-break",
+  "summer-break",
+  "all-year",
+] as const;
+export type Term = (typeof TERMS)[number];
 
 export function termToString(t: Term): string {
   switch (t) {
@@ -146,7 +148,17 @@ export function termToString(t: Term): string {
   }
 }
 
-export type Dow = "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
+const TERM_TO_INDEX: Record<Term, number> = (() => {
+  const o: Partial<Record<Term, number>> = {};
+  for (let i = 0; i < TERMS.length; i++) o[TERMS[i]] = i;
+  return o as Record<Term, number>;
+})();
+export function termCompare(a: Term, b: Term): number {
+  return TERM_TO_INDEX[a] - TERM_TO_INDEX[b];
+}
+
+export const DOWS = ["mon", "tue", "wed", "thu", "fri", "sat"] as const;
+export type Dow = (typeof DOWS)[number];
 
 export function dowToString(d: Dow): string {
   switch (d) {
@@ -167,11 +179,20 @@ export function dowToString(d: Dow): string {
   }
 }
 
+const DOW_TO_INDEX: Record<Dow, number> = (() => {
+  const o: Partial<Record<Dow, number>> = {};
+  for (let i = 0; i < DOWS.length; i++) o[DOWS[i]] = i;
+  return o as Record<Dow, number>;
+})();
+export function dowCompare(a: Dow, b: Dow): number {
+  return DOW_TO_INDEX[a] - DOW_TO_INDEX[b];
+}
+
 export type When =
   | { kind: "regular"; dow: Dow; period: number }
   | { kind: "intensive" }
-  | { kind: "zuiji" }
   | { kind: "oudan" }
+  | { kind: "zuiji" }
   | { kind: "nt" };
 
 export function whenToString(w: When): string {
@@ -180,10 +201,10 @@ export function whenToString(w: When): string {
       return dowToString(w.dow) + w.period;
     case "intensive":
       return "集中";
-    case "zuiji":
-      return "随時";
     case "oudan":
       return "応談";
+    case "zuiji":
+      return "随時";
     case "nt":
       return "NT";
     default:
@@ -191,7 +212,43 @@ export function whenToString(w: When): string {
   }
 }
 
+function whenRegularCompare(
+  aDow: Dow,
+  aPeriod: number,
+  bDow: Dow,
+  bPeriod: number,
+): number {
+  const dow = dowCompare(aDow, bDow);
+  if (dow !== 0) return dow;
+  return aPeriod - bPeriod;
+}
+
+type WhenKind = When["kind"];
+const WHEN_KIND_TO_INDEX: Record<WhenKind, number> = {
+  regular: 0,
+  intensive: 1,
+  oudan: 2,
+  zuiji: 3,
+  nt: 4,
+};
+export function whenCompare(a: When, b: When): number {
+  if (a.kind === "regular") {
+    if (b.kind === "regular")
+      return whenRegularCompare(a.dow, a.period, b.dow, b.period);
+    else return -1;
+  } else {
+    if (b.kind === "regular") return 1;
+    else return WHEN_KIND_TO_INDEX[a.kind] - WHEN_KIND_TO_INDEX[b.kind];
+  }
+}
+
 export type Slot = { term: Term; when: When };
+
+export function slotCompare(a: Slot, b: Slot): number {
+  const term = termCompare(a.term, b.term);
+  if (term !== 0) return term;
+  return whenCompare(a.when, b.when);
+}
 
 export function slotToString(s: Slot): string {
   return termToString(s.term) + " " + whenToString(s.when);
@@ -528,6 +585,46 @@ export function akikoGetUnclassifiedFakeCourses(akiko: Akiko): FakeCourse[] {
     }
   }
   return fcs;
+}
+
+export type Overlap = { slot: Slot; courseIds: CourseId[] };
+
+export type AkikoExportForTwinsResult =
+  | { kind: "ok"; courseIds: CourseId[] }
+  | { kind: "err"; overlaps: Overlap[] };
+
+export function akikoExportForTwins(akiko: Akiko): AkikoExportForTwinsResult {
+  const mightTakeIds: CourseId[] = [];
+  for (const [id, { listKind }] of akiko.coursePositions) {
+    if (listKind === "might-take" && akiko.realCourses.get(id)?.grade !== "wip")
+      mightTakeIds.push(id);
+  }
+
+  // Map from "term|dow|period" → CourseId[]
+  const slotMap = new Map<string, { slot: Slot; courseIds: CourseId[] }>();
+  for (const courseId of mightTakeIds) {
+    const kc = akiko.knownCourses.get(courseId);
+    if (kc === undefined) continue;
+    for (const slot of kc.slots) {
+      if (slot.when.kind !== "regular") continue;
+      const key = `${slot.term}|${slot.when.dow}|${slot.when.period}`;
+      let entry = slotMap.get(key);
+      if (entry === undefined) {
+        entry = { slot, courseIds: [] };
+        slotMap.set(key, entry);
+      }
+      entry.courseIds.push(courseId);
+    }
+  }
+
+  const overlaps: Overlap[] = [];
+  for (const entry of slotMap.values()) {
+    if (entry.courseIds.length >= 2) overlaps.push(entry);
+  }
+  overlaps.sort((a, b) => slotCompare(a.slot, b.slot));
+
+  if (overlaps.length > 0) return { kind: "err", overlaps };
+  return { kind: "ok", courseIds: mightTakeIds };
 }
 
 export type AkikoMoveCourseDst = "wont-take" | "might-take";
