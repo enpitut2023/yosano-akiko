@@ -209,8 +209,14 @@
     svelteAkiko.moveCourse(courseId, dst); // TODO: use the return value
     if (dst === "might-take") {
       const slots = knownCoursesMap.get(courseId)?.slots ?? [];
-      const terms = slots.filter((s) => s.when.kind === "regular").map((s) => s.term);
-      if (terms.length > 0 && (activeTimetableTerm === "other" || !terms.includes(activeTimetableTerm))) {
+      const terms = slots
+        .filter((s) => s.when.kind === "regular")
+        .map((s) => s.term);
+      if (
+        terms.length > 0 &&
+        (activeTimetableTerm === "other" ||
+          !terms.includes(activeTimetableTerm))
+      ) {
         activeTimetableTerm = terms[0];
       }
     }
@@ -816,7 +822,8 @@
               activeTab = "courses";
             }
           }}
-          onBarDragStart={(e, courseId) => handleDragStart(e, courseId, "might-take")}
+          onBarDragStart={(e, courseId) =>
+            handleDragStart(e, courseId, "might-take")}
           onBarDragEnd={handleDragEnd}
         />
       </div>
@@ -1115,7 +1122,9 @@
 
   tbody > tr[draggable="true"] {
     cursor: grab;
-    &:active { cursor: grabbing; }
+    &:active {
+      cursor: grabbing;
+    }
   }
 
   #bars-toggle {

@@ -39,15 +39,22 @@
   }: Props = $props();
 
   const TERMS: Term[] = [
-    "spring-a", "spring-b", "spring-c",
-    "autumn-a", "autumn-b", "autumn-c",
+    "spring-a",
+    "spring-b",
+    "spring-c",
+    "autumn-a",
+    "autumn-b",
+    "autumn-c",
   ];
   const DAYS = ["月", "火", "水", "木", "金"] as const;
   const PERIODS = [1, 2, 3, 4, 5, 6] as const;
   const DOW_COL: Partial<Record<Dow, number>> = {
-    mon: 0, tue: 1, wed: 2, thu: 3, fri: 4,
+    mon: 0,
+    tue: 1,
+    wed: 2,
+    thu: 3,
+    fri: 4,
   };
-
 
   type Bar = {
     x: number;
@@ -62,7 +69,10 @@
     return `${term}:${x}:${y}`;
   }
 
-  function getSyllabusUrl(courseId: string, takenYear: number | undefined): string {
+  function getSyllabusUrl(
+    courseId: string,
+    takenYear: number | undefined,
+  ): string {
     return `https://kdb.tsukuba.ac.jp/syllabi/${takenYear ?? year}/${courseId}/jpn`;
   }
 
@@ -74,8 +84,12 @@
   }
 
   const TIMETABLE_TERMS = new Set<Term>([
-    "spring-a", "spring-b", "spring-c",
-    "autumn-a", "autumn-b", "autumn-c",
+    "spring-a",
+    "spring-b",
+    "spring-c",
+    "autumn-a",
+    "autumn-b",
+    "autumn-c",
   ]);
 
   const otherTabCourses = $derived.by(() => {
@@ -88,9 +102,11 @@
     return ids
       .filter((id) => {
         const kc = knownCoursesMap.get(id);
-        return kc?.slots.some(
-          (s) => !TIMETABLE_TERMS.has(s.term) || s.when.kind !== "regular"
-        ) ?? false;
+        return (
+          kc?.slots.some(
+            (s) => !TIMETABLE_TERMS.has(s.term) || s.when.kind !== "regular",
+          ) ?? false
+        );
       })
       .map((id) => ({
         id,
@@ -109,7 +125,8 @@
     const ids = [...mightTakeCourseIds];
     if (showTaken) {
       for (const courseId of takenCourseIds) {
-        if (realCoursesMap.get(courseId)?.takenYear === year) ids.push(courseId);
+        if (realCoursesMap.get(courseId)?.takenYear === year)
+          ids.push(courseId);
       }
     }
     for (const courseId of ids) {
@@ -126,7 +143,14 @@
         if (y < 0 || y > 5) continue;
         const k = posKey(activeTerm, x, y);
         const inner = map.get(k) ?? new Map<CourseId, Bar>();
-        inner.set(courseId, { x, yStart: y, yEnd: y, courseId, courseName: name, nudge: 0 });
+        inner.set(courseId, {
+          x,
+          yStart: y,
+          yEnd: y,
+          courseId,
+          courseName: name,
+          nudge: 0,
+        });
         map.set(k, inner);
       }
     }
@@ -162,7 +186,7 @@
       col.sort((a, b) => {
         const aLen = a.yEnd - a.yStart;
         const bLen = b.yEnd - b.yStart;
-        if (aLen !== bLen) return  bLen - aLen;
+        if (aLen !== bLen) return bLen - aLen;
         if (a.yStart !== b.yStart) return a.yStart - b.yStart;
         return courseIdCompare(a.courseId, b.courseId);
       });
@@ -172,7 +196,7 @@
         const layer: Bar[] = [];
         const next: Bar[] = [];
         for (const bar of remaining) {
-          if (layer.some(l => l.yStart <= bar.yEnd && bar.yStart <= l.yEnd)) {
+          if (layer.some((l) => l.yStart <= bar.yEnd && bar.yStart <= l.yEnd)) {
             next.push(bar);
           } else {
             bar.nudge = nudge;
@@ -193,13 +217,13 @@
     {#each TERMS as term}
       <button
         class:active={activeTerm === term}
-        onclick={() => (activeTerm = term)}
-      >{termToString(term)}</button>
+        onclick={() => (activeTerm = term)}>{termToString(term)}</button
+      >
     {/each}
     <button
       class:active={activeTerm === "other"}
-      onclick={() => (activeTerm = "other")}
-    >その他</button>
+      onclick={() => (activeTerm = "other")}>その他</button
+    >
   </div>
   {#if activeTerm === "other"}
     <div class="other-tab">
@@ -219,15 +243,20 @@
             {#each otherTabCourses as { id, kc, rc, draggable }}
               <tr
                 {draggable}
-                ondragstart={(e) => { if (draggable) onBarDragStart(e, id); }}
+                ondragstart={(e) => {
+                  if (draggable) onBarDragStart(e, id);
+                }}
                 ondragend={() => onBarDragEnd()}
               >
                 <td class="id-name">
                   <span>{id}</span><br />
-                  <a href={getSyllabusUrl(id, rc?.takenYear)} target="_blank" draggable="false"
-                    >{rc?.name ?? kc?.name ?? "（不明）"}</a
+                  <a
+                    href={getSyllabusUrl(id, rc?.takenYear)}
+                    target="_blank"
+                    draggable="false">{rc?.name ?? kc?.name ?? "（不明）"}</a
                   >
-                  {#if rc?.grade}<br /><span>{gradeDisplay(rc.grade)}</span>{/if}
+                  {#if rc?.grade}<br /><span>{gradeDisplay(rc.grade)}</span
+                    >{/if}
                 </td>
                 <td class="credit">{rc?.credit ?? kc?.credit ?? "-"}</td>
                 <td class="term">{kc?.term || "-"}</td>
@@ -242,18 +271,32 @@
     <div class="grid">
       <div class="tt-cell tt-corner" style="grid-column: 1; grid-row: 1"></div>
       {#each DAYS as day, di}
-        <div class="tt-cell tt-header" style="grid-column: {di + 2}; grid-row: 1">{day}</div>
+        <div
+          class="tt-cell tt-header"
+          style="grid-column: {di + 2}; grid-row: 1"
+        >
+          {day}
+        </div>
       {/each}
       {#each PERIODS as period, pi}
-        <div class="tt-cell tt-period" style="grid-column: 1; grid-row: {pi + 2}">{period}</div>
+        <div
+          class="tt-cell tt-period"
+          style="grid-column: 1; grid-row: {pi + 2}"
+        >
+          {period}
+        </div>
         {#each [0, 1, 2, 3, 4] as _, di}
-          <div class="tt-cell" style="grid-column: {di + 2}; grid-row: {pi + 2}"></div>
+          <div
+            class="tt-cell"
+            style="grid-column: {di + 2}; grid-row: {pi + 2}"
+          ></div>
         {/each}
       {/each}
       {#each bars as bar}
         <div
           class="bar-outer"
-          style="grid-column: {bar.x + 2}; grid-row: {bar.yStart + 2} / {bar.yEnd + 3}; --nudge: {bar.nudge}"
+          style="grid-column: {bar.x + 2}; grid-row: {bar.yStart +
+            2} / {bar.yEnd + 3}; --nudge: {bar.nudge}"
         >
           <div
             class="bar-inner"
@@ -292,9 +335,16 @@
       cursor: pointer;
       font-size: 11px;
 
-      &:last-child { border-right: none; }
-      &:hover { background-color: oklch(0.95 0 0); }
-      &.active { font-weight: bold; background-color: oklch(0.93 0 0); }
+      &:last-child {
+        border-right: none;
+      }
+      &:hover {
+        background-color: oklch(0.95 0 0);
+      }
+      &.active {
+        font-weight: bold;
+        background-color: oklch(0.93 0 0);
+      }
     }
   }
 
@@ -309,19 +359,27 @@
     overflow-y: auto;
     padding: 8px;
 
-    table, th, td {
+    table,
+    th,
+    td {
       border: 1px solid black;
       border-collapse: collapse;
       font-size: 10px;
     }
 
-    table { width: 100%; }
+    table {
+      width: 100%;
+    }
 
-    th { white-space: nowrap; }
+    th {
+      white-space: nowrap;
+    }
 
     tbody > tr[draggable="true"] {
       cursor: grab;
-      &:active { cursor: grabbing; }
+      &:active {
+        cursor: grabbing;
+      }
     }
   }
 
@@ -359,9 +417,15 @@
     user-select: none;
     cursor: pointer;
 
-    &[draggable="true"] { cursor: grab; }
-    &[draggable="true"]:active { cursor: grabbing; }
-    &:hover { filter: brightness(0.9); }
+    &[draggable="true"] {
+      cursor: grab;
+    }
+    &[draggable="true"]:active {
+      cursor: grabbing;
+    }
+    &:hover {
+      filter: brightness(0.9);
+    }
   }
 
   .bar-id {
