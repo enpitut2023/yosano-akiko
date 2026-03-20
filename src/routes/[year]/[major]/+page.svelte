@@ -58,6 +58,7 @@
     expects: string | undefined;
     grade: Grade | undefined;
     takenYear: number | undefined;
+    syllabusYear: number;
     availability: Availability;
     visible: boolean;
   };
@@ -261,6 +262,10 @@
         expects: kc !== undefined ? expectsToString(kc.expects) : undefined,
         grade: rc?.grade,
         takenYear: rc?.takenYear,
+        syllabusYear:
+          rc?.grade && gradeIsPass(rc.grade)
+            ? rc.takenYear
+            : data.config.knownCourseYear,
         availability: kc?.availability ?? "available",
         visible: false,
       };
@@ -510,7 +515,7 @@
     <td class="id-name">
       <span>{c.id}</span><br />
       <a
-        href={getSyllabusUrl(c.id, c.takenYear ?? data.config.knownCourseYear)}
+        href={getSyllabusUrl(c.id, c.syllabusYear)}
         target="_blank"
         draggable="false"
         >{c.name}{c.grade && gradeIsPass(c.grade) ? ` (${c.takenYear})` : ""}</a
