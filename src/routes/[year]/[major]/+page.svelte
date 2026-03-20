@@ -73,7 +73,9 @@
 
   let { data } = $props();
 
-  const localDataKey = $derived(`${data.major}_${data.year}`);
+  const localDataKey = $derived(
+    `${data.config.major}_${data.config.tableYear}`,
+  );
 
   // TODO: should identify ways loading can fail and let the user know that the
   // data will be overwritten by the default value
@@ -93,7 +95,10 @@
 
   const creditRequirements = $derived(
     createCreditRequirementsOrFail(
-      data.config.getCreditRequirements(data.year, data.major),
+      data.config.getCreditRequirements(
+        data.config.tableYear,
+        data.config.major,
+      ),
     ),
   );
 
@@ -105,8 +110,8 @@
         realCourses,
         fakeCourses,
         isNative,
-        data.year,
-        data.major,
+        data.config.tableYear,
+        data.config.major,
         data.config.classifyKnownCourses,
         data.config.classifyRealCourses,
         data.config.classifyFakeCourses,
@@ -147,7 +152,7 @@
   type Tab = "import" | "export" | "courses" | "settings";
 
   let timetableShowTaken = $state(true);
-  let timetableYear = $state(data.year);
+  let timetableYear = $state(data.config.tableYear);
   let activeTimetableTerm = $state<TimetableTab>("spring-a");
 
   let barsVisible = $state(true);
@@ -408,10 +413,10 @@
   };
 
   let metaTitle = $derived(
-    `あきこ - ${data.year}年度 ${MAJOR_TO_JA[data.major]}`,
+    `あきこ - ${data.config.tableYear}年度 ${MAJOR_TO_JA[data.config.major]}`,
   );
   let metaDescription = $derived(
-    `${data.year}年度入学の${MAJOR_TO_JA[data.major]}の学生向け履修サポートツールです。単位の計算・授業探し・Twinsへの登録を楽に終わらせましょう！`,
+    `${data.config.tableYear}年度入学の${MAJOR_TO_JA[data.config.major]}の学生向け履修サポートツールです。単位の計算・授業探し・Twinsへの登録を楽に終わらせましょう！`,
   );
 
   let leftBarEl = $state<HTMLDivElement | undefined>();
@@ -489,7 +494,7 @@
     <td class="id-name">
       <span>{c.id}</span><br />
       <a
-        href={getSyllabusUrl(c.id, c.takenYear ?? data.year)}
+        href={getSyllabusUrl(c.id, c.takenYear ?? data.config.knownCourseYear)}
         target="_blank"
         draggable="false"
         >{c.name}{c.grade && gradeIsPass(c.grade) ? ` (${c.takenYear})` : ""}</a
@@ -548,7 +553,7 @@
       onscroll={(e) => (scrollX = -e.currentTarget.scrollLeft)}
     >
       <img
-        src={asset(`/${data.year}/${data.major}/table.svg`)}
+        src={asset(`/${data.config.tableYear}/${data.config.major}/table.svg`)}
         alt="Table"
         width={data.config.tableViewBox
           ? scale * data.config.tableViewBox.width
@@ -563,8 +568,9 @@
           ><img src={asset("/images/akiko.png")} alt="あきこ" /></a
         >
         <span
-          >このページは <strong>{data.year}</strong> 年度入学の
-          <strong>{MAJOR_TO_JA[data.major]}</strong> の学生向けですよ〜</span
+          >このページは <strong>{data.config.tableYear}</strong>
+          年度入学の
+          <strong>{MAJOR_TO_JA[data.config.major]}</strong> の学生向けですよ〜</span
         >
         <nav>
           <a href="{resolve('/')}#app-page-links">学類一覧に戻る</a>
@@ -793,7 +799,10 @@
                     <td class="id-name">
                       <span>{course.id}</span><br />
                       <a
-                        href={getSyllabusUrl(course.id, data.year)}
+                        href={getSyllabusUrl(
+                          course.id,
+                          data.config.knownCourseYear,
+                        )}
                         target="_blank">{course.name}</a
                       >
                     </td>
@@ -895,8 +904,8 @@
             {#if data.config.getRemark}
               {@const remark = data.config.getRemark(
                 selectedCellId,
-                data.year,
-                data.major,
+                data.config.tableYear,
+                data.config.major,
               )}
               {#if remark}
                 <h2>備考</h2>

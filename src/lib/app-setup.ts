@@ -111,7 +111,7 @@ export type SetupParams = {
   knownCourses: KnownCourse[];
   knownCourseYear: number;
   major: Major;
-  requirementsTableYear: number;
+  tableYear: number;
   cellIdToRectRecord: Record<string, Rect>;
   tableViewBox?: Rect;
   classifyKnownCourses: (

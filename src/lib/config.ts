@@ -59,7 +59,7 @@ export async function getConfig(
     knownCourseYear,
     getCreditRequirements: req.getCreditRequirements,
     major,
-    requirementsTableYear: tableYear,
+    tableYear: tableYear,
     cellIdToRectRecord: rects.default,
     classifyKnownCourses: req.classifyKnownCourses,
     classifyRealCourses: req.classifyRealCourses,

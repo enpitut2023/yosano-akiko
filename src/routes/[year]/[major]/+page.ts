@@ -8,11 +8,7 @@ export const load: PageLoad = async ({ params }) => {
   assert(tableYear !== undefined);
   assert(isMajor(params.major));
   const config = await getConfig(tableYear, params.major);
-  return {
-    year: tableYear,
-    major: params.major,
-    config,
-  };
+  return { config };
 };
 
 export const entries: EntryGenerator = () => {
