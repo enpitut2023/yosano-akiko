@@ -278,6 +278,7 @@
 
   const mightTakeCourseIds = $derived(svelteAkiko.getMightTakeCourseIds());
   const takenCourseIds = $derived(svelteAkiko.getTakenCourseIds());
+  const unclassifiedCourses = $derived(svelteAkiko.getUnclassifiedCourses());
 
   function exportMightTake() {
     const content = mightTakeCourseIds.join("\n");
@@ -676,6 +677,42 @@
             /> <span>総合学域群からこの学類に移行した</span></label
           >
         </div>
+        {#if unclassifiedCourses.real.length + unclassifiedCourses.fake.length > 0}
+          <h2>振り分けられなかった授業</h2>
+          <table class="show-term">
+            <thead>
+              <tr class="course">
+                <th class="id-name">科目</th>
+                <th class="credit">単位</th>
+                <th class="term">評価</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each unclassifiedCourses.real as c}
+                <tr class="course">
+                  <td class="id-name">
+                    <span>{c.id}</span><br />
+                    <a
+                      href={getSyllabusUrl(c.id, c.takenYear)}
+                      target="_blank">{c.name}</a>
+                  </td>
+                  <td class="credit">{c.credit ?? "-"}</td>
+                  <td class="term">{gradeDisplay(c.grade)}</td>
+                </tr>
+              {/each}
+              {#each unclassifiedCourses.fake as c}
+                <tr class="course">
+                  <td class="id-name">
+                    <span>（科目番号不明）</span><br />
+                    <span>{c.name}</span>
+                  </td>
+                  <td class="credit">{c.credit ?? "-"}</td>
+                  <td class="term">-</td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        {/if}
         <Callout kind="info">
           成績データは、あきこの開発チームに閲覧されたり、外部に送信されたりすることはありません。
         </Callout>

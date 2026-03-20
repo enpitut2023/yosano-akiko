@@ -3,13 +3,17 @@ import {
   type CourseId,
   akikoGetCreditStats,
   type Akiko,
+  type FakeCourse,
   type FakeCourseId,
   type CreditStats,
   akikoGetMightTakeCourseIds,
   akikoGetTakenCourseIds,
+  akikoGetUnclassifiedRealCourses,
+  akikoGetUnclassifiedFakeCourses,
   type AkikoMoveCourseDst,
   type AkikoMoveCourseResult,
   akikoMoveCourse,
+  type RealCourse,
 } from "./akiko";
 import { unreachable } from "./util";
 import { createSubscriber } from "svelte/reactivity";
@@ -79,6 +83,14 @@ export class SvelteAkiko {
   getCreditStats(): CreditStats {
     this.subscribe();
     return akikoGetCreditStats(this.akiko);
+  }
+
+  getUnclassifiedCourses(): { real: RealCourse[]; fake: FakeCourse[] } {
+    this.subscribe();
+    return {
+      real: akikoGetUnclassifiedRealCourses(this.akiko),
+      fake: akikoGetUnclassifiedFakeCourses(this.akiko),
+    };
   }
 
   moveCourse(
