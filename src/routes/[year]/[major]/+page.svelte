@@ -36,6 +36,7 @@
   import { browser } from "$app/environment";
   import { assert } from "$lib/util.js";
   import Callout from "$lib/Callout.svelte";
+    import { untrack } from "svelte";
 
   type UiOverlapCourse = {
     id: CourseId;
@@ -155,7 +156,7 @@
   type Tab = "import" | "export" | "courses" | "settings";
 
   let timetableShowTaken = $state(true);
-  let timetableYear = $state(data.config.tableYear);
+  let timetableYear = $state(untrack(() => data.config.knownCourseYear));
   let activeTimetableTerm = $state<TimetableTab>("spring-a");
 
   let barsVisible = $state(true);
@@ -229,6 +230,7 @@
     if (courseId === undefined || !isCourseId(courseId)) return;
     svelteAkiko.moveCourse(courseId, dst); // TODO: use the return value
     if (dst === "might-take") {
+      timetableYear = data.config.knownCourseYear;
       const slots = knownCoursesMap.get(courseId)?.slots ?? [];
       const terms = slots
         .filter((s) => s.when.kind === "regular")
@@ -247,7 +249,13 @@
   // search box won't trigger a re-sort.
   const sortedGroupedCourses = $derived.by(() => {
     if (!selectedCellId)
-      return { wontTake: [], nonAvailable: [], mightTake: [], taken: [], fake: [] };
+      return {
+        wontTake: [],
+        nonAvailable: [],
+        mightTake: [],
+        taken: [],
+        fake: [],
+      };
     const res = svelteAkiko.getCoursesInCell(selectedCellId);
 
     function toUi(id: CourseId): UiCourse {
@@ -281,7 +289,8 @@
       if (gd !== 0) return gd;
       return courseIdCompare(a.id, b.id);
     };
-    const compareById = (a: UiCourse, b: UiCourse) => courseIdCompare(a.id, b.id);
+    const compareById = (a: UiCourse, b: UiCourse) =>
+      courseIdCompare(a.id, b.id);
     const allWontTake = res.wontTake.map(toUi).sort(compareByGradeThenId);
     return {
       wontTake: allWontTake.filter((c) => c.availability === "available"),
@@ -523,9 +532,9 @@
       {#if c.grade}<br /><span>{gradeDisplay(c.grade)}</span>{/if}
     </td>
     <td class="credit">{c.credit ?? "-"}</td>
-    <td class="term">{c.term || "-"}</td>
-    <td class="when">{c.when || "-"}</td>
-    <td class="expects">{c.expects || "-"}</td>
+    <td class="term">{c.term ?? "-"}</td>
+    <td class="when">{c.when ?? "-"}</td>
+    <td class="expects">{c.expects ?? "-"}</td>
   </tr>
 {/snippet}
 
