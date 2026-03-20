@@ -14,6 +14,7 @@
     isCourseId,
     akikoNew,
     slotToString,
+    type Availability,
     type CellCreditStats,
     type CellId,
     type ColumnCreditStats,
@@ -57,6 +58,7 @@
     expects: string | undefined;
     grade: Grade | undefined;
     takenYear: number | undefined;
+    availability: Availability;
     visible: boolean;
   };
 
@@ -244,7 +246,7 @@
   // search box won't trigger a re-sort.
   const sortedGroupedCourses = $derived.by(() => {
     if (!selectedCellId)
-      return { wontTake: [], mightTake: [], taken: [], fake: [] };
+      return { wontTake: [], nonAvailable: [], mightTake: [], taken: [], fake: [] };
     const res = svelteAkiko.getCoursesInCell(selectedCellId);
 
     function toUi(id: CourseId): UiCourse {
@@ -259,13 +261,16 @@
         expects: kc !== undefined ? expectsToString(kc.expects) : undefined,
         grade: rc?.grade,
         takenYear: rc?.takenYear,
+        availability: kc?.availability ?? "available",
         visible: false,
       };
     }
 
     const compare = (a: UiCourse, b: UiCourse) => courseIdCompare(a.id, b.id);
+    const allWontTake = res.wontTake.map(toUi).sort(compare);
     return {
-      wontTake: res.wontTake.map(toUi).sort(compare),
+      wontTake: allWontTake.filter((c) => c.availability === "available"),
+      nonAvailable: allWontTake.filter((c) => c.availability !== "available"),
       mightTake: res.mightTake.map(toUi).sort(compare),
       taken: res.taken.map(toUi).sort(compare),
       fake: res.fake
@@ -287,6 +292,7 @@
     };
     return {
       wontTake: sortedGroupedCourses.wontTake.map(addVisible),
+      nonAvailable: sortedGroupedCourses.nonAvailable.map(addVisible),
       mightTake: sortedGroupedCourses.mightTake,
       taken: sortedGroupedCourses.taken,
       fake: sortedGroupedCourses.fake,
@@ -477,17 +483,17 @@
 
 {#snippet courseRow(
   c: UiCourse,
-  listKind: "wont-take" | "might-take" | "taken",
+  dragSource: "wont-take" | "might-take" | undefined,
 )}
-  {@const draggable = listKind === "wont-take" || listKind === "might-take"}
+  {@const draggable = dragSource !== undefined}
   <tr
     class="course"
-    class:hide-in-wont-take={listKind === "wont-take" && !c.visible}
+    class:hide-in-wont-take={dragSource === "wont-take" && !c.visible}
     {draggable}
     ondragstart={(e) => {
-      if (!draggable) return;
+      if (dragSource === undefined) return;
       assert(selectedCellId !== undefined);
-      handleDragStart(e, c.id, listKind);
+      handleDragStart(e, c.id, dragSource);
     }}
     ondragend={handleDragEnd}
   >
@@ -515,7 +521,7 @@
   showTerm: boolean,
   showWhen: boolean,
   showExpects: boolean,
-  listKind: "wont-take" | "might-take" | "taken",
+  dragSource: "wont-take" | "might-take" | undefined,
 )}
   <h2>{title}</h2>
   {#if state === "no-cell-selected"}
@@ -539,7 +545,7 @@
       </thead>
       <tbody>
         {#each courses as c}
-          {@render courseRow(c, listKind)}
+          {@render courseRow(c, dragSource)}
         {/each}
       </tbody>
     </table>
@@ -890,6 +896,17 @@
             true,
             "wont-take",
           )}
+          {#if groupedCourses.nonAvailable.length > 0}
+            {@render courseTable(
+              "今年度開講しない授業",
+              groupedCourses.nonAvailable,
+              "contains-courses",
+              false,
+              false,
+              true,
+              undefined,
+            )}
+          {/if}
         </div>
         <div id="cell-detail" class:no-cell-selected={!selectedCellId}>
           <h2>単位数</h2>
@@ -950,7 +967,7 @@
             false,
             false,
             false,
-            "taken",
+            undefined,
           )}
         </div>
         <Timetable
@@ -1172,7 +1189,14 @@
 
   #left-bar-scroll {
     overflow-y: scroll;
-    padding: 15px;
+    padding: 0 15px;
+
+    & h2 {
+      position: sticky;
+      top: 0;
+      background-color: white;
+      padding: 5px 0;
+    }
   }
 
   #right-bar {
@@ -1183,7 +1207,14 @@
 
   #right-bar-scroll {
     overflow-y: scroll;
-    padding: 15px;
+    padding: 0 15px;
+
+    & h2 {
+      position: sticky;
+      top: 0;
+      background-color: white;
+      padding: 5px 0;
+    }
   }
 
   #cell-detail {
@@ -1357,6 +1388,7 @@
   }
 
   #left-bar-scroll > search {
+    margin-top: 15px;
     margin-bottom: 30px;
     width: 100%;
     position: relative;
