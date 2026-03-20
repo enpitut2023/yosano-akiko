@@ -266,13 +266,23 @@
       };
     }
 
-    const compare = (a: UiCourse, b: UiCourse) => courseIdCompare(a.id, b.id);
-    const allWontTake = res.wontTake.map(toUi).sort(compare);
+    function gradePriority(g: Grade | undefined): number {
+      if (g === "wip") return 0;
+      if (g === "d" || g === "fail") return 1;
+      return 2;
+    }
+    const compareByGradeThenId = (a: UiCourse, b: UiCourse): number => {
+      const gd = gradePriority(a.grade) - gradePriority(b.grade);
+      if (gd !== 0) return gd;
+      return courseIdCompare(a.id, b.id);
+    };
+    const compareById = (a: UiCourse, b: UiCourse) => courseIdCompare(a.id, b.id);
+    const allWontTake = res.wontTake.map(toUi).sort(compareByGradeThenId);
     return {
       wontTake: allWontTake.filter((c) => c.availability === "available"),
       nonAvailable: allWontTake.filter((c) => c.availability !== "available"),
-      mightTake: res.mightTake.map(toUi).sort(compare),
-      taken: res.taken.map(toUi).sort(compare),
+      mightTake: res.mightTake.map(toUi).sort(compareByGradeThenId),
+      taken: res.taken.map(toUi).sort(compareById),
       fake: res.fake
         .map((id) => fakeCourseMap.get(id))
         .filter((fc) => fc !== undefined),
