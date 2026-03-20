@@ -135,6 +135,7 @@
   type Tab = "import" | "export" | "courses" | "settings";
 
   let timetableShowTaken = $state(true);
+  let timetableYear = $state(data.year);
   let activeTimetableTerm = $state<TimetableTab>("spring-a");
 
   let barsVisible = $state(true);
@@ -697,16 +698,26 @@
     </div>
 
     <div id="settings-tab" class:active={activeTab === "settings"}>
-      <div id="control">
-        <button id="reset" class="button" onclick={() => reset()}
-          ><img src={asset("/icons/trash.svg")} width="15px" alt="reset" />
-          <span>リセット</span></button
-        >
-      </div>
-      <label id="timetable-show-taken">
-        <input type="checkbox" bind:checked={timetableShowTaken} />
-        <span>時間割に単位取得済みの授業を表示する</span>
-      </label>
+      <section class="settings-section">
+        <h3>時間割</h3>
+        <label class="settings-row">
+          <input type="checkbox" bind:checked={timetableShowTaken} />
+          <span>単位取得済みの授業を表示する</span>
+        </label>
+        <label class="settings-row">
+          <span>年度</span>
+          <input type="number" bind:value={timetableYear} min="2020" max="2030" />
+        </label>
+      </section>
+      <section class="settings-section">
+        <h3>データ</h3>
+        <div id="control">
+          <button id="reset" class="button" onclick={() => reset()}>
+            <img src={asset("/icons/trash.svg")} width="15px" alt="reset" />
+            <span>リセット</span>
+          </button>
+        </div>
+      </section>
     </div>
 
     <div id="courses-tab" class:active={activeTab === "courses"}>
@@ -807,7 +818,7 @@
           )}
         </div>
         <Timetable
-          year={2025}
+          year={timetableYear}
           bind:activeTerm={activeTimetableTerm}
           {mightTakeCourseIds}
           {takenCourseIds}
@@ -1291,6 +1302,35 @@
     right: 5px;
     bottom: 5px;
     width: 300px;
+  }
+
+  .settings-section {
+    margin-bottom: 30px;
+
+    & > h3 {
+      margin: 0 0 10px 0;
+      font-size: 13px;
+      color: oklch(0.5 0 0);
+    }
+  }
+
+  .settings-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: hsl(0, 0%, 97%);
+    border-radius: 10px;
+    margin-bottom: 5px;
+
+    & input[type="number"] {
+      width: 70px;
+      font-family: inherit;
+      font-size: inherit;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
   }
 
   #drop-guide {
