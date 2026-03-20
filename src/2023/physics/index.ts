@@ -1,4 +1,5 @@
 import {
+  getRemark,
   classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
@@ -21,4 +22,5 @@ setup({
   classifyKnownCourses: (cs, opts) => classifyKnownCourses(cs, opts, YEAR),
   classifyRealCourses: (cs, opts) => classifyRealCourses(cs, opts, YEAR),
   classifyFakeCourses: (cs, opts) => classifyFakeCourses(cs, opts, YEAR),
+  getRemark: (id) => getRemark(id, YEAR),
 });

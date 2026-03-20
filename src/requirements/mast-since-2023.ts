@@ -26,6 +26,7 @@ import {
   isKyoushoku,
   isKyoutsuu,
 } from "@/requirements/common";
+import { arrayRemove, assert } from "@/util";
 
 type Mode = "known" | "real";
 
@@ -86,6 +87,95 @@ function classifyColumnC(id: CourseId, tableYear: number): string | undefined {
   if (id === "GC12401") return "c" + (11 + offset); // データ構造とアルゴリズム
   if (id === "GC12403") return "c" + (12 + offset); // データ構造とアルゴリズム実習
   if (id === "GC13201") return "c" + (13 + offset); // データ工学概論
+}
+
+const FA_CALCULUS_1 = new Set([
+  "FA01311",
+  "FA01321",
+  "FA01331",
+  "FA01341",
+  "FA01351",
+  "FA01361",
+  "FA01371",
+  "FA01381",
+  "FA01391",
+  "FA013A1",
+  "FA013C1",
+  "FA013D1",
+]);
+
+const FA_CALCULUS_2 = new Set([
+  "FA01411",
+  "FA01421",
+  "FA01431",
+  "FA01441",
+  "FA01451",
+  "FA01461",
+  "FA01471",
+  "FA01481",
+  "FA01491",
+  "FA014A1",
+  "FA014C1",
+  "FA014D1",
+]);
+
+const FA_LINEAR_ALGEBRA_1 = new Set([
+  "FA01611",
+  "FA01621",
+  "FA01631",
+  "FA01641",
+  "FA01651",
+  "FA01661",
+  "FA01671",
+  "FA01681",
+  "FA01691",
+  "FA016A1",
+  "FA016C1",
+  "FA016D1",
+]);
+
+const FA_LINEAR_ALGEBRA_2 = new Set([
+  "FA01711",
+  "FA01721",
+  "FA01731",
+  "FA01741",
+  "FA01751",
+  "FA01761",
+  "FA01771",
+  "FA01781",
+  "FA01791",
+  "FA017A1",
+  "FA017C1",
+  "FA017D1",
+]);
+
+// 移行生はFAから始まる微積分1と2を両方取っているとmastの微分積分Aとして使える
+function handleFaCalculus(cs: RealCourse[], map: Map<CourseId, string>): void {
+  const c1 = cs.find((c) => FA_CALCULUS_1.has(c.id));
+  const c2 = cs.find((c) => FA_CALCULUS_2.has(c.id));
+  if (c1 === undefined || c2 === undefined) {
+    return;
+  }
+  map.set(c1.id, "c1");
+  map.set(c2.id, "c1");
+  assert(arrayRemove(cs, c1));
+  assert(arrayRemove(cs, c2));
+}
+
+// 移行生はFAから始まる線形代数1と2を両方取っているとmastの線形代数Aとして使える
+function handleFaLinearAlgebra(
+  cs: RealCourse[],
+  map: Map<CourseId, string>,
+): void {
+  const c1 = cs.find((c) => FA_LINEAR_ALGEBRA_1.has(c.id));
+  const c2 = cs.find((c) => FA_LINEAR_ALGEBRA_2.has(c.id));
+  if (c1 === undefined || c2 === undefined) {
+    return;
+  }
+  map.set(c1.id, "c3");
+  map.set(c2.id, "c3");
+  assert(arrayRemove(cs, c1));
+  assert(arrayRemove(cs, c2));
 }
 
 function isD1(id: string) {
@@ -256,6 +346,12 @@ export function classifyRealCourses(
 ): Map<CourseId, string> {
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
+
+  if (!opts.isNative) {
+    handleFaCalculus(cs, courseIdToCellId);
+    handleFaLinearAlgebra(cs, courseIdToCellId);
+  }
+
   for (const c of cs) {
     const cellId = classify(c.id, c.name, tableYear, opts.isNative, "real");
     if (cellId !== undefined) {
@@ -292,7 +388,7 @@ export function getRemark(
     // !!E!!
     return `注8(表の下部参照)には対応していません。`
   }
-  if(id === "c1" || id === "c2" || id === "c3" || id === "c4" || id === "c7" || id === "c8"){
+  if(id === "c2" || id === "c4" || id === "c7" || id === "c8"){
     // !!D!!
     return `総合学域群からの移行学生に関する注10(表の下部参照)には対応していません。`
   }

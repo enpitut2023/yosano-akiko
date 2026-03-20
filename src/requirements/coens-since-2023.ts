@@ -491,7 +491,7 @@ export function getRemark(
     // !!F!!
     return `()の条件には対応していません。`
   }
-  if(id === "d4"){
+  if(id === "d2"){
     // !!D!!
     return `注6(表下部参照)で言及されている、微積分Aと微積分Bの読み替えには対応していません。`
   }

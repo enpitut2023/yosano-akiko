@@ -19,7 +19,7 @@ import {
   isKyoushoku,
   isKyoutsuu,
 } from "@/requirements/common";
-import { unreachable } from "@/util";
+import { arrayRemove, assert, unreachable } from "@/util";
 
 export type Specialty = "science" | "system" | "rm";
 
@@ -222,6 +222,95 @@ function isC12(id: string): boolean {
   );
 }
 
+const FA_CALCULUS_1 = new Set([
+  "FA01311",
+  "FA01321",
+  "FA01331",
+  "FA01341",
+  "FA01351",
+  "FA01361",
+  "FA01371",
+  "FA01381",
+  "FA01391",
+  "FA013A1",
+  "FA013C1",
+  "FA013D1",
+]);
+
+const FA_CALCULUS_2 = new Set([
+  "FA01411",
+  "FA01421",
+  "FA01431",
+  "FA01441",
+  "FA01451",
+  "FA01461",
+  "FA01471",
+  "FA01481",
+  "FA01491",
+  "FA014A1",
+  "FA014C1",
+  "FA014D1",
+]);
+
+const FA_LINEAR_ALGEBRA_1 = new Set([
+  "FA01611",
+  "FA01621",
+  "FA01631",
+  "FA01641",
+  "FA01651",
+  "FA01661",
+  "FA01671",
+  "FA01681",
+  "FA01691",
+  "FA016A1",
+  "FA016C1",
+  "FA016D1",
+]);
+
+const FA_LINEAR_ALGEBRA_2 = new Set([
+  "FA01711",
+  "FA01721",
+  "FA01731",
+  "FA01741",
+  "FA01751",
+  "FA01761",
+  "FA01771",
+  "FA01781",
+  "FA01791",
+  "FA017A1",
+  "FA017C1",
+  "FA017D1",
+]);
+
+// 移行生はFAから始まる微積分1と2を両方取っているとklisのd1として使える
+function handleFaCalculus(cs: RealCourse[], map: Map<CourseId, string>): void {
+  const c1 = cs.find((c) => FA_CALCULUS_1.has(c.id));
+  const c2 = cs.find((c) => FA_CALCULUS_2.has(c.id));
+  if (c1 === undefined || c2 === undefined) {
+    return;
+  }
+  map.set(c1.id, "d1");
+  map.set(c2.id, "d1");
+  assert(arrayRemove(cs, c1));
+  assert(arrayRemove(cs, c2));
+}
+
+// 移行生はFAから始まる線形代数1と2を両方取っているとklisのd1として使える
+function handleFaLinearAlgebra(
+  cs: RealCourse[],
+  map: Map<CourseId, string>,
+): void {
+  const c1 = cs.find((c) => FA_LINEAR_ALGEBRA_1.has(c.id));
+  const c2 = cs.find((c) => FA_LINEAR_ALGEBRA_2.has(c.id));
+  if (c1 === undefined || c2 === undefined) {
+    return;
+  }
+  map.set(c1.id, "d1");
+  map.set(c2.id, "d1");
+  assert(arrayRemove(cs, c1));
+  assert(arrayRemove(cs, c2));
+}
+
 function isD1(id: string): boolean {
   // TODO: こういうのは名前ではじくべき？
   return (
@@ -362,6 +451,12 @@ export function classifyRealCourses(
 ): Map<CourseId, string> {
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
+
+  if (!opts.isNative) {
+    handleFaCalculus(cs, courseIdToCellId);
+    handleFaLinearAlgebra(cs, courseIdToCellId);
+  }
+
   for (const c of cs) {
     const cellId = classify(c.id, c.name, tableYear, specialty, opts.isNative);
     if (cellId !== undefined) {
@@ -373,15 +468,11 @@ export function classifyRealCourses(
 export function getRemark(
   id: CellId,
   _tableYear: number,
-  specialty: Specialty,
+  _specialty: Specialty,
 ): string | undefined {
   if(id === "a1" || id === "a2"){
     // !!F!!
     return `注7(情報資源経営主専攻の表下部参照)には対応していません。`
-  }
-  if(id === "d1"){
-    // !!D!!
-    return `注8(情報資源経営主専攻の表下部参照)には対応していません。`
   }
   if(id === "e4" || id === "f2"){
     // !!E!! 
@@ -389,7 +480,7 @@ export function getRemark(
   }
   if (id === "h1") {
     // !!C!!
-    return `注6(情報資源経営主専攻の表下部参照)にもある通り、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。また、総合学域群からの移行生に関する注8(情報資源経営主専攻の表下部参照)には対応していないため、対象の科目はここに表示されますが、実際には専門基礎科目選択科目となります。`
+    return `注6(情報資源経営主専攻の表下部参照)にもある通り、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`
   }
 }
 
