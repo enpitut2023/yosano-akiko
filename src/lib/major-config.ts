@@ -1,12 +1,12 @@
-import { type SetupParams } from "./app-setup";
+import { type MajorConfig } from "./app-setup";
 import { type Major } from "./constants";
 import { knownCourses, knownCourseYear } from "./current-courses";
 import { assert } from "./util.js";
 
-export async function getConfig(
+export async function getMajorConfig(
   tableYear: number,
   major: Major,
-): Promise<SetupParams> {
+): Promise<MajorConfig> {
   assert(tableYear >= 2021);
 
   let req: any;

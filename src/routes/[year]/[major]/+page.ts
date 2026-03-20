@@ -1,4 +1,4 @@
-import { getConfig } from "$lib/config";
+import { getMajorConfig } from "$lib/major-config";
 import { instances, isMajor } from "$lib/constants";
 import { assert, strictParseInt } from "$lib/util";
 import type { EntryGenerator, PageLoad } from "./$types";
@@ -7,7 +7,7 @@ export const load: PageLoad = async ({ params }) => {
   const tableYear = strictParseInt(params.year);
   assert(tableYear !== undefined);
   assert(isMajor(params.major));
-  const config = await getConfig(tableYear, params.major);
+  const config = await getMajorConfig(tableYear, params.major);
   return { config };
 };
 

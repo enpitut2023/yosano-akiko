@@ -107,7 +107,7 @@ export function classifyCoursesOrFail(
   return { courseIdToCellId, realCoursePositions, fakeCoursePositions };
 }
 
-export type SetupParams = {
+export type MajorConfig = {
   knownCourses: KnownCourse[];
   knownCourseYear: number;
   major: Major;
