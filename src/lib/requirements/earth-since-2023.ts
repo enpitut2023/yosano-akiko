@@ -350,7 +350,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-const reqGs2025: SetupCreditRequirements = {
+const reqGsSince2025: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
     a2: { min: 2, max: 2 },
@@ -380,7 +380,7 @@ const reqGs2025: SetupCreditRequirements = {
   elective: 91,
 };
 
-const reqGs2024: SetupCreditRequirements = {
+const reqGsSince2024: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
     a2: { min: 2, max: 2 },
@@ -410,7 +410,7 @@ const reqGs2024: SetupCreditRequirements = {
   elective: 91,
 };
 
-const reqGs2023: SetupCreditRequirements = {
+const reqGsSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
     a2: { min: 2, max: 2 },
@@ -440,7 +440,7 @@ const reqGs2023: SetupCreditRequirements = {
   elective: 91,
 };
 
-const reqEes2025: SetupCreditRequirements = {
+const reqEesSince2025: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
     a2: { min: 2, max: 2 },
@@ -469,7 +469,7 @@ const reqEes2025: SetupCreditRequirements = {
   elective: 91,
 };
 
-const reqEes2024: SetupCreditRequirements = {
+const reqEesSince2024: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
     a2: { min: 2, max: 2 },
@@ -499,7 +499,7 @@ const reqEes2024: SetupCreditRequirements = {
   elective: 91,
 };
 
-const reqEes2023: SetupCreditRequirements = {
+const reqEesSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
     a2: { min: 2, max: 2 },
@@ -536,14 +536,14 @@ export function getCreditRequirements(
   const specialty = majorToSpecialtyOrFail(major);
   switch (specialty) {
     case "gs":
-      if (tableYear >= 2025) return reqGs2025;
-      if (tableYear >= 2024) return reqGs2024;
-      if (tableYear >= 2023) return reqGs2023;
+      if (tableYear >= 2025) return reqGsSince2025;
+      if (tableYear >= 2024) return reqGsSince2024;
+      if (tableYear >= 2023) return reqGsSince2023;
       break;
     case "ees":
-      if (tableYear >= 2025) return reqEes2025;
-      if (tableYear >= 2024) return reqEes2024;
-      if (tableYear >= 2023) return reqEes2023;
+      if (tableYear >= 2025) return reqEesSince2025;
+      if (tableYear >= 2024) return reqEesSince2024;
+      if (tableYear >= 2023) return reqEesSince2023;
       break;
     default:
       return unreachable(specialty);

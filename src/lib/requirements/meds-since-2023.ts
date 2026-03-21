@@ -455,7 +455,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-const reqMs: SetupCreditRequirements = {
+const reqMsSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 3, max: 3 },
@@ -538,7 +538,7 @@ const reqMs: SetupCreditRequirements = {
   elective: 18,
 };
 
-const reqImsMspis: SetupCreditRequirements = {
+const reqImsMspisSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 1, max: 1 },
     a2: { min: 6, max: 6 },
@@ -581,10 +581,10 @@ export function getCreditRequirements(
   const specialty = majorToSpecialtyOrFail(major);
   switch (specialty) {
     case "ms":
-      return reqMs;
+      return reqMsSince2023;
     case "ims":
     case "mspis":
-      return reqImsMspis;
+      return reqImsMspisSince2023;
     default:
       return unreachable(specialty);
   }

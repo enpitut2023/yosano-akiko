@@ -736,7 +736,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-export const creditRequirementsN: SetupCreditRequirements = {
+export const reqNSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 1, max: 1 },
     a2: { min: 3, max: 3 },
@@ -831,7 +831,7 @@ export const creditRequirementsN: SetupCreditRequirements = {
   elective: 6,
 };
 
-export const creditRequirementsPhn: SetupCreditRequirements = {
+export const reqPhnSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 1, max: 1 },
     a2: { min: 3, max: 3 },
@@ -928,7 +928,7 @@ export const creditRequirementsPhn: SetupCreditRequirements = {
   elective: 6,
 };
 
-export const creditRequirementsH2023: SetupCreditRequirements = {
+export const reqHSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 1, max: 1 },
     a2: { min: 3, max: 3 },
@@ -1009,7 +1009,7 @@ export const creditRequirementsH2023: SetupCreditRequirements = {
   elective: 18,
 };
 
-export const creditRequirementsHSince2024: SetupCreditRequirements = {
+export const reqHSince2024: SetupCreditRequirements = {
   cells: {
     a1: { min: 1, max: 1 },
     a2: { min: 3, max: 3 },
@@ -1097,12 +1097,12 @@ export function getCreditRequirements(
   const specialty = majorToSpecialtyOrFail(major);
   switch (specialty) {
     case "nurse-n":
-      return creditRequirementsN;
+      return reqNSince2023;
     case "nurse-phn":
-      return creditRequirementsPhn;
+      return reqPhnSince2023;
     case "nurse-h":
-      if (tableYear >= 2024) return creditRequirementsHSince2024;
-      return creditRequirementsH2023;
+      if (tableYear >= 2024) return reqHSince2024;
+      return reqHSince2023;
     default:
       return unreachable(specialty);
   }

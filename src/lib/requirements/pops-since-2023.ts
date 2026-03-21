@@ -329,7 +329,7 @@ export function getRemark(
   }
 }
 
-const reqSes: SetupCreditRequirements = {
+const reqSesSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 8, max: 8 },
     b1: { min: 16, max: undefined },
@@ -364,7 +364,7 @@ const reqSes: SetupCreditRequirements = {
   elective: 95,
 };
 
-const reqMse: SetupCreditRequirements = {
+const reqMseSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 2, max: 2 },
     a2: { min: 8, max: 8 },
@@ -400,7 +400,7 @@ const reqMse: SetupCreditRequirements = {
   elective: 93,
 };
 
-const reqUrp: SetupCreditRequirements = {
+const reqUrpSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 3, max: 3 },
     a2: { min: 4, max: 4 },
@@ -444,11 +444,11 @@ export function getCreditRequirements(
   const specialty = majorToSpecialtyOrFail(major);
   switch (specialty) {
     case "ses":
-      return reqSes;
+      return reqSesSince2023;
     case "mse":
-      return reqMse;
+      return reqMseSince2023;
     case "urp":
-      return reqUrp;
+      return reqUrpSince2023;
     default:
       return unreachable(specialty);
   }
