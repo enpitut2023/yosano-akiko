@@ -1,13 +1,15 @@
 import {
-  CourseId,
-  FakeCourse,
-  FakeCourseId,
-  KnownCourse,
-  RealCourse,
-} from "@/akiko";
-import { ClassifyOptions, SetupCreditRequirements } from "@/app-setup";
+  type CourseId,
+  type FakeCourse,
+  type FakeCourseId,
+  type KnownCourse,
+  type RealCourse,
+} from "$lib/akiko";
 import {
-  isArt,
+  type ClassifyOptions,
+  type SetupCreditRequirements,
+} from "$lib/app-setup";
+import {
   isCompulsoryEnglishById,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
@@ -22,11 +24,19 @@ import {
   isJapaneseAsForeignLanguage,
   isKyoutsuu,
   isSecondForeignLanguage,
-} from "@/requirements/common";
-import { unreachable } from "@/util";
+} from "./common";
+import { unreachable } from "$lib/util";
+import { type Major } from "$lib/constants";
 
 export type Specialty = "nurse-n" | "nurse-phn" | "nurse-h";
 type Mode = "known" | "real";
+
+function majorToSpecialtyOrFail(m: Major): Specialty {
+  if (m === "nurse-n") return "nurse-n";
+  if (m === "nurse-phn") return "nurse-phn";
+  if (m === "nurse-h") return "nurse-h";
+  throw new Error(`Bad major: ${m}`);
+}
 
 function classifyColumnA(
   id: CourseId,
@@ -406,7 +416,13 @@ function classifyColumnD(
   switch (specialty) {
     case "nurse-n":
       // 生活支援科学分野
-      if (b["医療経済学"] || b["環境保健"] || b["日本国憲法"].known || b["日本国憲法"].real) return "d1";
+      if (
+        b["医療経済学"] ||
+        b["環境保健"] ||
+        b["日本国憲法"].known ||
+        b["日本国憲法"].real
+      )
+        return "d1";
       break;
     case "nurse-phn":
       // 生活支援科学分野
@@ -526,12 +542,7 @@ function isG1(id: string, specialty: Specialty): boolean {
   );
 }
 
-function isH1(
-  id: string,
-  specialty: Specialty,
-  tableYear: number,
-): boolean {
-
+function isH1(id: string, specialty: Specialty, tableYear: number): boolean {
   if (tableYear === 2023 || tableYear === 2024) {
     if (
       id === "EC12131" || // 化学
@@ -594,7 +605,7 @@ function isH1(
           id === "AB63A81" || // 比較思想論-b
           id === "AB63B11" || // 東洋宗教思想史-a (2025未開講)
           id === "AB63B31" || // 西洋宗教思想史-a (奇数年度)
-          id === "AB63B41"  // 西洋宗教思想史-b (奇数年度)
+          id === "AB63B41" // 西洋宗教思想史-b (奇数年度)
           // TODO: 倫理思想史IVが存在しない
         )
           return true;
@@ -620,8 +631,9 @@ function isH1(
 }
 
 function isH2(id: string, specialty: Specialty): boolean {
-  return (specialty === "nurse-h") && (
-      id === "EC12301" || // 生物資源の開発・生産と持続利用
+  return (
+    specialty === "nurse-h" &&
+    (id === "EC12301" || // 生物資源の開発・生産と持続利用
       id === "EC12501" || // 生物資源としての遺伝子とゲノム
       id === "EC12401" || // 生物資源と環境
       id === "EC12201" || // 生物資源学にみる食品科学・技術の最前線
@@ -632,8 +644,8 @@ function isH2(id: string, specialty: Specialty): boolean {
       id === "AE56A21" || // 共生のための日本語教育
       id === "AE56A11" || // 共生のための社会言語学
       id === "AE56A31" || // 共生のための人類学
-      id === "AE56A41" // 共生のための歴史学
-    );
+      id === "AE56A41") // 共生のための歴史学
+  );
 }
 
 function classify(
@@ -666,9 +678,8 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   opts: ClassifyOptions,
-  tableYear: number,
-  specialty: Specialty,
 ): Map<CourseId, string> {
+  const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(
@@ -677,7 +688,7 @@ export function classifyKnownCourses(
       specialty,
       opts.isNative,
       "known",
-      tableYear,
+      opts.tableYear,
     );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
@@ -689,9 +700,8 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
-  tableYear: number,
-  specialty: Specialty,
 ): Map<CourseId, string> {
+  const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(
@@ -700,7 +710,7 @@ export function classifyRealCourses(
       specialty,
       opts.isNative,
       "real",
-      tableYear,
+      opts.tableYear,
     );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
@@ -711,15 +721,14 @@ export function classifyRealCourses(
 
 export function classifyFakeCourses(
   cs: FakeCourse[],
-  _opts: ClassifyOptions,
-  _tableYear: number,
-  specialty: Specialty,
+  opts: ClassifyOptions,
 ): Map<FakeCourseId, string> {
+  const specialty = majorToSpecialtyOrFail(opts.major);
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {
     if (
-      (isCompulsoryEnglishByName(c.name) && specialty === "nurse-n") ||
-      specialty === "nurse-phn"
+      isCompulsoryEnglishByName(c.name) &&
+      (specialty === "nurse-n" || specialty === "nurse-phn")
     ) {
       fakeCourseIdToCellId.set(c.id, "e3");
     }
@@ -815,7 +824,10 @@ export const creditRequirementsN: SetupCreditRequirements = {
     g: { min: 2, max: 2 },
     h: { min: 4, max: 4 },
   },
-  compulsory: 118, // !!A!!必修の合計は118で正しいか、116は関係ないか
+  // 2023, 2024では表の右上の方に「必修の単位合計116」みたいなことを書いてある
+  // が、その下を見ると118と書いてある。それぞれの必修の列の単位数を合計すると
+  // 118なので、118が正しいと思われる。
+  compulsory: 118,
   elective: 6,
 };
 
@@ -1077,3 +1089,21 @@ export const creditRequirementsHSince2024: SetupCreditRequirements = {
   compulsory: 117,
   elective: 18,
 };
+
+export function getCreditRequirements(
+  tableYear: number,
+  major: Major,
+): SetupCreditRequirements {
+  const specialty = majorToSpecialtyOrFail(major);
+  switch (specialty) {
+    case "nurse-n":
+      return creditRequirementsN;
+    case "nurse-phn":
+      return creditRequirementsPhn;
+    case "nurse-h":
+      if (tableYear >= 2024) return creditRequirementsHSince2024;
+      return creditRequirementsH2023;
+    default:
+      return unreachable(specialty);
+  }
+}
