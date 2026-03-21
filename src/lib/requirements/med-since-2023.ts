@@ -438,7 +438,7 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-export const creditRequirementsMedMedNewSince2023: SetupCreditRequirements = {
+export const reqMedMedNewSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 1, max: 1 },
     a2: { min: 2, max: 2 },
@@ -486,7 +486,7 @@ export const creditRequirementsMedMedNewSince2023: SetupCreditRequirements = {
   elective: 13,
 };
 
-export const creditRequirementsMed2MedNew2Since2023: SetupCreditRequirements = {
+export const reqMed2MedNew2Since2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 9, max: 9 },
     a2: { min: 27, max: 27 },
@@ -526,10 +526,10 @@ export function getCreditRequirements(
   switch (specialty) {
     case "med":
     case "med-new":
-      return creditRequirementsMedMedNewSince2023;
+      return reqMedMedNewSince2023;
     case "med-2":
     case "med-2-new":
-      return creditRequirementsMed2MedNew2Since2023;
+      return reqMed2MedNew2Since2023;
     default:
       return unreachable(specialty);
   }
