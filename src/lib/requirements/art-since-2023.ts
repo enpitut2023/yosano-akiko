@@ -39,7 +39,7 @@ function majorToSpecialtyOrFail(m: Major): Specialty {
   throw new Error(`Bad major: ${m}`);
 }
 
-function isA1(id: string, specialty: Specialty): boolean {
+function isA1(id: string): boolean {
   return (
     id === "YBA9918" || // 卒業研究A(美術史領域)
     id === "YBA9928" || // 卒業研究B(美術史領域)
@@ -204,19 +204,19 @@ function isB3(id: string): boolean {
   );
 }
 
-function isC1(id: string, specialty: Specialty): boolean {
+function isC1(id: string): boolean {
   return id === "YAX1011"; // 芸術キャリア教育
 }
 
-function isC2(id: string, specialty: Specialty): boolean {
+function isC2(id: string): boolean {
   return id === "YAX2011"; // アート&デザイン入門
 }
 
-function isC3(id: string, specialty: Specialty): boolean {
+function isC3(id: string): boolean {
   return id === "YAX2021"; // 芸術と文化
 }
 
-function isC4(id: string, specialty: Specialty): boolean {
+function isC4(id: string): boolean {
   return (
     id === "YAX2031" // 芸術と社会
   );
@@ -423,17 +423,17 @@ function classify(
   specialty: Specialty,
 ): string | undefined {
   // 必修
-  if (isA1(id, specialty)) return "a1";
+  if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
   if (isA4(id)) return "a4";
   if (isA5(id)) return "a5";
   if (isA6(id)) return "a6";
   if (isA7(id)) return "a7";
-  if (isC1(id, specialty)) return "c1";
-  if (isC2(id, specialty)) return "c2";
-  if (isC3(id, specialty)) return "c3";
-  if (isC4(id, specialty)) return "c4";
+  if (isC1(id)) return "c1";
+  if (isC2(id)) return "c2";
+  if (isC3(id)) return "c3";
+  if (isC4(id)) return "c4";
   if (isC5(id, specialty)) return "c5";
   if (isE1(id, mode, specialty)) return "e1";
   if (isE2(id)) return "e2";
@@ -478,7 +478,6 @@ export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
 ): Map<CourseId, string> {
-  const tableYear = opts.tableYear;
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   // jadの場合、isE3とisF3が両方isJapaneseAsForeignLanguageに一致するので、
@@ -489,9 +488,8 @@ export function classifyRealCourses(
   // d3はartなら3単位まで、jadなら2単位まで、それ以降はd5に回す。
   let d3Total = 0;
   const d3Max = specialty === "none" ? 3 : 2;
-  console.log(d3Max);
   for (const c of cs) {
-    let cellId = classify(c.id, c.name, "real", tableYear, specialty);
+    let cellId = classify(c.id, c.name, "real", opts.tableYear, specialty);
     if (cellId !== undefined) {
       if (specialty === "jad" && cellId === "e3" && gradeIsPass(c.grade)) {
         if (e3Total < 15) {
@@ -510,8 +508,6 @@ export function classifyRealCourses(
       if (cellId === "d3" && gradeIsPass(c.grade)) {
         if (d3Total < d3Max) {
           d3Total += c.credit ?? 0;
-          console.log(c.name);
-          console.log(d3Total);
         } else {
           cellId = "d4";
         }
