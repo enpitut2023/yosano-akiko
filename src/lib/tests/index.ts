@@ -1,3 +1,4 @@
+import "./art";
 import "./bres";
 import "./chem";
 import "./cis";
