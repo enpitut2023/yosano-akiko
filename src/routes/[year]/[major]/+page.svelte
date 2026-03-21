@@ -38,7 +38,7 @@
   import { browser, dev } from "$app/environment";
   import { assert } from "$lib/util.js";
   import Callout from "$lib/Callout.svelte";
-    import { untrack } from "svelte";
+  import { untrack } from "svelte";
 
   type UiOverlapCourse = {
     id: CourseId;
@@ -140,8 +140,20 @@
   const knownCoursesMap = $derived(
     new Map(data.config.knownCourses.map((c) => [c.id, c])),
   );
-  const realCoursesMap = $derived(new Map(realCourses.map((c) => [c.id, c])));
-  const fakeCourseMap = $derived(new Map(fakeCourses.map((c) => [c.id, c])));
+  const realCoursesMap = $derived.by(() => {
+    // TODO: deduplicate with akiko.ts
+    const sorted = Array.from(realCourses).sort(
+      (a, b) => a.takenYear - b.takenYear,
+    );
+    return new Map(sorted.map((c) => [c.id, c]));
+  });
+  const fakeCourseMap = $derived.by(() => {
+    // TODO: deduplicate with akiko.ts
+    const sorted = Array.from(fakeCourses).sort(
+      (a, b) => a.takenYear - b.takenYear,
+    );
+    return new Map(sorted.map((c) => [c.id, c]));
+  });
 
   $effect(() => {
     if (!browser) return;
