@@ -63,6 +63,7 @@
     courseId: CourseId;
     courseName: string;
     nudge: number;
+    taken: boolean;
   };
 
   function posKey(term: Term, x: number, y: number): string {
@@ -150,6 +151,7 @@
           courseId,
           courseName: name,
           nudge: 0,
+          taken: takenCourseIds.includes(courseId),
         });
         map.set(k, inner);
       }
@@ -175,7 +177,7 @@
     }
 
     // Group unique bars by column, then greedily layer to avoid overlap.
-    // Sort key: length asc (longer first), yStart asc, then courseId.
+    // Sort key: taken, length asc (longer first), yStart asc, then courseId.
     const byX = new Map<number, Bar[]>();
     for (const bar of unique) {
       const col = byX.get(bar.x) ?? [];
@@ -184,6 +186,7 @@
     }
     for (const col of byX.values()) {
       col.sort((a, b) => {
+        if (a.taken !== b.taken) return a.taken ? -1 : 1;
         const aLen = a.yEnd - a.yStart;
         const bLen = b.yEnd - b.yStart;
         if (aLen !== bLen) return bLen - aLen;
@@ -300,6 +303,7 @@
         >
           <div
             class="bar-inner"
+            class:taken={bar.taken}
             draggable={mightTakeCourseIds.includes(bar.courseId)}
             onclick={() => onBarClick(bar.courseId)}
             ondragstart={(e) => onBarDragStart(e, bar.courseId)}
@@ -408,9 +412,14 @@
   .bar-inner {
     height: 100%;
     box-sizing: border-box;
-    background-color: oklch(80% 0.12 270);
-    border: 1px solid oklch(60% 0.15 270);
+    background-color: oklch(85% 0.15 95);
+    border: 1px solid oklch(70% 0.18 95);
     border-radius: 3px;
+
+    &.taken {
+      background-color: oklch(80% 0.15 145);
+      border-color: oklch(65% 0.18 145);
+    }
     padding: 1px 3px;
     overflow: hidden;
     pointer-events: auto;
