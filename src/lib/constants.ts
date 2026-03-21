@@ -316,6 +316,8 @@ export const instances: Instance[] = [
   { year: 2023, major: "nurse-n" },
   { year: 2023, major: "nurse-phn" },
   { year: 2023, major: "nurse-h" },
+  { year: 2023, major: "art" },
+  { year: 2023, major: "art-jad" },
 
   { year: 2024, major: "coins", checked: true },
   { year: 2024, major: "coins-cs", checked: true },
@@ -359,6 +361,8 @@ export const instances: Instance[] = [
   { year: 2024, major: "nurse-n" },
   { year: 2024, major: "nurse-phn" },
   { year: 2024, major: "nurse-h" },
+  { year: 2024, major: "art" },
+  { year: 2024, major: "art-jad" },
 
   { year: 2025, major: "coins", checked: true },
   { year: 2025, major: "coins-cs", checked: true },
@@ -402,6 +406,8 @@ export const instances: Instance[] = [
   { year: 2025, major: "nurse-n" },
   { year: 2025, major: "nurse-phn" },
   { year: 2025, major: "nurse-h" },
+  { year: 2025, major: "art" },
+  { year: 2025, major: "art-jad" },
 ];
 
 export function getDocMeta(name: DocsPageName) {
