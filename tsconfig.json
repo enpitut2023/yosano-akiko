@@ -1,20 +1,15 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig.json",
+  "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
-    "downlevelIteration": true,
-    "esModuleInterop": true,
-    "inlineSourceMap": true,
-    "lib": ["ES2021", "DOM", "DOM.Iterable"],
-    "module": "ES6",
-    "moduleResolution": "Bundler",
-    "noEmit": true,
-    "rootDir": "src",
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "ES6",
+    "rewriteRelativeImportExtensions": true,
     "allowJs": true,
     "checkJs": true,
-    "paths": { "@/*": ["./src/*"] }
-  },
-  "include": ["src"]
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "moduleResolution": "bundler"
+  }
 }
