@@ -44,6 +44,8 @@ export async function getMajorConfig(
     req = await import("./requirements/cis-since-2023");
   } else if (major === "pe") {
     req = await import("./requirements/pe-since-2023");
+  } else if (major.startsWith("med-") || major === "med") {
+    req = await import("./requirements/med-since-2023");
   } else if (major.startsWith("meds")) {
     req = await import("./requirements/meds-since-2023");
   } else if (major.startsWith("bres")) {
