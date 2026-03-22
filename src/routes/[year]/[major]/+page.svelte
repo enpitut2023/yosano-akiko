@@ -795,7 +795,7 @@
           >
         </div>
         {#if unclassifiedCourses.real.length + unclassifiedCourses.fake.length > 0}
-          <h2>振り分けられなかった授業</h2>
+          <h2>卒業単位に含まれない授業</h2>
           <table class="show-term">
             <thead>
               <tr class="course">
