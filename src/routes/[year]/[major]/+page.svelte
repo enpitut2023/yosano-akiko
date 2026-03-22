@@ -361,15 +361,16 @@
       const kc = knownCoursesMap.get(c.id);
       const rc = realCoursesMap.get(c.id);
       const name = rc?.name || kc?.name || "";
+      const f = filterString.toLowerCase();
       const visible =
-        c.id.includes(filterString) || name.includes(filterString);
+        c.id.toLowerCase().includes(f) || name.toLowerCase().includes(f);
       return { ...c, visible };
     };
     return {
       wontTake: sortedGroupedCourses.wontTake.map(addVisible),
       nonAvailable: sortedGroupedCourses.nonAvailable.map(addVisible),
-      mightTake: sortedGroupedCourses.mightTake,
-      taken: sortedGroupedCourses.taken,
+      mightTake: sortedGroupedCourses.mightTake.map(addVisible),
+      taken: sortedGroupedCourses.taken.map(addVisible),
       fake: sortedGroupedCourses.fake,
     };
   });
@@ -563,7 +564,7 @@
   {@const draggable = dragSource !== undefined}
   <tr
     class="course"
-    class:hide-in-wont-take={dragSource === "wont-take" && !c.visible}
+    class:hide={!c.visible}
     {draggable}
     ondragstart={(e) => {
       if (dragSource === undefined) return;
@@ -1338,7 +1339,7 @@
     }
   }
 
-  .course.hide-in-wont-take {
+  .course.hide {
     display: none;
   }
 
