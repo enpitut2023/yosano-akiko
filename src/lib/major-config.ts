@@ -32,6 +32,8 @@ export async function getMajorConfig(
     req = await import("./requirements/jpjp-since-2023");
   } else if (major === "ccc") {
     req = await import("./requirements/ccc-since-2023");
+  } else if (major === "earth-les") {
+    req = await import("./requirements/earth-les-since-2024");
   } else if (major.startsWith("earth")) {
     req = await import("./requirements/earth-since-2023");
   } else if (major === "edu") {
@@ -48,6 +50,8 @@ export async function getMajorConfig(
     req = await import("./requirements/med-since-2023");
   } else if (major.startsWith("meds")) {
     req = await import("./requirements/meds-since-2023");
+  } else if (major === "bres-les") {
+    req = await import("./requirements/bres-les-since-2023");
   } else if (major.startsWith("bres")) {
     req = await import("./requirements/bres-since-2023");
   } else if (major.startsWith("nurse")) {
@@ -56,6 +60,8 @@ export async function getMajorConfig(
     req = await import("./requirements/art-since-2023");
   } else if (major.startsWith("css")) {
     req = await import("./requirements/css-since-2023");
+  } else if (major.startsWith("help")) {
+    req = await import("./requirements/help-since-2023");
   } else {
     throw new Error(`Bad major: ${major}`);
   }
