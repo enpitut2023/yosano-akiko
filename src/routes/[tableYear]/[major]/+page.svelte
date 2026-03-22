@@ -623,7 +623,7 @@
       onscroll={(e) => (scrollX = -e.currentTarget.scrollLeft)}
     >
       <img
-        src={asset(`/${data.config.tableYear}/${data.config.major}/table.svg`)}
+        src={asset(`/tables/${data.config.tableYear}/${data.config.major}.svg`)}
         alt="Table"
         width={data.config.tableViewBox
           ? scale * data.config.tableViewBox.width
