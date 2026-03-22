@@ -32,6 +32,8 @@ export async function getMajorConfig(
     req = await import("./requirements/jpjp-since-2023");
   } else if (major === "ccc") {
     req = await import("./requirements/ccc-since-2023");
+  } else if (major === "earth-les") {
+    req = await import("./requirements/earth-les-since-2024");
   } else if (major.startsWith("earth")) {
     req = await import("./requirements/earth-since-2023");
   } else if (major === "edu") {
