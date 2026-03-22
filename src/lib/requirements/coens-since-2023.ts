@@ -343,16 +343,15 @@ function isF2(id: string): boolean {
 }
 
 function isF3(id: string): boolean {
+  // TODO: 必修のあふれたやつも入れる
   return isElectivePe(id);
 }
 
 function isH1(id: string): boolean {
-  // TODO: 思いつくものは除いておく
-  return !isKyoutsuu(id);
+  return !isKyoutsuu(id) && !id.startsWith("FA") && !id.startsWith("FF");
 }
 
 function isH2(id: string): boolean {
-  //教職に関する科目および博物館に関する科目、特設自由科目
   return isKyoushoku(id) || isHakubutsukan(id) || isJiyuukamoku(id);
 }
 
