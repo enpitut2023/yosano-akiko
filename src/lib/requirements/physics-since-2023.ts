@@ -375,7 +375,7 @@ function classify(
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
   if (isH1(id)) return "h1";
-  if (isH2(id)) return "h2";
+  if (isH2(id, tableYear)) return "h2";
 }
 
 export function classifyKnownCourses(
