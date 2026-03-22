@@ -309,7 +309,6 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-
 export function getRemark(id: CellId, _tableYear: number): string | undefined {
   if (id === "e3") {
     // !!E!!

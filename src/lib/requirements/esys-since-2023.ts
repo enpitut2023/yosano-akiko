@@ -754,14 +754,16 @@ export function classifyFakeCourses(
   return new Map();
 }
 
-
 export function getRemark(
   id: CellId,
   _tableYear: number,
   major: Major,
 ): string | undefined {
   const specialty = majorToSpecialtyOrFail(major);
-  if ((specialty === "ies" && id === "a4") || (specialty === "eme" && id === "a3")) {
+  if (
+    (specialty === "ies" && id === "a4") ||
+    (specialty === "eme" && id === "a3")
+  ) {
     // !!F!!
     return `注5(表下部参照)には対応していません。`;
   } else if (id === "b5") {

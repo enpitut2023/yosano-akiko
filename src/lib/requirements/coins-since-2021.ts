@@ -598,7 +598,6 @@ const SHARED_COLUMNS = {
   h: { min: 6, max: 10 },
 } as const satisfies SetupCreditRequirements["columns"];
 
-
 export function getRemark(
   id: CellId,
   _tableYear: number,

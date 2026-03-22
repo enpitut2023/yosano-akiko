@@ -262,7 +262,7 @@ function isC2(id: string): boolean {
 
 function isC3(id: string, _tableYear: number, mode: Mode): boolean {
   return (
-    (id === "HB13222") || // TOEFL演習 2025年開講
+    id === "HB13222" || // TOEFL演習 2025年開講
     (mode === "real" && id === "HB33312") // TOEFL演習 2023, 2024年開講
   );
 }

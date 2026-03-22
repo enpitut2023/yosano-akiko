@@ -643,7 +643,6 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-
 export function getRemark(
   id: CellId,
   _tableYear: number,
@@ -670,7 +669,10 @@ export function getRemark(
   if (id === "f2" && specialty === "none") {
     return `注10で除かれるべき科目も表示されているので注意してください。`;
   }
-  if ((id === "h1" && specialty === "none") || (id === "h2" && specialty === "as")) {
+  if (
+    (id === "h1" && specialty === "none") ||
+    (id === "h2" && specialty === "as")
+  ) {
     return `注5の条件はチェックされないため、あきこでは足りているのに実際は足りてないことがあるので注意してください。また、専門基礎科目などで指定された科目と同様の内容の講義の場合、このマスではない場所の単位としてカウントされる場合があるので気をつけてください。`;
   }
 }

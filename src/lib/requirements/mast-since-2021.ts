@@ -282,7 +282,6 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-
 export function getRemark(id: CellId, _tableYear: number): string | undefined {
   if (id === "a2") {
     // !!F!!
@@ -292,7 +291,14 @@ export function getRemark(id: CellId, _tableYear: number): string | undefined {
     // !!E!!
     return `注8(表の下部参照)には対応していません。`;
   }
-  if (id === "c1" || id === "c2" || id === "c3" || id === "c4" || id === "c7" || id === "c8") {
+  if (
+    id === "c1" ||
+    id === "c2" ||
+    id === "c3" ||
+    id === "c4" ||
+    id === "c7" ||
+    id === "c8"
+  ) {
     // !!D!!
     return `総合学域群からの移行学生に関する注10(表の下部参照)には対応していません。`;
   }
