@@ -12,9 +12,14 @@ import {
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
+  isDataScience,
   isElectivePe,
+  isFirstYearSeminar,
   isForeignLanguage,
   isGakushikiban,
+  isInfoLiteracyExercise,
+  isInfoLiteracyLecture,
+  isIzanai,
   isJapanese,
   isKyoushoku,
   isKyoutsuu,
@@ -22,6 +27,7 @@ import {
 import { unreachable } from "$lib/util";
 
 type Specialty = "science" | "system" | "rm";
+type Mode = "known" | "real";
 
 function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "klis-science") return "science";
@@ -248,18 +254,19 @@ function isD1(id: string): boolean {
   );
 }
 
-function isE1(id: string): boolean {
+function isE1(id: string, mode: Mode): boolean {
   return (
     // ファーストイヤーセミナー
     id === "1120102" || // 1クラス
     id === "1120202" || // 2クラス
     // 学問への誘い
     id === "1227631" || // 1クラス
-    id === "1227641" // 2クラス
+    id === "1227641" || // 2クラス
+    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
 
-function isE2(id: string): boolean {
+function isE2(id: string, mode: Mode): boolean {
   return (
     // データサイエンス
     id === "6526102" ||
@@ -267,7 +274,11 @@ function isE2(id: string): boolean {
     id === "6426102" || // 2025 統一　2024以前 1班
     id === "6426202" || // 2024以前 2班
     // 情報リテラシー(講義)
-    id === "6126101" // 2クラス
+    id === "6126101" || // 2クラス
+    (mode === "real" &&
+      (isInfoLiteracyLecture(id) ||
+        isInfoLiteracyExercise(id) ||
+        isDataScience(id)))
   );
 }
 
@@ -311,6 +322,7 @@ function classify(
   _tableYear: number,
   specialty: Specialty,
   _isNative: boolean,
+  mode: Mode,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
@@ -331,8 +343,8 @@ function classify(
   if (isC10(id)) return "c10";
   if (isC11(id)) return "c11";
   if (isC12(id)) return "c12";
-  if (isE1(id)) return "e1";
-  if (isE2(id)) return "e2";
+  if (isE1(id, mode)) return "e1";
+  if (isE2(id, mode)) return "e2";
   if (isE3(id)) return "e3";
   if (isE4(name)) return "e4";
   // 選択
@@ -352,7 +364,14 @@ export function classifyKnownCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, opts.tableYear, specialty, true);
+    const cellId = classify(
+      c.id,
+      c.name,
+      opts.tableYear,
+      specialty,
+      true,
+      "known",
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -373,6 +392,7 @@ export function classifyRealCourses(
       opts.tableYear,
       specialty,
       opts.isNative,
+      "real",
     );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
