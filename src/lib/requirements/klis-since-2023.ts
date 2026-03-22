@@ -91,6 +91,25 @@ function isA6(id: string, specialty: Specialty): boolean {
   }
 }
 
+function classifyColumnA(
+  id: string,
+  specialty: Specialty,
+  tableYear: number,
+): string | undefined {
+  if (isA1(id)) return "a1";
+  if (isA2(id)) return "a2";
+  let offset = 0;
+  if (tableYear === 2026) {
+    offset = 1;
+    // TODO: 科目番号不明 !!B!!
+    if (id === "xxxxxxx") return "a3"; // 卒業論文
+  }
+  if (isA3(id, specialty)) return "a" + (3 + offset);
+  if (isA4(id, specialty)) return "a" + (4 + offset);
+  if (isA5(id, specialty)) return "a" + (5 + offset);
+  if (isA6(id, specialty)) return "a" + (6 + offset);
+}
+
 const [sharedGe6CourseIds, sharedGe7CourseIds, sharedGe8CourseIds] = (() => {
   const ge6 = new Set<string>();
   const ge7 = new Set<string>();
@@ -308,17 +327,13 @@ function isH2(id: string): boolean {
 function classify(
   id: CourseId,
   name: string,
-  _tableYear: number,
+  tableYear: number,
   specialty: Specialty,
   _isNative: boolean,
 ): string | undefined {
   // 必修
-  if (isA1(id)) return "a1";
-  if (isA2(id)) return "a2";
-  if (isA3(id, specialty)) return "a3";
-  if (isA4(id, specialty)) return "a4";
-  if (isA5(id, specialty)) return "a5";
-  if (isA6(id, specialty)) return "a6";
+  const a = classifyColumnA(id, specialty, tableYear);
+  if (a !== undefined) return a;
   if (isC1(id)) return "c1";
   if (isC2(id)) return "c2";
   if (isC3(id)) return "c3";
@@ -440,9 +455,57 @@ const reqSince2023: SetupCreditRequirements = {
   elective: 83,
 };
 
+// !!B!! 選択と必修の合計がずれているから推測で記入している
+const reqSince2026: SetupCreditRequirements = {
+  cells: {
+    a1: { min: 3, max: 3 },
+    a2: { min: 3, max: 3 },
+    a3: { min: 2, max: 2 },
+    a4: { min: 1, max: 1 },
+    a5: { min: 1, max: 1 },
+    a6: { min: 1, max: 1 },
+    a7: { min: 1, max: 1 },
+    b1: { min: 16, max: undefined },
+    b2: { min: 8, max: undefined },
+    c1: { min: 1, max: 1 },
+    c2: { min: 1, max: 1 },
+    c3: { min: 2, max: 2 },
+    c4: { min: 1, max: 1 },
+    c5: { min: 2, max: 2 },
+    c6: { min: 2, max: 2 },
+    c7: { min: 2, max: 2 },
+    c8: { min: 1, max: 1 },
+    c9: { min: 1, max: 1 },
+    c10: { min: 2, max: 2 },
+    c11: { min: 2, max: 2 },
+    c12: { min: 2, max: 2 },
+    d1: { min: 30, max: 50 },
+    e1: { min: 2, max: 2 },
+    e2: { min: 4, max: 4 },
+    e3: { min: 2, max: 2 },
+    e4: { min: 4, max: 4 },
+    f1: { min: 1, max: undefined },
+    f2: { min: 0, max: undefined },
+    h1: { min: 6, max: undefined },
+    h2: { min: 0, max: undefined },
+  },
+  columns: {
+    a: { min: 12, max: 12 },
+    b: { min: 24, max: 44 },
+    c: { min: 19, max: 19 },
+    d: { min: 30, max: 50 },
+    e: { min: 12, max: 12 },
+    f: { min: 1, max: 21 },
+    h: { min: 6, max: 26 },
+  },
+  compulsory: 43,
+  elective: 81,
+};
+
 export function getCreditRequirements(
-  _tableYear: number,
+  tableYear: number,
   _major: Major,
 ): SetupCreditRequirements {
+  if (tableYear >= 2026) return reqSince2026;
   return reqSince2023;
 }
