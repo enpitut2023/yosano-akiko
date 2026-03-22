@@ -93,70 +93,27 @@ function isA1(id: string): boolean {
 function isB1(id: string, specialty: Specialty): boolean {
   switch (specialty) {
     case "p":
-      return (
-        id.startsWith("AB61") ||
-        id.startsWith("AB62") ||
-        id.startsWith("AB63") ||
-        id.startsWith("AC54") ||
-        id.startsWith("AC55")
-      );
+      return /^(AB6[1-3]|AC5[45])/.test(id);
     case "h":
-      return (
-        id.startsWith("AB71") ||
-        id.startsWith("AB72") ||
-        id.startsWith("AB73") ||
-        id.startsWith("AB74") ||
-        id.startsWith("AB75") ||
-        id.startsWith("AB61") ||
-        id.startsWith("AB91") ||
-        id.startsWith("AC60") ||
-        id.startsWith("AC61") ||
-        id.startsWith("AC62") ||
-        id.startsWith("EE21")
-      );
+      return /^(AB7[1-5]|AB61|AB91|AC6[0-2]|EE21)/.test(id);
     case "af":
-      return (
-        id.startsWith("AB81") ||
-        id.startsWith("AB82") ||
-        id.startsWith("AB83") ||
-        id.startsWith("AB84") ||
-        id.startsWith("AB85") ||
-        id.startsWith("AB86") ||
-        id.startsWith("AC60") ||
-        id.startsWith("AC62")
-      );
+      return /^(AB8[1-6]|AC6[02])/.test(id);
     case "l":
-      return (
-        id.startsWith("AB72") ||
-        id.startsWith("AB91") ||
-        id.startsWith("AB92") ||
-        id.startsWith("AB93") ||
-        id.startsWith("AB94") ||
-        id.startsWith("AB95") ||
-        id.startsWith("AB96") ||
-        id.startsWith("AC97") ||
-        id.startsWith("AC98") ||
-        id.startsWith("AC99")
-      );
+      return /^(AB72|AB9[1-6]|AC9[7-9])/.test(id);
     default:
       unreachable(specialty);
   }
 }
 
 function isB2(id: string, specialty: Specialty, tableYear: number): boolean {
+  if (tableYear >= 2024) return /^(AB[6-9]|AC[5-6]|EE21)/.test(id);
   switch (specialty) {
     case "p":
-      if (tableYear === 2023) {
-        return /^(AB[6-9]|AC54|AC55|AC60|AC62|AC64|AC65|EE21)/.test(id);
-      }
-      return /^(AB[6-9]|AC[5-6]|EE21)/.test(id);
+      return /^(AB[6-9]|AC54|AC55|AC60|AC62|AC64|AC65|EE21)/.test(id);
     case "h":
     case "af":
     case "l":
-      if (tableYear === 2023) {
-        return /^(AB[6-9]|AC60|AC61|AC62|EE21)/.test(id);
-      }
-      return /^(AB[6-9]|AC[5-6]|EE21)/.test(id);
+      return /^(AB[6-9]|AC60|AC61|AC62|EE21)/.test(id);
     default:
       unreachable(specialty);
   }
@@ -167,52 +124,40 @@ function classifyColumnD(
   specialty: Specialty,
   tableYear: number,
 ): string | undefined {
+  // TODO: d1とd2の条件が完全に被っているので、おそらくd1に入りきらなかった単位
+  // がd2に流れていく。未実装。 !!B!!
   switch (specialty) {
     case "p":
       if (
-        id.startsWith("AB5") ||
-        id.startsWith("AB60") ||
-        (tableYear <= 2024 && id.startsWith("EE21")) ||
-        (tableYear >= 2025 &&
-          (id.startsWith("AC50") ||
-            id.startsWith("AC56") ||
-            id.startsWith("AE56")))
+        (tableYear >= 2025 && /^(AB5|AB60|AC50|AC56|AE56)/.test(id)) ||
+        /^(AB5|AB60|EE21)/.test(id)
       )
         return "d1";
-      if (
-        id.startsWith("AB5") ||
-        id.startsWith("AB60") ||
-        id.startsWith("AC50")
-      )
-        return "d2";
+      if (/^(AB5|AB60|AC50)/.test(id)) return "d2";
       break;
     case "h":
       if (
-        id.startsWith("AB5") ||
-        id.startsWith("AB70") ||
-        (tableYear >= 2025 && (id.startsWith("AC56") || id.startsWith("AE56")))
+        (tableYear >= 2025 && /^(AB5|AB70|AC56|AE56)/.test(id)) ||
+        /^(AB5|AB70)/.test(id)
       )
         return "d1";
-      if (id.startsWith("AB5") || id.startsWith("AB70")) return "d2";
+      if (/^(AB5|AB70)/.test(id)) return "d2";
       break;
     case "af":
       if (
-        id.startsWith("AB5") ||
-        id.startsWith("AB80") ||
-        id.startsWith("AC50") ||
-        (tableYear >= 2025 && (id.startsWith("AC56") || id.startsWith("AE56")))
+        (tableYear >= 2025 && /^(AB5|AB80|AC50|AC56|AE56)/.test(id)) ||
+        /^(AB5|AB80|AC50)/.test(id)
       )
         return "d1";
-      if (id.startsWith("AB5")) return "d2";
+      if (/^AB5/.test(id)) return "d2";
       break;
     case "l":
       if (
-        id.startsWith("AB5") ||
-        id.startsWith("AB90") ||
-        (tableYear >= 2025 && (id.startsWith("AC56") || id.startsWith("AE56")))
+        (tableYear >= 2025 && /^(AB5|AB90|AC56|AE56)/.test(id)) ||
+        /^(AB5|AB90)/.test(id)
       )
         return "d1";
-      if (id.startsWith("AB5") || id.startsWith("AB90")) return "d2";
+      if (/^(AB5|AB90)/.test(id)) return "d2";
       break;
   }
 }
@@ -259,7 +204,7 @@ function isE5(id: string, mode: "known" | "real"): boolean {
   );
 }
 
-function isE6(id: string){
+function isE6(id: string) {
   return isJapanese(id);
 }
 
@@ -306,8 +251,8 @@ function classify(
   if (isE4(id)) return "e4";
   if (isE5(id, mode)) return "e5";
   if (isE6(id)) return "e6";
-
   // 選択
+  // d列に当てはまる科目がb列の条件にも該当してしまうため先にd列を処理
   const d = classifyColumnD(id, specialty, tableYear);
   if (d !== undefined) return d;
   if (isB1(id, specialty)) return "b1";
@@ -643,13 +588,17 @@ export function getCreditRequirements(
   const specialty = majorToSpecialtyOrFail(major);
   switch (specialty) {
     case "p":
-      return tableYear >= 2025 ? reqPSince2025 : reqPSince2023;
+      if (tableYear >= 2025) return reqPSince2025;
+      return reqPSince2023;
     case "h":
-      return tableYear >= 2025 ? reqHSince2025 : reqHSince2023;
+      if (tableYear >= 2025) return reqHSince2025;
+      return reqHSince2023;
     case "af":
-      return tableYear >= 2025 ? reqAFSince2025 : reqAFSince2023;
+      if (tableYear >= 2025) return reqAFSince2025;
+      return reqAFSince2023;
     case "l":
-      return tableYear >= 2025 ? reqLSince2025 : reqLSince2023;
+      if (tableYear >= 2025) return reqLSince2025;
+      return reqLSince2023;
     default:
       return unreachable(specialty);
   }
