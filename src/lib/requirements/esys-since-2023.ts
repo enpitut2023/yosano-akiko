@@ -210,14 +210,15 @@ function isForArchitectExam(id: string): boolean {
   );
 }
 
-function isA1Ies(id: string): boolean {
+function isA1Ies(id: string, mode: Mode): boolean {
   return (
     //プログラミング序論C(所属主専攻の科目番号で履修登録)
+  // !!B!!　FG20204が当てはまる授業に出てこない
     id === "FG20204" ||
-    id === "FG30204" ||
+    (mode === "real" && id === "FG30204") ||
     //プログラミング序論D(所属主専攻の科目番号で履修登録)
     id === "FG20214" ||
-    id === "FG30214"
+    (mode === "real" && id === "FG30214")
   );
 }
 
@@ -225,10 +226,10 @@ function isA2Ies(id: string): boolean {
   return isKisojikken(id);
 }
 
-function isA3Ies(id: string): boolean {
+function isA3Ies(id: string, mode: Mode): boolean {
   return (
     //知的・機能工学システム実験(所属主専攻の科目番号で履修登録)
-    id === "FG29213" || id === "FG39213"
+    id === "FG29213" || (mode === "real" && id === "FG39213")
   );
 }
 
@@ -242,15 +243,15 @@ function isA5Ies(id: string): boolean {
   );
 }
 
-function isA6Ies(id: string): boolean {
+function isA6Ies(id: string, mode: Mode): boolean {
   return (
     isAcademicEnglishA(id) ||
     //専門英語B
     id === "FG20222" ||
-    id === "FG30222" ||
+    (mode === "real" && id === "FG30222") ||
     //専門英語演習
     id === "FG20232" ||
-    id === "FG30232"
+    (mode === "real" && id === "FG30232")
   );
 }
 
@@ -258,14 +259,14 @@ function isA1Eme(id: string): boolean {
   return isKisojikken(id);
 }
 
-function isA2Eme(id: string): boolean {
+function isA2Eme(id: string, mode: Mode): boolean {
   return (
     //エネルギー・メカニクス専門実験(所属主専攻の科目番号で履修登録)
     id === "FG49873" ||
-    id === "FG59873" ||
+    (mode === "real" && id === "FG59873") ||
     //エネルギー・メカニクス応用実験(所属主専攻の科目番号で履修登録)
     id === "FG49883" ||
-    id === "FG59883"
+    (mode === "real" && id === "FG59883")
   );
 }
 
@@ -279,42 +280,42 @@ function isA4Eme(id: string): boolean {
   );
 }
 
-function isA5Eme(id: string): boolean {
+function isA5Eme(id: string, mode: Mode): boolean {
   return (
     isAcademicEnglishA(id) ||
     //専門英語B
     id === "FG40222" ||
-    id === "FG50222" ||
+    (mode === "real" && id === "FG50222") ||
     //専門英語演習
     id === "FG40232" ||
-    id === "FG50232"
+    (mode === "real" && id === "FG50232")
   );
 }
 
-function isA6Eme(id: string): boolean {
+function isA6Eme(id: string, mode: Mode): boolean {
   return (
     //数値計算法 2023, 2024, 2025開講　2024以降は所属主専攻の科目番号で履修登録
-    id === "FG40354" || id === "FG50354"
+    id === "FG40354" || (mode === "real" && id === "FG50354")
   );
 }
 
-function classifyColumnA(id: string, specialty: Specialty): string | undefined {
+function classifyColumnA(id: string, specialty: Specialty, mode: Mode): string | undefined {
   switch (specialty) {
     case "ies":
-      if (isA1Ies(id)) return "a1";
+      if (isA1Ies(id, mode)) return "a1";
       if (isA2Ies(id)) return "a2";
-      if (isA3Ies(id)) return "a3";
+      if (isA3Ies(id, mode)) return "a3";
       if (isA4Ies(id)) return "a4";
       if (isA5Ies(id)) return "a5";
-      if (isA6Ies(id)) return "a6";
+      if (isA6Ies(id, mode)) return "a6";
       break;
     case "eme":
       if (isA1Eme(id)) return "a1";
-      if (isA2Eme(id)) return "a2";
+      if (isA2Eme(id, mode)) return "a2";
       if (isA3Eme(id)) return "a3";
       if (isA4Eme(id)) return "a4";
-      if (isA5Eme(id)) return "a5";
-      if (isA6Eme(id)) return "a6";
+      if (isA5Eme(id, mode)) return "a5";
+      if (isA6Eme(id, mode)) return "a6";
       break;
     default:
       unreachable(specialty);
