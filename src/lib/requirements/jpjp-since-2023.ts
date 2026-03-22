@@ -21,6 +21,7 @@ import {
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
   isJapanese,
+  isJapanExpertJapanese,
   isSecondForeignLanguage,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
@@ -106,10 +107,7 @@ function isE3(id: string, name: string, specialty: Specialty): boolean {
     case "none":
       return isCompulsoryEnglishByName(name);
     case "jltt":
-      // TODO: 5-1.pdfによると3920から始まるものはJapan-Expert用の外国語として
-      // の日本語授業だが、そもそも39から始まるものが外国語としての日本語。今は
-      // 広くとっておく。!!B!!
-      return id.startsWith("39");
+      return isJapanExpertJapanese(id);
     default:
       unreachable(specialty);
   }

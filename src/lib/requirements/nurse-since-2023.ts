@@ -22,6 +22,7 @@ import {
   isIzanai,
   isJapanese,
   isJapaneseAsForeignLanguage,
+  isJapanExpertJapanese,
   isKyoutsuu,
   isSecondForeignLanguage,
 } from "./common";
@@ -486,7 +487,7 @@ function isE3(id: string, name: string, specialty: Specialty): boolean {
   return (
     ((specialty === "nurse-n" || specialty === "nurse-phn") &&
       isCompulsoryEnglishByName(name)) ||
-    (specialty === "nurse-h" && isJapaneseAsForeignLanguage(id))
+    (specialty === "nurse-h" && isJapanExpertJapanese(id))
   );
 }
 

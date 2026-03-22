@@ -23,6 +23,7 @@ import {
   isIzanai,
   isJapanese,
   isJapaneseAsForeignLanguage,
+  isJapanExpertJapanese,
   isJiyuukamoku,
   isKyoushoku,
   isNonCompulsoryEnglish,
@@ -330,7 +331,7 @@ function isE3(name: string, specialty: Specialty, id: string): boolean {
     case "none":
       return isCompulsoryEnglishByName(name);
     case "jad":
-      return isJapaneseAsForeignLanguage(id);
+      return isJapanExpertJapanese(id);
     default:
       unreachable(specialty);
   }
