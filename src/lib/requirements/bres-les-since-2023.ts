@@ -39,18 +39,7 @@ function isB1(id: string): boolean {
 }
 
 function isB2(id: string): boolean {
-  return (
-    id.startsWith("EG9") ||
-    id.startsWith("EC2") ||
-    id.startsWith("EC3") ||
-    id.startsWith("EC4") ||
-    id.startsWith("BB") ||
-    id.startsWith("EB") ||
-    id.startsWith("EE") ||
-    id.startsWith("FF") ||
-    id.startsWith("FH") ||
-    id === "BE22231"
-  );
+  return /^(EG9|EC[2-4]|BB|EB|EE|FF|FH)/.test(id) || id === "BE22231";
 }
 
 function isC1(id: string): boolean {
@@ -66,9 +55,7 @@ function isC1(id: string): boolean {
 
 function isD1(id: string): boolean {
   return (
-    id.startsWith("EG02") ||
-    id.startsWith("EG5") ||
-    id.startsWith("EG7") ||
+    /^(EG02|EG5|EG7)/.test(id) ||
     id === "EB11151" ||
     id === "EB11351" ||
     id === "EB11651" ||
@@ -133,22 +120,10 @@ function classifyColumnF(id: string, tableYear: number): string | undefined {
 }
 
 function isH1(id: string): boolean {
-  return !(
-    id.startsWith("EC") ||
-    id.startsWith("BB") ||
-    id.startsWith("EB") ||
-    id.startsWith("EE") ||
-    id.startsWith("EG") ||
-    id.startsWith("EZA") ||
-    id.startsWith("FF") ||
-    id.startsWith("FH") ||
-    id.startsWith("1") ||
-    id.startsWith("2") ||
-    id.startsWith("3") ||
-    id.startsWith("4") ||
-    id.startsWith("6") ||
-    id === "BE21861" ||
-    id === "BE22231"
+  return (
+    !/^(EC|BB|EB|EE|EG|EZA|FF|FH|[12346])/.test(id) &&
+    id !== "BE21861" &&
+    id !== "BE22231"
   );
 }
 
@@ -157,14 +132,17 @@ function classify(
   name: string,
   mode: Mode,
   tableYear: number,
+  isE5Full: boolean,
 ): string | undefined {
+  // 必修
   if (isA1(id)) return "a1";
   if (isC1(id)) return "c1";
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id, mode)) return "e4";
-  if (isE5(id, mode)) return "e5";
+  if (!isE5Full && isE5(id, mode)) return "e5";
+  // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";
   if (isD1(id)) return "d1";
@@ -179,7 +157,7 @@ export function classifyKnownCourses(
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "known", opts.tableYear);
+    const cellId = classify(c.id, c.name, "known", opts.tableYear, false);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -194,18 +172,19 @@ export function classifyRealCourses(
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
 
-  let e5Credits = 0;
+  let e5Credit = 0;
 
   for (const c of cs) {
-    if (isArt(c.id) && e5Credits < 1) {
-      courseIdToCellId.set(c.id, "e5");
-      e5Credits += c.credit ?? 0;
-      continue;
-    }
-
-    const cellId = classify(c.id, c.name, "real", opts.tableYear);
+    const cellId = classify(
+      c.id,
+      c.name,
+      "real",
+      opts.tableYear,
+      e5Credit >= 1,
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
+      if (cellId === "e5") e5Credit += c.credit ?? 0;
     }
   }
   return courseIdToCellId;
