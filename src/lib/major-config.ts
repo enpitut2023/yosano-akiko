@@ -58,6 +58,8 @@ export async function getMajorConfig(
     req = await import("./requirements/nurse-since-2023");
   } else if (major.startsWith("art")) {
     req = await import("./requirements/art-since-2023");
+  } else if (major.startsWith("css")) {
+    req = await import("./requirements/css-since-2023");
   } else if (major.startsWith("help")) {
     req = await import("./requirements/help-since-2023");
   } else {

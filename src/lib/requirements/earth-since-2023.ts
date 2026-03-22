@@ -365,7 +365,6 @@ const reqGsSince2025: SetupCreditRequirements = {
     f1: { min: 1, max: 5 },
     f2: { min: 0, max: 24 },
     h1: { min: 6, max: 34 },
-    h2: { min: 0, max: 28 },
   },
   columns: {
     a: { min: 14, max: 14 },
@@ -473,7 +472,7 @@ const reqEesSince2024: SetupCreditRequirements = {
   cells: {
     a1: { min: 12, max: 12 },
     a2: { min: 2, max: 2 },
-    b1: { min: 10, max: 64 },
+    b1: { min: 18, max: 44.5 },
     b2: { min: 9, max: 50 },
     c1: { min: 7, max: 7 },
     d1: { min: 18, max: 46 },
