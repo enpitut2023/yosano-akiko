@@ -1006,6 +1006,26 @@
         }}
         ondrop={(e) => handleDrop(e, "might-take")}
       >
+        <Timetable
+          year={timetableYear}
+          bind:activeTerm={activeTimetableTerm}
+          {mightTakeCourseIds}
+          {takenCourseIds}
+          showTaken={timetableShowTaken}
+          {knownCoursesMap}
+          {realCoursesMap}
+          onBarClick={(courseId) => {
+            const cellId = svelteAkiko.getCellId(courseId);
+            if (cellId !== undefined) {
+              selectedCellId = cellId;
+              barsVisible = true;
+              activeTab = "courses";
+            }
+          }}
+          onBarDragStart={(e, courseId) =>
+            handleDragStart(e, courseId, "might-take")}
+          onBarDragEnd={handleDragEnd}
+        />
         <div id="right-bar-scroll">
           {@render courseTable(
             "取る授業",
@@ -1034,26 +1054,6 @@
             undefined,
           )}
         </div>
-        <Timetable
-          year={timetableYear}
-          bind:activeTerm={activeTimetableTerm}
-          {mightTakeCourseIds}
-          {takenCourseIds}
-          showTaken={timetableShowTaken}
-          {knownCoursesMap}
-          {realCoursesMap}
-          onBarClick={(courseId) => {
-            const cellId = svelteAkiko.getCellId(courseId);
-            if (cellId !== undefined) {
-              selectedCellId = cellId;
-              barsVisible = true;
-              activeTab = "courses";
-            }
-          }}
-          onBarDragStart={(e, courseId) =>
-            handleDragStart(e, courseId, "might-take")}
-          onBarDragEnd={handleDragEnd}
-        />
       </div>
     </div>
   </div>
@@ -1265,13 +1265,14 @@
 
   #right-bar {
     display: grid;
-    grid-template-rows: 1fr 300px;
+    grid-template-rows: 400px 1fr;
     overflow: hidden;
   }
 
   #right-bar-scroll {
     overflow-y: scroll;
     padding: 0 15px;
+    border-top: 1px dashed black;
 
     & h2 {
       position: sticky;
