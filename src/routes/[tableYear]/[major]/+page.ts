@@ -4,7 +4,7 @@ import { assert, strictParseInt } from "$lib/util";
 import type { EntryGenerator, PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ params }) => {
-  const tableYear = strictParseInt(params.year);
+  const tableYear = strictParseInt(params.tableYear);
   assert(tableYear !== undefined);
   assert(isMajor(params.major));
   const config = await getMajorConfig(tableYear, params.major);
@@ -13,7 +13,7 @@ export const load: PageLoad = async ({ params }) => {
 
 export const entries: EntryGenerator = () => {
   return instances.map((i) => ({
-    year: i.year.toString(),
+    tableYear: i.tableYear.toString(),
     major: i.major,
   }));
 };
