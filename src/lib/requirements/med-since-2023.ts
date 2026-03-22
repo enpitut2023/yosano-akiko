@@ -260,7 +260,9 @@ function isC2(id: string): boolean {
   );
 }
 
-function isC3(id: string, _tableYear: number, mode: Mode): boolean {
+function isC3(id: string, tableYear: number, mode: Mode): boolean {
+  // TODO: 科目番号不明 !!B!!
+  if(tableYear >= 2026) return false; // 学術英語
   return (
     (id === "HB13222") || // TOEFL演習 2025年開講
     (mode === "real" && id === "HB33312") // TOEFL演習 2023, 2024年開講
