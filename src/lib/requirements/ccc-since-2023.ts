@@ -88,8 +88,8 @@ function isC1(id: string): boolean {
   return id.startsWith("AC52");
 }
 
-function isD1(id: string): boolean {
-  return id.startsWith("AC56");
+function isD1(id: string, tableYear: number): boolean {
+  return (tableYear >= 2026 && (/^(AC56|AB5|AE56)/).test(id)) || id.startsWith("AC56");
 }
 
 function isD2(id: string): boolean {
@@ -199,7 +199,7 @@ function classify(
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";
-  if (isD1(id)) return "d1";
+  if (isD1(id, tableYear)) return "d1";
   if (isD2(id)) return "d2";
   if (isD3(id)) return "d3";
   if (isD4(id)) return "d4";
