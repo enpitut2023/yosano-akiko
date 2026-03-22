@@ -313,6 +313,46 @@ const reqSince2023: SetupCreditRequirements = {
   elective: 98,
 };
 
+const reqSince2026: SetupCreditRequirements = {
+  cells: {
+    a1: { min: 6, max: 6 },
+    b1: { min: 30, max: 55 },
+    b2: { min: 1, max: 1 },
+    b3: { min: 3, max: 3 },
+    b4: { min: 3, max: 3 },
+    b5: { min: 3, max: 3 },
+    b6: { min: 3, max: 3 },
+    b7: { min: 0, max: 20 },
+    c1: { min: 1, max: 1 },
+    d1: { min: 2, max: 2 },
+    d2: { min: 3, max: 3 },
+    d3: { min: 3, max: 3 },
+    d4: { min: 6, max: 20 },
+    e1: { min: 2, max: 2 },
+    e2: { min: 3, max: 3 },
+    e3: { min: 4, max: 4 },
+    e4: { min: 4, max: 4 },
+    e5: { min: 4, max: 4 },
+    e6: { min: 2, max: 2 },
+    f1: { min: 1, max: 1 },
+    f2: { min: 0, max: 10 },
+    h1: { min: 4, max: 32 },
+    h2: { min: 2, max: 30 },
+    h3: { min: 0, max: 14 },
+  },
+  columns: {
+    a: { min: 6, max: 6 },
+    b: { min: 43, max: 75 },
+    c: { min: 1, max: 1 },
+    d: { min: 14, max: 28 },
+    e: { min: 19, max: 19 },
+    f: { min: 1, max: 11 },
+    h: { min: 6, max: 34 },
+  },
+  compulsory: 26,
+  elective: 98,
+};
+
 const reqJlttSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 6, max: 6 },
@@ -355,15 +395,59 @@ const reqJlttSince2023: SetupCreditRequirements = {
   elective: 98,
 };
 
+const reqJlttSince2026: SetupCreditRequirements = {
+  cells: {
+    a1: { min: 6, max: 6 },
+    b1: { min: 27, max: 52 },
+    b2: { min: 3, max: 3 },
+    b3: { min: 1, max: 1 },
+    b4: { min: 3, max: 3 },
+    b5: { min: 3, max: 3 },
+    b6: { min: 3, max: 3 },
+    b7: { min: 3, max: 3 },
+    b8: { min: 0, max: 20 },
+    c1: { min: 1, max: 1 },
+    c2: { min: 1, max: 1 },
+    d0: { min: 2, max: 2 },
+    d2: { min: 3, max: 3 },
+    d3: { min: 3, max: 3 },
+    d4: { min: 1, max: 1 },
+    d5: { min: 5, max: 19 },
+    e1: { min: 3, max: 3 },
+    e2: { min: 3, max: 3 },
+    e3: { min: 15, max: 15 },
+    e4: { min: 4, max: 4 },
+    e5: { min: 4, max: 4 },
+    f1: { min: 1, max: 1 },
+    f2: { min: 0, max: 10 },
+    h1: { min: 4, max: 32 },
+    h2: { min: 2, max: 30 },
+    h3: { min: 0, max: 14 },
+  },
+  columns: {
+    a: { min: 6, max: 6 },
+    b: { min: 43, max: 75 },
+    c: { min: 2, max: 2 },
+    d: { min: 14, max: 28 },
+    e: { min: 29, max: 29 },
+    f: { min: 1, max: 11 },
+    h: { min: 6, max: 34 },
+  },
+  compulsory: 37,
+  elective: 98,
+};
+
 export function getCreditRequirements(
-  _tableYear: number,
+  tableYear: number,
   major: Major,
 ): SetupCreditRequirements {
   const specialty = majorToSpecialtyOrFail(major);
   switch (specialty) {
     case "none":
+      if (tableYear >= 2026) return reqSince2026;
       return reqSince2023;
     case "jltt":
+      if (tableYear >= 2026) return reqJlttSince2026;
       return reqJlttSince2023;
     default:
       return unreachable(specialty);
