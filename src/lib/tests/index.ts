@@ -1,0 +1,15 @@
+import "./art";
+import "./bres";
+import "./chem";
+import "./cis";
+import "./coens";
+import "./coins";
+import "./esys";
+import "./klis";
+import "./mast";
+import "./math";
+import "./meds";
+import "./pe";
+import "./physics";
+import "./pops";
+import "./psy";
