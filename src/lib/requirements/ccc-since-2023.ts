@@ -185,6 +185,7 @@ function classify(
   name: string,
   mode: Mode,
   _isNative: boolean,
+  tableYear: number,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
@@ -216,10 +217,11 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   opts: ClassifyOptions,
+  tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "known", opts.isNative);
+    const cellId = classify(c.id, c.name, "known", opts.isNative, tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -230,10 +232,11 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
+  tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "real", opts.isNative);
+    const cellId = classify(c.id, c.name, "real", opts.isNative, tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
