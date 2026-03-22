@@ -126,8 +126,8 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name); // 第1外国語
 }
 
-function isE4(id: string): boolean {
-  return isSecondForeignLanguage(id); // 第2外国語
+function isE4(id: string, name: string): boolean {
+  return isSecondForeignLanguage(id,name); // 第2外国語
 }
 
 function isE5(id: string, mode: Mode): boolean {
