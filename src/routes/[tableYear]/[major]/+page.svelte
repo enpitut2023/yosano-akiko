@@ -140,20 +140,8 @@
   const knownCoursesMap = $derived(
     new Map(data.config.knownCourses.map((c) => [c.id, c])),
   );
-  const realCoursesMap = $derived.by(() => {
-    // TODO: deduplicate with akiko.ts
-    const sorted = Array.from(realCourses).sort(
-      (a, b) => a.takenYear - b.takenYear,
-    );
-    return new Map(sorted.map((c) => [c.id, c]));
-  });
-  const fakeCourseMap = $derived.by(() => {
-    // TODO: deduplicate with akiko.ts
-    const sorted = Array.from(fakeCourses).sort(
-      (a, b) => a.takenYear - b.takenYear,
-    );
-    return new Map(sorted.map((c) => [c.id, c]));
-  });
+  const realCoursesMap = $derived(svelteAkiko.getRealCoursesMap());
+  const fakeCourseMap = $derived(svelteAkiko.getFakeCoursesMap());
 
   $effect(() => {
     if (!browser) return;
