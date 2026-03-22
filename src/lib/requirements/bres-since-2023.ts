@@ -24,6 +24,7 @@ import {
   isIzanai,
   isJapanese1,
   isJapaneseAsForeignLanguage,
+  isJapanExpertJapanese,
   isNonCompulsoryEnglish,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
@@ -454,8 +455,8 @@ function classifyColumnE(
       if (isE1(id, mode, specialty)) return "e1";
       if (isCompulsoryPe1(id) || isCompulsoryPe2(id) || isCompulsoryPe3(id))
         return "e2";
-      // TODO: 第一外国語と第二外国語の扱いは要確認 !!B!!
-      if (isJapaneseAsForeignLanguage(id)) return "e3";
+      // TODO: 第二外国語(英語)の定義 !!B!!
+      if (isJapanExpertJapanese(id)) return "e3";
       if (isCompulsoryEnglishById(id)) return "e4";
       if (isInfo(id, mode)) return "e5";
       break;

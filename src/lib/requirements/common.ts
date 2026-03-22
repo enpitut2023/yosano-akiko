@@ -140,6 +140,24 @@ export function isJapaneseAsForeignLanguage(id: string): boolean {
 }
 
 /**
+ * Japan-Expert 第一外国語(日本語)
+ */
+export function isJapanExpertJapanese(id: string): boolean {
+  return (
+    id === "3910322" || // 日本語聴解IIB
+    id === "3910422" || // 日本語読解IIB
+    id === "3910522" || // 日本語作文IIB
+    id === "3910622" || // 日本語演習IIB
+    id === "3920242" || // JE日本語 上級聞く
+    id === "3920442" || // JE日本語 上級書く
+    id === "3920542" || // JE日本語 上級文法
+    id === "3920642" || // JE日本語 上級漢字
+    id === "3920742" || // JE日本語 上級総合日本語
+    /^39208.2$/.test(id) // Japan-Expert専門日本語;
+  );
+}
+
+/**
  * 芸術
  */
 export function isArt(id: string): boolean {
