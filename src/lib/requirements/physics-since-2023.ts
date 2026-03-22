@@ -283,7 +283,8 @@ function isD3(id: string, tableYear: number): boolean {
       id.startsWith("FB") ||
       (id.startsWith("FC") && !id.startsWith("FCC")) ||
       id.startsWith("FE") ||
-      id.startsWith("EE"))
+      id.startsWith("EE") ||
+      (tableYear >= 2026 && id.startsWith("EB")))
   );
 }
 
@@ -324,7 +325,7 @@ function isH1(id: string): boolean {
   return id.startsWith("A") || id.startsWith("B") || id.startsWith("C");
 }
 
-function isH2(id: string): boolean {
+function isH2(id: string, tableYear: number): boolean {
   if (isKyoushoku(id)) {
     // TODO: 支援室に聞いていないので完全に合っているかは不明 !!B!!
     return (
@@ -343,7 +344,8 @@ function isH2(id: string): boolean {
     id.startsWith("FB") ||
     id.startsWith("FC") ||
     id.startsWith("FE") ||
-    id.startsWith("EE")
+    id.startsWith("EE") ||
+    (tableYear >= 2026 && id.startsWith("EB"))
   );
 }
 
