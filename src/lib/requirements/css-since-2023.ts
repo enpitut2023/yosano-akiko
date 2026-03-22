@@ -35,6 +35,7 @@ export type Specialty =
   | "ps"
   // Economics（経済学）
   | "e";
+type Mode = "known" | "real";
 
 function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "css-s") return "s";
@@ -55,7 +56,7 @@ function classifyColumnA(id: string, specialty: Specialty): string | undefined {
     if (id === "BB11998") return "a1"; // 卒業論文
     if (id === "BB11997") return "a2"; // 卒業論文演習
     if (
-      id === "BB11932" || // 社会学研究法A,
+      id === "BB11932" || // 社会学研究法A
       id === "BB11942"
     )
       return "a3"; // 社会学研究法B
@@ -73,36 +74,35 @@ function classifyColumnB(
   const bb4 = id.startsWith("BB4");
   switch (specialty) {
     case "s":
-      // TODO:BB1から始まる科目が該当するのだが、「社会調査実習、社会学演習から12単位修得すること。（必ず社会学演習を6単位以上含めること）」というB1の中にも単位数の制限がある。
+      // TODO: 「社会調査実習、社会学演習から12単位修得すること。（必ず社会学演習を6単位以上含めること）」というB1の中にも単位数の制限がある。
       if (bb1) return "b1";
       if (bb2 || bb3 || bb4) return "b2";
       break;
     case "l":
-      // TODO:BB2から始まる科目が該当するのだが、「憲法I、憲法II、民法総則、刑法総論から4単位以上習得すること。ＢＢ２の演習科目から6単位以上修得すること」というB1の中にも単位数の制限がある。
+      // TODO: 「憲法I、憲法II、民法総則、刑法総論から4単位以上習得すること。ＢＢ２の演習科目から6単位以上修得すること」というB1の中にも単位数の制限がある。
       if (bb2) return "b1";
       if (bb1 || bb3 || bb4) return "b2";
       if (
         id.startsWith("AB00") ||
         id.startsWith("AB60") ||
         id.startsWith("BC11")
-      ) return "b3"
+      )
+        return "b3";
       break;
     case "ps":
       // TODO:2025年度だけ、BB3から始まる科目（ただし、BB32を6単位以上含めること）という制限がある。
       if (tableYear == 2023 || tableYear == 2024) {
-        // 2023, 2024
         if (id.startsWith("BB32")) return "b1";
         if (id.startsWith("BB31")) return "b2";
         if (bb1 || bb2 || bb4) return "b3";
       } else {
-        // 2025
         if (id.startsWith("BB3")) return "b1";
         if (bb1 || bb2 || bb4) return "b2";
       }
       break;
     case "e":
-      // TODO:BB4から始まる科目が該当するのだが、「(ただしミクロ経済学、マクロ経済学、経済統計論のうちから4単位以上、さらに経済学演習を8単位以上含めること)」という制限がある。
-      // TODO:BC,FHから始まる科目が該当するのだが、「（これらのうち別途指定する科目のみ）」という制限がある。これらのうち別途指定する科目って何？
+      // TODO: 「(ただしミクロ経済学、マクロ経済学、経済統計論のうちから4単位以上、さらに経済学演習を8単位以上含めること)」という制限がある。
+      // TODO: 「（これらのうち別途指定する科目のみ）」という制限がある。これらのうち別途指定する科目って何？
       if (bb4 || id.startsWith("BC") || id.startsWith("FH")) return "b1";
       if (bb1 || bb2 || bb3) return "b2";
       break;
@@ -111,21 +111,21 @@ function classifyColumnB(
 
 function isC1(id: string, specialty: Specialty): boolean {
   switch (specialty) {
-    // TODO:現代社会論はどっちでもいいのか？
+    // TODO: !!A!! 現代社会論はどっちでもいいのか？
     case "s":
       return (
         id === "BB11011" || // 社会学基礎論
         id === "BB11021" || // 現代社会論
         id === "BC11801" // 現代社会論
       );
-    // TODO:法学概論はどっちでもいいのか？
+    // TODO: !!A!! 法学概論はどっちでもいいのか？
     case "l":
       return (
         id === "BB20001" || // 法学概論
         id === "BC51151" || // 法学概論
         id === "BB20021" // 民事法概論
       );
-    // TODO:国際政治史はどっちでもいいのか？
+    // TODO: !!A!! 国際政治史はどっちでもいいのか？
     case "ps":
       return (
         id === "BB31011" || // 政治学概論
@@ -212,7 +212,7 @@ function isD3(id: string): boolean {
   );
 }
 
-function isE1(id: string, mode: "known" | "real"): boolean {
+function isE1(id: string, mode: Mode): boolean {
   return (
     id === "1104102" || // ファーストイヤーセミナー 1クラス
     id === "1104202" || // ファーストイヤーセミナー 2クラス
@@ -237,7 +237,7 @@ function isE4(id: string): boolean {
   return isSecondForeignLanguage(id); // 第2外国語
 }
 
-function isE5(id: string, mode: "known" | "real"): boolean {
+function isE5(id: string, mode: Mode): boolean {
   return (
     id === "6104101" || // 情報リテラシー(講義)
     id === "6404102" || // 情報リテラシー(演習) 1班
@@ -286,7 +286,6 @@ function isH3(id: string): boolean {
 }
 
 function isH4(id: string): boolean {
-  // ＢＡ（専門基礎科目として指定されている科目を除く）、 ＢＥから始まる科目
   return id.startsWith("BA") || id.startsWith("BE");
 }
 
@@ -295,7 +294,7 @@ function classify(
   name: string,
   specialty: Specialty,
   tableYear: number,
-  mode: "known" | "real",
+  mode: Mode,
 ): string | undefined {
   // 必修
   const a = classifyColumnA(id, specialty);
@@ -307,6 +306,7 @@ function classify(
   if (isE4(id)) return "e4";
   if (isE5(id, mode)) return "e5";
   // 選択
+  // d列に当てはまる科目がb列の条件にも該当してしまうため先にd列を処理
   if (isD1(id, specialty)) return "d1";
   if (isD2(id)) return "d2";
   if (isD3(id)) return "d3";
@@ -701,15 +701,18 @@ export function getCreditRequirements(
   const specialty = majorToSpecialtyOrFail(major);
   switch (specialty) {
     case "s":
-      return tableYear >= 2024 ? reqSSince2024 : reqSSince2023;
+      if (tableYear >= 2024) return reqSSince2024;
+      return reqSSince2023;
     case "l":
-      return tableYear >= 2024 ? reqLSince2024 : reqLSince2023;
+      if (tableYear >= 2024) return reqLSince2024;
+      return reqLSince2023;
     case "ps":
       if (tableYear >= 2025) return reqPsSince2025;
       if (tableYear >= 2024) return reqPsSince2024;
       return reqPsSince2023;
     case "e":
-      return tableYear >= 2024 ? reqESince2024 : reqESince2023;
+      if (tableYear >= 2024) return reqESince2024;
+      return reqESince2023;
     default:
       return unreachable(specialty);
   }
