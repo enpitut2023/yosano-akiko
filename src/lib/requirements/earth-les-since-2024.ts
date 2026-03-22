@@ -148,6 +148,15 @@ function isF2(id: string): boolean {
 
 function isH1(id: string): boolean {
   return !/^E[ABCEG]/.test(id) && !isKyoutsuu(id);
+ 
+// その他学類長が特に指定する科目として書かれているが、元々の条件に当てはまっている
+// !!B!! 科目名は英語は弾くとか別の条件がある可能性あり
+// FJ20004 Linear Algebra I
+// FJ20014 Linear Algebra II
+// FJ20124 Introduction to Single-Variable Calculus I
+// FJ20134 Introduction to Single-Variable Calculus II
+
+
 }
 
 function classify(id: CourseId, mode: Mode): string | undefined {
@@ -238,9 +247,42 @@ const reqSince2024: SetupCreditRequirements = {
   elective: 82.5,
 };
 
+const reqSince2026: SetupCreditRequirements = {
+  cells: {
+    a1: { min: 3, max: 3 },
+    a2: { min: 3, max: 3 },
+    a3: { min: 12, max: 12 },
+    a4: { min: 7, max: 7 },
+    b1: { min: 3, max: 19 },
+    b2: { min: 44, max: 55 },
+    c1: { min: 3.5, max: 3.5 },
+    d1: { min: 11.5, max: 25.5 },
+    e1: { min: 2, max: 2 },
+    e2: { min: 4, max: 4 },
+    e3: { min: 4, max: 4 },
+    e4: { min: 2, max: 2 },
+    e5: { min: 1, max: 1 },
+    f1: { min: 1, max: 1 },
+    f2: { min: 0, max: 14 },
+    h1: { min: 9, max: 23 },
+  },
+  columns: {
+    a: { min: 25, max: 25 },
+    b: { min: 47, max: 61 },
+    c: { min: 3.5, max: 3.5 },
+    d: { min: 11.5, max: 25.5 },
+    e: { min: 13, max: 13 },
+    f: { min: 1, max: 15 },
+    h: { min: 9, max: 23 },
+  },
+  compulsory: 41.5,
+  elective: 82.5,
+};
+
 export function getCreditRequirements(
-  _tableYear: number,
+  tableYear: number,
   _major: Major,
 ): SetupCreditRequirements {
+  if (tableYear >= 2026) return reqSince2026;
   return reqSince2024;
 }
