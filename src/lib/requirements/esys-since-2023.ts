@@ -668,7 +668,7 @@ function classify(
   mode: Mode,
 ): string | undefined {
   // 必修
-  const a = classifyColumnA(id, specialty);
+  const a = classifyColumnA(id, specialty, mode);
   if (a !== undefined) return a;
   if (isC1(id)) return "c1";
   if (isC2(id)) return "c2";
