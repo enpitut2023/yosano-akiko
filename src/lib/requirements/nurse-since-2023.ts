@@ -670,7 +670,7 @@ function classify(
   // 選択
   const d = classifyColumnD(id, specialty, mode);
   if (d !== undefined) return d;
-  if (isF1(id, specialty)) return "f1";
+  if (isF1(id, specialty, name)) return "f1";
   if (isH2(id, specialty)) return "h2";
   if (isH1(id, specialty, tableYear)) return "h1";
 }

@@ -117,8 +117,8 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string): boolean {
-  return isSecondForeignLanguage(id);
+function isE4(id: string, name: string): boolean {
+  return isSecondForeignLanguage(id, name);
 }
 
 function isE5(id: string, mode: Mode): boolean {
@@ -137,11 +137,11 @@ function isF1(id: string): boolean {
   return isGakushikiban(id);
 }
 
-function isF2(id: string): boolean {
+function isF2(id: string, name: string): boolean {
   return (
     isElectivePe(id) ||
     isNonCompulsoryEnglish(id) ||
-    isSecondForeignLanguage(id) ||
+    isSecondForeignLanguage(id, name) ||
     isJapanese(id) ||
     isArt(id)
   );
@@ -171,7 +171,7 @@ function classify(
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(id, name)) return "e4";
   if (isE5(id, mode)) return "e5";
   // 選択
   if (isB1(id)) return "b1";
@@ -179,7 +179,7 @@ function classify(
   if (isB3(id)) return "b3";
   if (isD1(id)) return "d1";
   if (isF1(id)) return "f1";
-  if (isF2(id)) return "f2";
+  if (isF2(id, name)) return "f2";
   if (isH1(id)) return "h1";
 }
 
@@ -217,7 +217,7 @@ export function classifyRealCourses(
   const e4CandidatesWorth2: RealCourse[] = [];
   const e4CandidatesWorth3: RealCourse[] = [];
   for (const c of cs) {
-    if (isE4(c.id)) {
+    if (isE4(c.id, c.name)) {
       if (c.credit === 1) e4CandidatesWorth1.push(c);
       if (c.credit === 2) e4CandidatesWorth2.push(c);
       if (c.credit === 3) e4CandidatesWorth3.push(c);
@@ -238,7 +238,7 @@ export function classifyRealCourses(
       e4Courses.push(defined(e4CandidatesWorth1.pop()));
     }
   } else {
-    const e4Candidates = cs.filter((c) => isE4(c.id));
+    const e4Candidates = cs.filter((c) => isE4(c.id, c.name));
     e4Candidates.sort((a, b) => (a.credit ?? 0) - (b.credit ?? 0));
     let total = 0;
     for (const c of e4Candidates) {

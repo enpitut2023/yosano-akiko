@@ -193,7 +193,7 @@ function classify(id: CourseId, name: string, mode: Mode): string | undefined {
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(id, name)) return "e4";
   if (isE5(id, mode)) return "e5";
   // 選択
   if (isB1(id)) return "b1";

@@ -200,7 +200,7 @@ function classify(
   if (isE1(id, specialty)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(id, name, specialty)) return "e3";
-  if (isE4(id, specialty)) return "e4";
+  if (isE4(id, name, specialty)) return "e4";
   if (isE5(id, mode)) return "e5";
   if (isE6(id, specialty)) return "e6";
   // 選択
