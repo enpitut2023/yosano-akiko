@@ -1,4 +1,5 @@
 import {
+  type CellId,
   type CourseId,
   type FakeCourse,
   type FakeCourseId,
@@ -359,6 +360,7 @@ function isF2(id: string): boolean {
 }
 
 function isF3(id: string, specialty: Specialty): boolean {
+  // !!S!!
   switch (specialty) {
     case "none":
       return isNonCompulsoryEnglish(id);
@@ -530,6 +532,22 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  major: Major,
+): string | undefined {
+  const specialty = majorToSpecialtyOrFail(major);
+  if ((id === "e3" || id === "f3") && specialty === "none") {
+    // !!E!!
+    return `注5(表下部参照)には対応していません。`;
+  }
+  if (id === "h2" || id === "h3") {
+    // !!C!!
+    return `また、専門基礎科目などで指定された科目と同様の内容の講義の場合、このマスではない場所の単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 export const reqSince2023: SetupCreditRequirements = {
