@@ -141,12 +141,14 @@ function isF2(id: string): boolean {
   );
 }
 
-function isH1(id: string): boolean {
+function isH1(id: string, name: string): boolean {
   return (
-    /^[ABEFGHVWY]/.test(id) ||
-    isKyoushoku(id) ||
-    isHakubutsukan(id) ||
-    isJiyuukamoku(id)
+    (/^[ABEFGHVWY]/.test(id) ||
+      isKyoushoku(id) ||
+      isHakubutsukan(id) ||
+      isJiyuukamoku(id)) &&
+    name !== "学習の心理" &&
+    name !== "こころの発達"
   );
 }
 
@@ -173,7 +175,7 @@ function classify(
   if (isD1(id)) return "d1";
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
-  if (isH1(id)) return "h1";
+  if (isH1(id, name)) return "h1";
 }
 
 export function classifyKnownCourses(
@@ -268,7 +270,7 @@ export function classifyFakeCourses(
 export function getRemark(id: CellId, _tableYear: number): string | undefined {
   if (id === "b1") {
     // !!F!!
-    return `注5(表の下部参照)の条件は判定していません。`;
+    return `注5(表下部参照)の条件は判定していません。`;
   } else if (id === "e3" || id === "f2") {
     // !!E!!
     return `注4(表下部参照)には対応していません。`;

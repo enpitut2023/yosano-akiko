@@ -381,6 +381,28 @@ export function classifyRealCourses(
   }
   return courseIdToCellId;
 }
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  specialty: Specialty,
+): string | undefined {
+  if(id === "a1" || id === "a2"){
+    // !!F!!
+    return `注7(情報資源経営主専攻の表下部参照)には対応していません。`
+  }
+  if(id === "d1"){
+    // !!D!!
+    return `注8(情報資源経営主専攻の表下部参照)には対応していません。`
+  }
+  if(id === "e4" || id === "f2"){
+    // !!E!! 
+    return `注5(情報資源経営主専攻の表下部参照)には対応していません。`
+  }
+  if (id === "h1") {
+    // !!C!!
+    return `注6(情報資源経営主専攻の表下部参照)にもある通り、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。また、総合学域群からの移行生に関する注8(情報資源経営主専攻の表下部参照)には対応していないため、対象の科目はここに表示されますが、実際には専門基礎科目選択科目となります。`
+  }
+}
 
 export function classifyFakeCourses(
   cs: FakeCourse[],
