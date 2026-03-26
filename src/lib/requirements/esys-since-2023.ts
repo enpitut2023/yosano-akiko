@@ -211,14 +211,12 @@ function isForArchitectExam(id: string): boolean {
 }
 
 function isA1Ies(id: string, mode: Mode): boolean {
+  // 2025.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
   return (
-    //プログラミング序論C(所属主専攻の科目番号で履修登録)
-  // !!B!!　FG20204が当てはまる授業に出てこない
+    //プログラミング序論C(所属主専攻の科目番号で履修登録) !!A!!
     id === "FG20204" ||
-    (mode === "real" && id === "FG30204") ||
-    //プログラミング序論D(所属主専攻の科目番号で履修登録)
-    id === "FG20214" ||
-    (mode === "real" && id === "FG30214")
+    //プログラミング序論D(所属主専攻の科目番号で履修登録) !!A!!
+    id === "FG20214" 
   );
 }
 
@@ -227,9 +225,10 @@ function isA2Ies(id: string): boolean {
 }
 
 function isA3Ies(id: string, mode: Mode): boolean {
+  // 2025.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
   return (
-    //知的・機能工学システム実験(所属主専攻の科目番号で履修登録)
-    id === "FG29213" || (mode === "real" && id === "FG39213")
+    //知的・機能工学システム実験(所属主専攻の科目番号で履修登録) !!A!!
+    id === "FG29213" 
   );
 }
 
@@ -244,14 +243,13 @@ function isA5Ies(id: string): boolean {
 }
 
 function isA6Ies(id: string, mode: Mode): boolean {
+  // 2025.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
   return (
     isAcademicEnglishA(id) ||
-    //専門英語B
+    //専門英語B !!A!!
     id === "FG20222" ||
-    (mode === "real" && id === "FG30222") ||
-    //専門英語演習
-    id === "FG20232" ||
-    (mode === "real" && id === "FG30232")
+    //専門英語演習 !!A!!
+    id === "FG20232" 
   );
 }
 
@@ -283,12 +281,10 @@ function isA4Eme(id: string): boolean {
 function isA5Eme(id: string, mode: Mode): boolean {
   return (
     isAcademicEnglishA(id) ||
-    //専門英語B
+    //専門英語B !!A!!
     id === "FG40222" ||
-    (mode === "real" && id === "FG50222") ||
-    //専門英語演習
-    id === "FG40232" ||
-    (mode === "real" && id === "FG50232")
+    //専門英語演習 !!A!!
+    id === "FG40232" 
   );
 }
 
@@ -370,11 +366,34 @@ function isB4(id: string, specialty: Specialty): boolean {
   }
 }
 
+function isFjGakuruicho(id: string): boolean {
+  // TODO: remark 4単位を限度とする
+  return (
+    id === "FJ11001" || //Engineering Ethics
+    id === "FJ11101" || //Introduction to Interdisciplinary Engineering I
+    id === "FJ11111" || //Introduction to Interdisciplinary Engineering II
+    id === "FJ12001" || //Modern Physics
+    id === "FJ15001" || //System Modeling
+    id === "FJ12101" || //Statistical Physics I
+    id === "FJ12111" || //Statistical Physics II
+    id === "FJ12121" || //Statistical Physics III
+    id === "FJ12231" || //Quantum Mechanics I
+    id === "FJ12241" || //Quantum Mechanics II
+    id === "FJ12251" || //Quantum Mechanics III
+    id === "FJ12301" || //Advanced Electromagnetism I
+    id === "FJ12311" || //Advanced Electromagnetism II
+    id === "FJ12321" || //Advanced Electromagnetism III
+    id === "FJ12401" || //Solid State Physics I
+    id === "FJ12411" || //Solid State Physics II
+    id === "FJ12421" //Solid State Physics III
+  );
+}
+
 function isB5(id: string, specialty: Specialty): boolean {
   if (specialty === "eme" && isForArchitectExam(id) && /^(FH|YA|YB)/.test(id)) {
     return true;
   }
-  return /^(FG|FF[2-5]|GB[2-4]|FA00|FJ)/.test(id) && !isKougakuSystemGairon(id);
+  return /^(FG|FF[2-5]|GB[2-4]|FA00)/.test(id) && !isKougakuSystemGairon(id) || isFjGakuruicho(id);
 }
 
 function isC1(id: string): boolean {
