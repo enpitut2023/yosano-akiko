@@ -360,7 +360,7 @@ function isF2(id: string): boolean {
 }
 
 function isF3(id: string, specialty: Specialty): boolean {
-  // !!S!!
+  // !!O!!
   switch (specialty) {
     case "none":
       return isNonCompulsoryEnglish(id);
