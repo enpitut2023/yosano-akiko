@@ -14,9 +14,9 @@
 
   const yearToInstances = new Map<number, Instance[]>();
   for (const i of instances) {
-    let is = yearToInstances.get(i.year);
+    let is = yearToInstances.get(i.tableYear);
     if (is === undefined) {
-      yearToInstances.set(i.year, [i]);
+      yearToInstances.set(i.tableYear, [i]);
     } else {
       is.push(i);
     }
@@ -24,12 +24,12 @@
 
   const years = Array.from(yearToInstances.keys()).sort((a, b) => b - a);
 
-  const sections = years.map((year) => {
-    const is = yearToInstances.get(year);
+  const sections = years.map((tableYear) => {
+    const is = yearToInstances.get(tableYear);
     assert(is !== undefined);
     is.sort((a, b) => majorCompare(a.major, b.major));
     return {
-      year,
+      tableYear,
       instances: is.map((i, index) => ({
         ...i,
         majorJa: MAJOR_TO_JA[i.major],
@@ -94,13 +94,13 @@
 
 {#each sections as s}
   <section>
-    <h3>{s.year}年度入学</h3>
+    <h3>{s.tableYear}年度入学</h3>
     <ul>
       {#each s.instances as i}
         <li class:gap={i.gap}>
           <a
-            href={resolve("/[year]/[major]", {
-              year: s.year.toString(),
+            href={resolve("/[tableYear]/[major]", {
+              tableYear: s.tableYear.toString(),
               major: i.major,
             })}>{i.majorJa}</a
           >

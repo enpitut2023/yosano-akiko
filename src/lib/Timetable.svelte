@@ -282,8 +282,10 @@
         </div>
       {/each}
       {#each PERIODS as period, pi}
+        {@const lastRow = pi === PERIODS.length - 1}
         <div
           class="tt-cell tt-period"
+          class:last-row={lastRow}
           style="grid-column: 1; grid-row: {pi + 2}"
         >
           {period}
@@ -291,6 +293,7 @@
         {#each [0, 1, 2, 3, 4] as _, di}
           <div
             class="tt-cell"
+            class:last-row={lastRow}
             style="grid-column: {di + 2}; grid-row: {pi + 2}"
           ></div>
         {/each}
@@ -320,7 +323,6 @@
 
 <style lang="scss">
   .timetable {
-    border-top: 1px dashed black;
     display: grid;
     grid-template-rows: auto 1fr;
     overflow: hidden;
@@ -390,6 +392,15 @@
   .tt-cell {
     border: 0.5px solid black;
     font-size: 10px;
+  }
+
+  .tt-header,
+  .tt-corner {
+    border-top: none;
+  }
+
+  .tt-cell.last-row {
+    border-bottom: none;
   }
 
   .tt-header,
