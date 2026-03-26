@@ -180,6 +180,8 @@ function isH3(id: string): boolean {
   return !isKyoutsuu(id);
 }
 
+const COMPULSORY_NAMES = new Set(["卒業論文", "卒業論文演習"]);
+
 function classify(
   id: CourseId,
   name: string,
@@ -196,6 +198,8 @@ function classify(
   if (isE4(id)) return "e4";
   if (isE5(id, mode)) return "e5";
   if (isE6(id)) return "e6";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";

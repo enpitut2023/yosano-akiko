@@ -262,7 +262,7 @@ function isC2(id: string): boolean {
 
 function isC3(id: string, _tableYear: number, mode: Mode): boolean {
   return (
-    (id === "HB13222") || // TOEFL演習 2025年開講
+    id === "HB13222" || // TOEFL演習 2025年開講
     (mode === "real" && id === "HB33312") // TOEFL演習 2023, 2024年開講
   );
 }
@@ -357,6 +357,35 @@ function isH4(id: string): boolean {
   return /^[ABCEFGHWY]/.test(id) && !id.startsWith("HB");
 }
 
+const COMPULSORY_NAMES = new Set([
+  "医学統計学",
+  "医療・福祉現場でのふれあい等",
+  "医療概論I",
+  "医療概論I-B",
+  "医学の基礎",
+  "医学の基礎B",
+  "医科分子生物学",
+  "機能・構造と病態I",
+  "医療概論II",
+  "機能・構造と病態II",
+  "医療概論III",
+  "クリニカル・クラークシップ準備学習",
+  "社会医学実習",
+  "M4クリニカル・クラークシップ(Phase IA)",
+  "医療概論IV",
+  "M5クリニカル・クラークシップ (Phase IB、Phase IIA)",
+  "M6クリニカル・クラークシップ (Phase IIB)",
+  "M6アドヴァンスト・エレクティヴズ",
+  "研究室実習",
+  "医療概論V",
+  "医学総括",
+  "English Medical Terminology I",
+  "English Medical Terminology II",
+  "Clinical Communication in English I",
+  "Clinical Communication in English II",
+  "TOEFL演習",
+]);
+
 function classify(
   id: CourseId,
   name: string,
@@ -380,6 +409,8 @@ function classify(
       if (isE4(id, mode)) return "e4";
       if (isE5(id, mode)) return "e5";
       if (isF1(id)) return "f1";
+      if (COMPULSORY_NAMES.has(name)) return undefined;
+
       // 選択
       if (isH1(id)) return "h1";
       if (isH2(id)) return "h2";

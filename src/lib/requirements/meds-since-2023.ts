@@ -359,6 +359,48 @@ function isH2(id: string): boolean {
   return /^[EFGH]/.test(id);
 }
 
+const COMPULSORY_NAMES = new Set([
+  "臨床病態学",
+  "病態検査学",
+  "臨床薬理学実習",
+  "病理組織学",
+  "病理組織学実習",
+  "細胞検査学",
+  "血液検査学実習",
+  "生化学成分検査学",
+  "生化学成分検査学実習",
+  "遺伝子検査学実習",
+  "RI検査技術学",
+  "病原微生物学",
+  "病原微生物学実習I",
+  "病原微生物学実習II",
+  "医学物理学概論",
+  "免疫検査学実習",
+  "輸血学",
+  "輸血学実習",
+  "ゲノム医科学",
+  "生理機能検査学",
+  "生理機能検査学実習",
+  "画像検査学",
+  "検査機器学",
+  "検査情報管理学",
+  "医学検査学",
+  "医療科学概論",
+  "医学検査学実習",
+  "医学検査学フロンティア",
+  "医療安全管理学",
+  "臨床実習",
+  "健幸医科学グループワーク",
+  "医科学英語論文講読の基礎",
+  "医科学専門語学 I",
+  "医科学専門語学 II",
+  "医療科学特論I",
+  "医療科学特論II",
+  "医科学演習",
+  "研究演習",
+  "卒業研究",
+]);
+
 function classify(
   id: CourseId,
   name: string,
@@ -401,6 +443,8 @@ function classify(
   if (isE4(id, mode)) return "e4";
   if (isG1(id)) return "g1";
   if (isG2(id)) return "g2";
+
+  if (COMPULSORY_NAMES.has(name)) return undefined;
 
   // 選択
   if (isF1(id)) return "f1";

@@ -347,6 +347,14 @@ function isH2(id: string): boolean {
   );
 }
 
+const COMPULSORY_NAMES = new Set([
+  "物理学実験I",
+  "物理学実験II",
+  "卒業研究",
+  "解析学入門",
+  "解析力学",
+]);
+
 function classify(
   id: CourseId,
   name: string,
@@ -362,6 +370,8 @@ function classify(
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id)) return "e4";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";

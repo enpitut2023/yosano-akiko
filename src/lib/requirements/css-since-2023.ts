@@ -289,6 +289,21 @@ function isH4(id: string): boolean {
   return id.startsWith("BA") || id.startsWith("BE");
 }
 
+const COMPULSORY_NAMES = new Set([
+  "卒業論文",
+  "卒業論文演習",
+  "社会学研究法A",
+  "社会学研究法B",
+  "社会学基礎論",
+  "現代社会論",
+  "法学概論",
+  "民事法概論",
+  "政治学概論",
+  "国際政治史",
+  "経済学基礎論",
+  "現代経済史",
+]);
+
 function classify(
   id: CourseId,
   name: string,
@@ -305,6 +320,8 @@ function classify(
   if (isE3(name)) return "e3";
   if (isE4(id)) return "e4";
   if (isE5(id, mode)) return "e5";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   // d列に当てはまる科目がb列の条件にも該当してしまうため先にd列を処理
   if (isD1(id, specialty)) return "d1";

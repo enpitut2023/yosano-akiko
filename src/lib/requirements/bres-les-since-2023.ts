@@ -127,6 +127,12 @@ function isH1(id: string): boolean {
   );
 }
 
+const COMPULSORY_NAMES = new Set([
+  "卒業研究Ⅰ",
+  "卒業研究Ⅱ",
+  "生物資源科学演習",
+]);
+
 function classify(
   id: CourseId,
   name: string,
@@ -142,6 +148,8 @@ function classify(
   if (isE3(name)) return "e3";
   if (isE4(id, mode)) return "e4";
   if (!isE5Full && isE5(id, mode)) return "e5";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";

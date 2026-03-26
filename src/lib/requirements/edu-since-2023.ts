@@ -157,6 +157,22 @@ function isH1(id: string): boolean {
   );
 }
 
+const COMPULSORY_NAMES = new Set([
+  "卒業研究",
+  "人間学Ⅰ",
+  "教育基礎論",
+  "学校の経営・制度・社会",
+  "心理学概論",
+  "障害科学I",
+  "障害科学II",
+  "キャリアデザイン入門",
+  "教育学研究法A",
+  "教育学研究法B",
+  "教育インターンシップ基礎論",
+  "教育インターンシップ実践演習",
+  "教育学実践演習",
+]);
+
 function classify(
   id: CourseId,
   name: string,
@@ -181,6 +197,8 @@ function classify(
   if (isE3(name)) return "e3";
   if (isE4(id)) return "e4";
   if (isE5(id, mode)) return "e5";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";

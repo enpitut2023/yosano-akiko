@@ -196,6 +196,24 @@ function isH1(id: string): boolean {
   return true;
 }
 
+const COMPULSORY_NAMES = new Set([
+  "卒業研究",
+  "卒業予備研究",
+  "数学外書輪講II",
+  "微積分1",
+  "微積分2",
+  "微分積分A",
+  "微積分I",
+  "微積分II",
+  "線形代数1",
+  "線形代数2",
+  "線形代数B",
+  "線形代数I",
+  "線形代数II",
+  "数学リテラシー1",
+  "数学リテラシー2",
+]);
+
 function classify(
   id: CourseId,
   name: string,
@@ -215,6 +233,8 @@ function classify(
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id, mode)) return "e4";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   if (isB1(id)) return "b1";
   if (isD1(id)) return "d1";

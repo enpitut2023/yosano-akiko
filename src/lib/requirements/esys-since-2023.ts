@@ -660,8 +660,70 @@ function isH3(id: string): boolean {
   );
 }
 
+const COMMON_COMPULSORY_NAMES = new Set([
+  "数学リテラシー1",
+  "数学リテラシー2",
+  "線形代数1",
+  "線形代数2",
+  "線形代数3",
+  "微積分1",
+  "微分積分A",
+  "微積分2",
+  "微積分3",
+  "力学1",
+  "力学2",
+  "力学3",
+  "電磁気学1",
+  "電磁気学2",
+  "電磁気学3",
+  "工学システム原論",
+  "線形代数総論A",
+  "線形代数総論B",
+  "解析学総論",
+  "常微分方程式",
+  "力学総論",
+  "電磁気学総論",
+  "材料力学基礎",
+  "熱力学基礎",
+  "流体力学基礎",
+  "複素解析",
+  "プログラミング序論A",
+  "プログラミング序論B",
+]);
+
+const IES_COMPULSORY_NAMES = new Set([
+  "プログラミング序論C",
+  "プログラミング序論D",
+  "知的・機能工学システム実験",
+  "工学者のための倫理",
+  "専門英語B",
+  "専門英語演習",
+]);
+
+const EME_COMPULSORY_NAMES = new Set([
+  "工学者のための倫理",
+  "専門英語B",
+  "専門英語演習",
+  "エネルギー・メカニクス専門実験",
+  "エネルギー・メカニクス応用実験",
+  "数値計算法",
+]);
+
+function isCompulsoryName(name: string, specialty: Specialty): boolean {
+  if (COMMON_COMPULSORY_NAMES.has(name)) return true;
+  switch (specialty) {
+    case "ies":
+      return IES_COMPULSORY_NAMES.has(name);
+    case "eme":
+      return EME_COMPULSORY_NAMES.has(name);
+    default:
+      unreachable(specialty);
+  }
+}
+
 function classify(
   id: CourseId,
+  name: string,
   specialty: Specialty,
   isNative: boolean,
   mode: Mode,
@@ -700,6 +762,8 @@ function classify(
   if (isE2(id)) return "e2";
   if (isE3(id, mode)) return "e3";
   if (isE4(id, mode)) return "e4";
+  if (isCompulsoryName(name, specialty)) return undefined;
+
   // 選択
   if (isB1(id, specialty)) return "b1";
   if (isB2(id, specialty)) return "b2";
@@ -723,7 +787,7 @@ export function classifyKnownCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, specialty, opts.isNative, "known");
+    const cellId = classify(c.id, c.name, specialty, opts.isNative, "known");
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -738,7 +802,7 @@ export function classifyRealCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, specialty, opts.isNative, "real");
+    const cellId = classify(c.id, c.name, specialty, opts.isNative, "real");
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
