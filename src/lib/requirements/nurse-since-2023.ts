@@ -10,7 +10,6 @@ import {
   type SetupCreditRequirements,
 } from "$lib/app-setup";
 import {
-  isCompulsoryEnglishById,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
@@ -490,7 +489,7 @@ function isE3(id: string, name: string, specialty: Specialty): boolean {
   );
 }
 
-function isE4(id: string, specialty: Specialty, mode: Mode): boolean {
+function isE4(id: string, specialty: Specialty, mode: Mode, name: string): boolean {
   return (
     ((specialty === "nurse-n" || specialty === "nurse-phn") && // 看護師または保健師
       (id === "6118101" || // 情報リテラシー(講義)
@@ -503,7 +502,7 @@ function isE4(id: string, specialty: Specialty, mode: Mode): boolean {
             isInfoLiteracyExercise(id) ||
             isDataScience(id))))) ||
     (specialty === "nurse-h" && // ヘルスケア
-      isCompulsoryEnglishById(id)) // 第２外国語（英語）!!B!!これは必修英語と同じ？
+      isSecondForeignLanguage(id, name)) // 第２外国語（英語）!!B!!これは必修英語と同じ？
   );
 }
 
@@ -664,7 +663,7 @@ function classify(
   if (isE1(id, specialty, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(id, name, specialty)) return "e3";
-  if (isE4(id, specialty, mode)) return "e4";
+  if (isE4(id, specialty, mode, name)) return "e4";
   if (isE5(id, specialty, mode)) return "e5";
   if (isG1(id, specialty)) return "g1";
   // 選択
