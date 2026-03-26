@@ -323,6 +323,10 @@ export const instances: Instance[] = [
   { tableYear: 2023, major: "help-h" },
   { tableYear: 2023, major: "help-af" },
   { tableYear: 2023, major: "help-l" },
+  { tableYear: 2023, major: "css-s" },
+  { tableYear: 2023, major: "css-l" },
+  { tableYear: 2023, major: "css-ps" },
+  { tableYear: 2023, major: "css-e" },
 
   { tableYear: 2024, major: "coins", checked: true },
   { tableYear: 2024, major: "coins-cs", checked: true },
@@ -374,6 +378,10 @@ export const instances: Instance[] = [
   { tableYear: 2024, major: "help-h" },
   { tableYear: 2024, major: "help-af" },
   { tableYear: 2024, major: "help-l" },
+  { tableYear: 2024, major: "css-s" },
+  { tableYear: 2024, major: "css-l" },
+  { tableYear: 2024, major: "css-ps" },
+  { tableYear: 2024, major: "css-e" },
 
   { tableYear: 2025, major: "coins", checked: true },
   { tableYear: 2025, major: "coins-cs", checked: true },
@@ -425,6 +433,10 @@ export const instances: Instance[] = [
   { tableYear: 2025, major: "help-h" },
   { tableYear: 2025, major: "help-af" },
   { tableYear: 2025, major: "help-l" },
+  { tableYear: 2025, major: "css-s" },
+  { tableYear: 2025, major: "css-l" },
+  { tableYear: 2025, major: "css-ps" },
+  { tableYear: 2025, major: "css-e" },
 ];
 
 export function getDocMeta(name: DocsPageName) {
