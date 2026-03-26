@@ -116,11 +116,11 @@ function isE3(id: string, name: string, specialty: Specialty): boolean {
   }
 }
 
-function isE4(id: string, specialty: Specialty): boolean {
+function isE4(id: string, name: string, specialty: Specialty): boolean {
   switch (specialty) {
     case "none":
       // TODO: 第二外国語（初修外国語）は必修ではない英語も含まない？ !!B!!
-      return isSecondForeignLanguage(id);
+      return isSecondForeignLanguage(id, name);
     case "jltt":
       // TODO: JEの第二外国語（英語）は日本人の必修英語と一緒？ !!B!!
       return isCompulsoryEnglishById(id);
@@ -201,7 +201,7 @@ function classify(
   if (isE1(id, specialty)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(id, name, specialty)) return "e3";
-  if (isE4(id, specialty)) return "e4";
+  if (isE4(id, name, specialty)) return "e4";
   if (isE5(id, mode)) return "e5";
   if (isE6(id, specialty)) return "e6";
   // 選択

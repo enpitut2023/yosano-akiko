@@ -129,8 +129,8 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string): boolean {
-  return isSecondForeignLanguage(id);
+function isE4(id: string, name: string): boolean {
+  return isSecondForeignLanguage(id, name);
 }
 
 function isE5(id: string, mode: Mode): boolean {
@@ -194,7 +194,7 @@ function classify(
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(id, name)) return "e4";
   if (isE5(id, mode)) return "e5";
   if (isE6(id)) return "e6";
   // 選択
