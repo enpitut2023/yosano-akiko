@@ -357,6 +357,7 @@ function isF1(id: string): boolean {
 }
 
 function isF2(id: string): boolean {
+  // TODO: 英語(選択・自由科目)、外国語(英語以外)の定義
   return isForeignLanguage(id) || isJapanese(id) || isArt(id);
 }
 

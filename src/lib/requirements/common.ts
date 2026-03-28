@@ -118,13 +118,15 @@ export function isNonCompulsoryEnglish(id: string): boolean {
 /**
  * 第二外国語
  */
-export function isSecondForeignLanguage(id: string, name: string): boolean {
+export function isSecondForeignLanguageBasic(
+  id: string,
+  name: string,
+): boolean {
   // TODO: 第2外国語は同じ言語で基礎xx語のAI, AII, BI, 文化みたいなやつを取らないといけない
   return (
     id === "32H7022" || // Basic German AI (基礎ドイツ語AI)
     id === "32K7022" || // Basic German AII (基礎ドイツ語AII)
     id === "32J7022" || // Basic German BI (基礎ドイツ語BI)
-    id === "3251622" || // Language and Culture A (German) (ドイツ語圏の言語と文化A)
     name === "基礎韓国語AI" ||
     name === "基礎中国語AI" ||
     name === "基礎ロシア語AI" ||
@@ -142,14 +144,46 @@ export function isSecondForeignLanguage(id: string, name: string): boolean {
     name === "基礎ロシア語BI" ||
     name === "基礎フランス語BI" ||
     name === "基礎スペイン語BI" ||
-    name === "基礎ドイツ語BI" ||
-    name === "基礎韓国語BII" ||
-    name === "基礎中国語BII" ||
-    name === "基礎ロシア語BII" ||
-    name === "基礎フランス語BII" ||
-    name === "基礎スペイン語BII" ||
-    name === "基礎ドイツ語BII"
+    name === "基礎ドイツ語BI"
   );
+}
+
+export function isSecondForeignLanguageAdvanced(
+  id: string,
+  name: string,
+): boolean {
+  return (
+    id === "3251622" || // Language and Culture A (German) (ドイツ語圏の言語と文化A)
+    name === "ドイツ語圏の言語と文化A" ||
+    name === "フランス語圏の言語と文化A" ||
+    name === "スペイン語圏の言語と文化A" ||
+    name === "ロシア語圏の言語と文化A" ||
+    name === "中国語圏の言語と文化A" ||
+    name === "韓国語圏の言語と文化A" || 
+    // Basic
+    id === "32H7022" || // Basic German AI (基礎ドイツ語AI)
+    id === "32K7022" || // Basic German AII (基礎ドイツ語AII)
+    id === "32J7022" || // Basic German BI (基礎ドイツ語BI)
+    name === "基礎韓国語AI" ||
+    name === "基礎中国語AI" ||
+    name === "基礎ロシア語AI" ||
+    name === "基礎フランス語AI" ||
+    name === "基礎スペイン語AI" ||
+    name === "基礎ドイツ語AI" ||
+    name === "基礎韓国語AII" ||
+    name === "基礎中国語AII" ||
+    name === "基礎ロシア語AII" ||
+    name === "基礎フランス語AII" ||
+    name === "基礎スペイン語AII" ||
+    name === "基礎ドイツ語AII" ||
+    name === "基礎韓国語BI" ||
+    name === "基礎中国語BI" ||
+    name === "基礎ロシア語BI" ||
+    name === "基礎フランス語BI" ||
+    name === "基礎スペイン語BI" ||
+    name === "基礎ドイツ語BI"
+  );
+  
 }
 
 /**

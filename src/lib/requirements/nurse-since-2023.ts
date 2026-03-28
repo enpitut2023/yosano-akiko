@@ -24,7 +24,7 @@ import {
   isJapaneseAsForeignLanguage,
   isJapanExpertJapanese,
   isKyoutsuu,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
 } from "./common";
 import { unreachable } from "$lib/util";
 import { type Major } from "$lib/constants";
@@ -528,7 +528,8 @@ function isE5(id: string, specialty: Specialty, mode: Mode): boolean {
 function isF1(id: string, specialty: Specialty, name: string): boolean {
   return (
     isGakushikiban(id) ||
-    (specialty === "nurse-h" && isSecondForeignLanguage(id, name)) // !!B!!第２外国語（初修外国語）はこれで正しいか
+    // TODO: !!B!!第２外国語（初修外国語）はこれで正しいか
+    (specialty === "nurse-h" && isSecondForeignLanguageAdvanced(id, name))
   );
 }
 

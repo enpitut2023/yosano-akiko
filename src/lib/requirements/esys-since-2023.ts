@@ -26,6 +26,7 @@ import {
   isJiyuukamoku,
   isKyoushoku,
   isKyoutsuu,
+  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
@@ -654,8 +655,9 @@ function isF2(id: string): boolean {
   return isElectivePe(id);
 }
 
-function isF3(id: string): boolean {
-  return isForeignLanguage(id);
+function isF3(id: string, name: string): boolean {
+  // TODO: 初修外国語の定義
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isF4(id: string): boolean {
@@ -692,6 +694,7 @@ function classify(
   specialty: Specialty,
   isNative: boolean,
   mode: Mode,
+  name: string,
 ): string | undefined {
   // 必修
   const a = classifyColumnA(id, specialty, mode);
@@ -735,7 +738,7 @@ function classify(
   if (isB5(id, specialty)) return "b5";
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
-  if (isF3(id)) return "f3";
+  if (isF3(id, name)) return "f3";
   if (isF4(id)) return "f4";
   if (isF5(id)) return "f5";
   if (isH2(id)) return "h2";
@@ -750,7 +753,7 @@ export function classifyKnownCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, specialty, opts.isNative, "known");
+    const cellId = classify(c.id, specialty, opts.isNative, "known", c.name);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -765,7 +768,7 @@ export function classifyRealCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, specialty, opts.isNative, "real");
+    const cellId = classify(c.id, specialty, opts.isNative, "real", c.name);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }

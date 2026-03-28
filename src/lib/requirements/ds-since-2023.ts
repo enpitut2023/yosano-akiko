@@ -15,6 +15,7 @@ import {
   isDataScience,
   isElectivePe,
   isFirstYearSeminar,
+  isForeignLanguage,
   isGakushikiban,
   isHakubutsukan,
   isHumanSciencesCoreCurriculum,
@@ -25,7 +26,7 @@ import {
   isJiyuukamoku,
   isKyoushoku,
   isNonCompulsoryEnglish,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageBasic,
 } from "$lib/requirements/common";
 import { arrayRemove, assert, defined } from "$lib/util";
 
@@ -118,7 +119,7 @@ function isE3(name: string): boolean {
 }
 
 function isE4(id: string, name: string): boolean {
-  return isSecondForeignLanguage(id, name);
+  return isSecondForeignLanguageBasic(id, name);
 }
 
 function isE5(id: string, mode: Mode): boolean {
@@ -137,11 +138,10 @@ function isF1(id: string): boolean {
   return isGakushikiban(id);
 }
 
-function isF2(id: string, name: string): boolean {
+function isF2(id: string): boolean {
   return (
     isElectivePe(id) ||
-    isNonCompulsoryEnglish(id) ||
-    isSecondForeignLanguage(id, name) ||
+    isForeignLanguage(id) ||
     isJapanese(id) ||
     isArt(id)
   );
@@ -179,7 +179,7 @@ function classify(
   if (isB3(id)) return "b3";
   if (isD1(id)) return "d1";
   if (isF1(id)) return "f1";
-  if (isF2(id, name)) return "f2";
+  if (isF2(id)) return "f2";
   if (isH1(id)) return "h1";
 }
 

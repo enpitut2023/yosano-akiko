@@ -22,7 +22,7 @@ import {
   isIzanai,
   isJapanese,
   isKyoushoku,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
 } from "./common";
 import { unreachable } from "$lib/util";
 
@@ -234,7 +234,7 @@ function isE3(name: string): boolean {
 }
 
 function isE4(id: string, name: string): boolean {
-  return isSecondForeignLanguage(id, name); // 第2外国語
+  return isSecondForeignLanguageAdvanced(id, name); // 第2外国語
 }
 
 function isE5(id: string, mode: Mode): boolean {

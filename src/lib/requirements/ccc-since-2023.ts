@@ -22,7 +22,7 @@ import {
   isIzanai,
   isJapanese,
   isKyoutsuu,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 
 type Mode = "known" | "real";
@@ -129,7 +129,7 @@ function isE3(name: string): boolean {
 }
 
 function isE4(id: string, name: string): boolean {
-  return isSecondForeignLanguage(id, name);
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isE5(id: string, mode: Mode): boolean {
@@ -159,6 +159,7 @@ function isF2(id: string): boolean {
 }
 
 function isF3(id: string): boolean {
+  // TODO: !!B!!
   return isForeignLanguage(id);
 }
 
