@@ -243,6 +243,18 @@ function isH4(id: string): boolean {
   return isKyoushoku(id) || isHakubutsukan(id) || isJiyuukamoku(id);
 }
 
+const COMPULSORY_NAMES = new Set([
+  "卒業研究A",
+  "卒業研究B",
+  "問題発見と解決",
+  "都市計画情報演習",
+  "都市計画演習",
+  "社会工学演習",
+  "社会工学英語",
+  "プログラミング入門A",
+  "プログラミング入門B",
+]);
+
 function classify(
   id: CourseId,
   name: string,
@@ -261,6 +273,8 @@ function classify(
   if (isE2(name)) return "e2";
   if (isE3(id, mode)) return "e3";
   if (isE4(id)) return "e4";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   const b = classifyColumnB(id, specialty);
   if (b !== undefined) return b;

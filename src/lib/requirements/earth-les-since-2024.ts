@@ -150,7 +150,20 @@ function isH1(id: string): boolean {
   return !/^E[ABCEG]/.test(id) && !isKyoutsuu(id);
 }
 
-function classify(id: CourseId, mode: Mode): string | undefined {
+const COMPULSORY_NAMES = new Set([
+  "研究演習A",
+  "研究演習B",
+  "地球学演習A",
+  "地球学演習B",
+  "卒業研究A",
+  "卒業研究B",
+  "Paper Preparation",
+  "地球と生命の進化",
+  "地球環境学入門",
+  "地球学基礎実験",
+]);
+
+function classify(id: CourseId, name: string, mode: Mode): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
@@ -162,6 +175,8 @@ function classify(id: CourseId, mode: Mode): string | undefined {
   if (isE3(id, mode)) return "e3";
   if (isE4(id)) return "e4";
   if (isE5(id)) return "e5";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";
@@ -177,7 +192,7 @@ export function classifyKnownCourses(
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, "known");
+    const cellId = classify(c.id, c.name, "known");
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -191,7 +206,7 @@ export function classifyRealCourses(
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, "real");
+    const cellId = classify(c.id, c.name, "real");
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }

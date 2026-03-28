@@ -185,6 +185,11 @@ function isH3(id: string): boolean {
   return /^[89]/.test(id);
 }
 
+const COMPULSORY_NAMES = new Set([
+  "日本語・日本文化研究法",
+  "Japan-Expert総論",
+]);
+
 function classify(
   id: CourseId,
   name: string,
@@ -203,6 +208,8 @@ function classify(
   if (isE4(id, specialty)) return "e4";
   if (isE5(id, mode)) return "e5";
   if (isE6(id, specialty)) return "e6";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   const b = classifyColumnB(id, specialty);
   if (b !== undefined) return b;

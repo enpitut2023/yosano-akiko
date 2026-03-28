@@ -183,6 +183,14 @@ function isH4(id: string): boolean {
   return isKyoushoku(id);
 }
 
+const COMPULSORY_NAMES = new Set([
+  "卒業論文",
+  "国際学I",
+  "国際学II",
+  "国際学III",
+  "国際学IV",
+]);
+
 function classify(id: CourseId, name: string, mode: Mode): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
@@ -195,6 +203,8 @@ function classify(id: CourseId, name: string, mode: Mode): string | undefined {
   if (isE3(name)) return "e3";
   if (isE4(id)) return "e4";
   if (isE5(id, mode)) return "e5";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";

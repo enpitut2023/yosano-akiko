@@ -156,6 +156,30 @@ function isH1(id: string): boolean {
   );
 }
 
+const COMPULSORY_NAMES = new Set([
+  "卒業研究I",
+  "卒業研究II",
+  "人間学I",
+  "障害科学I",
+  "障害科学II",
+  "キャリアデザイン入門",
+  "Current Topics in Disability Sciences",
+  "教育基礎論",
+  "学校の経営・制度・社会",
+  "心理学概論",
+  "障害科学実践入門",
+  "障害原理論I",
+  "障害者福祉論I",
+  "障害者福祉論II",
+  "障害科学セミナー",
+  "障害者教育基礎理論I",
+  "障害者教育基礎理論II",
+  "心理学統計法I",
+  "心理学統計法II",
+  "障害科学研究法入門",
+  "障害科学研究法実習",
+]);
+
 function classify(
   id: CourseId,
   name: string,
@@ -173,6 +197,8 @@ function classify(
   if (isE3(name)) return "e3";
   if (isE4(id)) return "e4";
   if (isE5(id, mode)) return "e5";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";

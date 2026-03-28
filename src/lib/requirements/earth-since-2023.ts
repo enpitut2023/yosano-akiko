@@ -269,8 +269,22 @@ function isH2(id: string): boolean {
   return /^(A[BC]|E[BCEG]|F[BCEFGH])/.test(id);
 }
 
+const COMPULSORY_NAMES = new Set([
+  "卒業研究",
+  "地球学専門英語2A",
+  "地球学専門英語2B",
+  "地球環境学1",
+  "地球環境学2",
+  "地球進化学1",
+  "地球進化学2",
+  "地球学実験",
+  "地球学専門英語1A",
+  "地球学専門英語1B",
+]);
+
 function classify(
   id: CourseId,
+  name: string,
   specialty: Specialty,
   _isNative: boolean,
   mode: Mode,
@@ -285,6 +299,8 @@ function classify(
   if (isE3(id)) return "e3";
   if (isE4(id, mode)) return "e4";
   if (isA2(id, "ees") || isA2(id, "gs")) return undefined;
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   if (isB1(id, specialty)) return "b1";
   if (isB2(id, tableYear)) return "b2";
@@ -304,6 +320,7 @@ export function classifyKnownCourses(
   for (const c of cs) {
     const cellId = classify(
       c.id,
+      c.name,
       specialty,
       opts.isNative,
       "known",
@@ -325,6 +342,7 @@ export function classifyRealCourses(
   for (const c of cs) {
     const cellId = classify(
       c.id,
+      c.name,
       specialty,
       opts.isNative,
       "real",

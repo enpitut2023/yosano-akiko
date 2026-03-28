@@ -149,6 +149,32 @@ function isH1(id: string): boolean {
   );
 }
 
+const COMPULSORY_NAMES = new Set([
+  "知覚・認知心理学",
+  "学習・言語心理学",
+  "感情・人格心理学",
+  "神経・生理心理学",
+  "社会・集団・家族心理学",
+  "発達心理学",
+  "臨床心理学概論",
+  "卒業研究セミナー",
+  "卒業研究",
+  "人間学Ⅰ",
+  "心理学概論",
+  "教育基礎論",
+  "学校の経営・制度・社会",
+  "障害科学Ⅰ",
+  "障害科学Ⅱ",
+  "キャリアデザイン入門",
+  "心理学研究法",
+  "心理学統計法Ⅰ",
+  "心理学統計法Ⅱ",
+  "心理学統計法実習",
+  "心理学英語セミナー",
+  "心理学実験",
+  "心理学研究実習Ⅰ",
+]);
+
 function classify(
   id: CourseId,
   name: string,
@@ -166,6 +192,8 @@ function classify(
   if (isE3(name)) return "e3";
   if (isE4(id)) return "e4";
   if (isE5(id, mode)) return "e5";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";

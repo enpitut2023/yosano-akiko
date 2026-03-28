@@ -316,6 +316,34 @@ function isH2(id: string): boolean {
   return id.startsWith("GC") || id.startsWith("GB");
 }
 
+const COMPULSORY_NAMES = new Set([
+  "卒業研究A",
+  "卒業研究B",
+  "専門英語B-1",
+  "専門英語B-3",
+  "専門英語C-1",
+  "専門英語C-2",
+  "専門英語C-3",
+  "知識科学実習A",
+  "知識情報システム実習A",
+  "情報資源経営実習A",
+  "知識科学実習B",
+  "知識情報システム実習B",
+  "情報資源経営実習B",
+  "知識情報概論",
+  "アカデミックスキルズ",
+  "プログラミング入門A",
+  "プログラミング入門B",
+  "情報数学A",
+  "統計",
+  "哲学",
+  "専門英語A1",
+  "専門英語A2",
+  "知能情報演習I",
+  "知能情報演習II",
+  "知能情報演習III",
+]);
+
 function classify(
   id: CourseId,
   name: string,
@@ -347,6 +375,8 @@ function classify(
   if (isE2(id, mode)) return "e2";
   if (isE3(id)) return "e3";
   if (isE4(name)) return "e4";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   const b = classifyColumnB(id, specialty);
   if (b !== undefined) return b;

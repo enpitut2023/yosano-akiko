@@ -236,6 +236,44 @@ function isH5(id: string): boolean {
   return isHakubutsukan(id);
 }
 
+const COMPULSORY_NAMES = new Set([
+  "卒業論文",
+  "卒業論文(哲学・倫理学)",
+  "卒業論文(宗教学)",
+  "卒業論文(日本史学)",
+  "卒業論文(歴史地理学)",
+  "卒業論文(先史学・考古学)",
+  "卒業論文(民俗学・文化人類学)",
+  "卒業論文(一般言語学)",
+  "卒業論文(応用言語学)",
+  "卒業論文(日本語学)",
+  "卒業論文(英語学)",
+  "研究-a",
+  "哲学・倫理学研究-a",
+  "宗教学研究-a",
+  "日本史研究-a",
+  "ユーラシア史研究-a",
+  "歴史地理学研究-a",
+  "先史学・考古学研究-a",
+  "民俗学・文化人類学研究-a",
+  "一般言語学研究-a",
+  "応用言語学研究-a",
+  "日本語学研究-a",
+  "英語学研究-a",
+  "研究-b",
+  "哲学・倫理学研究-b",
+  "宗教学研究-b",
+  "日本史研究-b",
+  "ユーラシア史研究-b",
+  "歴史地理学研究-b",
+  "先史学・考古学研究-b",
+  "民俗学・文化人類学研究-b",
+  "一般言語学研究-b",
+  "応用言語学研究-b",
+  "日本語学研究-b",
+  "英語学研究-b",
+]);
+
 function classify(
   id: CourseId,
   name: string,
@@ -251,6 +289,8 @@ function classify(
   if (isE4(id)) return "e4";
   if (isE5(id, mode)) return "e5";
   if (isE6(id)) return "e6";
+  if (COMPULSORY_NAMES.has(name)) return undefined;
+
   // 選択
   // d列に当てはまる科目がb列の条件にも該当してしまうため先にd列を処理
   const d = classifyColumnD(id, specialty, tableYear);
