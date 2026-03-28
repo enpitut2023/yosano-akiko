@@ -210,13 +210,13 @@ function isForArchitectExam(id: string): boolean {
   );
 }
 
-function isA1Ies(id: string, mode: Mode): boolean {
+function isA1Ies(id: string): boolean {
   // 2025.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
   return (
     //プログラミング序論C(所属主専攻の科目番号で履修登録) !!A!!
     id === "FG20204" ||
     //プログラミング序論D(所属主専攻の科目番号で履修登録) !!A!!
-    id === "FG20214" 
+    id === "FG20214"
   );
 }
 
@@ -224,11 +224,11 @@ function isA2Ies(id: string): boolean {
   return isKisojikken(id);
 }
 
-function isA3Ies(id: string, mode: Mode): boolean {
-  // 2025.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
+function isA3Ies(id: string): boolean {
+  // 2026.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
   return (
     //知的・機能工学システム実験(所属主専攻の科目番号で履修登録) !!A!!
-    id === "FG29213" 
+    id === "FG29213"
   );
 }
 
@@ -242,14 +242,14 @@ function isA5Ies(id: string): boolean {
   );
 }
 
-function isA6Ies(id: string, mode: Mode): boolean {
-  // 2025.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
+function isA6Ies(id: string): boolean {
+  // 2026.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
   return (
     isAcademicEnglishA(id) ||
     //専門英語B !!A!!
     id === "FG20222" ||
     //専門英語演習 !!A!!
-    id === "FG20232" 
+    id === "FG20232"
   );
 }
 
@@ -278,13 +278,13 @@ function isA4Eme(id: string): boolean {
   );
 }
 
-function isA5Eme(id: string, mode: Mode): boolean {
+function isA5Eme(id: string): boolean {
   return (
     isAcademicEnglishA(id) ||
     //専門英語B !!A!!
     id === "FG40222" ||
     //専門英語演習 !!A!!
-    id === "FG40232" 
+    id === "FG40232"
   );
 }
 
@@ -295,22 +295,26 @@ function isA6Eme(id: string, mode: Mode): boolean {
   );
 }
 
-function classifyColumnA(id: string, specialty: Specialty, mode: Mode): string | undefined {
+function classifyColumnA(
+  id: string,
+  specialty: Specialty,
+  mode: Mode,
+): string | undefined {
   switch (specialty) {
     case "ies":
-      if (isA1Ies(id, mode)) return "a1";
+      if (isA1Ies(id)) return "a1";
       if (isA2Ies(id)) return "a2";
-      if (isA3Ies(id, mode)) return "a3";
+      if (isA3Ies(id)) return "a3";
       if (isA4Ies(id)) return "a4";
       if (isA5Ies(id)) return "a5";
-      if (isA6Ies(id, mode)) return "a6";
+      if (isA6Ies(id)) return "a6";
       break;
     case "eme":
       if (isA1Eme(id)) return "a1";
       if (isA2Eme(id, mode)) return "a2";
       if (isA3Eme(id)) return "a3";
       if (isA4Eme(id)) return "a4";
-      if (isA5Eme(id, mode)) return "a5";
+      if (isA5Eme(id)) return "a5";
       if (isA6Eme(id, mode)) return "a6";
       break;
     default:
@@ -393,7 +397,10 @@ function isB5(id: string, specialty: Specialty): boolean {
   if (specialty === "eme" && isForArchitectExam(id) && /^(FH|YA|YB)/.test(id)) {
     return true;
   }
-  return /^(FG|FF[2-5]|GB[2-4]|FA00)/.test(id) && !isKougakuSystemGairon(id) || isFjGakuruicho(id);
+  return (
+    (/^(FG|FF[2-5]|GB[2-4]|FA00)/.test(id) && !isKougakuSystemGairon(id)) ||
+    isFjGakuruicho(id)
+  );
 }
 
 function isC1(id: string): boolean {
