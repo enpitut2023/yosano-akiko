@@ -235,8 +235,8 @@ function isH2(id: string): boolean {
 
 function isH3(id: string): boolean {
   // 上記以外の他学群又は他学類の授業科目
-  // TODO: 適当に思いつくものは除いておきたい
-  return !isKyoutsuu(id);
+  // 2026.3.29 FH6は2018年度以前入学者向けらしい
+  return !isKyoutsuu(id) && !id.startsWith("FH") && !id.startsWith("FA0") && !id.startsWith("FH6");
 }
 
 function isH4(id: string): boolean {
