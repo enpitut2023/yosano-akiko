@@ -222,7 +222,7 @@ function isD2(id: string): boolean {
 
 function isE1(id: string, tableYear: number, mode: "real" | "known"): boolean {
   //事例に学ぶ環境安全衛生と化学物質
-  if (tableYear === 2025 && id === "1414014") return true;
+  if (tableYear >= 2025 && id === "1414014") return true;
 
   return (
     //学問への誘い
