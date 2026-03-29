@@ -348,9 +348,9 @@ export function classifyFakeCourses(
 
 const reqSince2023: SetupCreditRequirements = {
   cells: {
-    a1: { min: 4.5, max: 4.5 },
-    a2: { min: 4.5, max: 4.5 },
-    a3: { min: 4.5, max: 4.5 },
+    a1: { min: 4, max: 4 },
+    a2: { min: 4, max: 4 },
+    a3: { min: 4, max: 4 },
     a4: { min: 14, max: 14 },
     b1: { min: 6, max: 6 },
     b2: { min: 6, max: 6 },
@@ -368,7 +368,7 @@ const reqSince2023: SetupCreditRequirements = {
     h2: { min: 7, max: 9 },
   },
   columns: {
-    a: { min: 27.5, max: 27.5 },
+    a: { min: 26, max: 26 },
     b: { min: 42, max: 52 },
     c: { min: 3, max: 3 },
     d: { min: 17, max: 30 },
@@ -376,8 +376,8 @@ const reqSince2023: SetupCreditRequirements = {
     f: { min: 1, max: 2 },
     h: { min: 9, max: 11 },
   },
-  compulsory: 42.5,
-  elective: 81.5,
+  compulsory: 41,
+  elective: 83,
 };
 
 const reqSince2025: SetupCreditRequirements = {
