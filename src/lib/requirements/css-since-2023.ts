@@ -382,7 +382,7 @@ export function getRemark(
     id === "b1"
   ) {
     // !!F!!
-    return `()の条件は判定されません。`;
+    return `カッコの条件は判定されません。`;
   }
   if (id === "h2" || id === "h3" || id === "h4") {
     // !!C!!

@@ -329,7 +329,7 @@ export function getRemark(
     (id === "a3" && specialty === "urp")
   ) {
     // !!F!!
-    return `()内の条件はチェックされません。`;
+    return `カッコ内の条件はチェックされません。`;
   } else if (id === "b1") {
     const n: { [K in Specialty]: number } = {
       ses: 2,

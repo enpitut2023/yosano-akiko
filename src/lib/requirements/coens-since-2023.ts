@@ -514,7 +514,7 @@ export function getRemark(
 ): string | undefined {
   if (id === "a2" || id === "a3") {
     // !!F!!
-    return `()の条件には対応していません。`;
+    return `カッコの条件には対応していません。`;
   }
   if (id === "d4") {
     // !!D!!

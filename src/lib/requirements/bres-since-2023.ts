@@ -669,13 +669,13 @@ export function getRemark(
 ): string | undefined {
   const specialty = majorToSpecialtyOrFail(major);
   if (id === "a2" || id === "a3" || id === "b1") {
-    return `()内の条件はチェックされません。`;
+    return `カッコ内の条件はチェックされません。`;
   }
   if (id === "b2") {
     if (specialty === "none") {
-      return `農林生学コース:EC31で始まる科目\n応用生命科学コース:EC32\n環境工学コース:EC33\n社会経済学コース:EC34\n()内の条件はチェックされません。`;
+      return `農林生学コース:EC31で始まる科目\n応用生命科学コース:EC32\n環境工学コース:EC33\n社会経済学コース:EC34\nカッコ内の条件はチェックされません。`;
     } else if (specialty === "as") {
-      return `()内の条件はチェックされません。`;
+      return `カッコ内の条件はチェックされません。`;
     }
   }
   if (id === "d2") {

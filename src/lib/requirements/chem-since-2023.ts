@@ -350,7 +350,7 @@ export function classifyFakeCourses(
 export function getRemark(id: CellId, _tableYear: number): string | undefined {
   if (id === "a1" || id === "a2" || id === "a3" || id === "a4") {
     // !!F!!
-    return `()の条件は判定していません。`;
+    return `カッコの条件は判定していません。`;
   }
   if (id === "d1") {
     return `注7、注8、注9(表下部参照)には対応していないため、あきこでは足りているのに実際は足りてないことがあるので注意してください。`;
