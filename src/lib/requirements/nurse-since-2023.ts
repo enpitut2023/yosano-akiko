@@ -490,7 +490,12 @@ function isE3(id: string, name: string, specialty: Specialty): boolean {
   );
 }
 
-function isE4(id: string, specialty: Specialty, mode: Mode, name: string): boolean {
+function isE4(
+  id: string,
+  specialty: Specialty,
+  mode: Mode,
+  name: string,
+): boolean {
   return (
     ((specialty === "nurse-n" || specialty === "nurse-phn") && // 看護師または保健師
       (id === "6118101" || // 情報リテラシー(講義)

@@ -441,7 +441,7 @@ function classify(
   if (isA3(id, specialty)) return "a3";
   const c1d2 = classifyC1D2(id, tableYear, mode, name);
   if (c1d2 !== undefined) return c1d2;
-  if (isC2(id,mode, name)) return "c2";
+  if (isC2(id, mode, name)) return "c2";
   if (isC3(id, specialty)) return "c3";
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";

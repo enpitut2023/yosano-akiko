@@ -417,22 +417,18 @@ export function classifyFakeCourses(
   }
   return fakeCourseIdToCellId;
 }
-export function getRemark(
-  id: CellId,
-  _tableYear: number,
-): string | undefined {
-  if(id === "a3"){
+export function getRemark(id: CellId, _tableYear: number): string | undefined {
+  if (id === "a3") {
     // !!F!!
-    return `注7(表下部参照)には対応していません。また、履修条件は判定していません。`
+    return `注7(表下部参照)には対応していません。また、履修条件は判定していません。`;
   }
   // TODO: 注8
-  else if(id === "e3" || id === "f2"){
+  else if (id === "e3" || id === "f2") {
     // !!E!!
-    return `注6(表下部参照)には対応していません。`
-  }
-  else if (id === "h1") {
+    return `注6(表下部参照)には対応していません。`;
+  } else if (id === "h1") {
     // !!C!!
-    return `注5(表下部参照)にある通り、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`
+    return `注5(表下部参照)にある通り、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
   }
 }
 

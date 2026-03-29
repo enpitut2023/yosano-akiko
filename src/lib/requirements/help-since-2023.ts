@@ -322,7 +322,6 @@ export function getRemark(
   }
 }
 
-
 const reqPSince2023: SetupCreditRequirements = {
   cells: {
     a1: { min: 10, max: 10 },
