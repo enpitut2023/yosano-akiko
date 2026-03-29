@@ -1,4 +1,5 @@
 import type {
+  CellId,
   CourseId,
   FakeCourse,
   FakeCourseId,
@@ -365,6 +366,28 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  tableYear: number,
+  major: Major,
+): string | undefined {
+  const specialty = majorToSpecialtyOrFail(major);
+  if ((specialty === "s" || specialty === "l") && id === "b1") {
+    // !!F!!
+    return `マスに書かれている条件は判定していません。`;
+  } else if (
+    ((tableYear >= 2024 && specialty === "ps") || specialty === "e") &&
+    id === "b1"
+  ) {
+    // !!F!!
+    return `カッコの条件は判定されません。`;
+  }
+  if (id === "h2" || id === "h3" || id === "h4") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqSSince2024: SetupCreditRequirements = {

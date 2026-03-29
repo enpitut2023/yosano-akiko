@@ -1,4 +1,5 @@
 import {
+  type CellId,
   type CourseId,
   type FakeCourse,
   type FakeCourseId,
@@ -40,6 +41,7 @@ function classifyColumnA(
   id: string,
   tableYear: number,
   specialty: Specialty,
+  isNative: boolean,
 ): string | undefined {
   const b = {
     医学統計学: id === "HB31141",
@@ -71,8 +73,12 @@ function classifyColumnA(
       case "med":
         if (b["医学統計学"]) return "a1";
         if (b["医療・福祉現場でのふれあい等"]) return "a2";
-        if (b["医療概論I"] || b["医療概論I-B"]) return "a3";
-        if (b["医学の基礎"] || b["医学の基礎B"] || b["医科分子生物学"])
+        if (b["医療概論I"] || (b["医療概論I-B"] && !isNative)) return "a3";
+        if (
+          b["医学の基礎"] ||
+          (b["医学の基礎B"] && !isNative) ||
+          (b["医科分子生物学"] && !isNative)
+        )
           return "a4";
         if (b["機能・構造と病態I"]) return "a5";
         if (b["医療概論II"]) return "a6";
@@ -94,8 +100,12 @@ function classifyColumnA(
       case "med-new":
         if (b["医学統計学"]) return "a1";
         if (b["医療・福祉現場でのふれあい等"]) return "a2";
-        if (b["医療概論I"] || b["医療概論I-B"]) return "a3";
-        if (b["医学の基礎"] || b["医学の基礎B"] || b["医科分子生物学"])
+        if (b["医療概論I"] || (b["医療概論I-B"] && !isNative)) return "a3";
+        if (
+          b["医学の基礎"] ||
+          (b["医学の基礎B"] && !isNative) ||
+          (b["医科分子生物学"] && !isNative)
+        )
           return "a4";
         if (b["機能・構造と病態I"]) return "a5";
         if (b["医療概論II"]) return "a6";
@@ -159,8 +169,12 @@ function classifyColumnA(
       case "med":
         if (b["医学統計学"]) return "a1";
         if (b["医療・福祉現場でのふれあい等"]) return "a2";
-        if (b["医療概論I"] || b["医療概論I-B"]) return "a3";
-        if (b["医学の基礎"] || b["医学の基礎B"] || b["医科分子生物学"])
+        if (b["医療概論I"] || (b["医療概論I-B"] && !isNative)) return "a3";
+        if (
+          b["医学の基礎"] ||
+          (b["医学の基礎B"] && !isNative) ||
+          (b["医科分子生物学"] && !isNative)
+        )
           return "a4";
         if (b["機能・構造と病態I"]) return "a5";
         if (b["医療概論II"]) return "a6";
@@ -182,8 +196,12 @@ function classifyColumnA(
       case "med-new":
         if (b["医学統計学"]) return "a1";
         if (b["医療・福祉現場でのふれあい等"]) return "a2";
-        if (b["医療概論I"] || b["医療概論I-B"]) return "a3";
-        if (b["医学の基礎"] || b["医学の基礎B"] || b["医科分子生物学"])
+        if (b["医療概論I"] || (b["医療概論I-B"] && !isNative)) return "a3";
+        if (
+          b["医学の基礎"] ||
+          (b["医学の基礎B"] && !isNative) ||
+          (b["医科分子生物学"] && !isNative)
+        )
           return "a4";
         if (b["機能・構造と病態I"]) return "a5";
         if (b["医療概論II"]) return "a6";
@@ -267,7 +285,8 @@ function isC3(id: string, _tableYear: number, mode: Mode): boolean {
   );
 }
 
-function isD1(id: string): boolean {
+function isD1(id: string, specialty: Specialty, isNative: boolean): boolean {
+  if (!(specialty === "med" || specialty === "med-new")) return false;
   return (
     id === "FCB1221" || // 力学1 医学生向け !!A!!
     id === "FCB1231" || // 力学1 総合生向け
@@ -277,7 +296,9 @@ function isD1(id: string): boolean {
     id === "FE11181" || // 化学2 2023,2024,2025年開講 化学類、物理学類、医学類、総合学域群第１類および第３類
     id === "FE11281" || // 化学2 2023, 2024年開講 応用理工学類、地球学類、総合学域群第２類の学生
     id === "FE11191" || // 化学3 2023,2024,2025年開講 化学類、物理学類、医学類、総合学域群第１類および第３類
-    id === "FE11291" // 化学3 2023, 2024年開講 応用理工学類、地球学類、総合学域群第２類の学生
+    id === "FE11291" || // 化学3 2023, 2024年開講 応用理工学類、地球学類、総合学域群第２類の学生
+    // 総合生のみ生物学I, IIに読み替え可能
+    (!isNative && id === "HB21211") // 医科生化学
   );
 }
 
@@ -363,14 +384,15 @@ function classify(
   mode: Mode,
   tableYear: number,
   specialty: Specialty,
+  isNative: boolean,
 ): string | undefined {
   // 必修
-  const a = classifyColumnA(id, tableYear, specialty);
+  const a = classifyColumnA(id, tableYear, specialty, isNative);
   if (a !== undefined) return a;
   if (isC1(id)) return "c1";
   if (isC2(id)) return "c2";
   if (isC3(id, tableYear, mode)) return "c3";
-  if (isD1(id)) return "d1";
+  if (isD1(id, specialty, isNative)) return "d1";
   switch (specialty) {
     case "med":
     case "med-new":
@@ -402,7 +424,14 @@ export function classifyKnownCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "known", opts.tableYear, specialty);
+    const cellId = classify(
+      c.id,
+      c.name,
+      "known",
+      opts.tableYear,
+      specialty,
+      opts.isNative,
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -417,7 +446,14 @@ export function classifyRealCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "real", opts.tableYear, specialty);
+    const cellId = classify(
+      c.id,
+      c.name,
+      "real",
+      opts.tableYear,
+      specialty,
+      opts.isNative,
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -436,6 +472,27 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  tableYear: number,
+  major: Major,
+): string | undefined {
+  const specialty = majorToSpecialtyOrFail(major);
+  if (
+    (tableYear >= 2024 &&
+      (specialty === "med" || specialty === "med-new") &&
+      id === "a14") ||
+    ((specialty === "med-2" || specialty === "med-2-new") && id === "a11")
+  ) {
+    // !!B!!
+    return `医療概論IVの中にアドヴァンストコースが含まれているとシラバスに記載があるので統合していますが、間違っている可能性があります。`;
+  }
+  if (id === "h2" || id === "h3" || id === "h4") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 export const reqMedMedNewSince2023: SetupCreditRequirements = {

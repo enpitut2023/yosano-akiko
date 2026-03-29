@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -291,6 +292,28 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(id: CellId, _tableYear: number): string | undefined {
+  if (id === "a1") {
+    // !!F!!
+    return `履修条件の部分は判定していません。`;
+  } else if (id === "c1" || id === "c2") {
+    return `注8(表下部参照)には対応していないため、あきこでは足りているのに実際は足りてないことがあるので注意してください。`;
+  } else if (
+    id === "e1" ||
+    id === "e2" ||
+    id === "e3" ||
+    id === "e4" ||
+    id === "f1" ||
+    id === "f2"
+  ) {
+    // !!E!!
+    return `注6(表下部参照)には対応していません。`;
+  } else if (id === "h1") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqSince2023: SetupCreditRequirements = {

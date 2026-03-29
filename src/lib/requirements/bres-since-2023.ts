@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -659,6 +660,41 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  major: Major,
+): string | undefined {
+  const specialty = majorToSpecialtyOrFail(major);
+  if (id === "a2" || id === "a3" || id === "b1") {
+    return `カッコ内の条件はチェックされません。`;
+  }
+  if (id === "b2") {
+    if (specialty === "none") {
+      return `農林生学コース:EC31で始まる科目\n応用生命科学コース:EC32\n環境工学コース:EC33\n社会経済学コース:EC34\nカッコ内の条件はチェックされません。`;
+    } else if (specialty === "as") {
+      return `カッコ内の条件はチェックされません。`;
+    }
+  }
+  if (id === "d2") {
+    return `「下記から、講義科目11単位以上、実験・実習・演習科目1単位以上を履修すること」という条件はチェックされません。
+    注8, 9の条件はチェックされないため、あきこでは足りているのに実際は足りてないことがあるので注意してください。`;
+  }
+  if (id === "e3" && specialty === "none") {
+    return `注7で言及されている日本語の科目は含まれていません。`;
+  }
+  if (id === "f2" && specialty === "none") {
+    return `注10で除かれるべき科目も表示されているので注意してください。`;
+  }
+  if (
+    (id === "h1" && specialty === "none") ||
+    (id === "h2" && specialty === "as")
+  ) {
+    // !!C!!
+    return `注5の条件はチェックされないため、あきこでは足りているのに実際は足りてないことがあるので注意してください。また、専門基礎科目などで指定された科目と同様の内容の講義の場合、このマスではない場所の単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqSince2023: SetupCreditRequirements = {

@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -504,6 +505,27 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  _major: Major,
+): string | undefined {
+  if (id === "a2" || id === "a3") {
+    // !!F!!
+    return `カッコの条件には対応していません。`;
+  }
+  if (id === "d4") {
+    // !!D!!
+    return `注6(表下部参照)で言及されている、微積分Aと微積分Bの読み替えには対応していません。`;
+  } else if (id === "e3" || id === "f2") {
+    // !!E!!
+    return `注3(表下部参照)には対応していません。`;
+  } else if (id === "h1") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqSince2024: SetupCreditRequirements = {
