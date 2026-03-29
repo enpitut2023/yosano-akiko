@@ -327,6 +327,12 @@ export function getRemark(
     const n: { [K in Specialty]: number } = { ses: 2, mse: 2, urp: 7 };
     return `「演習を${n[specialty]}単位以上含むこと」という条件はチェックされません。`;
   }
+  if (id === "h1" || id === "h2") {
+    return "左側の2~はチェックされますが、単位数の右側の6~の部分はチェックされません。";
+  }
+  if (id === "h3") {
+    return "左側の0~はチェックされますが、単位数の右側の6~の部分はチェックされません。";
+  }
 }
 
 const reqSesSince2023: SetupCreditRequirements = {
