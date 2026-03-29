@@ -26,7 +26,6 @@ import {
   isJapanese,
   isJiyuukamoku,
   isKyoushoku,
-  isNonCompulsoryEnglish,
   isSecondForeignLanguageBasic,
 } from "$lib/requirements/common";
 import { arrayRemove, assert, defined } from "$lib/util";

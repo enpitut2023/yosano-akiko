@@ -17,7 +17,6 @@ import {
   isDataScience,
   isElectivePe,
   isFirstYearSeminar,
-  isForeignLanguage,
   isGakushikiban,
   isHakubutsukan,
   isInfoLiteracyExercise,
