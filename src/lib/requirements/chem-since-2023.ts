@@ -40,8 +40,8 @@ function isA3(id: string): boolean {
 
 function isA4(id: string): boolean {
   return (
-    id === "FE14808" || // 卒研(14単位)
-    id === "FE14908" //卒研(旧? 10単位)
+    id === "FE14808" || // 卒業研究 (14単位)
+    id === "FE14908" // 卒業研究 (旧? 10単位)
   );
 }
 
