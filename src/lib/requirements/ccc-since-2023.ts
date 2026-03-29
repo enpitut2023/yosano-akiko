@@ -24,6 +24,7 @@ import {
   isJapanese,
   isKyoutsuu,
   isSecondForeignLanguageAdvanced,
+  redistributeOverflow,
 } from "$lib/requirements/common";
 
 type Mode = "known" | "real";
@@ -240,6 +241,7 @@ export function classifyRealCourses(
       courseIdToCellId.set(c.id, cellId);
     }
   }
+  redistributeOverflow(cs, courseIdToCellId, "e4", 4, "f3");
   return courseIdToCellId;
 }
 

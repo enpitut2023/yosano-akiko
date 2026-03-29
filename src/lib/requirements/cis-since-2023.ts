@@ -26,6 +26,7 @@ import {
   isJiyuukamoku,
   isKyoushoku,
   isSecondForeignLanguageAdvanced,
+  redistributeOverflow,
 } from "$lib/requirements/common";
 
 type Specialty = "ir" | "id";
@@ -242,6 +243,7 @@ export function classifyRealCourses(
       courseIdToCellId.set(c.id, cellId);
     }
   }
+  redistributeOverflow(cs, courseIdToCellId, "e4", 4, "f3");
   return courseIdToCellId;
 }
 

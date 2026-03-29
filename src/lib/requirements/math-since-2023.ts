@@ -24,6 +24,7 @@ import {
   isJapanese,
   isKyoushoku,
   isKyoutsuu,
+  redistributeOverflow,
 } from "$lib/requirements/common";
 
 function isA1(id: string): boolean {
@@ -249,24 +250,8 @@ export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
 ): Map<CourseId, string> {
-  cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
-
-  // f1とf2に学士基盤が入るので、先にf1に入る分は入れておく
-  let seenF1 = false;
-
   for (const c of cs) {
-    if (!seenF1) {
-      if (isF1(c.id)) {
-        seenF1 = true;
-        courseIdToCellId.set(c.id, "f1");
-        continue;
-      }
-    } else if (isF2(c.id)) {
-      courseIdToCellId.set(c.id, "f2");
-      continue;
-    }
-
     const cellId = classify(
       c.id,
       c.name,
@@ -278,6 +263,7 @@ export function classifyRealCourses(
       courseIdToCellId.set(c.id, cellId);
     }
   }
+  redistributeOverflow(cs, courseIdToCellId, "f1", 1, "f2");
   return courseIdToCellId;
 }
 
