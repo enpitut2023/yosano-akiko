@@ -22,7 +22,7 @@ import {
   isIzanai,
   isJapanese,
   isKyoushoku,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
 } from "./common";
 import { unreachable } from "$lib/util";
 
@@ -233,8 +233,8 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name); // 第1外国語
 }
 
-function isE4(id: string): boolean {
-  return isSecondForeignLanguage(id); // 第2外国語
+function isE4(id: string, name: string): boolean {
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isE5(id: string, mode: Mode): boolean {
@@ -303,7 +303,7 @@ function classify(
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(id, name)) return "e4";
   if (isE5(id, mode)) return "e5";
   // 選択
   // d列に当てはまる科目がb列の条件にも該当してしまうため先にd列を処理

@@ -21,7 +21,8 @@ import {
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
   isJapanese,
-  isSecondForeignLanguage,
+  isJapanExpertJapanese,
+  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
@@ -106,20 +107,17 @@ function isE3(id: string, name: string, specialty: Specialty): boolean {
     case "none":
       return isCompulsoryEnglishByName(name);
     case "jltt":
-      // TODO: 5-1.pdfによると3920から始まるものはJapan-Expert用の外国語として
-      // の日本語授業だが、そもそも39から始まるものが外国語としての日本語。今は
-      // 広くとっておく。!!B!!
-      return id.startsWith("39");
+      return isJapanExpertJapanese(id);
     default:
       unreachable(specialty);
   }
 }
 
-function isE4(id: string, specialty: Specialty): boolean {
+function isE4(id: string, name: string, specialty: Specialty): boolean {
   switch (specialty) {
     case "none":
       // TODO: 第二外国語（初修外国語）は必修ではない英語も含まない？ !!B!!
-      return isSecondForeignLanguage(id);
+      return isSecondForeignLanguageAdvanced(id, name);
     case "jltt":
       // TODO: JEの第二外国語（英語）は日本人の必修英語と一緒？ !!B!!
       return isCompulsoryEnglishById(id);
@@ -200,7 +198,7 @@ function classify(
   if (isE1(id, specialty)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(id, name, specialty)) return "e3";
-  if (isE4(id, specialty)) return "e4";
+  if (isE4(id, name, specialty)) return "e4";
   if (isE5(id, mode)) return "e5";
   if (isE6(id, specialty)) return "e6";
   // 選択

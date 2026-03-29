@@ -22,7 +22,7 @@ import {
   isJiyuukamoku,
   isKyoushoku,
   isKyoutsuu,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 
 type Mode = "known" | "real";
@@ -191,8 +191,8 @@ function isF2(id: string): boolean {
   return isArt(id);
 }
 
-function isF3(id: string): boolean {
-  return isSecondForeignLanguage(id);
+function isF3(id: string, name: string): boolean {
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isH1(id: string): boolean {
@@ -262,7 +262,7 @@ function classify(
   if (isD5(id)) return "d5";
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
-  if (isF3(id)) return "f3";
+  if (isF3(id, name)) return "f3";
   if (isH2(id)) return "h2";
   if (isH1(id)) return "h1"; // 「...以外」なので最後
 }

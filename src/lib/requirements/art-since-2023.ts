@@ -23,10 +23,11 @@ import {
   isIzanai,
   isJapanese,
   isJapaneseAsForeignLanguage,
+  isJapanExpertJapanese,
   isJiyuukamoku,
   isKyoushoku,
   isNonCompulsoryEnglish,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
 } from "./common";
 import { unreachable } from "$lib/util";
 
@@ -330,7 +331,7 @@ function isE3(name: string, specialty: Specialty, id: string): boolean {
     case "none":
       return isCompulsoryEnglishByName(name);
     case "jad":
-      return isJapaneseAsForeignLanguage(id);
+      return isJapanExpertJapanese(id);
     default:
       unreachable(specialty);
   }
@@ -369,8 +370,8 @@ function isF3(id: string, specialty: Specialty): boolean {
   }
 }
 
-function isF4(id: string): boolean {
-  return isSecondForeignLanguage(id);
+function isF4(id: string, name: string): boolean {
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isF5(id: string): boolean {
@@ -450,7 +451,7 @@ function classify(
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
   if (isF3(id, specialty)) return "f3";
-  if (isF4(id)) return "f4";
+  if (isF4(id, name)) return "f4";
   if (isF5(id)) return "f5";
   if (isF6(id)) return "f6";
   if (isH4(id, specialty)) return "h4";
