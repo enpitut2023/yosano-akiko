@@ -1,4 +1,5 @@
 import {
+  type CellId,
   type CourseId,
   type FakeCourse,
   type FakeCourseId,
@@ -23,10 +24,11 @@ import {
   isIzanai,
   isJapanese,
   isJapaneseAsForeignLanguage,
+  isJapanExpertJapanese,
   isJiyuukamoku,
   isKyoushoku,
   isNonCompulsoryEnglish,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
 } from "./common";
 import { unreachable } from "$lib/util";
 
@@ -330,7 +332,7 @@ function isE3(name: string, specialty: Specialty, id: string): boolean {
     case "none":
       return isCompulsoryEnglishByName(name);
     case "jad":
-      return isJapaneseAsForeignLanguage(id);
+      return isJapanExpertJapanese(id);
     default:
       unreachable(specialty);
   }
@@ -359,6 +361,7 @@ function isF2(id: string): boolean {
 }
 
 function isF3(id: string, specialty: Specialty): boolean {
+  // !!O!!
   switch (specialty) {
     case "none":
       return isNonCompulsoryEnglish(id);
@@ -369,8 +372,8 @@ function isF3(id: string, specialty: Specialty): boolean {
   }
 }
 
-function isF4(id: string): boolean {
-  return isSecondForeignLanguage(id);
+function isF4(id: string, name: string): boolean {
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isF5(id: string): boolean {
@@ -450,7 +453,7 @@ function classify(
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
   if (isF3(id, specialty)) return "f3";
-  if (isF4(id)) return "f4";
+  if (isF4(id, name)) return "f4";
   if (isF5(id)) return "f5";
   if (isF6(id)) return "f6";
   if (isH4(id, specialty)) return "h4";
@@ -530,6 +533,22 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  major: Major,
+): string | undefined {
+  const specialty = majorToSpecialtyOrFail(major);
+  if ((id === "e3" || id === "f3") && specialty === "none") {
+    // !!E!!
+    return `注5(表下部参照)には対応していません。`;
+  }
+  if (id === "h2" || id === "h3") {
+    // !!C!!
+    return `また、専門基礎科目などで指定された科目と同様の内容の講義の場合、このマスではない場所の単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 export const reqSince2023: SetupCreditRequirements = {

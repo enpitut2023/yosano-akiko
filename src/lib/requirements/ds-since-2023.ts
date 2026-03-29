@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -15,6 +16,7 @@ import {
   isDataScience,
   isElectivePe,
   isFirstYearSeminar,
+  isForeignLanguage,
   isGakushikiban,
   isHakubutsukan,
   isHumanSciencesCoreCurriculum,
@@ -24,8 +26,7 @@ import {
   isJapanese,
   isJiyuukamoku,
   isKyoushoku,
-  isNonCompulsoryEnglish,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageBasic,
 } from "$lib/requirements/common";
 import { arrayRemove, assert, defined } from "$lib/util";
 
@@ -75,7 +76,11 @@ function classifyColumnC(id: string, tableYear: number): string | undefined {
   if (id === "CA10061") return "c3"; // 障害科学II
   if (id === "CA10091") return "c4"; // キャリアデザイン入門
   if (id === "CA10161") return "c5"; // Current Topics in Disability Sciences
-  if (id === "CB11081" || id === "CB11091") return "c6"; // 教育基礎論, 学校の経営・制度・社会
+  if (
+    id === "CB11081" || // 教育基礎論
+    id === "CB11091" // 学校の経営・制度・社会
+  )
+    return "c6";
   // TODO: 教職のやつは障害科学類生は取れないのか !!B!!
   // CB23481 心理学概論 原則として、教員免許状取得予定者に限る
   if (id === "CC11211") return "c7"; // 心理学概論
@@ -117,8 +122,8 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string): boolean {
-  return isSecondForeignLanguage(id);
+function isE4(id: string, name: string): boolean {
+  return isSecondForeignLanguageBasic(id, name);
 }
 
 function isE5(id: string, mode: Mode): boolean {
@@ -139,11 +144,7 @@ function isF1(id: string): boolean {
 
 function isF2(id: string): boolean {
   return (
-    isElectivePe(id) ||
-    isNonCompulsoryEnglish(id) ||
-    isSecondForeignLanguage(id) ||
-    isJapanese(id) ||
-    isArt(id)
+    isElectivePe(id) || isForeignLanguage(id) || isJapanese(id) || isArt(id)
   );
 }
 
@@ -171,7 +172,7 @@ function classify(
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(id, name)) return "e4";
   if (isE5(id, mode)) return "e5";
   // 選択
   if (isB1(id)) return "b1";
@@ -217,7 +218,7 @@ export function classifyRealCourses(
   const e4CandidatesWorth2: RealCourse[] = [];
   const e4CandidatesWorth3: RealCourse[] = [];
   for (const c of cs) {
-    if (isE4(c.id)) {
+    if (isE4(c.id, c.name)) {
       if (c.credit === 1) e4CandidatesWorth1.push(c);
       if (c.credit === 2) e4CandidatesWorth2.push(c);
       if (c.credit === 3) e4CandidatesWorth3.push(c);
@@ -238,7 +239,7 @@ export function classifyRealCourses(
       e4Courses.push(defined(e4CandidatesWorth1.pop()));
     }
   } else {
-    const e4Candidates = cs.filter((c) => isE4(c.id));
+    const e4Candidates = cs.filter((c) => isE4(c.id, c.name));
     e4Candidates.sort((a, b) => (a.credit ?? 0) - (b.credit ?? 0));
     let total = 0;
     for (const c of e4Candidates) {
@@ -276,6 +277,16 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(id: CellId, _tableYear: number): string | undefined {
+  if (id === "e3" || id === "f2") {
+    // !!E!!
+    return `注5(表下部参照)には対応していません。`;
+  } else if (id === "h1") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqSince2023: SetupCreditRequirements = {

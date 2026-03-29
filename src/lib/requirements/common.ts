@@ -116,10 +116,60 @@ export function isNonCompulsoryEnglish(id: string): boolean {
 }
 
 /**
- * 第二外国語
+ * 初修外国語（基礎的な科目）
+ * TODO: 第2外国語は同じ言語で基礎xx語のAI, AII, BI, 文化みたいなやつを取らないといけない
+ * ↓のページ8を参考
+ * https://www.tsukuba.ac.jp/education/ug-courses-directory/2026/pdf/3.pdf
  */
-export function isSecondForeignLanguage(id: string): boolean {
-  return id.startsWith("3") && !isEnglish(id);
+export function isSecondForeignLanguageBasic(
+  id: string,
+  name: string,
+): boolean {
+  return (
+    id === "32H7022" || // Basic German AI (基礎ドイツ語AI)
+    id === "32K7022" || // Basic German AII (基礎ドイツ語AII)
+    id === "32J7022" || // Basic German BI (基礎ドイツ語BI)
+    name === "基礎韓国語AI" ||
+    name === "基礎中国語AI" ||
+    name === "基礎ロシア語AI" ||
+    name === "基礎フランス語AI" ||
+    name === "基礎スペイン語AI" ||
+    name === "基礎ドイツ語AI" ||
+    name === "基礎韓国語AII" ||
+    name === "基礎中国語AII" ||
+    name === "基礎ロシア語AII" ||
+    name === "基礎フランス語AII" ||
+    name === "基礎スペイン語AII" ||
+    name === "基礎ドイツ語AII" ||
+    name === "基礎韓国語BI" ||
+    name === "基礎中国語BI" ||
+    name === "基礎ロシア語BI" ||
+    name === "基礎フランス語BI" ||
+    name === "基礎スペイン語BI" ||
+    name === "基礎ドイツ語BI"
+  );
+}
+
+/**
+ * 初修外国語（応用的な科目）
+ * TODO: 第2外国語は同じ言語で基礎xx語のAI, AII, BI, 文化みたいなやつを取らないといけない
+ * ↓のページ9を参考
+ * https://www.tsukuba.ac.jp/education/ug-courses-directory/2026/pdf/3.pdf
+ */
+export function isSecondForeignLanguageAdvanced(
+  id: string,
+  name: string,
+): boolean {
+  return (
+    id === "3251622" || // Language and Culture A (German) (ドイツ語圏の言語と文化A)
+    name === "ドイツ語圏の言語と文化A" ||
+    name === "フランス語圏の言語と文化A" ||
+    name === "スペイン語圏の言語と文化A" ||
+    name === "ロシア語圏の言語と文化A" ||
+    name === "中国語圏の言語と文化A" ||
+    name === "韓国語圏の言語と文化A" ||
+    isSecondForeignLanguageBasic(id, name)
+  );
 }
 
 /**
@@ -137,6 +187,50 @@ export function isForeignLanguage(id: string): boolean {
  */
 export function isJapaneseAsForeignLanguage(id: string): boolean {
   return id.startsWith("39");
+}
+
+/**
+ * Japan-Expert 第一外国語(日本語)
+ * ↓のページ12,13を参照。
+ * https://www.tsukuba.ac.jp/education/ug-courses-directory/2026/pdf/3.pdf
+ */
+export function isJapanExpertJapanese(id: string): boolean {
+  return (
+    id === "3910322" || // 日本語聴解IIB
+    id === "3910422" || // 日本語読解IIB
+    id === "3910522" || // 日本語作文IIB
+    id === "3910622" || // 日本語演習IIB
+    // 2023年度
+    id === "3920122" || // Japan-Expert日本語 上級話す
+    id === "3920222" || // Japan-Expert日本語 上級聞く
+    id === "3920322" || // Japan-Expert日本語 上級読む
+    id === "3920422" || // Japan-Expert日本語 上級書く
+    id === "3920522" || // Japan-Expert日本語 上級文法
+    id === "3920622" || // Japan-Expert日本語 上級漢字
+    id === "3920722" || // Japan-Expert日本語 上級総合日本語
+    id === "3920112" || // Japan-Expert日本語 中上級話す
+    id === "3920212" || // Japan-Expert日本語 中上級聞く
+    id === "3920312" || // Japan-Expert日本語 中上級読む
+    id === "3920412" || // Japan-Expert日本語 中上級書く
+    id === "3920512" || // Japan-Expert日本語 中上級文法
+    id === "3920612" || // Japan-Expert日本語 中上級漢字
+    id === "3920712" || // Japan-Expert日本語 中上級総合日本語
+    // 2024年度以降
+    id === "3920242" || // JE日本語 上級聞く
+    id === "3920442" || // JE日本語 上級書く
+    id === "3920542" || // JE日本語 上級文法
+    id === "3920642" || // JE日本語 上級漢字
+    id === "3920742" || // JE日本語 上級総合日本語
+    id === "3920132" || // JE日本語 中上級話す
+    id === "3920232" || // JE日本語 中上級聞く
+    id === "3920332" || // JE日本語 中上級読む
+    id === "3920432" || // JE日本語 中上級書く
+    id === "3920532" || // JE日本語 中上級文法
+    id === "3920632" || // JE日本語 中上級漢字
+    id === "3920732" || // JE日本語 中上級総合日本語
+    // 2023年度以降
+    /^39208.2$/.test(id) // Japan-Expert専門日本語
+  );
 }
 
 /**

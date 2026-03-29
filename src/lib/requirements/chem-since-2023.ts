@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -40,8 +41,8 @@ function isA3(id: string): boolean {
 
 function isA4(id: string): boolean {
   return (
-    id === "FE14808" || // 卒研(14単位)
-    id === "FE14908" //卒研(旧? 10単位)
+    id === "FE14808" || // 卒業研究 (14単位)
+    id === "FE14908" // 卒業研究 (旧? 10単位)
   );
 }
 
@@ -222,7 +223,7 @@ function isD2(id: string): boolean {
 
 function isE1(id: string, tableYear: number, mode: "real" | "known"): boolean {
   //事例に学ぶ環境安全衛生と化学物質
-  if (tableYear === 2025 && id === "1414014") return true;
+  if (tableYear >= 2025 && id === "1414014") return true;
 
   return (
     //学問への誘い
@@ -344,6 +345,22 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(id: CellId, _tableYear: number): string | undefined {
+  if (id === "a1" || id === "a2" || id === "a3" || id === "a4") {
+    // !!F!!
+    return `カッコの条件は判定していません。`;
+  }
+  if (id === "d1") {
+    return `注7、注8、注9(表下部参照)には対応していないため、あきこでは足りているのに実際は足りてないことがあるので注意してください。`;
+  } else if (id === "e3") {
+    // !!E!!
+    return `注6(表下部参照)には対応していません。`;
+  } else if (id === "h1" || id === "h2") {
+    // !!C!!
+    return `注5にある通り、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqSince2023: SetupCreditRequirements = {

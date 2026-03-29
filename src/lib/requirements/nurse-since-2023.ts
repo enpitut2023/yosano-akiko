@@ -1,4 +1,5 @@
 import {
+  type CellId,
   type CourseId,
   type FakeCourse,
   type FakeCourseId,
@@ -21,9 +22,9 @@ import {
   isInfoLiteracyLecture,
   isIzanai,
   isJapanese,
-  isJapaneseAsForeignLanguage,
+  isJapanExpertJapanese,
   isKyoutsuu,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
 } from "./common";
 import { unreachable } from "$lib/util";
 import { type Major } from "$lib/constants";
@@ -486,7 +487,7 @@ function isE3(id: string, name: string, specialty: Specialty): boolean {
   return (
     ((specialty === "nurse-n" || specialty === "nurse-phn") &&
       isCompulsoryEnglishByName(name)) ||
-    (specialty === "nurse-h" && isJapaneseAsForeignLanguage(id))
+    (specialty === "nurse-h" && isJapanExpertJapanese(id))
   );
 }
 
@@ -524,10 +525,11 @@ function isE5(id: string, specialty: Specialty, mode: Mode): boolean {
   );
 }
 
-function isF1(id: string, specialty: Specialty): boolean {
+function isF1(id: string, specialty: Specialty, name: string): boolean {
   return (
     isGakushikiban(id) ||
-    (specialty === "nurse-h" && isSecondForeignLanguage(id)) // !!B!!第２外国語（初修外国語）はこれで正しいか
+    // TODO: !!B!!第２外国語（初修外国語）はこれで正しいか
+    (specialty === "nurse-h" && isSecondForeignLanguageAdvanced(id, name))
   );
 }
 
@@ -670,7 +672,7 @@ function classify(
   // 選択
   const d = classifyColumnD(id, specialty, mode);
   if (d !== undefined) return d;
-  if (isF1(id, specialty)) return "f1";
+  if (isF1(id, specialty, name)) return "f1";
   if (isH2(id, specialty)) return "h2";
   if (isH1(id, specialty, tableYear)) return "h1";
 }
@@ -734,6 +736,24 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  major: Major,
+): string | undefined {
+  const specialty = majorToSpecialtyOrFail(major);
+  if (
+    (specialty === "nurse-n" && id === "a45") ||
+    (specialty === "nurse-phn" && id === "a44")
+  ) {
+    return `注5(表下部参照)には対応していません。`;
+  }
+  if (id === "h1") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 export const reqNSince2023: SetupCreditRequirements = {

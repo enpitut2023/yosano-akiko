@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -24,7 +25,9 @@ import {
   isIzanai,
   isJapanese1,
   isJapaneseAsForeignLanguage,
+  isJapanExpertJapanese,
   isNonCompulsoryEnglish,
+  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
@@ -454,8 +457,8 @@ function classifyColumnE(
       if (isE1(id, mode, specialty)) return "e1";
       if (isCompulsoryPe1(id) || isCompulsoryPe2(id) || isCompulsoryPe3(id))
         return "e2";
-      // TODO: 第一外国語と第二外国語の扱いは要確認 !!B!!
-      if (isJapaneseAsForeignLanguage(id)) return "e3";
+      // TODO: 第二外国語(英語)の定義 !!B!!
+      if (isJapanExpertJapanese(id)) return "e3";
       if (isCompulsoryEnglishById(id)) return "e4";
       if (isInfo(id, mode)) return "e5";
       break;
@@ -481,6 +484,7 @@ function classifyColumnF(
   specialty: Specialty,
   _mode: Mode,
   tableYear: number,
+  name: string,
 ): string | undefined {
   switch (specialty) {
     case "none":
@@ -488,10 +492,16 @@ function classifyColumnF(
         if (isGakushikiban(id)) return "f1";
         if (isElectivePe(id)) return "f2";
         if (isArt(id)) return "f3";
-        if (isForeignLanguage(id)) return "f4";
+        // TODO: 初修外国語の定義
+        if (isSecondForeignLanguageAdvanced(id, name)) return "f4";
       } else {
         if (isGakushikiban(id)) return "f1";
-        if (isElectivePe(id) || isArt(id) || isCompulsoryEnglishById(id))
+        // TODO: 初修外国語の定義
+        if (
+          isElectivePe(id) ||
+          isArt(id) ||
+          isSecondForeignLanguageAdvanced(id, name)
+        )
           return "f2";
       }
       break;
@@ -501,11 +511,18 @@ function classifyColumnF(
         if (isGakushikiban(id)) return "f1";
         if (isElectivePe(id)) return "f2";
         if (isArtAs(id)) return "f3";
-        if (isNonCompulsoryEnglish(id)) return "f4";
+        // TODO: 初修外国語の定義
+        if (isSecondForeignLanguageAdvanced(id, name)) return "f4";
         if (isJapaneseAsForeignLanguage(id)) return "f5";
       } else {
         if (isGakushikiban(id)) return "f1";
-        if (isElectivePe(id) || isArtAs(id) || isJapaneseAsForeignLanguage(id))
+        // TODO: 初修外国語の定義
+        if (
+          isElectivePe(id) ||
+          isArtAs(id) ||
+          isSecondForeignLanguageAdvanced(id, name) ||
+          isJapaneseAsForeignLanguage(id)
+        )
           return "f2";
       }
       break;
@@ -551,12 +568,13 @@ function classifyColumnH(id: string, specialty: Specialty): string | undefined {
   }
 }
 
-function classifyColumns(
+function classify(
   id: string,
   specialty: Specialty,
   isNative: boolean,
   mode: Mode,
   tableYear: number,
+  name: string,
 ): string | undefined {
   // 必修
   const a = classifyColumnA(id, specialty, mode, tableYear);
@@ -571,7 +589,7 @@ function classifyColumns(
   if (isB3(id, specialty)) return "b3";
   if (isD1(id)) return "d1";
   if (isD2(id)) return "d2";
-  const f = classifyColumnF(id, specialty, mode, tableYear);
+  const f = classifyColumnF(id, specialty, mode, tableYear, name);
   if (f !== undefined) return f;
   const h = classifyColumnH(id, specialty);
   if (h !== undefined) return h;
@@ -584,12 +602,13 @@ export function classifyKnownCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classifyColumns(
+    const cellId = classify(
       c.id,
       specialty,
       opts.isNative,
       "known",
       opts.tableYear,
+      c.name,
     );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
@@ -605,12 +624,13 @@ export function classifyRealCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classifyColumns(
+    const cellId = classify(
       c.id,
       specialty,
       opts.isNative,
       "real",
       opts.tableYear,
+      c.name,
     );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
@@ -640,6 +660,41 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  major: Major,
+): string | undefined {
+  const specialty = majorToSpecialtyOrFail(major);
+  if (id === "a2" || id === "a3" || id === "b1") {
+    return `カッコ内の条件はチェックされません。`;
+  }
+  if (id === "b2") {
+    if (specialty === "none") {
+      return `農林生学コース:EC31で始まる科目\n応用生命科学コース:EC32\n環境工学コース:EC33\n社会経済学コース:EC34\nカッコ内の条件はチェックされません。`;
+    } else if (specialty === "as") {
+      return `カッコ内の条件はチェックされません。`;
+    }
+  }
+  if (id === "d2") {
+    return `「下記から、講義科目11単位以上、実験・実習・演習科目1単位以上を履修すること」という条件はチェックされません。
+    注8, 9の条件はチェックされないため、あきこでは足りているのに実際は足りてないことがあるので注意してください。`;
+  }
+  if (id === "e3" && specialty === "none") {
+    return `注7で言及されている日本語の科目は含まれていません。`;
+  }
+  if (id === "f2" && specialty === "none") {
+    return `注10で除かれるべき科目も表示されているので注意してください。`;
+  }
+  if (
+    (id === "h1" && specialty === "none") ||
+    (id === "h2" && specialty === "as")
+  ) {
+    // !!C!!
+    return `注5の条件はチェックされないため、あきこでは足りているのに実際は足りてないことがあるので注意してください。また、専門基礎科目などで指定された科目と同様の内容の講義の場合、このマスではない場所の単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqSince2023: SetupCreditRequirements = {
