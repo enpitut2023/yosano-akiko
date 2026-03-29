@@ -23,7 +23,7 @@ import {
   isJiyuukamoku,
   isKyoushoku,
   isKyoutsuu,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 
 type Mode = "known" | "real";
@@ -193,7 +193,7 @@ function isF2(id: string): boolean {
 }
 
 function isF3(id: string, name: string): boolean {
-  return isSecondForeignLanguage(id, name);
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isH1(id: string): boolean {

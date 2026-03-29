@@ -16,6 +16,7 @@ import {
   isDataScience,
   isElectivePe,
   isFirstYearSeminar,
+  isForeignLanguage,
   isGakushikiban,
   isHakubutsukan,
   isHumanSciencesCoreCurriculum,
@@ -25,8 +26,7 @@ import {
   isJapanese,
   isJiyuukamoku,
   isKyoushoku,
-  isNonCompulsoryEnglish,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageBasic,
 } from "$lib/requirements/common";
 import { arrayRemove, assert, defined } from "$lib/util";
 
@@ -76,7 +76,11 @@ function classifyColumnC(id: string, tableYear: number): string | undefined {
   if (id === "CA10061") return "c3"; // 障害科学II
   if (id === "CA10091") return "c4"; // キャリアデザイン入門
   if (id === "CA10161") return "c5"; // Current Topics in Disability Sciences
-  if (id === "CB11081" || id === "CB11091") return "c6"; // 教育基礎論, 学校の経営・制度・社会
+  if (
+    id === "CB11081" || // 教育基礎論
+    id === "CB11091" // 学校の経営・制度・社会
+  )
+    return "c6";
   // TODO: 教職のやつは障害科学類生は取れないのか !!B!!
   // CB23481 心理学概論 原則として、教員免許状取得予定者に限る
   if (id === "CC11211") return "c7"; // 心理学概論
@@ -119,7 +123,7 @@ function isE3(name: string): boolean {
 }
 
 function isE4(id: string, name: string): boolean {
-  return isSecondForeignLanguage(id, name);
+  return isSecondForeignLanguageBasic(id, name);
 }
 
 function isE5(id: string, mode: Mode): boolean {
@@ -138,13 +142,9 @@ function isF1(id: string): boolean {
   return isGakushikiban(id);
 }
 
-function isF2(id: string, name: string): boolean {
+function isF2(id: string): boolean {
   return (
-    isElectivePe(id) ||
-    isNonCompulsoryEnglish(id) ||
-    isSecondForeignLanguage(id, name) ||
-    isJapanese(id) ||
-    isArt(id)
+    isElectivePe(id) || isForeignLanguage(id) || isJapanese(id) || isArt(id)
   );
 }
 
@@ -180,7 +180,7 @@ function classify(
   if (isB3(id)) return "b3";
   if (isD1(id)) return "d1";
   if (isF1(id)) return "f1";
-  if (isF2(id, name)) return "f2";
+  if (isF2(id)) return "f2";
   if (isH1(id)) return "h1";
 }
 

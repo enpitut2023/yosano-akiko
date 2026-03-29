@@ -23,6 +23,7 @@ import {
   isIzanai,
   isJapanese,
   isKyoushoku,
+  isKyoutsuu,
 } from "$lib/requirements/common";
 
 function isA1(id: string): boolean {
@@ -194,7 +195,7 @@ function isH1(id: string): boolean {
       id.startsWith("9453") // 数学科指導法、数学教材論
     );
   }
-  return true;
+  return !isKyoutsuu(id);
 }
 
 function classify(

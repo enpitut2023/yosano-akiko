@@ -25,7 +25,7 @@ import {
   isJapanese,
   isJiyuukamoku,
   isKyoushoku,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 
 type Specialty = "ir" | "id";
@@ -128,7 +128,7 @@ function isE3(name: string): boolean {
 }
 
 function isE4(id: string, name: string): boolean {
-  return isSecondForeignLanguage(id, name); // 第2外国語
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isE5(id: string, mode: Mode): boolean {

@@ -11,6 +11,7 @@ import {
   type SetupCreditRequirements,
 } from "$lib/app-setup";
 import {
+  isCompulsoryEnglishById,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
@@ -21,9 +22,9 @@ import {
   isInfoLiteracyLecture,
   isIzanai,
   isJapanese,
-  isJapaneseAsForeignLanguage,
+  isJapanExpertJapanese,
   isKyoutsuu,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
 } from "./common";
 import { unreachable } from "$lib/util";
 import { type Major } from "$lib/constants";
@@ -486,16 +487,11 @@ function isE3(id: string, name: string, specialty: Specialty): boolean {
   return (
     ((specialty === "nurse-n" || specialty === "nurse-phn") &&
       isCompulsoryEnglishByName(name)) ||
-    (specialty === "nurse-h" && isJapaneseAsForeignLanguage(id))
+    (specialty === "nurse-h" && isJapanExpertJapanese(id))
   );
 }
 
-function isE4(
-  id: string,
-  specialty: Specialty,
-  mode: Mode,
-  name: string,
-): boolean {
+function isE4(id: string, specialty: Specialty, mode: Mode): boolean {
   return (
     ((specialty === "nurse-n" || specialty === "nurse-phn") && // 看護師または保健師
       (id === "6118101" || // 情報リテラシー(講義)
@@ -508,7 +504,7 @@ function isE4(
             isInfoLiteracyExercise(id) ||
             isDataScience(id))))) ||
     (specialty === "nurse-h" && // ヘルスケア
-      isSecondForeignLanguage(id, name)) // 第２外国語（英語）!!B!!これは必修英語と同じ？
+      isCompulsoryEnglishById(id)) // 第２外国語（英語）!!B!!これは必修英語と同じ？
   );
 }
 
@@ -532,7 +528,8 @@ function isE5(id: string, specialty: Specialty, mode: Mode): boolean {
 function isF1(id: string, specialty: Specialty, name: string): boolean {
   return (
     isGakushikiban(id) ||
-    (specialty === "nurse-h" && isSecondForeignLanguage(id, name)) // !!B!!第２外国語（初修外国語）はこれで正しいか
+    // TODO: !!B!!第２外国語（初修外国語）はこれで正しいか
+    (specialty === "nurse-h" && isSecondForeignLanguageAdvanced(id, name))
   );
 }
 
@@ -669,7 +666,7 @@ function classify(
   if (isE1(id, specialty, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(id, name, specialty)) return "e3";
-  if (isE4(id, specialty, mode, name)) return "e4";
+  if (isE4(id, specialty, mode)) return "e4";
   if (isE5(id, specialty, mode)) return "e5";
   if (isG1(id, specialty)) return "g1";
   // 選択

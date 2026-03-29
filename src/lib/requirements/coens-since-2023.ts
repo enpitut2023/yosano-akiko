@@ -200,7 +200,7 @@ function classifyC1D2(
   // 微積分1 (2023年度のみ救済として開講)
   if (tableYear === 2023 && id === "FF18764") return "c1";
   if (
-    // 2025.3.26 成績は名前で見る
+    // 2026.3.26 成績は名前で見る
     id === "FA01111" || // 数学リテラシー1 学籍番号奇数 !!A!!
     id === "FA01121" || // 数学リテラシー1 学籍番号偶数 !!A!!
     id === "FA01211" || // 数学リテラシー2 学籍番号奇数 !!A!!
@@ -226,23 +226,24 @@ function classifyC1D2(
     id === "FE11171" || // 化学1 !!A!!
     id === "FE11181" || // 化学2 !!A!!
     id === "FE11191" || // 化学3 !!A!!
-    (mode === "real" && name === "数学リテラシー1") ||
-    name === "数学リテラシー2" ||
-    name === "微積分1" ||
-    name === "微積分2" ||
-    name === "微積分3" ||
-    name === "線形代数1" ||
-    name === "線形代数2" ||
-    name === "線形代数3" ||
-    name === "力学1" ||
-    name === "力学2" ||
-    name === "力学3" ||
-    name === "電磁気学1" ||
-    name === "電磁気学2" ||
-    name === "電磁気学3" ||
-    name === "化学1" ||
-    name === "化学2" ||
-    name === "化学3"
+    (mode === "real" &&
+      (name === "数学リテラシー1" ||
+        name === "数学リテラシー2" ||
+        name === "微積分1" ||
+        name === "微積分2" ||
+        name === "微積分3" ||
+        name === "線形代数1" ||
+        name === "線形代数2" ||
+        name === "線形代数3" ||
+        name === "力学1" ||
+        name === "力学2" ||
+        name === "力学3" ||
+        name === "電磁気学1" ||
+        name === "電磁気学2" ||
+        name === "電磁気学3" ||
+        name === "化学1" ||
+        name === "化学2" ||
+        name === "化学3"))
   ) {
     // 2023年度は、2024, 2025年度のd2に含まれる科目をc1に含む
     if (tableYear === 2023) return "c1";
@@ -251,7 +252,7 @@ function classifyC1D2(
 }
 
 function isC2(id: string, mode: Mode, name: string): boolean {
-  // 2025.3.26 成績は名前で見る
+  // 2026.3.26 成績は名前で見る
   return (
     id === "FF18804" || // 熱力学 1・2クラス
     id === "FF18814" || // 熱力学 3・4クラス
@@ -279,8 +280,7 @@ function isC2(id: string, mode: Mode, name: string): boolean {
     id === "FF19313" || // 応用理工物理学実験 1班対象
     id === "FF19203" || // 応用理工化学実験 1班対象
     id === "FF19213" || // 応用理工化学実験 2班対象
-    (mode === "real" && name === "線形代数A") ||
-    name === "線形代数B"
+    (mode === "real" && (name === "線形代数A" || name === "線形代数B"))
   );
 }
 
@@ -358,6 +358,7 @@ function isF1(id: string): boolean {
 }
 
 function isF2(id: string): boolean {
+  // TODO: 英語(選択・自由科目)、外国語(英語以外)の定義
   return isForeignLanguage(id) || isJapanese(id) || isArt(id);
 }
 

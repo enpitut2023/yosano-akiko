@@ -41,8 +41,8 @@ function isA3(id: string): boolean {
 
 function isA4(id: string): boolean {
   return (
-    id === "FE14808" || // 卒研(14単位)
-    id === "FE14908" //卒研(旧? 10単位)
+    id === "FE14808" || // 卒業研究 (14単位)
+    id === "FE14908" // 卒業研究 (旧? 10単位)
   );
 }
 
@@ -223,7 +223,7 @@ function isD2(id: string): boolean {
 
 function isE1(id: string, tableYear: number, mode: "real" | "known"): boolean {
   //事例に学ぶ環境安全衛生と化学物質
-  if (tableYear === 2025 && id === "1414014") return true;
+  if (tableYear >= 2025 && id === "1414014") return true;
 
   return (
     //学問への誘い

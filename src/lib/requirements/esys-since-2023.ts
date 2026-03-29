@@ -27,6 +27,7 @@ import {
   isJiyuukamoku,
   isKyoushoku,
   isKyoutsuu,
+  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
@@ -211,7 +212,7 @@ function isForArchitectExam(id: string): boolean {
   );
 }
 
-function isA1Ies(id: string, mode: Mode): boolean {
+function isA1Ies(id: string): boolean {
   // 2025.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
   return (
     //プログラミング序論C(所属主専攻の科目番号で履修登録) !!A!!
@@ -225,8 +226,8 @@ function isA2Ies(id: string): boolean {
   return isKisojikken(id);
 }
 
-function isA3Ies(id: string, mode: Mode): boolean {
-  // 2025.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
+function isA3Ies(id: string): boolean {
+  // 2026.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
   return (
     //知的・機能工学システム実験(所属主専攻の科目番号で履修登録) !!A!!
     id === "FG29213"
@@ -243,8 +244,8 @@ function isA5Ies(id: string): boolean {
   );
 }
 
-function isA6Ies(id: string, mode: Mode): boolean {
-  // 2025.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
+function isA6Ies(id: string): boolean {
+  // 2026.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
   return (
     isAcademicEnglishA(id) ||
     //専門英語B !!A!!
@@ -279,7 +280,7 @@ function isA4Eme(id: string): boolean {
   );
 }
 
-function isA5Eme(id: string, mode: Mode): boolean {
+function isA5Eme(id: string): boolean {
   return (
     isAcademicEnglishA(id) ||
     //専門英語B !!A!!
@@ -303,19 +304,19 @@ function classifyColumnA(
 ): string | undefined {
   switch (specialty) {
     case "ies":
-      if (isA1Ies(id, mode)) return "a1";
+      if (isA1Ies(id)) return "a1";
       if (isA2Ies(id)) return "a2";
-      if (isA3Ies(id, mode)) return "a3";
+      if (isA3Ies(id)) return "a3";
       if (isA4Ies(id)) return "a4";
       if (isA5Ies(id)) return "a5";
-      if (isA6Ies(id, mode)) return "a6";
+      if (isA6Ies(id)) return "a6";
       break;
     case "eme":
       if (isA1Eme(id)) return "a1";
       if (isA2Eme(id, mode)) return "a2";
       if (isA3Eme(id)) return "a3";
       if (isA4Eme(id)) return "a4";
-      if (isA5Eme(id, mode)) return "a5";
+      if (isA5Eme(id)) return "a5";
       if (isA6Eme(id, mode)) return "a6";
       break;
     default:
@@ -655,8 +656,9 @@ function isF2(id: string): boolean {
   return isElectivePe(id);
 }
 
-function isF3(id: string): boolean {
-  return isForeignLanguage(id);
+function isF3(id: string, name: string): boolean {
+  // TODO: 初修外国語の定義
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isF4(id: string): boolean {
@@ -693,6 +695,7 @@ function classify(
   specialty: Specialty,
   isNative: boolean,
   mode: Mode,
+  name: string,
 ): string | undefined {
   // 必修
   const a = classifyColumnA(id, specialty, mode);
@@ -736,7 +739,7 @@ function classify(
   if (isB5(id, specialty)) return "b5";
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
-  if (isF3(id)) return "f3";
+  if (isF3(id, name)) return "f3";
   if (isF4(id)) return "f4";
   if (isF5(id)) return "f5";
   if (isH2(id)) return "h2";
@@ -751,7 +754,7 @@ export function classifyKnownCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, specialty, opts.isNative, "known");
+    const cellId = classify(c.id, specialty, opts.isNative, "known", c.name);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -766,7 +769,7 @@ export function classifyRealCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, specialty, opts.isNative, "real");
+    const cellId = classify(c.id, specialty, opts.isNative, "real", c.name);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
