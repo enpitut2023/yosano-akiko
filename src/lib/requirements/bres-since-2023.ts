@@ -496,7 +496,11 @@ function classifyColumnF(
       } else {
         if (isGakushikiban(id)) return "f1";
         // TODO: 初修外国語の定義
-        if (isElectivePe(id) || isArt(id) || isSecondForeignLanguageAdvanced(id, name))
+        if (
+          isElectivePe(id) ||
+          isArt(id) ||
+          isSecondForeignLanguageAdvanced(id, name)
+        )
           return "f2";
       }
       break;
@@ -512,7 +516,12 @@ function classifyColumnF(
       } else {
         if (isGakushikiban(id)) return "f1";
         // TODO: 初修外国語の定義
-        if (isElectivePe(id) || isArtAs(id) || isSecondForeignLanguageAdvanced(id, name) ||isJapaneseAsForeignLanguage(id))
+        if (
+          isElectivePe(id) ||
+          isArtAs(id) ||
+          isSecondForeignLanguageAdvanced(id, name) ||
+          isJapaneseAsForeignLanguage(id)
+        )
           return "f2";
       }
       break;

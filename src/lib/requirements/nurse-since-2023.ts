@@ -21,7 +21,6 @@ import {
   isInfoLiteracyLecture,
   isIzanai,
   isJapanese,
-  isJapaneseAsForeignLanguage,
   isJapanExpertJapanese,
   isKyoutsuu,
   isSecondForeignLanguageAdvanced,

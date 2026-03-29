@@ -187,7 +187,7 @@ function isE3(name: string): boolean {
 }
 
 function isE4(id: string, name: string): boolean {
-  return isSecondForeignLanguageAdvanced(id, name); // 第2外国語
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isE5(id: string, mode: "known" | "real"): boolean {

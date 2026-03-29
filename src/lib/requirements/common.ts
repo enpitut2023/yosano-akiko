@@ -116,13 +116,15 @@ export function isNonCompulsoryEnglish(id: string): boolean {
 }
 
 /**
- * 第二外国語
+ * 初修外国語（基礎的な科目）
+ * TODO: 第2外国語は同じ言語で基礎xx語のAI, AII, BI, 文化みたいなやつを取らないといけない
+ * ↓のページ8を参考
+ * https://www.tsukuba.ac.jp/education/ug-courses-directory/2026/pdf/3.pdf
  */
 export function isSecondForeignLanguageBasic(
   id: string,
   name: string,
 ): boolean {
-  // TODO: 第2外国語は同じ言語で基礎xx語のAI, AII, BI, 文化みたいなやつを取らないといけない
   return (
     id === "32H7022" || // Basic German AI (基礎ドイツ語AI)
     id === "32K7022" || // Basic German AII (基礎ドイツ語AII)
@@ -148,6 +150,12 @@ export function isSecondForeignLanguageBasic(
   );
 }
 
+/**
+ * 初修外国語（応用的な科目）
+ * TODO: 第2外国語は同じ言語で基礎xx語のAI, AII, BI, 文化みたいなやつを取らないといけない
+ * ↓のページ9を参考
+ * https://www.tsukuba.ac.jp/education/ug-courses-directory/2026/pdf/3.pdf
+ */
 export function isSecondForeignLanguageAdvanced(
   id: string,
   name: string,
@@ -159,31 +167,9 @@ export function isSecondForeignLanguageAdvanced(
     name === "スペイン語圏の言語と文化A" ||
     name === "ロシア語圏の言語と文化A" ||
     name === "中国語圏の言語と文化A" ||
-    name === "韓国語圏の言語と文化A" || 
-    // Basic
-    id === "32H7022" || // Basic German AI (基礎ドイツ語AI)
-    id === "32K7022" || // Basic German AII (基礎ドイツ語AII)
-    id === "32J7022" || // Basic German BI (基礎ドイツ語BI)
-    name === "基礎韓国語AI" ||
-    name === "基礎中国語AI" ||
-    name === "基礎ロシア語AI" ||
-    name === "基礎フランス語AI" ||
-    name === "基礎スペイン語AI" ||
-    name === "基礎ドイツ語AI" ||
-    name === "基礎韓国語AII" ||
-    name === "基礎中国語AII" ||
-    name === "基礎ロシア語AII" ||
-    name === "基礎フランス語AII" ||
-    name === "基礎スペイン語AII" ||
-    name === "基礎ドイツ語AII" ||
-    name === "基礎韓国語BI" ||
-    name === "基礎中国語BI" ||
-    name === "基礎ロシア語BI" ||
-    name === "基礎フランス語BI" ||
-    name === "基礎スペイン語BI" ||
-    name === "基礎ドイツ語BI"
+    name === "韓国語圏の言語と文化A" ||
+    isSecondForeignLanguageBasic(id, name)
   );
-  
 }
 
 /**

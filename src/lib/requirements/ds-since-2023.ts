@@ -140,10 +140,7 @@ function isF1(id: string): boolean {
 
 function isF2(id: string): boolean {
   return (
-    isElectivePe(id) ||
-    isForeignLanguage(id) ||
-    isJapanese(id) ||
-    isArt(id)
+    isElectivePe(id) || isForeignLanguage(id) || isJapanese(id) || isArt(id)
   );
 }
 
