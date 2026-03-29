@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -24,7 +25,7 @@ import {
   isJapanese,
   isJiyuukamoku,
   isKyoushoku,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 
 type Specialty = "ir" | "id";
@@ -126,8 +127,8 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name); // 第1外国語
 }
 
-function isE4(id: string): boolean {
-  return isSecondForeignLanguage(id); // 第2外国語
+function isE4(id: string, name: string): boolean {
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isE5(id: string, mode: Mode): boolean {
@@ -193,7 +194,7 @@ function classify(id: CourseId, name: string, mode: Mode): string | undefined {
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(id, name)) return "e4";
   if (isE5(id, mode)) return "e5";
   // 選択
   if (isB1(id)) return "b1";
@@ -256,6 +257,20 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  _major: Major,
+): string | undefined {
+  if (id === "b1") {
+    // !!F!!
+    return `*の条件(国際開発学主専攻の表下部参照)には対応していません。`;
+  } else if (id === "h1" || id === "h2" || id === "h3") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqSince2023: SetupCreditRequirements = {

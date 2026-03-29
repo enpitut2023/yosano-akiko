@@ -990,7 +990,7 @@
               )}
               {#if remark}
                 <h2>備考</h2>
-                <p>{remark}</p>
+                <p style="white-space: pre-line">{remark}</p>
               {/if}
             {/if}
           {/if}

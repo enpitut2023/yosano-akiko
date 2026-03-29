@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -22,7 +23,7 @@ import {
   isIzanai,
   isJapanese,
   isKyoutsuu,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 
 type Mode = "known" | "real";
@@ -128,8 +129,8 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string): boolean {
-  return isSecondForeignLanguage(id);
+function isE4(id: string, name: string): boolean {
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isE5(id: string, mode: Mode): boolean {
@@ -159,6 +160,7 @@ function isF2(id: string): boolean {
 }
 
 function isF3(id: string): boolean {
+  // TODO: !!B!!
   return isForeignLanguage(id);
 }
 
@@ -193,7 +195,7 @@ function classify(
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(id, name)) return "e4";
   if (isE5(id, mode)) return "e5";
   if (isE6(id)) return "e6";
   // 選択
@@ -252,6 +254,28 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(id: CellId, _tableYear: number): string | undefined {
+  if (id === "b1") {
+    // !!F!!
+    return `注2(表の下部参照)には対応していないため、各自で条件に合ったものを選択してください。`;
+  } else if (id === "b2") {
+    // !!F!!
+    return `注3(表の下部参照)の判定には対応していません。`;
+  } else if (id === "e3") {
+    // !!E!!
+    return `注6(表の下部参照)には対応していません。`;
+  } else if (id === "e4") {
+    // !!E!!
+    return `注7(表の下部参照)には対応していません。`;
+  } else if (id === "f3") {
+    // !!E!!
+    return `注8(表の下部参照)には対応していません。`;
+  } else if (id === "h1" || id === "h2" || id === "h3") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqSince2023: SetupCreditRequirements = {

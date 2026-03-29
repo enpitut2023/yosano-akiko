@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -16,7 +17,6 @@ import {
   isDataScience,
   isElectivePe,
   isFirstYearSeminar,
-  isForeignLanguage,
   isGakushikiban,
   isHakubutsukan,
   isInfoLiteracyExercise,
@@ -26,6 +26,7 @@ import {
   isJiyuukamoku,
   isKyoushoku,
   isKyoutsuu,
+  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
@@ -211,13 +212,12 @@ function isForArchitectExam(id: string): boolean {
 }
 
 function isA1Ies(id: string): boolean {
+  // 2025.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
   return (
-    //プログラミング序論C(所属主専攻の科目番号で履修登録)
+    //プログラミング序論C(所属主専攻の科目番号で履修登録) !!A!!
     id === "FG20204" ||
-    id === "FG30204" ||
-    //プログラミング序論D(所属主専攻の科目番号で履修登録)
-    id === "FG20214" ||
-    id === "FG30214"
+    //プログラミング序論D(所属主専攻の科目番号で履修登録) !!A!!
+    id === "FG20214"
   );
 }
 
@@ -226,9 +226,10 @@ function isA2Ies(id: string): boolean {
 }
 
 function isA3Ies(id: string): boolean {
+  // 2026.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
   return (
-    //知的・機能工学システム実験(所属主専攻の科目番号で履修登録)
-    id === "FG29213" || id === "FG39213"
+    //知的・機能工学システム実験(所属主専攻の科目番号で履修登録) !!A!!
+    id === "FG29213"
   );
 }
 
@@ -243,14 +244,13 @@ function isA5Ies(id: string): boolean {
 }
 
 function isA6Ies(id: string): boolean {
+  // 2026.3.26 昔の主専攻分類の時の科目なので一旦含めず、とっちゃった人があきこで反映されていないのをみて支援室に聞きにいくようにしてある。
   return (
     isAcademicEnglishA(id) ||
-    //専門英語B
+    //専門英語B !!A!!
     id === "FG20222" ||
-    id === "FG30222" ||
-    //専門英語演習
-    id === "FG20232" ||
-    id === "FG30232"
+    //専門英語演習 !!A!!
+    id === "FG20232"
   );
 }
 
@@ -258,14 +258,14 @@ function isA1Eme(id: string): boolean {
   return isKisojikken(id);
 }
 
-function isA2Eme(id: string): boolean {
+function isA2Eme(id: string, mode: Mode): boolean {
   return (
     //エネルギー・メカニクス専門実験(所属主専攻の科目番号で履修登録)
     id === "FG49873" ||
-    id === "FG59873" ||
+    (mode === "real" && id === "FG59873") ||
     //エネルギー・メカニクス応用実験(所属主専攻の科目番号で履修登録)
     id === "FG49883" ||
-    id === "FG59883"
+    (mode === "real" && id === "FG59883")
   );
 }
 
@@ -282,23 +282,25 @@ function isA4Eme(id: string): boolean {
 function isA5Eme(id: string): boolean {
   return (
     isAcademicEnglishA(id) ||
-    //専門英語B
+    //専門英語B !!A!!
     id === "FG40222" ||
-    id === "FG50222" ||
-    //専門英語演習
-    id === "FG40232" ||
-    id === "FG50232"
+    //専門英語演習 !!A!!
+    id === "FG40232"
   );
 }
 
-function isA6Eme(id: string): boolean {
+function isA6Eme(id: string, mode: Mode): boolean {
   return (
     //数値計算法 2023, 2024, 2025開講　2024以降は所属主専攻の科目番号で履修登録
-    id === "FG40354" || id === "FG50354"
+    id === "FG40354" || (mode === "real" && id === "FG50354")
   );
 }
 
-function classifyColumnA(id: string, specialty: Specialty): string | undefined {
+function classifyColumnA(
+  id: string,
+  specialty: Specialty,
+  mode: Mode,
+): string | undefined {
   switch (specialty) {
     case "ies":
       if (isA1Ies(id)) return "a1";
@@ -310,11 +312,11 @@ function classifyColumnA(id: string, specialty: Specialty): string | undefined {
       break;
     case "eme":
       if (isA1Eme(id)) return "a1";
-      if (isA2Eme(id)) return "a2";
+      if (isA2Eme(id, mode)) return "a2";
       if (isA3Eme(id)) return "a3";
       if (isA4Eme(id)) return "a4";
       if (isA5Eme(id)) return "a5";
-      if (isA6Eme(id)) return "a6";
+      if (isA6Eme(id, mode)) return "a6";
       break;
     default:
       unreachable(specialty);
@@ -369,11 +371,37 @@ function isB4(id: string, specialty: Specialty): boolean {
   }
 }
 
+function isFjGakuruicho(id: string): boolean {
+  // TODO: remark 4単位を限度とする
+  return (
+    id === "FJ11001" || //Engineering Ethics
+    id === "FJ11101" || //Introduction to Interdisciplinary Engineering I
+    id === "FJ11111" || //Introduction to Interdisciplinary Engineering II
+    id === "FJ12001" || //Modern Physics
+    id === "FJ15001" || //System Modeling
+    id === "FJ12101" || //Statistical Physics I
+    id === "FJ12111" || //Statistical Physics II
+    id === "FJ12121" || //Statistical Physics III
+    id === "FJ12231" || //Quantum Mechanics I
+    id === "FJ12241" || //Quantum Mechanics II
+    id === "FJ12251" || //Quantum Mechanics III
+    id === "FJ12301" || //Advanced Electromagnetism I
+    id === "FJ12311" || //Advanced Electromagnetism II
+    id === "FJ12321" || //Advanced Electromagnetism III
+    id === "FJ12401" || //Solid State Physics I
+    id === "FJ12411" || //Solid State Physics II
+    id === "FJ12421" //Solid State Physics III
+  );
+}
+
 function isB5(id: string, specialty: Specialty): boolean {
   if (specialty === "eme" && isForArchitectExam(id) && /^(FH|YA|YB)/.test(id)) {
     return true;
   }
-  return /^(FG|FF[2-5]|GB[2-4]|FA00|FJ)/.test(id) && !isKougakuSystemGairon(id);
+  return (
+    (/^(FG|FF[2-5]|GB[2-4]|FA00)/.test(id) && !isKougakuSystemGairon(id)) ||
+    isFjGakuruicho(id)
+  );
 }
 
 function isC1(id: string): boolean {
@@ -627,8 +655,9 @@ function isF2(id: string): boolean {
   return isElectivePe(id);
 }
 
-function isF3(id: string): boolean {
-  return isForeignLanguage(id);
+function isF3(id: string, name: string): boolean {
+  // TODO: 初修外国語の定義
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isF4(id: string): boolean {
@@ -665,9 +694,10 @@ function classify(
   specialty: Specialty,
   isNative: boolean,
   mode: Mode,
+  name: string,
 ): string | undefined {
   // 必修
-  const a = classifyColumnA(id, specialty);
+  const a = classifyColumnA(id, specialty, mode);
   if (a !== undefined) return a;
   if (isC1(id)) return "c1";
   if (isC2(id)) return "c2";
@@ -708,7 +738,7 @@ function classify(
   if (isB5(id, specialty)) return "b5";
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
-  if (isF3(id)) return "f3";
+  if (isF3(id, name)) return "f3";
   if (isF4(id)) return "f4";
   if (isF5(id)) return "f5";
   if (isH2(id)) return "h2";
@@ -723,7 +753,7 @@ export function classifyKnownCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, specialty, opts.isNative, "known");
+    const cellId = classify(c.id, specialty, opts.isNative, "known", c.name);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -738,7 +768,7 @@ export function classifyRealCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, specialty, opts.isNative, "real");
+    const cellId = classify(c.id, specialty, opts.isNative, "real", c.name);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -751,6 +781,35 @@ export function classifyFakeCourses(
   _opts: ClassifyOptions,
 ): Map<FakeCourseId, string> {
   return new Map();
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  major: Major,
+): string | undefined {
+  const specialty = majorToSpecialtyOrFail(major);
+  if (
+    (specialty === "ies" && id === "a4") ||
+    (specialty === "eme" && id === "a3")
+  ) {
+    // !!F!!
+    return `注5(表下部参照)には対応していません。`;
+  } else if (id === "b5") {
+    return `学類長が指定する科目かどうかに関わらず、科目番号の条件に当てはまる科目全てを表示しているため、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  } else if (id === "c3" || id === "c4") {
+    // !!D!!
+    return `注13(表下部参照)の総合学域群からの移行生の線形代数Aの読み替えは反映されません。`;
+  } else if (id === "c6" || id === "c7") {
+    // !!D!!
+    return `注13(表下部参照)の総合学域群からの移行生の微積分Aの読み替えは反映されません。`;
+  } else if (id === "e3") {
+    // !!E!!
+    return `注6(表下部参照)には対応していません。`;
+  } else if (id === "h1") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqIesSince2023: SetupCreditRequirements = {

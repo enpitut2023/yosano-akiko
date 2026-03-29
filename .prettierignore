@@ -1,4 +1,4 @@
 /node_modules
 /src/lib/current-courses.ts
-/src/**/cell-id-to-rect.json
+/src/lib/rects
 /src/**/table-view-box.json
