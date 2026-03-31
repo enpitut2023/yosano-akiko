@@ -13,6 +13,7 @@ import {
   isCompulsoryEnglishById,
   isCompulsoryEnglishByName,
   isDataScience,
+  isElectiveSecondForeignLanguage,
   isFirstYearSeminar,
   isGakushikiban,
   isHakubutsukan,
@@ -23,7 +24,6 @@ import {
   isJiyuukamoku,
   isKyoushoku,
   isKyoutsuu,
-  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 
 type Mode = "known" | "real";
@@ -193,7 +193,7 @@ function isF2(id: string): boolean {
 }
 
 function isF3(id: string, name: string): boolean {
-  return isSecondForeignLanguageAdvanced(id, name);
+  return isElectiveSecondForeignLanguage(id, name);
 }
 
 function isH1(id: string): boolean {
