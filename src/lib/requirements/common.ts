@@ -1,3 +1,5 @@
+import { gradeIsPass, type CourseId, type RealCourse } from "$lib/akiko";
+
 /**
  * 共通科目
  */
@@ -315,4 +317,100 @@ export function isKyoushoku(id: string): boolean {
  */
 export function isHumanSciencesCoreCurriculum(id: string): boolean {
   return id.startsWith("CA1");
+}
+
+/**
+ * 目標単位数にピッタリ合う科目の組み合わせを動的計画法(DP)で探す。
+ * ピッタリの組み合わせが見つからない場合は、目標を超える組み合わせのうち
+ * 最も合計単位数が小さいものを返す。
+ * 落単した科目（gradeIsPassがfalseの科目）と単位数が不明な科目は自動的に除外する。
+ * @param courses 利用可能な科目のリスト（RealCourse）
+ * @param target 目標となる単位数
+ * @returns 条件を満たす科目の配列、見つからない場合は undefined
+ */
+export function findExactCombination(
+  courses: RealCourse[],
+  target: number,
+): RealCourse[] | undefined {
+  // 落単していない＆単位数が確定している科目のみを対象にする
+  const passedCourses = courses.filter(
+    (c): c is RealCourse & { credit: number } =>
+      gradeIsPass(c.grade) && c.credit !== undefined,
+  );
+
+  // 全科目の合計単位数を上限としてDPの範囲を決める
+  const totalCredits = passedCourses.reduce((sum, c) => sum + c.credit, 0);
+  if (totalCredits < target) return undefined;
+
+  // dp[i] は「合計単位数を i にできる科目の組み合わせ（配列）」を保持する
+  // 達成不可能な場合は undefined とする
+  const dp: ((RealCourse & { credit: number })[] | undefined)[] = Array(
+    totalCredits + 1,
+  ).fill(undefined);
+
+  // 初期状態: 合計0単位を作るための組み合わせは「何も選ばない（空の配列）」
+  dp[0] = [];
+
+  // 各科目について、上限値までの各単位数で組み合わせが作れるか更新していく
+  for (const course of passedCourses) {
+    // 同じ科目を複数回使わないよう、後ろ（大きい単位数）から前へループを回す
+    for (
+      let currentTarget = totalCredits;
+      currentTarget >= course.credit;
+      currentTarget--
+    ) {
+      const prevTarget = currentTarget - course.credit;
+
+      // 「現在の科目単位数を引いた値(prevTarget)」が達成可能であり、
+      // かつ「現在の目標値(currentTarget)」がまだ未達成の場合、組み合わせを記録する
+      if (dp[prevTarget] !== undefined && dp[currentTarget] === undefined) {
+        dp[currentTarget] = [...dp[prevTarget]!, course];
+      }
+    }
+  }
+
+  // target以上で最小の達成可能な単位数の組み合わせを返す
+  for (let i = target; i <= totalCredits; i++) {
+    if (dp[i] !== undefined) return dp[i];
+  }
+  return undefined;
+}
+
+/**
+ * findExactCombinationを使ってマスにぴったり（もしくは最小超過）の組み合わせを
+ * 選び、残りをオーバーフロー先に回す。
+ * @param cs 全科目のリスト
+ * @param courseIdToCellId 科目IDからセルIDへのマップ（この関数内で変更される）
+ * @param sourceCellId オーバーフロー元のセルID
+ * @param targetCredits 目標単位数
+ * @param overflowCellId オーバーフロー先のセルID
+ */
+export function redistributeOverflow(
+  cs: RealCourse[],
+  courseIdToCellId: Map<CourseId, string>,
+  sourceCellId: string,
+  targetCredits: number,
+  overflowCellId: string,
+): void {
+  // sourceCellIdに分類された科目を集める
+  const coursesInCell: RealCourse[] = [];
+  for (const c of cs) {
+    if (courseIdToCellId.get(c.id) === sourceCellId) {
+      coursesInCell.push(c);
+    }
+  }
+
+  // findExactCombinationでぴったり（もしくは最小超過）の組み合わせを探す
+  const bestCombination = findExactCombination(coursesInCell, targetCredits);
+
+  if (bestCombination !== undefined) {
+    // 選ばれた科目のIDセット
+    const keepIds = new Set(bestCombination.map((c) => c.id));
+    // 選ばれなかった科目をオーバーフロー先に回す
+    for (const c of coursesInCell) {
+      if (!keepIds.has(c.id) && gradeIsPass(c.grade)) {
+        courseIdToCellId.set(c.id, overflowCellId);
+      }
+    }
+  }
 }

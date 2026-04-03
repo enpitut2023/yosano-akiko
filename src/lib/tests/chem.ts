@@ -21,13 +21,8 @@ function test1(): void {
         a3: { mightTake: 4 },
         b1: { taken: 4, mightTake: 2 },
         b2: { taken: 6, rawMightTake: 3, effectiveMightTake: 0 },
-        b3: {
-          rawTaken: 9,
-          effectiveTaken: 6,
-          rawMightTake: 3,
-          effectiveMightTake: 0,
-        },
-        b4: { taken: 11, mightTake: 4 },
+        b3: { taken: 6, rawMightTake: 3, effectiveMightTake: 0 },
+        b4: { taken: 14, mightTake: 4 },
         c1: { taken: 3 },
         d1: { rawTaken: 16, effectiveTaken: 12 },
         d2: { taken: 13 },
@@ -40,14 +35,14 @@ function test1(): void {
       },
       columns: {
         a: { taken: 8, mightTake: 4 },
-        b: { taken: 27, mightTake: 6 },
+        b: { taken: 30, mightTake: 6 },
         c: { taken: 3 },
         d: { taken: 25 },
         e: { taken: 12 },
         h: { taken: 11 },
       },
       compulsory: { taken: 23, mightTake: 4 },
-      elective: { taken: 63, mightTake: 6 },
+      elective: { taken: 66, mightTake: 6 },
     },
   });
 }

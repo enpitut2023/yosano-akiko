@@ -528,7 +528,6 @@ function isE5(id: string, specialty: Specialty, mode: Mode): boolean {
 function isF1(id: string, specialty: Specialty, name: string): boolean {
   return (
     isGakushikiban(id) ||
-    // TODO: !!B!!第２外国語（初修外国語）はこれで正しいか
     (specialty === "nurse-h" && isElectiveSecondForeignLanguage(id, name))
   );
 }
@@ -545,89 +544,88 @@ function isG1(id: string, specialty: Specialty): boolean {
 }
 
 function isH1(id: string, specialty: Specialty, tableYear: number): boolean {
-  if (tableYear === 2023 || tableYear === 2024) {
-    if (
-      id === "EC12131" || // 化学
-      id === "EC12171" || // 物理学
-      // !!B!!リザードンにない、生物学とは何か
-      id.startsWith("CC") || // 心理学類
-      id.startsWith("CE") || // 障害科学類
-      id.startsWith("W") // 体育専門学群
-    )
-      return true;
-    switch (specialty) {
-      case "nurse-n":
-      case "nurse-phn":
-        if (
-          id === "AB60A11" || // 哲学通論-a
-          id === "AB60A21" || // 哲学通論-b
-          id === "AB60B11" || // 倫理学通論-a
-          id === "AB60B21" || // 倫理学通論-b
-          id === "AB60C11" || // 宗教学通論-a
-          id === "AB60C21" || // 宗教学通論-b
-          id === "AB60G11" || // 東洋思想-a
-          id === "AB60G21" || // 東洋思想-b
-          id === "AB61A11" || // 哲学特講I-a (奇数年度)
-          id === "AB61A21" || // 哲学特講I-b (奇数年度)
-          id === "AB61A31" || // 哲学特講II-a (偶数年度)
-          id === "AB61A41" || // 哲学特講II-b (偶数年度)
-          id === "AB61A51" || // 哲学特講III-a
-          id === "AB61A61" || // 哲学特講III-b
-          id === "AB61A71" || // 哲学特講IV-a
-          id === "AB61A81" || // 哲学特講IV-b
-          id === "AB61C11" || // 哲学史I-a (奇数年度)
-          id === "AB61C21" || // 哲学史I-b (奇数年度)
-          id === "AB61C31" || // 哲学史II-a (偶数年度)
-          id === "AB61C41" || // 哲学史II-b (偶数年度)
-          id === "AB61C51" || // 哲学史III-a
-          id === "AB61C61" || // 哲学史III-b
-          id === "AB61C71" || // 哲学史IV-a
-          id === "AB61C81" || // 哲学史IV-b
-          id === "AB62A11" || // 倫理学特講I-a (奇数年度)
-          id === "AB62A21" || // 倫理学特講I-b (奇数年度)
-          id === "AB62A31" || // 倫理学特講II-a (偶数年度)
-          id === "AB62A41" || // 倫理学特講II-b (偶数年度)
-          id === "AB62A51" || // 倫理学特講III-a (奇数年度)
-          id === "AB62A61" || // 倫理学特講III-b (奇数年度)
-          id === "AB62A71" || // 倫理学特講IV-a (偶数年度)
-          id === "AB62A81" || // 倫理学特講IV-b (偶数年度)
-          id === "AB62C11" || // 倫理思想史I-a (奇数年度)
-          id === "AB62C21" || // 倫理思想史I-b (奇数年度)
-          id === "AB62C31" || // 倫理思想史II-a (偶数年度)
-          id === "AB62C41" || // 倫理思想史II-b (偶数年度)
-          id === "AB62C51" || // 倫理思想史III-a (奇数年度)
-          id === "AB62C61" || // 倫理思想史III-b (奇数年度)
-          id === "AB62E11" || // 倫理思想史V-a (奇数年度)
-          id === "AB62E21" || // 倫理思想史V-b (偶数年度)
-          id === "AB63A11" || // 宗教学-a (2025未開講)
-          id === "AB63A21" || // 宗教学-b (2025未開講)
-          id === "AB63A31" || // 宗教哲学-a (偶数年度)
-          id === "AB63A41" || // 宗教哲学-b (偶数年度)
-          id === "AB63A71" || // 比較思想論-a
-          id === "AB63A81" || // 比較思想論-b
-          id === "AB63B11" || // 東洋宗教思想史-a (2025未開講)
-          id === "AB63B31" || // 西洋宗教思想史-a (奇数年度)
-          id === "AB63B41" // 西洋宗教思想史-b (奇数年度)
-          // TODO: 倫理思想史IVが存在しない
-        )
-          return true;
-        break;
-      case "nurse-h":
-        // !!B!!どれが該当するか
-        if (
-          id === "AB00221" || // 哲学通論BII
-          id === "AB00311" || // 哲学通論CI
-          id === "AB60A11" || // 哲学通論-a
-          id === "AB60A21" // 哲学通論-b
-        )
-          return true;
-        break;
-      default:
-        unreachable(specialty);
-    }
-  } else if (tableYear === 2025) {
+  if (tableYear >= 2025) {
     // 他学類の開設科目(専門科目および専門基礎科目に該当する科目は除く)
-    if (!(id.startsWith("HC") || isKyoutsuu(id))) return true;
+    return !(id.startsWith("HC") || isKyoutsuu(id));
+  }
+  if (
+    id === "EC12131" || // 化学
+    id === "EC12171" || // 物理学
+    // !!B!!リザードンにない、生物学とは何か
+    id.startsWith("CC") || // 心理学類
+    id.startsWith("CE") || // 障害科学類
+    id.startsWith("W") // 体育専門学群
+  )
+    return true;
+  switch (specialty) {
+    case "nurse-n":
+    case "nurse-phn":
+      if (
+        id === "AB60A11" || // 哲学通論-a
+        id === "AB60A21" || // 哲学通論-b
+        id === "AB60B11" || // 倫理学通論-a
+        id === "AB60B21" || // 倫理学通論-b
+        id === "AB60C11" || // 宗教学通論-a
+        id === "AB60C21" || // 宗教学通論-b
+        id === "AB60G11" || // 東洋思想-a
+        id === "AB60G21" || // 東洋思想-b
+        id === "AB61A11" || // 哲学特講I-a (奇数年度)
+        id === "AB61A21" || // 哲学特講I-b (奇数年度)
+        id === "AB61A31" || // 哲学特講II-a (偶数年度)
+        id === "AB61A41" || // 哲学特講II-b (偶数年度)
+        id === "AB61A51" || // 哲学特講III-a
+        id === "AB61A61" || // 哲学特講III-b
+        id === "AB61A71" || // 哲学特講IV-a
+        id === "AB61A81" || // 哲学特講IV-b
+        id === "AB61C11" || // 哲学史I-a (奇数年度)
+        id === "AB61C21" || // 哲学史I-b (奇数年度)
+        id === "AB61C31" || // 哲学史II-a (偶数年度)
+        id === "AB61C41" || // 哲学史II-b (偶数年度)
+        id === "AB61C51" || // 哲学史III-a
+        id === "AB61C61" || // 哲学史III-b
+        id === "AB61C71" || // 哲学史IV-a
+        id === "AB61C81" || // 哲学史IV-b
+        id === "AB62A11" || // 倫理学特講I-a (奇数年度)
+        id === "AB62A21" || // 倫理学特講I-b (奇数年度)
+        id === "AB62A31" || // 倫理学特講II-a (偶数年度)
+        id === "AB62A41" || // 倫理学特講II-b (偶数年度)
+        id === "AB62A51" || // 倫理学特講III-a (奇数年度)
+        id === "AB62A61" || // 倫理学特講III-b (奇数年度)
+        id === "AB62A71" || // 倫理学特講IV-a (偶数年度)
+        id === "AB62A81" || // 倫理学特講IV-b (偶数年度)
+        id === "AB62C11" || // 倫理思想史I-a (奇数年度)
+        id === "AB62C21" || // 倫理思想史I-b (奇数年度)
+        id === "AB62C31" || // 倫理思想史II-a (偶数年度)
+        id === "AB62C41" || // 倫理思想史II-b (偶数年度)
+        id === "AB62C51" || // 倫理思想史III-a (奇数年度)
+        id === "AB62C61" || // 倫理思想史III-b (奇数年度)
+        id === "AB62E11" || // 倫理思想史V-a (奇数年度)
+        id === "AB62E21" || // 倫理思想史V-b (偶数年度)
+        id === "AB63A11" || // 宗教学-a (2025未開講)
+        id === "AB63A21" || // 宗教学-b (2025未開講)
+        id === "AB63A31" || // 宗教哲学-a (偶数年度)
+        id === "AB63A41" || // 宗教哲学-b (偶数年度)
+        id === "AB63A71" || // 比較思想論-a
+        id === "AB63A81" || // 比較思想論-b
+        id === "AB63B11" || // 東洋宗教思想史-a (2025未開講)
+        id === "AB63B31" || // 西洋宗教思想史-a (奇数年度)
+        id === "AB63B41" // 西洋宗教思想史-b (奇数年度)
+        // TODO: 倫理思想史IVが存在しない
+      )
+        return true;
+      break;
+    case "nurse-h":
+      // !!B!!どれが該当するか
+      if (
+        id === "AB00221" || // 哲学通論BII
+        id === "AB00311" || // 哲学通論CI
+        id === "AB60A11" || // 哲学通論-a
+        id === "AB60A21" // 哲学通論-b
+      )
+        return true;
+      break;
+    default:
+      unreachable(specialty);
   }
   return false;
 }

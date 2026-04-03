@@ -25,6 +25,7 @@ import {
   isJapanese,
   isKyoushoku,
   isSecondForeignLanguageAdvanced,
+  redistributeOverflow,
 } from "./common";
 import { unreachable } from "$lib/util";
 
@@ -294,6 +295,8 @@ export function classifyRealCourses(
       courseIdToCellId.set(c.id, cellId);
     }
   }
+  redistributeOverflow(cs, courseIdToCellId, "d1", 11, "d2");
+  redistributeOverflow(cs, courseIdToCellId, "e4", 4, "f2");
   return courseIdToCellId;
 }
 

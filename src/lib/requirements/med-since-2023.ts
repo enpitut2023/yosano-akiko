@@ -68,103 +68,7 @@ function classifyColumnA(
     "English Medical Terminology I": id === "HB32212",
     "English Medical Terminology II": id === "HB33212",
   } as const;
-  if (tableYear === 2023) {
-    switch (specialty) {
-      case "med":
-        if (b["医学統計学"]) return "a1";
-        if (b["医療・福祉現場でのふれあい等"]) return "a2";
-        if (b["医療概論I"] || (b["医療概論I-B"] && !isNative)) return "a3";
-        if (
-          b["医学の基礎"] ||
-          (b["医学の基礎B"] && !isNative) ||
-          (b["医科分子生物学"] && !isNative)
-        )
-          return "a4";
-        if (b["機能・構造と病態I"]) return "a5";
-        if (b["医療概論II"]) return "a6";
-        if (b["機能・構造と病態II"]) return "a7";
-        if (b["医療概論III"]) return "a8";
-        if (b["クリニカル・クラークシップ準備学習"]) return "a9";
-        if (b["社会医学実習"]) return "a10";
-        if (b["M4クリニカル・クラークシップ(Phase IA)"]) return "a11";
-        if (b["医療概論IV"]) return "a12";
-        if (b["M5クリニカル・クラークシップ (Phase IB、Phase IIA)"])
-          return "a13";
-        if (b["M6クリニカル・クラークシップ (Phase IIB)"]) return "a14";
-        if (b["M6アドヴァンスト・エレクティヴズ"]) return "a15";
-        if (b["医療概論V"]) return "a16";
-        if (b["医学総括"]) return "a17";
-        if (b["English Medical Terminology I"]) return "a18";
-        if (b["English Medical Terminology II"]) return "a19";
-        break;
-      case "med-new":
-        if (b["医学統計学"]) return "a1";
-        if (b["医療・福祉現場でのふれあい等"]) return "a2";
-        if (b["医療概論I"] || (b["医療概論I-B"] && !isNative)) return "a3";
-        if (
-          b["医学の基礎"] ||
-          (b["医学の基礎B"] && !isNative) ||
-          (b["医科分子生物学"] && !isNative)
-        )
-          return "a4";
-        if (b["機能・構造と病態I"]) return "a5";
-        if (b["医療概論II"]) return "a6";
-        if (b["機能・構造と病態II"]) return "a7";
-        if (b["医療概論III"]) return "a8";
-        if (b["クリニカル・クラークシップ準備学習"]) return "a9";
-        if (b["社会医学実習"]) return "a10";
-        if (b["M4クリニカル・クラークシップ(Phase IA)"]) return "a11";
-        if (b["医療概論IV"]) return "a12";
-        if (b["M5クリニカル・クラークシップ (Phase IB、Phase IIA)"])
-          return "a13";
-        if (b["研究室実習"]) return "a14";
-        if (b["医療概論V"]) return "a15";
-        if (b["医学総括"]) return "a16";
-        if (b["English Medical Terminology I"]) return "a17";
-        if (b["English Medical Terminology II"]) return "a18";
-        break;
-      case "med-2":
-        if (b["医学の基礎B"]) return "a1";
-        if (b["機能・構造と病態I"]) return "a2";
-        if (b["医療概論II"]) return "a3";
-        if (b["機能・構造と病態II"]) return "a4";
-        if (b["医療概論III"]) return "a5";
-        if (b["クリニカル・クラークシップ準備学習"]) return "a6";
-        if (b["社会医学実習"]) return "a7";
-        if (b["M4クリニカル・クラークシップ(Phase IA)"]) return "a8";
-        if (b["医療概論IV"]) return "a9";
-        if (b["M5クリニカル・クラークシップ (Phase IB、Phase IIA)"])
-          return "a10";
-        if (b["M6クリニカル・クラークシップ (Phase IIB)"]) return "a11";
-        if (b["M6アドヴァンスト・エレクティヴズ"]) return "a12";
-        if (b["医療概論V"]) return "a13";
-        if (b["医学総括"]) return "a14";
-        if (b["English Medical Terminology I"]) return "a15";
-        if (b["English Medical Terminology II"]) return "a16";
-        break;
-      case "med-2-new":
-        if (b["医学の基礎B"]) return "a1";
-        if (b["機能・構造と病態I"]) return "a2";
-        if (b["医療概論II"]) return "a3";
-        if (b["機能・構造と病態II"]) return "a4";
-        if (b["医療概論III"]) return "a5";
-        if (b["クリニカル・クラークシップ準備学習"]) return "a6";
-        if (b["社会医学実習"]) return "a7";
-        if (b["M4クリニカル・クラークシップ(Phase IA)"]) return "a8";
-        if (b["医療概論IV"]) return "a9";
-        if (b["M5クリニカル・クラークシップ (Phase IB、Phase IIA)"])
-          return "a10";
-        if (b["研究室実習"]) return "a11";
-        if (b["医療概論V"]) return "a12";
-        if (b["医学総括"]) return "a13";
-        if (b["English Medical Terminology I"]) return "a14";
-        if (b["English Medical Terminology II"]) return "a15";
-        break;
-      default:
-        unreachable(specialty);
-    }
-  } else {
-    // 2024 2025
+  if (tableYear >= 2024) {
     switch (specialty) {
       case "med":
         if (b["医学統計学"]) return "a1";
@@ -255,6 +159,101 @@ function classifyColumnA(
         if (b["研究室実習"]) return "a13";
         if (b["医療概論V"]) return "a14";
         if (b["医学総括"]) return "a15";
+        break;
+      default:
+        unreachable(specialty);
+    }
+  } else {
+    switch (specialty) {
+      case "med":
+        if (b["医学統計学"]) return "a1";
+        if (b["医療・福祉現場でのふれあい等"]) return "a2";
+        if (b["医療概論I"] || (b["医療概論I-B"] && !isNative)) return "a3";
+        if (
+          b["医学の基礎"] ||
+          (b["医学の基礎B"] && !isNative) ||
+          (b["医科分子生物学"] && !isNative)
+        )
+          return "a4";
+        if (b["機能・構造と病態I"]) return "a5";
+        if (b["医療概論II"]) return "a6";
+        if (b["機能・構造と病態II"]) return "a7";
+        if (b["医療概論III"]) return "a8";
+        if (b["クリニカル・クラークシップ準備学習"]) return "a9";
+        if (b["社会医学実習"]) return "a10";
+        if (b["M4クリニカル・クラークシップ(Phase IA)"]) return "a11";
+        if (b["医療概論IV"]) return "a12";
+        if (b["M5クリニカル・クラークシップ (Phase IB、Phase IIA)"])
+          return "a13";
+        if (b["M6クリニカル・クラークシップ (Phase IIB)"]) return "a14";
+        if (b["M6アドヴァンスト・エレクティヴズ"]) return "a15";
+        if (b["医療概論V"]) return "a16";
+        if (b["医学総括"]) return "a17";
+        if (b["English Medical Terminology I"]) return "a18";
+        if (b["English Medical Terminology II"]) return "a19";
+        break;
+      case "med-new":
+        if (b["医学統計学"]) return "a1";
+        if (b["医療・福祉現場でのふれあい等"]) return "a2";
+        if (b["医療概論I"] || (b["医療概論I-B"] && !isNative)) return "a3";
+        if (
+          b["医学の基礎"] ||
+          (b["医学の基礎B"] && !isNative) ||
+          (b["医科分子生物学"] && !isNative)
+        )
+          return "a4";
+        if (b["機能・構造と病態I"]) return "a5";
+        if (b["医療概論II"]) return "a6";
+        if (b["機能・構造と病態II"]) return "a7";
+        if (b["医療概論III"]) return "a8";
+        if (b["クリニカル・クラークシップ準備学習"]) return "a9";
+        if (b["社会医学実習"]) return "a10";
+        if (b["M4クリニカル・クラークシップ(Phase IA)"]) return "a11";
+        if (b["医療概論IV"]) return "a12";
+        if (b["M5クリニカル・クラークシップ (Phase IB、Phase IIA)"])
+          return "a13";
+        if (b["研究室実習"]) return "a14";
+        if (b["医療概論V"]) return "a15";
+        if (b["医学総括"]) return "a16";
+        if (b["English Medical Terminology I"]) return "a17";
+        if (b["English Medical Terminology II"]) return "a18";
+        break;
+      case "med-2":
+        if (b["医学の基礎B"]) return "a1";
+        if (b["機能・構造と病態I"]) return "a2";
+        if (b["医療概論II"]) return "a3";
+        if (b["機能・構造と病態II"]) return "a4";
+        if (b["医療概論III"]) return "a5";
+        if (b["クリニカル・クラークシップ準備学習"]) return "a6";
+        if (b["社会医学実習"]) return "a7";
+        if (b["M4クリニカル・クラークシップ(Phase IA)"]) return "a8";
+        if (b["医療概論IV"]) return "a9";
+        if (b["M5クリニカル・クラークシップ (Phase IB、Phase IIA)"])
+          return "a10";
+        if (b["M6クリニカル・クラークシップ (Phase IIB)"]) return "a11";
+        if (b["M6アドヴァンスト・エレクティヴズ"]) return "a12";
+        if (b["医療概論V"]) return "a13";
+        if (b["医学総括"]) return "a14";
+        if (b["English Medical Terminology I"]) return "a15";
+        if (b["English Medical Terminology II"]) return "a16";
+        break;
+      case "med-2-new":
+        if (b["医学の基礎B"]) return "a1";
+        if (b["機能・構造と病態I"]) return "a2";
+        if (b["医療概論II"]) return "a3";
+        if (b["機能・構造と病態II"]) return "a4";
+        if (b["医療概論III"]) return "a5";
+        if (b["クリニカル・クラークシップ準備学習"]) return "a6";
+        if (b["社会医学実習"]) return "a7";
+        if (b["M4クリニカル・クラークシップ(Phase IA)"]) return "a8";
+        if (b["医療概論IV"]) return "a9";
+        if (b["M5クリニカル・クラークシップ (Phase IB、Phase IIA)"])
+          return "a10";
+        if (b["研究室実習"]) return "a11";
+        if (b["医療概論V"]) return "a12";
+        if (b["医学総括"]) return "a13";
+        if (b["English Medical Terminology I"]) return "a14";
+        if (b["English Medical Terminology II"]) return "a15";
         break;
       default:
         unreachable(specialty);
