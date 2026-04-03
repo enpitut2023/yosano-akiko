@@ -178,12 +178,14 @@ export function isSecondForeignLanguageAdvanced(
  * 初修外国語(選択科目)
  */
 
-export function isElectiveSecondForeignLanguage(id: string, name: string): boolean {
+export function isElectiveSecondForeignLanguage(
+  id: string,
+  name: string,
+): boolean {
   return (
     isForeignLanguage(id) && !isJapaneseAsForeignLanguage(id) && !isEnglish(id)
   );
 }
-  
 
 /**
  * 外国語
