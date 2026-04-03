@@ -507,12 +507,10 @@ function classifyColumnF(
         if (isGakushikiban(id)) return "f1";
         if (isElectivePe(id)) return "f2";
         if (isArtAs(id)) return "f3";
-        // TODO: 初修外国語の定義
         if (isElectiveSecondForeignLanguage(id, name)) return "f4";
         if (isJapaneseAsForeignLanguage(id)) return "f5";
       } else {
         if (isGakushikiban(id)) return "f1";
-        // TODO: 初修外国語の定義
         if (
           isElectivePe(id) ||
           isArtAs(id) ||
