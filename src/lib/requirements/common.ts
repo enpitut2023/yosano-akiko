@@ -177,7 +177,6 @@ export function isSecondForeignLanguageAdvanced(
 /**
  * 初修外国語(選択科目)
  */
-
 export function isElectiveSecondForeignLanguage(
   id: string,
   name: string,
