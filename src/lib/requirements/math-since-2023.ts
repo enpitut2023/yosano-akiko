@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -22,6 +23,8 @@ import {
   isIzanai,
   isJapanese,
   isKyoushoku,
+  isKyoutsuu,
+  redistributeOverflow,
 } from "$lib/requirements/common";
 
 function isA1(id: string): boolean {
@@ -193,7 +196,7 @@ function isH1(id: string): boolean {
       id.startsWith("9453") // 数学科指導法、数学教材論
     );
   }
-  return true;
+  return !isKyoutsuu(id);
 }
 
 function classify(
@@ -247,24 +250,8 @@ export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
 ): Map<CourseId, string> {
-  cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
-
-  // f1とf2に学士基盤が入るので、先にf1に入る分は入れておく
-  let seenF1 = false;
-
   for (const c of cs) {
-    if (!seenF1) {
-      if (isF1(c.id)) {
-        seenF1 = true;
-        courseIdToCellId.set(c.id, "f1");
-        continue;
-      }
-    } else if (isF2(c.id)) {
-      courseIdToCellId.set(c.id, "f2");
-      continue;
-    }
-
     const cellId = classify(
       c.id,
       c.name,
@@ -276,6 +263,7 @@ export function classifyRealCourses(
       courseIdToCellId.set(c.id, cellId);
     }
   }
+  redistributeOverflow(cs, courseIdToCellId, "f1", 1, "f2");
   return courseIdToCellId;
 }
 
@@ -290,6 +278,28 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(id: CellId, _tableYear: number): string | undefined {
+  if (id === "a1") {
+    // !!F!!
+    return `履修条件の部分は判定していません。`;
+  } else if (id === "c1" || id === "c2") {
+    return `注8(表下部参照)には対応していないため、あきこでは足りているのに実際は足りてないことがあるので注意してください。`;
+  } else if (
+    id === "e1" ||
+    id === "e2" ||
+    id === "e3" ||
+    id === "e4" ||
+    id === "f1" ||
+    id === "f2"
+  ) {
+    // !!E!!
+    return `注6(表下部参照)には対応していません。`;
+  } else if (id === "h1") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqSince2023: SetupCreditRequirements = {

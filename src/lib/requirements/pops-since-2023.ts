@@ -124,7 +124,7 @@ function isC3(id: string): boolean {
     // !!A!!
     id === "FH60474" || // プログラミング入門A 2021~2024年度入学生
     id === "FH60484" || // プログラミング入門A 2025年度入学生 12クラス
-    id === "FH60484" // プログラミング入門A 2025年度入学生 34クラス
+    id === "FH60494" // プログラミング入門A 2025年度入学生 34クラス
   );
 }
 
@@ -235,8 +235,7 @@ function isH2(id: string): boolean {
 
 function isH3(id: string): boolean {
   // 上記以外の他学群又は他学類の授業科目
-  // TODO: 適当に思いつくものは除いておきたい
-  return !isKyoutsuu(id);
+  return !isKyoutsuu(id) && !id.startsWith("FH") && !id.startsWith("FA0");
 }
 
 function isH4(id: string): boolean {
@@ -323,9 +322,35 @@ export function getRemark(
   major: Major,
 ): string | undefined {
   const specialty = majorToSpecialtyOrFail(major);
-  if (id === "b1") {
-    const n: { [K in Specialty]: number } = { ses: 2, mse: 2, urp: 7 };
+  if (
+    (id === "a1" && specialty === "ses") ||
+    (id === "a2" && specialty === "mse") ||
+    (id === "a3" && specialty === "urp")
+  ) {
+    // !!F!!
+    return `カッコ内の条件はチェックされません。`;
+  } else if (id === "b1") {
+    const n: { [K in Specialty]: number } = {
+      ses: 2,
+      mse: 2,
+      urp: 7,
+    };
     return `「演習を${n[specialty]}単位以上含むこと」という条件はチェックされません。`;
+  } else if (id === "d1") {
+    // !!D!!
+    return `注9(表下部参照)で言及されている、微積分Aと線形代数Aの読み替えには対応していません。`;
+  } else if (id === "e2" || id === "f2") {
+    // !!E!!
+    return `注5(表下部参照)には対応していません。`;
+  } else if (id === "h1" || id === "h2" || id === "h3") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
+  if (id === "h1" || id === "h2") {
+    return "左側の2~はチェックされますが、単位数の右側の6~の部分はチェックされません。";
+  }
+  if (id === "h3") {
+    return "左側の0~はチェックされますが、単位数の右側の6~の部分はチェックされません。";
   }
 }
 

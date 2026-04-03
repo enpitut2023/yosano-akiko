@@ -1,10 +1,10 @@
 import {
+  type CellId,
   type CourseId,
   type FakeCourse,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
-  gradeIsPass,
 } from "$lib/akiko";
 import type { ClassifyOptions, SetupCreditRequirements } from "$lib/app-setup";
 import type { Major } from "$lib/constants";
@@ -15,6 +15,7 @@ import {
   isCompulsoryPe2,
   isDataScience,
   isElectivePe,
+  isElectiveSecondForeignLanguage,
   isFirstYearSeminar,
   isGakushikiban,
   isHakubutsukan,
@@ -23,10 +24,11 @@ import {
   isIzanai,
   isJapanese,
   isJapaneseAsForeignLanguage,
+  isJapanExpertJapanese,
   isJiyuukamoku,
   isKyoushoku,
   isNonCompulsoryEnglish,
-  isSecondForeignLanguage,
+  redistributeOverflow,
 } from "./common";
 import { unreachable } from "$lib/util";
 
@@ -330,7 +332,7 @@ function isE3(name: string, specialty: Specialty, id: string): boolean {
     case "none":
       return isCompulsoryEnglishByName(name);
     case "jad":
-      return isJapaneseAsForeignLanguage(id);
+      return isJapanExpertJapanese(id);
     default:
       unreachable(specialty);
   }
@@ -359,6 +361,7 @@ function isF2(id: string): boolean {
 }
 
 function isF3(id: string, specialty: Specialty): boolean {
+  // !!O!!
   switch (specialty) {
     case "none":
       return isNonCompulsoryEnglish(id);
@@ -369,8 +372,8 @@ function isF3(id: string, specialty: Specialty): boolean {
   }
 }
 
-function isF4(id: string): boolean {
-  return isSecondForeignLanguage(id);
+function isF4(id: string, name: string): boolean {
+  return isElectiveSecondForeignLanguage(id, name);
 }
 
 function isF5(id: string): boolean {
@@ -450,7 +453,7 @@ function classify(
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
   if (isF3(id, specialty)) return "f3";
-  if (isF4(id)) return "f4";
+  if (isF4(id, name)) return "f4";
   if (isF5(id)) return "f5";
   if (isF6(id)) return "f6";
   if (isH4(id, specialty)) return "h4";
@@ -480,41 +483,26 @@ export function classifyRealCourses(
 ): Map<CourseId, string> {
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
-  // jadの場合、isE3とisF3が両方isJapaneseAsForeignLanguageに一致するので、
-  // e3に15単位入るまで貪欲に入れて、それ以降はf3に回す。
-  let e3Total = 0;
-  // d2は3単位まで、それ以降はd5に回す。
-  let d2Total = 0;
-  // d3はartなら3単位まで、jadなら2単位まで、それ以降はd5に回す。
-  let d3Total = 0;
-  const d3Max = specialty === "none" ? 3 : 2;
+
+  // まず全科目を通常通り分類する
   for (const c of cs) {
-    let cellId = classify(c.id, c.name, "real", opts.tableYear, specialty);
+    const cellId = classify(c.id, c.name, "real", opts.tableYear, specialty);
     if (cellId !== undefined) {
-      if (specialty === "jad" && cellId === "e3" && gradeIsPass(c.grade)) {
-        if (e3Total < 15) {
-          e3Total += c.credit ?? 0;
-        } else {
-          cellId = "f3";
-        }
-      }
-      if (cellId === "d2" && gradeIsPass(c.grade)) {
-        if (d2Total < 3) {
-          d2Total += c.credit ?? 0;
-        } else {
-          cellId = "d4";
-        }
-      }
-      if (cellId === "d3" && gradeIsPass(c.grade)) {
-        if (d3Total < d3Max) {
-          d3Total += c.credit ?? 0;
-        } else {
-          cellId = "d4";
-        }
-      }
       courseIdToCellId.set(c.id, cellId);
     }
   }
+
+  // d2は3単位まで、それ以降はd4に回す。
+  redistributeOverflow(cs, courseIdToCellId, "d2", 3, "d4");
+  // d3はartなら3単位まで、jadなら2単位まで、それ以降はd4に回す。
+  const d3Max = specialty === "none" ? 3 : 2;
+  redistributeOverflow(cs, courseIdToCellId, "d3", d3Max, "d4");
+  // jadの場合、isE3とisF3が両方isJapaneseAsForeignLanguageに一致するので、
+  // e3に15単位入るまで入れて、それ以降はf3に回す。
+  if (specialty === "jad") {
+    redistributeOverflow(cs, courseIdToCellId, "e3", 15, "f3");
+  }
+
   return courseIdToCellId;
 }
 
@@ -530,6 +518,22 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  major: Major,
+): string | undefined {
+  const specialty = majorToSpecialtyOrFail(major);
+  if ((id === "e3" || id === "f3") && specialty === "none") {
+    // !!E!!
+    return `注5(表下部参照)には対応していません。`;
+  }
+  if (id === "h2" || id === "h3") {
+    // !!C!!
+    return `また、専門基礎科目などで指定された科目と同様の内容の講義の場合、このマスではない場所の単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 export const reqSince2023: SetupCreditRequirements = {

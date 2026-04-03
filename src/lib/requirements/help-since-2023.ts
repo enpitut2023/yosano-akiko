@@ -1,4 +1,5 @@
 import {
+  type CellId,
   type CourseId,
   type FakeCourse,
   type FakeCourseId,
@@ -23,7 +24,8 @@ import {
   isIzanai,
   isJapanese,
   isKyoushoku,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
+  redistributeOverflow,
 } from "./common";
 import { unreachable } from "$lib/util";
 
@@ -186,8 +188,8 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name); // 第1外国語
 }
 
-function isE4(id: string): boolean {
-  return isSecondForeignLanguage(id); // 第2外国語
+function isE4(id: string, name: string): boolean {
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isE5(id: string, mode: "known" | "real"): boolean {
@@ -248,7 +250,7 @@ function classify(
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(id, name)) return "e4";
   if (isE5(id, mode)) return "e5";
   if (isE6(id)) return "e6";
   // 選択
@@ -293,6 +295,8 @@ export function classifyRealCourses(
       courseIdToCellId.set(c.id, cellId);
     }
   }
+  redistributeOverflow(cs, courseIdToCellId, "d1", 11, "d2");
+  redistributeOverflow(cs, courseIdToCellId, "e4", 4, "f2");
   return courseIdToCellId;
 }
 
@@ -307,6 +311,18 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  major: Major,
+): string | undefined {
+  const specialty = majorToSpecialtyOrFail(major);
+  if (id === "h1" || id === "h2") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqPSince2023: SetupCreditRequirements = {

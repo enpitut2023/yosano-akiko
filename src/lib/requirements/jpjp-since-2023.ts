@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -21,7 +22,8 @@ import {
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
   isJapanese,
-  isSecondForeignLanguage,
+  isJapanExpertJapanese,
+  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
@@ -106,20 +108,17 @@ function isE3(id: string, name: string, specialty: Specialty): boolean {
     case "none":
       return isCompulsoryEnglishByName(name);
     case "jltt":
-      // TODO: 5-1.pdfによると3920から始まるものはJapan-Expert用の外国語として
-      // の日本語授業だが、そもそも39から始まるものが外国語としての日本語。今は
-      // 広くとっておく。!!B!!
-      return id.startsWith("39");
+      return isJapanExpertJapanese(id);
     default:
       unreachable(specialty);
   }
 }
 
-function isE4(id: string, specialty: Specialty): boolean {
+function isE4(id: string, name: string, specialty: Specialty): boolean {
   switch (specialty) {
     case "none":
       // TODO: 第二外国語（初修外国語）は必修ではない英語も含まない？ !!B!!
-      return isSecondForeignLanguage(id);
+      return isSecondForeignLanguageAdvanced(id, name);
     case "jltt":
       // TODO: JEの第二外国語（英語）は日本人の必修英語と一緒？ !!B!!
       return isCompulsoryEnglishById(id);
@@ -200,7 +199,7 @@ function classify(
   if (isE1(id, specialty)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(id, name, specialty)) return "e3";
-  if (isE4(id, specialty)) return "e4";
+  if (isE4(id, name, specialty)) return "e4";
   if (isE5(id, mode)) return "e5";
   if (isE6(id, specialty)) return "e6";
   // 選択
@@ -271,6 +270,23 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  major: Major,
+): string | undefined {
+  const specialty = majorToSpecialtyOrFail(major);
+  if (id === "h1" || id === "h2" || id === "h3") {
+    if (specialty === "none") {
+      // !!C!!
+      return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+    } else if (specialty === "jltt") {
+      // !!F!! !!C!!
+      return `注7(表下部参照)の条件は判定されません。また、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+    }
+  }
 }
 
 const reqSince2023: SetupCreditRequirements = {

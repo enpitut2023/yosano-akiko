@@ -142,7 +142,6 @@ function isF1(id: string): boolean {
 }
 
 function isF2(id: string): boolean {
-  // TODO: 外国語の定義 !!B!!
   return isElectivePe(id) || isArt(id) || isForeignLanguage(id);
 }
 

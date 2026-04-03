@@ -110,12 +110,12 @@ function isE5(id: string, _mode: Mode): boolean {
 
 function classifyColumnF(id: string, tableYear: number): string | undefined {
   if (isGakushikiban(id)) return "f1";
-  if (tableYear >= 2023) {
+  if (tableYear >= 2025) {
+    if (isElectivePe(id) || isForeignLanguage(id) || isArt(id)) return "f2";
+  } else {
     if (isElectivePe(id)) return "f2";
     if (isForeignLanguage(id)) return "f3";
     if (isArt(id)) return "f4";
-  } else if (tableYear >= 2025) {
-    if (isElectivePe(id) || isForeignLanguage(id) || isArt(id)) return "f2";
   }
 }
 

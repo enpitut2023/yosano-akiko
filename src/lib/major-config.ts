@@ -66,7 +66,7 @@ export async function getMajorConfig(
     throw new Error(`Bad major: ${major}`);
   }
 
-  const rects = await import(`./${tableYear}/${major}/cell-id-to-rect.json`);
+  const rects = await import(`./rects/${tableYear}/${major}.json`);
 
   return {
     knownCourses,

@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -12,9 +13,14 @@ import {
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
   isCompulsoryPe2,
+  isDataScience,
   isElectivePe,
+  isFirstYearSeminar,
   isForeignLanguage,
   isGakushikiban,
+  isInfoLiteracyExercise,
+  isInfoLiteracyLecture,
+  isIzanai,
   isJapanese,
   isKyoushoku,
   isKyoutsuu,
@@ -22,6 +28,7 @@ import {
 import { unreachable } from "$lib/util";
 
 type Specialty = "science" | "system" | "rm";
+type Mode = "known" | "real";
 
 function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "klis-science") return "science";
@@ -267,18 +274,19 @@ function isD1(id: string): boolean {
   );
 }
 
-function isE1(id: string): boolean {
+function isE1(id: string, mode: Mode): boolean {
   return (
     // ファーストイヤーセミナー
     id === "1120102" || // 1クラス
     id === "1120202" || // 2クラス
     // 学問への誘い
     id === "1227631" || // 1クラス
-    id === "1227641" // 2クラス
+    id === "1227641" || // 2クラス
+    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
   );
 }
 
-function isE2(id: string): boolean {
+function isE2(id: string, mode: Mode): boolean {
   return (
     // データサイエンス
     id === "6526102" ||
@@ -286,7 +294,11 @@ function isE2(id: string): boolean {
     id === "6426102" || // 2025 統一　2024以前 1班
     id === "6426202" || // 2024以前 2班
     // 情報リテラシー(講義)
-    id === "6126101" // 2クラス
+    id === "6126101" || // 2クラス
+    (mode === "real" &&
+      (isInfoLiteracyLecture(id) ||
+        isInfoLiteracyExercise(id) ||
+        isDataScience(id)))
   );
 }
 
@@ -330,6 +342,7 @@ function classify(
   tableYear: number,
   specialty: Specialty,
   _isNative: boolean,
+  mode: Mode,
 ): string | undefined {
   // 必修
   const a = classifyColumnA(id, specialty, tableYear);
@@ -346,8 +359,8 @@ function classify(
   if (isC10(id)) return "c10";
   if (isC11(id)) return "c11";
   if (isC12(id)) return "c12";
-  if (isE1(id)) return "e1";
-  if (isE2(id)) return "e2";
+  if (isE1(id, mode)) return "e1";
+  if (isE2(id, mode)) return "e2";
   if (isE3(id)) return "e3";
   if (isE4(name)) return "e4";
   // 選択
@@ -367,7 +380,14 @@ export function classifyKnownCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, opts.tableYear, specialty, true);
+    const cellId = classify(
+      c.id,
+      c.name,
+      opts.tableYear,
+      specialty,
+      true,
+      "known",
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -388,6 +408,7 @@ export function classifyRealCourses(
       opts.tableYear,
       specialty,
       opts.isNative,
+      "real",
     );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
@@ -408,6 +429,29 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  _major: Major,
+): string | undefined {
+  if (id === "a1" || id === "a2") {
+    // !!F!!
+    return `注7(情報資源経営主専攻の表下部参照)には対応していません。`;
+  }
+  if (id === "d1") {
+    // !!D!!
+    return `注8(情報資源経営主専攻の表下部参照)には対応していません。`;
+  }
+  if (id === "e4" || id === "f2") {
+    // !!E!!
+    return `注5(情報資源経営主専攻の表下部参照)には対応していません。`;
+  }
+  if (id === "h1") {
+    // !!C!!
+    return `注6(情報資源経営主専攻の表下部参照)にもある通り、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。また、総合学域群からの移行生に関する注8(情報資源経営主専攻の表下部参照)には対応していないため、対象の科目はここに表示されますが、実際には専門基礎科目選択科目となります。`;
+  }
 }
 
 const reqSince2023: SetupCreditRequirements = {

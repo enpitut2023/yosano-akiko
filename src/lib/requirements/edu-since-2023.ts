@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -15,6 +16,7 @@ import {
   isDataScience,
   isElectivePe,
   isFirstYearSeminar,
+  isForeignLanguage,
   isGakushikiban,
   isHakubutsukan,
   isHumanSciencesCoreCurriculum,
@@ -24,10 +26,9 @@ import {
   isJapanese,
   isJiyuukamoku,
   isKyoushoku,
-  isNonCompulsoryEnglish,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageBasic,
+  redistributeOverflow,
 } from "$lib/requirements/common";
-import { arrayRemove, assert, defined } from "$lib/util";
 
 type Mode = "known" | "real";
 
@@ -118,8 +119,8 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string): boolean {
-  return isSecondForeignLanguage(id);
+function isE4(id: string, name: string): boolean {
+  return isSecondForeignLanguageBasic(id, name);
 }
 
 function isE5(id: string, mode: Mode): boolean {
@@ -140,11 +141,7 @@ function isF1(id: string): boolean {
 
 function isF2(id: string): boolean {
   return (
-    isElectivePe(id) ||
-    isNonCompulsoryEnglish(id) ||
-    isSecondForeignLanguage(id) ||
-    isJapanese(id) ||
-    isArt(id)
+    isElectivePe(id) || isForeignLanguage(id) || isJapanese(id) || isArt(id)
   );
 }
 
@@ -179,7 +176,7 @@ function classify(
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(id, name)) return "e4";
   if (isE5(id, mode)) return "e5";
   // 選択
   if (isB1(id)) return "b1";
@@ -208,60 +205,15 @@ export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
 ): Map<CourseId, string> {
-  cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
-
-  // e4とf2に第二外国語が入るので、先にe4に3単位分入れてから残りはf2に入れる。
-  // なるべく3単位ちょうど入るようにする。
-  // TODO: 3単位ちょうどにできない場合の処理 !!B!!
-  const e4CandidatesWorth1: RealCourse[] = [];
-  const e4CandidatesWorth2: RealCourse[] = [];
-  const e4CandidatesWorth3: RealCourse[] = [];
-  for (const c of cs) {
-    if (isE4(c.id)) {
-      if (c.credit === 1) e4CandidatesWorth1.push(c);
-      if (c.credit === 2) e4CandidatesWorth2.push(c);
-      if (c.credit === 3) e4CandidatesWorth3.push(c);
-    }
-  }
-
-  const e4Courses: RealCourse[] = [];
-  const n1 = e4CandidatesWorth1.length;
-  const n2 = e4CandidatesWorth2.length;
-  const n3 = e4CandidatesWorth3.length;
-  if (n3 >= 1) {
-    e4Courses.push(defined(e4CandidatesWorth3.pop()));
-  } else if (n2 >= 1 && n1 >= 1) {
-    e4Courses.push(defined(e4CandidatesWorth2.pop()));
-    e4Courses.push(defined(e4CandidatesWorth1.pop()));
-  } else if (n1 >= 3) {
-    for (let i = 0; i < 3; i++) {
-      e4Courses.push(defined(e4CandidatesWorth1.pop()));
-    }
-  } else {
-    const e4Candidates = cs.filter((c) => isE4(c.id));
-    e4Candidates.sort((a, b) => (a.credit ?? 0) - (b.credit ?? 0));
-    let total = 0;
-    for (const c of e4Candidates) {
-      total += c.credit ?? 0;
-      e4Courses.push(c);
-      if (total >= 3) {
-        break;
-      }
-    }
-  }
-
-  for (const c of e4Courses) {
-    assert(arrayRemove(cs, c));
-    courseIdToCellId.set(c.id, "e4");
-  }
-
   for (const c of cs) {
     const cellId = classify(c.id, c.name, "real", opts.tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
+  redistributeOverflow(cs, courseIdToCellId, "e4", 3, "f2");
+
   return courseIdToCellId;
 }
 
@@ -276,6 +228,19 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(id: CellId, _tableYear: number): string | undefined {
+  if (id === "b2") {
+    // !!F!!
+    return `カッコの条件は判定していません。`;
+  } else if (id === "e3" || id === "f2") {
+    // !!E!!
+    return `注5(表下部参照)には対応していません。`;
+  } else if (id === "h1") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqSince2023: SetupCreditRequirements = {

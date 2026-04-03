@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -363,6 +364,19 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(id: CellId, _tableYear: number): string | undefined {
+  if (id === "a1") {
+    // !!F!!
+    return `カッコの条件は判定していません。`;
+  } else if (id === "e3") {
+    // !!E!!
+    return `注6(地球進化学主専攻の表下部参照)には対応していません。`;
+  } else if (id === "h1" || id === "h2") {
+    // !!C!!
+    return `注5(地球進化学主専攻の表下部参照)にある通り、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqGsSince2026: SetupCreditRequirements = {

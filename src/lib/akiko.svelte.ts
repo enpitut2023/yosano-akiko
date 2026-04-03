@@ -95,6 +95,16 @@ export class SvelteAkiko {
     };
   }
 
+  getRealCoursesMap(): Map<CourseId, RealCourse> {
+    this.subscribe();
+    return this.akiko.realCourses;
+  }
+
+  getFakeCoursesMap(): Map<FakeCourseId, FakeCourse> {
+    this.subscribe();
+    return this.akiko.fakeCourses;
+  }
+
   exportForTwins(): AkikoExportForTwinsResult {
     this.subscribe();
     return akikoExportForTwins(this.akiko);

@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -95,20 +96,19 @@ function classifyColumnBMs(id: string, tableYear: number): string | undefined {
     id === "HE36121" || // ためになる内分泌代謝学
     id === "HE40161" || // 血管生物学のトピックス
     id === "HE36191" || // バイオインフォマティクス !!A!!
-    ((tableYear >= 2024) &&
+    (tableYear >= 2024 &&
       (id === "HE36201" || // 自己免疫疾患・アレルギー疾患の病態と臨床
         id === "HE36221" || // 実践的オンラインコンテンツ・ツール活用論
         id === "HE36211")) || // 検査医学とスポーツ医学の密接な接点
     id === "HE37101" || // 医療工学
     id === "HE37141" || // 人工臓器学
     id === "HE36151" || // 胚操作・動物実験法(実験動物学)
-    // TODO: 科目番号不明
-    (tableYear >= 2026 && id === "xxxxxxx") || // 発生工学と再生医療
-    ((tableYear === 2023 || tableYear === 2024) && id === "HE35051") || // 多職種連携医療学概論
+    (tableYear >= 2026 && id === "HE37151") || // 発生工学と再生医療
+    (2023 <= tableYear && tableYear <= 2024 && id === "HE35051") || // 多職種連携医療学概論
     (tableYear >= 2025 && id === "HE39012") || // ケア・コロキウム
     id === "HE35002" || // 生体機能診断ワークショップ
     id === "HE41181" || // 健幸医科学グループワーク
-    (tableYear === 2023 && id === "HE24021") || // 医科学のための英語I 2025年度しか開講なし !!B!!
+    (tableYear >= 2025 && id === "HE24021") || // 医科学のための英語I 2025年度しか開講なし !!B!!
     id === "HE24002" || // 主体性演習
     (tableYear >= 2025 && id === "HE32081") // 法医学概論
   )
@@ -230,8 +230,7 @@ function classifyColumnBImsMspis(
     id === "HE30021" || // 臨床薬理学
     id === "HE36151" || // 胚操作・動物実験法(実験動物学)
     id === "HE36111" || // 細胞・発生工学
-    // TODO: 科目番号不明 !!B!!
-    (tableYear >= 2026 && id === "xxxxxxx") || // 発生工学と再生医療  
+    (tableYear >= 2026 && id === "HE37151") || // 発生工学と再生医療
     id === "HE37101" || // 医療工学
     id === "HE37141" || // 人工臓器学
     id === "HE35011" || // 検査情報管理学
@@ -257,7 +256,7 @@ function classifyColumnBImsMspis(
     (tableYear <= 2025 && id === "HE35051") || // 多職種連携医療学概論
     id === "HE35071" || // 医療科学概論
     id === "HE35002" || // 生体機能診断ワークショップ
-    (tableYear === 2023 && id === "HE24021") || // 医科学のための英語I
+    (tableYear >= 2025 && id === "HE24021") || // 医科学のための英語I 2025年度しか開講なし !!B!!
     id === "HE24002" // 主体性演習
   )
     return "b1";
@@ -458,6 +457,17 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  major: Major,
+): string | undefined {
+  const specialty = majorToSpecialtyOrFail(major);
+  if (specialty === "ims" && id === "b1") {
+    return `*と**の条件は判定していません。`;
+  }
 }
 
 const reqMsSince2023: SetupCreditRequirements = {

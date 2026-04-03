@@ -1,3 +1,5 @@
+import { gradeIsPass, type CourseId, type RealCourse } from "$lib/akiko";
+
 /**
  * 共通科目
  */
@@ -116,10 +118,72 @@ export function isNonCompulsoryEnglish(id: string): boolean {
 }
 
 /**
- * 第二外国語
+ * 初修外国語（基礎的な科目）
+ * TODO: 第2外国語は同じ言語で基礎xx語のAI, AII, BI, 文化みたいなやつを取らないといけない
+ * ↓のページ8を参考
+ * https://www.tsukuba.ac.jp/education/ug-courses-directory/2026/pdf/3.pdf
  */
-export function isSecondForeignLanguage(id: string): boolean {
-  return id.startsWith("3") && !isEnglish(id);
+export function isSecondForeignLanguageBasic(
+  id: string,
+  name: string,
+): boolean {
+  return (
+    id === "32H7022" || // Basic German AI (基礎ドイツ語AI)
+    id === "32K7022" || // Basic German AII (基礎ドイツ語AII)
+    id === "32J7022" || // Basic German BI (基礎ドイツ語BI)
+    name === "基礎韓国語AI" ||
+    name === "基礎中国語AI" ||
+    name === "基礎ロシア語AI" ||
+    name === "基礎フランス語AI" ||
+    name === "基礎スペイン語AI" ||
+    name === "基礎ドイツ語AI" ||
+    name === "基礎韓国語AII" ||
+    name === "基礎中国語AII" ||
+    name === "基礎ロシア語AII" ||
+    name === "基礎フランス語AII" ||
+    name === "基礎スペイン語AII" ||
+    name === "基礎ドイツ語AII" ||
+    name === "基礎韓国語BI" ||
+    name === "基礎中国語BI" ||
+    name === "基礎ロシア語BI" ||
+    name === "基礎フランス語BI" ||
+    name === "基礎スペイン語BI" ||
+    name === "基礎ドイツ語BI"
+  );
+}
+
+/**
+ * 初修外国語（応用的な科目）
+ * TODO: 第2外国語は同じ言語で基礎xx語のAI, AII, BI, 文化みたいなやつを取らないといけない
+ * ↓のページ9を参考
+ * https://www.tsukuba.ac.jp/education/ug-courses-directory/2026/pdf/3.pdf
+ */
+export function isSecondForeignLanguageAdvanced(
+  id: string,
+  name: string,
+): boolean {
+  return (
+    id === "3251622" || // Language and Culture A (German) (ドイツ語圏の言語と文化A)
+    name === "ドイツ語圏の言語と文化A" ||
+    name === "フランス語圏の言語と文化A" ||
+    name === "スペイン語圏の言語と文化A" ||
+    name === "ロシア語圏の言語と文化A" ||
+    name === "中国語圏の言語と文化A" ||
+    name === "韓国語圏の言語と文化A" ||
+    isSecondForeignLanguageBasic(id, name)
+  );
+}
+
+/**
+ * 初修外国語(選択科目)
+ */
+export function isElectiveSecondForeignLanguage(
+  id: string,
+  name: string,
+): boolean {
+  return (
+    isForeignLanguage(id) && !isJapaneseAsForeignLanguage(id) && !isEnglish(id)
+  );
 }
 
 /**
@@ -137,6 +201,50 @@ export function isForeignLanguage(id: string): boolean {
  */
 export function isJapaneseAsForeignLanguage(id: string): boolean {
   return id.startsWith("39");
+}
+
+/**
+ * Japan-Expert 第一外国語(日本語)
+ * ↓のページ12,13を参照。
+ * https://www.tsukuba.ac.jp/education/ug-courses-directory/2026/pdf/3.pdf
+ */
+export function isJapanExpertJapanese(id: string): boolean {
+  return (
+    id === "3910322" || // 日本語聴解IIB
+    id === "3910422" || // 日本語読解IIB
+    id === "3910522" || // 日本語作文IIB
+    id === "3910622" || // 日本語演習IIB
+    // 2023年度
+    id === "3920122" || // Japan-Expert日本語 上級話す
+    id === "3920222" || // Japan-Expert日本語 上級聞く
+    id === "3920322" || // Japan-Expert日本語 上級読む
+    id === "3920422" || // Japan-Expert日本語 上級書く
+    id === "3920522" || // Japan-Expert日本語 上級文法
+    id === "3920622" || // Japan-Expert日本語 上級漢字
+    id === "3920722" || // Japan-Expert日本語 上級総合日本語
+    id === "3920112" || // Japan-Expert日本語 中上級話す
+    id === "3920212" || // Japan-Expert日本語 中上級聞く
+    id === "3920312" || // Japan-Expert日本語 中上級読む
+    id === "3920412" || // Japan-Expert日本語 中上級書く
+    id === "3920512" || // Japan-Expert日本語 中上級文法
+    id === "3920612" || // Japan-Expert日本語 中上級漢字
+    id === "3920712" || // Japan-Expert日本語 中上級総合日本語
+    // 2024年度以降
+    id === "3920242" || // JE日本語 上級聞く
+    id === "3920442" || // JE日本語 上級書く
+    id === "3920542" || // JE日本語 上級文法
+    id === "3920642" || // JE日本語 上級漢字
+    id === "3920742" || // JE日本語 上級総合日本語
+    id === "3920132" || // JE日本語 中上級話す
+    id === "3920232" || // JE日本語 中上級聞く
+    id === "3920332" || // JE日本語 中上級読む
+    id === "3920432" || // JE日本語 中上級書く
+    id === "3920532" || // JE日本語 中上級文法
+    id === "3920632" || // JE日本語 中上級漢字
+    id === "3920732" || // JE日本語 中上級総合日本語
+    // 2023年度以降
+    /^39208.2$/.test(id) // Japan-Expert専門日本語
+  );
 }
 
 /**
@@ -210,4 +318,100 @@ export function isKyoushoku(id: string): boolean {
  */
 export function isHumanSciencesCoreCurriculum(id: string): boolean {
   return id.startsWith("CA1");
+}
+
+/**
+ * 目標単位数にピッタリ合う科目の組み合わせを動的計画法(DP)で探す。
+ * ピッタリの組み合わせが見つからない場合は、目標を超える組み合わせのうち
+ * 最も合計単位数が小さいものを返す。
+ * 落単した科目（gradeIsPassがfalseの科目）と単位数が不明な科目は自動的に除外する。
+ * @param courses 利用可能な科目のリスト（RealCourse）
+ * @param target 目標となる単位数
+ * @returns 条件を満たす科目の配列、見つからない場合は undefined
+ */
+export function findExactCombination(
+  courses: RealCourse[],
+  target: number,
+): RealCourse[] | undefined {
+  // 落単していない＆単位数が確定している科目のみを対象にする
+  const passedCourses = courses.filter(
+    (c): c is RealCourse & { credit: number } =>
+      gradeIsPass(c.grade) && c.credit !== undefined,
+  );
+
+  // 全科目の合計単位数を上限としてDPの範囲を決める
+  const totalCredits = passedCourses.reduce((sum, c) => sum + c.credit, 0);
+  if (totalCredits < target) return undefined;
+
+  // dp[i] は「合計単位数を i にできる科目の組み合わせ（配列）」を保持する
+  // 達成不可能な場合は undefined とする
+  const dp: ((RealCourse & { credit: number })[] | undefined)[] = Array(
+    totalCredits + 1,
+  ).fill(undefined);
+
+  // 初期状態: 合計0単位を作るための組み合わせは「何も選ばない（空の配列）」
+  dp[0] = [];
+
+  // 各科目について、上限値までの各単位数で組み合わせが作れるか更新していく
+  for (const course of passedCourses) {
+    // 同じ科目を複数回使わないよう、後ろ（大きい単位数）から前へループを回す
+    for (
+      let currentTarget = totalCredits;
+      currentTarget >= course.credit;
+      currentTarget--
+    ) {
+      const prevTarget = currentTarget - course.credit;
+
+      // 「現在の科目単位数を引いた値(prevTarget)」が達成可能であり、
+      // かつ「現在の目標値(currentTarget)」がまだ未達成の場合、組み合わせを記録する
+      if (dp[prevTarget] !== undefined && dp[currentTarget] === undefined) {
+        dp[currentTarget] = [...dp[prevTarget]!, course];
+      }
+    }
+  }
+
+  // target以上で最小の達成可能な単位数の組み合わせを返す
+  for (let i = target; i <= totalCredits; i++) {
+    if (dp[i] !== undefined) return dp[i];
+  }
+  return undefined;
+}
+
+/**
+ * findExactCombinationを使ってマスにぴったり（もしくは最小超過）の組み合わせを
+ * 選び、残りをオーバーフロー先に回す。
+ * @param cs 全科目のリスト
+ * @param courseIdToCellId 科目IDからセルIDへのマップ（この関数内で変更される）
+ * @param sourceCellId オーバーフロー元のセルID
+ * @param targetCredits 目標単位数
+ * @param overflowCellId オーバーフロー先のセルID
+ */
+export function redistributeOverflow(
+  cs: RealCourse[],
+  courseIdToCellId: Map<CourseId, string>,
+  sourceCellId: string,
+  targetCredits: number,
+  overflowCellId: string,
+): void {
+  // sourceCellIdに分類された科目を集める
+  const coursesInCell: RealCourse[] = [];
+  for (const c of cs) {
+    if (courseIdToCellId.get(c.id) === sourceCellId) {
+      coursesInCell.push(c);
+    }
+  }
+
+  // findExactCombinationでぴったり（もしくは最小超過）の組み合わせを探す
+  const bestCombination = findExactCombination(coursesInCell, targetCredits);
+
+  if (bestCombination !== undefined) {
+    // 選ばれた科目のIDセット
+    const keepIds = new Set(bestCombination.map((c) => c.id));
+    // 選ばれなかった科目をオーバーフロー先に回す
+    for (const c of coursesInCell) {
+      if (!keepIds.has(c.id) && gradeIsPass(c.grade)) {
+        courseIdToCellId.set(c.id, overflowCellId);
+      }
+    }
+  }
 }

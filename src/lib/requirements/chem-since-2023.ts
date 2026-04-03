@@ -1,6 +1,7 @@
 import {
   type CourseId,
   type FakeCourse,
+  type CellId,
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
@@ -18,6 +19,7 @@ import {
   isInfoLiteracyLecture,
   isIzanai,
   isKyoushoku,
+  redistributeOverflow,
 } from "$lib/requirements/common";
 
 function isA1(id: string): boolean {
@@ -40,8 +42,8 @@ function isA3(id: string): boolean {
 
 function isA4(id: string): boolean {
   return (
-    id === "FE14808" || // 卒研(14単位)
-    id === "FE14908" //卒研(旧? 10単位)
+    id === "FE14808" || // 卒業研究 (14単位)
+    id === "FE14908" // 卒業研究 (旧? 10単位)
   );
 }
 
@@ -234,7 +236,7 @@ function isD2(id: string, tableYear: number): boolean {
 
 function isE1(id: string, tableYear: number, mode: "real" | "known"): boolean {
   //事例に学ぶ環境安全衛生と化学物質
-  if (tableYear === 2025 && id === "1414014") return true;
+  if (tableYear >= 2025 && id === "1414014") return true;
 
   return (
     //学問への誘い
@@ -342,6 +344,10 @@ export function classifyRealCourses(
       courseIdToCellId.set(c.id, cellId);
     }
   }
+  redistributeOverflow(cs, courseIdToCellId, "b1", 6, "b4");
+  redistributeOverflow(cs, courseIdToCellId, "b2", 6, "b4");
+  redistributeOverflow(cs, courseIdToCellId, "b3", 6, "b4");
+
   return courseIdToCellId;
 }
 
@@ -358,11 +364,27 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
+export function getRemark(id: CellId, _tableYear: number): string | undefined {
+  if (id === "a1" || id === "a2" || id === "a3" || id === "a4") {
+    // !!F!!
+    return `カッコの条件は判定していません。`;
+  }
+  if (id === "d1") {
+    return `注7、注8、注9(表下部参照)には対応していないため、あきこでは足りているのに実際は足りてないことがあるので注意してください。`;
+  } else if (id === "e3") {
+    // !!E!!
+    return `注6(表下部参照)には対応していません。`;
+  } else if (id === "h1" || id === "h2") {
+    // !!C!!
+    return `注5にある通り、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
+}
+
 const reqSince2023: SetupCreditRequirements = {
   cells: {
-    a1: { min: 4.5, max: 4.5 },
-    a2: { min: 4.5, max: 4.5 },
-    a3: { min: 4.5, max: 4.5 },
+    a1: { min: 4, max: 4 },
+    a2: { min: 4, max: 4 },
+    a3: { min: 4, max: 4 },
     a4: { min: 14, max: 14 },
     b1: { min: 6, max: 6 },
     b2: { min: 6, max: 6 },
@@ -380,7 +402,7 @@ const reqSince2023: SetupCreditRequirements = {
     h2: { min: 7, max: 9 },
   },
   columns: {
-    a: { min: 27.5, max: 27.5 },
+    a: { min: 26, max: 26 },
     b: { min: 42, max: 52 },
     c: { min: 3, max: 3 },
     d: { min: 17, max: 30 },
@@ -388,8 +410,8 @@ const reqSince2023: SetupCreditRequirements = {
     f: { min: 1, max: 2 },
     h: { min: 9, max: 11 },
   },
-  compulsory: 42.5,
-  elective: 81.5,
+  compulsory: 41,
+  elective: 83,
 };
 
 const reqSince2025: SetupCreditRequirements = {

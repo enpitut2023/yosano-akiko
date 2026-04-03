@@ -1,4 +1,5 @@
 import type {
+  CellId,
   CourseId,
   FakeCourse,
   FakeCourseId,
@@ -22,7 +23,8 @@ import {
   isIzanai,
   isJapanese,
   isKyoushoku,
-  isSecondForeignLanguage,
+  isSecondForeignLanguageAdvanced,
+  redistributeOverflow,
 } from "./common";
 import { unreachable } from "$lib/util";
 
@@ -233,8 +235,8 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name); // 第1外国語
 }
 
-function isE4(id: string): boolean {
-  return isSecondForeignLanguage(id); // 第2外国語
+function isE4(id: string, name: string): boolean {
+  return isSecondForeignLanguageAdvanced(id, name);
 }
 
 function isE5(id: string, mode: Mode): boolean {
@@ -303,7 +305,7 @@ function classify(
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id)) return "e4";
+  if (isE4(id, name)) return "e4";
   if (isE5(id, mode)) return "e5";
   // 選択
   // d列に当てはまる科目がb列の条件にも該当してしまうため先にd列を処理
@@ -351,6 +353,7 @@ export function classifyRealCourses(
       courseIdToCellId.set(c.id, cellId);
     }
   }
+  redistributeOverflow(cs, courseIdToCellId, "e4", 4, "f3");
   return courseIdToCellId;
 }
 
@@ -365,6 +368,28 @@ export function classifyFakeCourses(
     }
   }
   return fakeCourseIdToCellId;
+}
+
+export function getRemark(
+  id: CellId,
+  tableYear: number,
+  major: Major,
+): string | undefined {
+  const specialty = majorToSpecialtyOrFail(major);
+  if ((specialty === "s" || specialty === "l") && id === "b1") {
+    // !!F!!
+    return `マスに書かれている条件は判定していません。`;
+  } else if (
+    ((tableYear >= 2024 && specialty === "ps") || specialty === "e") &&
+    id === "b1"
+  ) {
+    // !!F!!
+    return `カッコの条件は判定されません。`;
+  }
+  if (id === "h2" || id === "h3" || id === "h4") {
+    // !!C!!
+    return `専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
+  }
 }
 
 const reqSSince2024: SetupCreditRequirements = {
