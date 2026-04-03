@@ -5,7 +5,6 @@ import {
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
-  gradeIsPass,
 } from "$lib/akiko";
 import type { ClassifyOptions, SetupCreditRequirements } from "$lib/app-setup";
 import type { Major } from "$lib/constants";
@@ -28,6 +27,7 @@ import {
   isJiyuukamoku,
   isKyoushoku,
   isNonCompulsoryEnglish,
+  redistributeOverflow,
   isSecondForeignLanguageAdvanced,
 } from "./common";
 import { unreachable } from "$lib/util";
@@ -483,41 +483,26 @@ export function classifyRealCourses(
 ): Map<CourseId, string> {
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
-  // jadの場合、isE3とisF3が両方isJapaneseAsForeignLanguageに一致するので、
-  // e3に15単位入るまで貪欲に入れて、それ以降はf3に回す。
-  let e3Total = 0;
-  // d2は3単位まで、それ以降はd5に回す。
-  let d2Total = 0;
-  // d3はartなら3単位まで、jadなら2単位まで、それ以降はd5に回す。
-  let d3Total = 0;
-  const d3Max = specialty === "none" ? 3 : 2;
+
+  // まず全科目を通常通り分類する
   for (const c of cs) {
-    let cellId = classify(c.id, c.name, "real", opts.tableYear, specialty);
+    const cellId = classify(c.id, c.name, "real", opts.tableYear, specialty);
     if (cellId !== undefined) {
-      if (specialty === "jad" && cellId === "e3" && gradeIsPass(c.grade)) {
-        if (e3Total < 15) {
-          e3Total += c.credit ?? 0;
-        } else {
-          cellId = "f3";
-        }
-      }
-      if (cellId === "d2" && gradeIsPass(c.grade)) {
-        if (d2Total < 3) {
-          d2Total += c.credit ?? 0;
-        } else {
-          cellId = "d4";
-        }
-      }
-      if (cellId === "d3" && gradeIsPass(c.grade)) {
-        if (d3Total < d3Max) {
-          d3Total += c.credit ?? 0;
-        } else {
-          cellId = "d4";
-        }
-      }
       courseIdToCellId.set(c.id, cellId);
     }
   }
+
+  // d2は3単位まで、それ以降はd4に回す。
+  redistributeOverflow(cs, courseIdToCellId, "d2", 3, "d4");
+  // d3はartなら3単位まで、jadなら2単位まで、それ以降はd4に回す。
+  const d3Max = specialty === "none" ? 3 : 2;
+  redistributeOverflow(cs, courseIdToCellId, "d3", d3Max, "d4");
+  // jadの場合、isE3とisF3が両方isJapaneseAsForeignLanguageに一致するので、
+  // e3に15単位入るまで入れて、それ以降はf3に回す。
+  if (specialty === "jad") {
+    redistributeOverflow(cs, courseIdToCellId, "e3", 15, "f3");
+  }
+
   return courseIdToCellId;
 }
 

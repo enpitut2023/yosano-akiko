@@ -19,6 +19,7 @@ import {
   isInfoLiteracyLecture,
   isIzanai,
   isKyoushoku,
+  redistributeOverflow,
 } from "$lib/requirements/common";
 
 function isA1(id: string): boolean {
@@ -331,6 +332,10 @@ export function classifyRealCourses(
       courseIdToCellId.set(c.id, cellId);
     }
   }
+  redistributeOverflow(cs, courseIdToCellId, "b1", 6, "b4");
+  redistributeOverflow(cs, courseIdToCellId, "b2", 6, "b4");
+  redistributeOverflow(cs, courseIdToCellId, "b3", 6, "b4");
+
   return courseIdToCellId;
 }
 
