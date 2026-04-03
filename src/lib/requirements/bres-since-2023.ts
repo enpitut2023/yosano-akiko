@@ -17,8 +17,8 @@ import {
   isCompulsoryPe3,
   isDataScience,
   isElectivePe,
+  isElectiveSecondForeignLanguage,
   isFirstYearSeminar,
-  isForeignLanguage,
   isGakushikiban,
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
@@ -26,8 +26,6 @@ import {
   isJapanese1,
   isJapaneseAsForeignLanguage,
   isJapanExpertJapanese,
-  isNonCompulsoryEnglish,
-  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
@@ -492,15 +490,13 @@ function classifyColumnF(
         if (isGakushikiban(id)) return "f1";
         if (isElectivePe(id)) return "f2";
         if (isArt(id)) return "f3";
-        // TODO: 初修外国語の定義
-        if (isSecondForeignLanguageAdvanced(id, name)) return "f4";
+        if (isElectiveSecondForeignLanguage(id, name)) return "f4";
       } else {
         if (isGakushikiban(id)) return "f1";
-        // TODO: 初修外国語の定義
         if (
           isElectivePe(id) ||
           isArt(id) ||
-          isSecondForeignLanguageAdvanced(id, name)
+          isElectiveSecondForeignLanguage(id, name)
         )
           return "f2";
       }
@@ -511,16 +507,14 @@ function classifyColumnF(
         if (isGakushikiban(id)) return "f1";
         if (isElectivePe(id)) return "f2";
         if (isArtAs(id)) return "f3";
-        // TODO: 初修外国語の定義
-        if (isSecondForeignLanguageAdvanced(id, name)) return "f4";
+        if (isElectiveSecondForeignLanguage(id, name)) return "f4";
         if (isJapaneseAsForeignLanguage(id)) return "f5";
       } else {
         if (isGakushikiban(id)) return "f1";
-        // TODO: 初修外国語の定義
         if (
           isElectivePe(id) ||
           isArtAs(id) ||
-          isSecondForeignLanguageAdvanced(id, name) ||
+          isElectiveSecondForeignLanguage(id, name) ||
           isJapaneseAsForeignLanguage(id)
         )
           return "f2";

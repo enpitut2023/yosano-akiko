@@ -15,6 +15,7 @@ import {
   isCompulsoryPe2,
   isDataScience,
   isElectivePe,
+  isElectiveSecondForeignLanguage,
   isFirstYearSeminar,
   isGakushikiban,
   isHakubutsukan,
@@ -28,7 +29,6 @@ import {
   isKyoushoku,
   isNonCompulsoryEnglish,
   redistributeOverflow,
-  isSecondForeignLanguageAdvanced,
 } from "./common";
 import { unreachable } from "$lib/util";
 
@@ -373,7 +373,7 @@ function isF3(id: string, specialty: Specialty): boolean {
 }
 
 function isF4(id: string, name: string): boolean {
-  return isSecondForeignLanguageAdvanced(id, name);
+  return isElectiveSecondForeignLanguage(id, name);
 }
 
 function isF5(id: string): boolean {

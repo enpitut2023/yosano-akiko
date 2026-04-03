@@ -16,6 +16,7 @@ import {
   isCompulsoryPe3,
   isDataScience,
   isElectivePe,
+  isElectiveSecondForeignLanguage,
   isFirstYearSeminar,
   isGakushikiban,
   isHakubutsukan,
@@ -656,8 +657,7 @@ function isF2(id: string): boolean {
 }
 
 function isF3(id: string, name: string): boolean {
-  // TODO: 初修外国語の定義
-  return isSecondForeignLanguageAdvanced(id, name);
+  return isElectiveSecondForeignLanguage(id, name);
 }
 
 function isF4(id: string): boolean {

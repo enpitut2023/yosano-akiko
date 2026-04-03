@@ -16,6 +16,7 @@ import {
   isCompulsoryPe1,
   isCompulsoryPe2,
   isDataScience,
+  isElectiveSecondForeignLanguage,
   isFirstYearSeminar,
   isGakushikiban,
   isInfoLiteracyExercise,
@@ -24,7 +25,6 @@ import {
   isJapanese,
   isJapanExpertJapanese,
   isKyoutsuu,
-  isSecondForeignLanguageAdvanced,
 } from "./common";
 import { unreachable } from "$lib/util";
 import { type Major } from "$lib/constants";
@@ -528,8 +528,7 @@ function isE5(id: string, specialty: Specialty, mode: Mode): boolean {
 function isF1(id: string, specialty: Specialty, name: string): boolean {
   return (
     isGakushikiban(id) ||
-    // TODO: !!B!!第２外国語（初修外国語）はこれで正しいか
-    (specialty === "nurse-h" && isSecondForeignLanguageAdvanced(id, name))
+    (specialty === "nurse-h" && isElectiveSecondForeignLanguage(id, name))
   );
 }
 
