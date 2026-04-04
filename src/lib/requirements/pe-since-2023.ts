@@ -50,18 +50,31 @@ function isA4(id: string): boolean {
   );
 }
 
-function isA5(id: string, tableYear: number): boolean {
+function isA5(id: string, tableYear: number, mode: Mode): boolean {
+  // スポーツキャリア形成は2023,4,5に開講するI,II,IIIと、2026に開講するA,B,無印
+  // がある。無印の備考には「「スポーツキャリア形成I」を履修していない学生のみ
+  // 受講可」とあり、この科目は救済だと思われる。標準履修年次はI,II, A=1, B=2,
+  // III=3。IとAの科目番号, IIとBの科目番号はそれぞれ同じ。
+  // TODO: !!B!! 現状：2026入学生にはA,Bを表示、2023,4,5入学生には救済とBを表示。
+  // 推測であるため支援室に要確認。
   if (tableYear >= 2026) {
-    // TODO: 科目番号不明 !!B!!
-    return (
-      id === "xxxxxxx" || // スポーツキャリア形成A
-      id === "xxxxxxx" // スポーツキャリア形成B
-    );
+    if (
+      id === "W160361" || // スポーツキャリア形成A
+      id === "W160381" // スポーツキャリア形成B
+    )
+      return true;
+  } else {
+    if (
+      id === "W160631" || // スポーツキャリア形成
+      id === "W160381" // スポーツキャリア形成B
+    )
+      return true;
   }
   return (
-    id === "W160361" || // スポーツキャリア形成I
-    id === "W160371" || // スポーツキャリア形成II
-    id === "W160381" // スポーツキャリア形成III
+    mode === "real" &&
+    (id === "W160361" || // スポーツキャリア形成I
+      id === "W160371" || // スポーツキャリア形成II
+      id === "W160381") // スポーツキャリア形成III
   );
 }
 
@@ -82,6 +95,7 @@ function isB3(id: string): boolean {
 
 function isB4(id: string): boolean {
   // 体育専門学群で開設する専門科目
+  // A, B, ..., H群は5-1.pdfで定義されている。
   // 専門科目の定義: https://spehss.taiiku.tsukuba.ac.jp/curriculum/
   // TODO: b1, b2, b3でほとんどカバーされているだが、真相は不明。 !!B!!
   return /^W1[5-8]/.test(id);
@@ -109,8 +123,7 @@ function isC4(id: string): boolean {
 
 function isC5(id: string, tableYear: number): boolean {
   if (tableYear >= 2026) {
-    // TODO: 科目番号不明 !!B!!
-    return id === "xxxxxxx"; //実技理論・実習
+    return id.startsWith("W98"); // 実技理論・実習（H群）
   }
   return id === "W981915"; // 臨海実習
 }
@@ -249,7 +262,7 @@ function classify(
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
   if (isA4(id)) return "a4";
-  if (isA5(id, tableYear)) return "a5";
+  if (isA5(id, tableYear, mode)) return "a5";
   if (isC1(id)) return "c1";
   if (isC2(id)) return "c2";
   if (isC3(id)) return "c3";

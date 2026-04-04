@@ -147,7 +147,7 @@ function isD1(id: string, tableYear: number): boolean {
     id === "FCB1311" || //  電磁気学1(物理学類、化学類、数学類、地球学類、生物学類 原則平成31年度以降入学者) !!A!!
     id === "FCB1341" || //  電磁気学2(物理学類、化学類、数学類、地球学類、生物学類 原則平成31年度以降入学者) !!A!!
     id === "FCB1371" //  電磁気学3(物理学類、化学類、数学類、地球学類、生物学類 原則平成31年度以降入学者) !!A!!
-  
+
     // TODO: 2023年度入学生が成績として反映される可能性があるもの(2023の化学類対象の科目が存在しないため)
     // FA01311 微積分1
     // FA01321 微積分1
@@ -224,13 +224,11 @@ function isD2(id: string, tableYear: number): boolean {
     id.startsWith("FE11") ||
     id.startsWith("EE") ||
     (tableYear >= 2026 &&
-      (
-        id.startsWith("FE11012") || // 化学基礎セミナー 1クラス
+      (id.startsWith("FE11012") || // 化学基礎セミナー 1クラス
         id.startsWith("FE11022") || // 化学基礎セミナー 2クラス
         id.startsWith("EB00001") || // 生物学序説 !!B!!分類不明
         id.startsWith("EB00011") || // 生物学序説
-        id.startsWith("EB00021") // 生物学序説
-      ))
+        id.startsWith("EB00021"))) // 生物学序説
   );
 }
 

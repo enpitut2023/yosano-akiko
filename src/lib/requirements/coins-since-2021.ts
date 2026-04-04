@@ -319,7 +319,7 @@ function isH1(id: string, tableYear: number): boolean {
 
 function isH2(id: string, tableYear: number): boolean {
   if (tableYear >= 2026) {
-  return /^(GC|GE)/.test(id);
+    return /^(GC|GE)/.test(id);
   }
   return /^(E|F|GC|GE|H)/.test(id);
 }

@@ -147,15 +147,13 @@ function isF2(id: string): boolean {
 
 function isH1(id: string): boolean {
   return !/^E[ABCEG]/.test(id) && !isKyoutsuu(id);
- 
-// その他学類長が特に指定する科目として書かれているが、元々の条件に当てはまっている
-// !!B!! 科目名は英語は弾くとか別の条件がある可能性あり
-// FJ20004 Linear Algebra I
-// FJ20014 Linear Algebra II
-// FJ20124 Introduction to Single-Variable Calculus I
-// FJ20134 Introduction to Single-Variable Calculus II
 
-
+  // その他学類長が特に指定する科目として書かれているが、元々の条件に当てはまっている
+  // TODO: !!B!! 科目名は英語は弾くとか別の条件がある可能性あり
+  // FJ20004 Linear Algebra I
+  // FJ20014 Linear Algebra II
+  // FJ20124 Introduction to Single-Variable Calculus I
+  // FJ20134 Introduction to Single-Variable Calculus II
 }
 
 function classify(id: CourseId, mode: Mode): string | undefined {

@@ -106,7 +106,7 @@ function classifyColumnA(
   if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
   let offset = 0;
-  if (tableYear === 2026) {
+  if (tableYear >= 2026) {
     offset = 1;
     // TODO: 科目番号不明 !!B!!
     if (id === "xxxxxxx") return "a3"; // 卒業論文
@@ -315,7 +315,6 @@ function isF1(id: string): boolean {
 }
 
 function isF2(id: string): boolean {
-  // TODO: 体育3,4必修をどうする？
   return (
     isElectivePe(id) || isForeignLanguage(id) || isJapanese(id) || isArt(id)
   );
@@ -499,7 +498,9 @@ const reqSince2023: SetupCreditRequirements = {
   elective: 83,
 };
 
-// !!B!! 選択と必修の合計がずれているから推測で記入している
+// TODO: !!B!! a, c, e列の単位数の合計が12+19+12=43であるが、履修要覧の必修科目
+// の計のマスには41と書かれている。前年度まで合計が41単位であるため、41は更新忘
+// れであり、43が正しいとみなす。
 const reqSince2026: SetupCreditRequirements = {
   cells: {
     a1: { min: 3, max: 3 },

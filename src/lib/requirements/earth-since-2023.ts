@@ -76,25 +76,7 @@ function isA2(id: string, specialty: Specialty, tableYear: number): boolean {
   }
 }
 
-function isB1(id: string, specialty: Specialty): boolean {
-  switch (specialty) {
-    case "gs":
-      return id.startsWith("EE2");
-    case "ees":
-      return id.startsWith("EE3");
-    default:
-      unreachable(specialty);
-  }
-}
-
-// rjooskeTODO: 関数名なに isB2にEG9があるけどこの実装でいいのか
-function isB2(id: string, tableYear: number): boolean {
-  if (tableYear === 2023 && /^(EE[34]|EG[89])/.test(id)) {
-    return true;
-  }
-  if (tableYear >= 2024 && /^(EE3|EG9)/.test(id)) {
-    return true;
-  }
+function isColumnBChikyu(id: string): boolean {
   return (
     id === "EE11881" || // 地球基礎数学・物理学
     id === "EE11891" || // 地球基礎化学
@@ -109,13 +91,29 @@ function classifyColumnB(
   specialty: Specialty,
   tableYear: number,
 ): string | undefined {
-  if (isB1(id, specialty)) return "b1";
-  let offset = 0;
-  if (specialty === "gs" && tableYear >= 2026) {
-    offset = 1;
-    if (id.startsWith("EG9")) return "b2";
+  switch (specialty) {
+    case "gs":
+      if (id.startsWith("EE2")) return "b1";
+      if (tableYear >= 2026) {
+        if (id.startsWith("EG9")) return "b2";
+        if (id.startsWith("EE3") || isColumnBChikyu(id)) return "b3";
+      } else if (tableYear >= 2024) {
+        if (/^(EE3|EG9)/.test(id) || isColumnBChikyu(id)) return "b2";
+      } else if (tableYear >= 2023) {
+        if (/^(EE[34]|EG[89])/.test(id) || isColumnBChikyu(id)) return "b2";
+      }
+      break;
+    case "ees":
+      if (id.startsWith("EE3")) return "b1";
+      if (tableYear >= 2024) {
+        if (/^(EE2|EG9)/.test(id) || isColumnBChikyu(id)) return "b2";
+      } else if (tableYear >= 2023) {
+        if (/^(EE[24]|EG[89])/.test(id) || isColumnBChikyu(id)) return "b2";
+      }
+      break;
+    default:
+      unreachable(specialty);
   }
-  if (isB2(id, tableYear)) return "b" + (2 + offset);
 }
 
 function isC1(id: string): boolean {

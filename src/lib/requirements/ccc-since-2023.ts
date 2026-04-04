@@ -91,7 +91,9 @@ function isC1(id: string): boolean {
 }
 
 function isD1(id: string, tableYear: number): boolean {
-  return (tableYear >= 2026 && (/^(AC56|AB5|AE56)/).test(id)) || id.startsWith("AC56");
+  return (
+    (tableYear >= 2026 && /^(AC56|AB5|AE56)/.test(id)) || id.startsWith("AC56")
+  );
 }
 
 function isD2(id: string): boolean {
