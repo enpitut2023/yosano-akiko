@@ -352,8 +352,15 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-export function getRemark(id: CellId, _tableYear: number): string | undefined {
-  if (id === "a1" || id === "a2" || id === "a3" || id === "a4") {
+export function getRemark(id: CellId, tableYear: number): string | undefined {
+  if (id === "a1" || id === "a2" || id === "a3") {
+    // !!F!!
+    if (tableYear <= 2024) {
+      return `表示上の単位数は4.5単位となっていますが、実際は4単位です。これにより、専門科目の必修科目の単位合計は27.5単位と表示されていますが実際は26単位、必修科目全体の合計は42.5単位と表示されていますが実際は41単位、選択科目の合計は81.5単位と表示されていますが実際は83単位となっています。あきこではすべて実際の単位数を使って正しく計算しています。\nカッコの条件は判定していません。`;
+    }
+    return `カッコの条件は判定していません。`;
+  }
+  if (id === "a4") {
     // !!F!!
     return `カッコの条件は判定していません。`;
   }
