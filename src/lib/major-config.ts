@@ -1,11 +1,26 @@
+import { asset } from "$app/paths";
 import { type MajorConfig } from "./app-setup";
 import { type Major } from "./constants";
 import { knownCourses, knownCourseYear } from "./current-courses";
-import { assert } from "./util.js";
+import { assert, strictParseFloat } from "./util.js";
+
+function findViewBox(
+  svg: string,
+): { width: number; height: number } | undefined {
+  const match = /viewBox="(.*?)"/.exec(svg);
+  if (!match) return undefined;
+  const parts = match[1].trim().split(/\s+/).map(strictParseFloat);
+  if (parts.length !== 4 || parts.some((p) => p === undefined))
+    return undefined;
+  const [x, y, width, height] = parts as number[];
+  if (x !== 0 || y !== 0) return undefined;
+  return { width, height };
+}
 
 export async function getMajorConfig(
   tableYear: number,
   major: Major,
+  fetch: typeof globalThis.fetch,
 ): Promise<MajorConfig> {
   assert(tableYear >= 2021);
 
@@ -68,13 +83,24 @@ export async function getMajorConfig(
 
   const rects = await import(`./rects/${tableYear}/${major}.json`);
 
+  const svgUrl = asset(`/tables/${tableYear}/${major}.svg`);
+  const svgResponse = await fetch(svgUrl);
+  if (!svgResponse.ok) {
+    throw new Error(`Failed to fetch ${svgUrl}: ${svgResponse.status}`);
+  }
+  const tableViewBox = findViewBox(await svgResponse.text());
+  if (!tableViewBox) {
+    throw new Error(`No valid viewBox found in ${svgUrl}`);
+  }
+
   return {
     knownCourses,
     knownCourseYear,
     getCreditRequirements: req.getCreditRequirements,
     major,
-    tableYear: tableYear,
+    tableYear,
     cellIdToRectRecord: rects.default,
+    tableViewBox,
     classifyKnownCourses: req.classifyKnownCourses,
     classifyRealCourses: req.classifyRealCourses,
     classifyFakeCourses: req.classifyFakeCourses,

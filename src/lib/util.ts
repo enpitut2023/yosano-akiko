@@ -33,6 +33,12 @@ export function tryParseFloat(s: string): number | undefined {
   }
 }
 
+export function strictParseFloat(s: string): number | undefined {
+  if (!/^-?[0-9]+(\.[0-9]+)?$/.test(s)) return undefined;
+  const x = parseFloat(s);
+  if (!isNaN(x)) return x;
+}
+
 export function stringCompare(a: string, b: string): number {
   if (a < b) {
     return -1;

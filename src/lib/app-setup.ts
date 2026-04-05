@@ -113,6 +113,7 @@ export type MajorConfig = {
   major: Major;
   tableYear: number;
   cellIdToRectRecord: Record<string, Rect>;
+  tableViewBox: { width: number; height: number };
   classifyKnownCourses: (
     cs: KnownCourse[],
     opts: ClassifyOptions,
@@ -129,7 +130,7 @@ export type MajorConfig = {
     tableYear: number,
     major: Major,
   ) => SetupCreditRequirements;
-  getRemark?: (
+  getRemark: (
     cellId: CellId,
     tableYear: number,
     major: Major,

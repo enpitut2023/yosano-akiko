@@ -167,16 +167,16 @@
   let activeTab = $state<Tab>("courses");
   let scrollX = $state(0);
 
-  const scale = 2048 / 842;
+  const tableScale = 2048 / data.config.tableViewBox.width;
   const cellRects = $derived(
     Object.entries(data.config.cellIdToRectRecord).map(([id, rect]) => {
       assert(isCellId(id), `Bad cell id: "${id}"`);
       return {
         id,
-        x: rect.x * scale,
-        y: rect.y * scale,
-        width: rect.width * scale,
-        height: rect.height * scale,
+        x: rect.x,
+        y: rect.y,
+        width: rect.width,
+        height: rect.height,
       };
     }),
   );
@@ -635,8 +635,8 @@
       <img
         src={asset(`/tables/${data.config.tableYear}/${data.config.major}.svg`)}
         alt="Table"
-        width={scale * 842}
-        height={scale * 595.22}
+        width={tableScale * data.config.tableViewBox.width}
+        height={tableScale * data.config.tableViewBox.height}
         draggable="false"
       />
       <div id="title">
