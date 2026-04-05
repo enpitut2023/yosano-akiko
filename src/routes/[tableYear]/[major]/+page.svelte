@@ -38,7 +38,7 @@
   import { browser, dev } from "$app/environment";
   import { assert } from "$lib/util.js";
   import Callout from "$lib/Callout.svelte";
-  import { untrack } from "svelte";
+  import { tick, untrack } from "svelte";
 
   type UiOverlapCourse = {
     id: CourseId;
@@ -167,16 +167,40 @@
   let activeTab = $state<Tab>("courses");
   let scrollX = $state(0);
 
-  const tableScale = 2048 / data.config.tableViewBox.width;
+  // Zoom uses two representations:
+  // - zoomLevel: the actual scale multiplier (e.g. 0.7 = 70% of base size)
+  // - sliderZoomLevel: a log-scale value driving the slider so equal slider
+  //   distances feel like equal zoom steps. slider=0 → ZOOM_MIN,
+  //   slider=1 → ZOOM_DEFAULT, slider=ZOOM_SLIDER_MAX → ZOOM_MAX.
+  // Pinch/scroll gestures compute a new zoomLevel directly and convert back
+  // to sliderZoomLevel via zoomToSlider to keep the slider in sync.
+  const tableScale = 2048 / untrack(() => data.config.tableViewBox.width);
+  const ZOOM_DEFAULT = 0.7;
+  const ZOOM_MIN = 0.4;
+  const ZOOM_MAX = 2;
+  const ZOOM_SLIDER_MAX =
+    Math.log(ZOOM_MAX / ZOOM_MIN) / Math.log(ZOOM_DEFAULT / ZOOM_MIN);
+  function sliderToZoom(s: number): number {
+    return Math.min(
+      ZOOM_MAX,
+      Math.max(ZOOM_MIN, ZOOM_MIN * Math.pow(ZOOM_DEFAULT / ZOOM_MIN, s)),
+    );
+  }
+  function zoomToSlider(z: number): number {
+    return Math.log(z / ZOOM_MIN) / Math.log(ZOOM_DEFAULT / ZOOM_MIN);
+  }
+  let sliderZoomLevel = $state(1);
+  const zoomLevel = $derived(sliderToZoom(sliderZoomLevel));
+
   const cellRects = $derived(
     Object.entries(data.config.cellIdToRectRecord).map(([id, rect]) => {
       assert(isCellId(id), `Bad cell id: "${id}"`);
       return {
         id,
-        x: rect.x,
-        y: rect.y,
-        width: rect.width,
-        height: rect.height,
+        x: rect.x * zoomLevel,
+        y: rect.y * zoomLevel,
+        width: rect.width * zoomLevel,
+        height: rect.height * zoomLevel,
       };
     }),
   );
@@ -490,6 +514,7 @@
     `${data.config.tableYear}年度入学の${MAJOR_TO_JA[data.config.major]}の学生向け履修サポートツールです。単位の計算・授業探し・Twinsへの登録を楽に終わらせましょう！`,
   );
 
+  let requirementsEl = $state<HTMLDivElement | undefined>();
   let leftBarEl = $state<HTMLDivElement | undefined>();
   let rightBarEl = $state<HTMLDivElement | undefined>();
   let dropGuide = $state<
@@ -532,6 +557,34 @@
         span.style.transform = `scaleX(${Math.min(maxWidth / spanWidth, 1)})`;
       }
     }
+  });
+
+  async function handleWheel(e: WheelEvent) {
+    if (!e.ctrlKey) return;
+    const container = requirementsEl;
+    if (!container || !container.contains(e.target as Node)) return;
+    e.preventDefault();
+    const rect = container.getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+    const oldZoom = zoomLevel;
+    const newZoom = Math.min(
+      ZOOM_MAX,
+      Math.max(ZOOM_MIN, oldZoom * Math.exp(-e.deltaY * 0.01)),
+    );
+    const f = newZoom / oldZoom;
+    const newScrollLeft = (container.scrollLeft + cx) * f - cx;
+    const newScrollTop = (container.scrollTop + cy) * f - cy;
+    sliderZoomLevel = zoomToSlider(newZoom);
+    await tick();
+    container.scrollLeft = newScrollLeft;
+    container.scrollTop = newScrollTop;
+  }
+
+  $effect(() => {
+    if (!browser) return;
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    return () => window.removeEventListener("wheel", handleWheel);
   });
 </script>
 
@@ -630,13 +683,14 @@
   <div id="table-view">
     <div
       id="requirements"
+      bind:this={requirementsEl}
       onscroll={(e) => (scrollX = -e.currentTarget.scrollLeft)}
     >
       <img
         src={asset(`/tables/${data.config.tableYear}/${data.config.major}.svg`)}
         alt="Table"
-        width={tableScale * data.config.tableViewBox.width}
-        height={tableScale * data.config.tableViewBox.height}
+        width={tableScale * zoomLevel * data.config.tableViewBox.width}
+        height={tableScale * zoomLevel * data.config.tableViewBox.height}
         draggable="false"
       />
       <div id="title">
@@ -1068,6 +1122,19 @@
     </div>
   </div>
 </main>
+
+{#if dev}
+  <div id="zoom-debug">
+    <input
+      type="range"
+      min="0"
+      max={ZOOM_SLIDER_MAX}
+      step="0.01"
+      bind:value={sliderZoomLevel}
+    />
+    <span>{zoomLevel.toFixed(1)}x</span>
+  </div>
+{/if}
 
 {#if dropGuide}
   <div
@@ -1680,5 +1747,24 @@
     outline-offset: -20px;
     place-items: center;
     pointer-events: none;
+  }
+
+  #zoom-debug {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 15px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 13px;
+
+    & > input[type="range"] {
+      width: 100px;
+    }
   }
 </style>
