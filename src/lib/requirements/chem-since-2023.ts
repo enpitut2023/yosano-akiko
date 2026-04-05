@@ -362,8 +362,15 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
-export function getRemark(id: CellId, _tableYear: number): string | undefined {
-  if (id === "a1" || id === "a2" || id === "a3" || id === "a4") {
+export function getRemark(id: CellId, tableYear: number): string | undefined {
+  if (id === "a1" || id === "a2" || id === "a3") {
+    // !!F!!
+    if (tableYear <= 2024) {
+      return `単位数について、見た目は旧版の4.5となっていますが、改訂版の4で計算しています。また、これに伴う変更は全て改訂版の基準を反映させています。\nカッコの条件は判定していません。`;
+    }
+    return `カッコの条件は判定していません。`;
+  }
+  if (id === "a4") {
     // !!F!!
     return `カッコの条件は判定していません。`;
   }
