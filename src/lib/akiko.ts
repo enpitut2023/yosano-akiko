@@ -265,6 +265,7 @@ export type KnownCourse = {
   when: string;
   slots: Slot[];
   availability: Availability;
+  remark: string;
 };
 export type RealCourse = {
   id: CourseId;
