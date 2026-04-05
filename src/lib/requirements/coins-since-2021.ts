@@ -220,8 +220,8 @@ function isC10(id: string): boolean {
 
 function isC11(id: string): boolean {
   return (
-    id === "GB11956" || //1・2クラス
-    id === "GB11966" //3・4クラス
+    id === "GB11956" || // 1・2クラス
+    id === "GB11966" // 3・4クラス
   );
 }
 
@@ -235,12 +235,12 @@ function isC13(id: string): boolean {
 
 function isD1(id: string, tableYear: number): boolean {
   return (
-    id === "GB11601" || //確率論
-    id === "GB11621" || //統計学
-    id === "GB12301" || //数値計算法
-    id === "GB12601" || //論理と形式化
-    id === "GB12801" || //論理システム
-    id === "GB12812" || //論理システム演習
+    id === "GB11601" || // 確率論
+    id === "GB11621" || // 統計学
+    id === "GB12301" || // 数値計算法
+    id === "GB12601" || // 論理と形式化
+    id === "GB12801" || // 論理システム
+    id === "GB12812" || // 論理システム演習
     (tableYear === 2021 && id === "GB11404") // 電磁気学
   );
 }
@@ -254,9 +254,9 @@ function isD2(id: string): boolean {
 
 function isD3(id: string): boolean {
   return (
-    id !== "GB13312" && //情報特別演習I
-    id !== "GB13322" && //情報特別演習II
-    id !== "GB13332" && //情報科学特別演習
+    id !== "GB13312" && // 情報特別演習I
+    id !== "GB13322" && // 情報特別演習II
+    id !== "GB13332" && // 情報科学特別演習
     id.startsWith("GB1")
   );
 }
@@ -390,8 +390,8 @@ function classify(
   if (isC4(id)) return "c4";
   if (isC5(id)) return "c5";
   if (isC6(id)) return "c6";
-  if (isC7(id, isNative)) return "c7";
-  if (isC8(id, isNative)) return "c8";
+  if (isC7(id, isNative, mode)) return "c7";
+  if (isC8(id, isNative, mode)) return "c8";
   if (isC9(id)) return "c9";
   if (isC10(id)) return "c10";
   if (isC11(id)) return "c11";
@@ -560,7 +560,7 @@ export function classifyFakeCourses(
   cs: FakeCourse[],
   opts: ClassifyOptions,
 ): Map<FakeCourseId, string> {
-  const specialty = majorToSpecialtyOrFail(opts.major);
+  const _specialty = majorToSpecialtyOrFail(opts.major);
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {
     if (isE3(c.name)) {
