@@ -190,19 +190,23 @@ function isC6(id: string): boolean {
   return id === "GB19061";
 }
 
-function isC7(id: string, isNative: boolean): boolean {
+function isC7(id: string, isNative: boolean, mode: Mode): boolean {
   return (
     id === "GA18212" ||
     // 移行生はFHから始まるプロ入Aをcoinsのプロ入Aとして使える
-    (!isNative && (id === "FH60474" || id === "FH60484" || id === "FH60494"))
+    (!isNative &&
+      mode === "real" &&
+      (id === "FH60474" || id === "FH60484" || id === "FH60494"))
   );
 }
 
-function isC8(id: string, isNative: boolean): boolean {
+function isC8(id: string, isNative: boolean, mode: Mode): boolean {
   return (
     id === "GA18312" ||
     // 移行生はFHから始まるプロ入Bをcoinsのプロ入Bとして使える
-    (!isNative && (id === "FH60574" || id === "FH60584" || id === "FH60594"))
+    (!isNative &&
+      mode === "real" &&
+      (id === "FH60574" || id === "FH60584" || id === "FH60594"))
   );
 }
 
@@ -566,6 +570,36 @@ export function classifyFakeCourses(
   return fakeCourseIdToCellId;
 }
 
+export function getRemark(
+  id: CellId,
+  _tableYear: number,
+  major: Major,
+): string | undefined {
+  const specialty = majorToSpecialtyOrFail(major);
+  if (id === "a1") {
+    // !!F!!
+    return `注10(知能情報メディア主専攻の表下部参照)には対応していません。`;
+  } else if (id === "a2") {
+    // !!F!!
+    switch (specialty) {
+      case "scs":
+        return `注11(知能情報メディア主専攻の表下部参照)には対応していません。`;
+      case "cs":
+        return `注12(知能情報メディア主専攻の表下部参照)には対応していません。`;
+      case "mimt":
+        return `注13(知能情報メディア主専攻の表下部参照)には対応していません。`;
+    }
+  }
+  if (id === "e2" || id === "f2") {
+    // !!E!!
+    return `注8(知能情報メディア主専攻の表下部参照)には対応していません。`;
+  }
+  if (id === "h1" || id === "h2") {
+    // !!C!!
+    return `注7にもある通り、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので気をつけてください。`;
+  }
+}
+
 const SHARED_CELLS = {
   a1: { min: 6, max: 6 },
   a2: { min: 6, max: 6 },
@@ -603,36 +637,6 @@ const SHARED_COLUMNS = {
   f: { min: 1, max: 5 },
   h: { min: 6, max: 10 },
 } as const satisfies SetupCreditRequirements["columns"];
-
-export function getRemark(
-  id: CellId,
-  _tableYear: number,
-  major: Major,
-): string | undefined {
-  const specialty = majorToSpecialtyOrFail(major);
-  if (id === "a1") {
-    // !!F!!
-    return `注10(知能情報メディア主専攻の表下部参照)には対応していません。`;
-  } else if (id === "a2") {
-    // !!F!!
-    switch (specialty) {
-      case "scs":
-        return `注11(知能情報メディア主専攻の表下部参照)には対応していません。`;
-      case "cs":
-        return `注12(知能情報メディア主専攻の表下部参照)には対応していません。`;
-      case "mimt":
-        return `注13(知能情報メディア主専攻の表下部参照)には対応していません。`;
-    }
-  }
-  if (id === "e2" || id === "f2") {
-    // !!E!!
-    return `注8(知能情報メディア主専攻の表下部参照)には対応していません。`;
-  }
-  if (id === "h1" || id === "h2") {
-    // !!C!!
-    return `注7にもある通り、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので気をつけてください。`;
-  }
-}
 
 const reqSince2021: SetupCreditRequirements = {
   cells: {
