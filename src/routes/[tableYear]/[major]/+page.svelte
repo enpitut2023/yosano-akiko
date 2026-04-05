@@ -64,6 +64,7 @@
     syllabusYear: number;
     availability: Availability;
     visible: boolean;
+    remark: string;
   };
 
   function expectsToString(es: number[]): string {
@@ -98,6 +99,7 @@
   let isNative = $state<boolean>(initialLocalData.native);
   let selectedCellId = $state<CellId | undefined>(undefined);
   let filterString = $state("");
+  let showCourseRemark = $state(true);
 
   const creditRequirements = $derived(
     createCreditRequirementsOrFail(
@@ -315,6 +317,7 @@
             : data.config.knownCourseYear,
         availability: kc?.availability ?? "available",
         visible: false,
+        remark: kc?.remark ?? "",
       };
     }
 
@@ -548,6 +551,7 @@
 {#snippet courseRow(
   c: UiCourse,
   dragSource: "wont-take" | "might-take" | undefined,
+  colspan: number,
 )}
   {@const draggable = dragSource !== undefined}
   <tr
@@ -576,10 +580,18 @@
     <td class="when">{c.when ?? "-"}</td>
     <td class="expects">{c.expects ?? "-"}</td>
   </tr>
+  {#if showCourseRemark}
+    <tr class="course-remark" class:hide={!c.visible}>
+      {#if c.remark}
+        <td {colspan}>{c.remark}</td>
+      {:else}
+        <td {colspan} class="no-remark">（備考なし）</td>
+      {/if}
+    </tr>
+  {/if}
 {/snippet}
 
 {#snippet courseTable(
-  title: string,
   courses: UiCourse[],
   state: "no-cell-selected" | "no-courses" | "contains-courses",
   showTerm: boolean,
@@ -587,12 +599,12 @@
   showExpects: boolean,
   dragSource: "wont-take" | "might-take" | undefined,
 )}
-  <h2>{title}</h2>
   {#if state === "no-cell-selected"}
     <p>マスを選択してください</p>
   {:else if state === "no-courses"}
     <p>該当する授業がありません</p>
   {:else}
+    {@const colspan = 2 + +showTerm + +showWhen + +showExpects}
     <table
       class:show-term={showTerm}
       class:show-when={showWhen}
@@ -609,7 +621,7 @@
       </thead>
       <tbody>
         {#each courses as c}
-          {@render courseRow(c, dragSource)}
+          {@render courseRow(c, dragSource, colspan)}
         {/each}
       </tbody>
     </table>
@@ -947,8 +959,12 @@
               bind:value={filterString}
             />
           </search>
+          <label class="settings-row">
+            <input type="checkbox" bind:checked={showCourseRemark} />
+            <span>授業の備考を表示</span>
+          </label>
+          <h2>当てはまる授業</h2>
           {@render courseTable(
-            "当てはまる授業",
             groupedCourses.wontTake,
             !selectedCellId
               ? "no-cell-selected"
@@ -961,8 +977,8 @@
             "wont-take",
           )}
           {#if groupedCourses.nonAvailable.length > 0}
+            <h2>今年度開講しない授業</h2>
             {@render courseTable(
-              "今年度開講しない授業",
               groupedCourses.nonAvailable,
               "contains-courses",
               false,
@@ -1027,8 +1043,8 @@
           onBarDragEnd={handleDragEnd}
         />
         <div id="right-bar-scroll">
+          <h2>取る授業</h2>
           {@render courseTable(
-            "取る授業",
             groupedCourses.mightTake,
             !selectedCellId
               ? "no-cell-selected"
@@ -1040,8 +1056,8 @@
             false,
             "might-take",
           )}
+          <h2>単位取得済みの授業</h2>
           {@render courseTable(
-            "単位取得済みの授業",
             groupedCourses.taken,
             !selectedCellId
               ? "no-cell-selected"
@@ -1395,8 +1411,21 @@
     }
   }
 
-  .course.hide {
+  .course.hide,
+  .course-remark.hide {
     display: none;
+  }
+
+  .course-remark td {
+    font-size: 0.85em;
+    padding: 3px 5px 8px;
+    background-color: hsl(0, 0%, 96%);
+    border-top: 1px solid #ccc;
+    overflow-wrap: anywhere;
+
+    &.no-remark {
+      color: #aaa;
+    }
   }
 
   table,
@@ -1519,9 +1548,13 @@
     border-radius: 10px;
   }
 
+  #left-bar-scroll > .settings-row {
+    margin-bottom: 20px;
+  }
+
   #left-bar-scroll > search {
     margin-top: 15px;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
     width: 100%;
     position: relative;
 

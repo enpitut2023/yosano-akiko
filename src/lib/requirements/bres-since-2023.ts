@@ -26,6 +26,7 @@ import {
   isJapanese1,
   isJapaneseAsForeignLanguage,
   isJapanExpertJapanese,
+  isKyoutsuu,
   redistributeOverflow,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
@@ -530,7 +531,7 @@ function classifyColumnF(
 }
 
 function isH1(id: string): boolean {
-  return !/^(EC|EB|EE|EG|EZA|BB|FF|FH|[12346])/.test(id);
+  return !(isKyoutsuu(id) || /^(EC|EB|EE|EG|EZA|BB|FF|FH|[12346])/.test(id));
 }
 
 function isH1As(id: string): boolean {
@@ -549,7 +550,9 @@ function isH1As(id: string): boolean {
 }
 
 function isH2As(id: string): boolean {
-  return !/^(EC|EB|EE|EG[56]|EZA|BB|FF|FH|[12346])/.test(id);
+  return !(
+    isKyoutsuu(id) || /^(EC|EB|EE|EG[56]|EZA|BB|FF|FH|[12346])/.test(id)
+  );
 }
 
 function classifyColumnH(id: string, specialty: Specialty): string | undefined {
