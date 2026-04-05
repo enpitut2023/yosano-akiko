@@ -26,6 +26,7 @@ import {
   isJapanese1,
   isJapaneseAsForeignLanguage,
   isJapanExpertJapanese,
+  redistributeOverflow,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
@@ -102,8 +103,10 @@ function classifyColumnA(
 }
 
 function isB1(id: string): boolean {
-  // TODO: 「基幹科目8から16単位を習得すること。また、実験・実習・演習科目を3単
-  // 位以上を修得すること。」という条件は未実装。
+  // TODO: 以下の条件は未実装。
+  // none: 基幹科目8から16単位を習得すること。また、実験・実習・演習科目を3単位
+  // 以上を修得すること。
+  // as: 実験・実習・演習科目を3単位以上を修得すること。
   return id.startsWith("EC2");
 }
 
@@ -631,6 +634,8 @@ export function classifyRealCourses(
       courseIdToCellId.set(c.id, cellId);
     }
   }
+  redistributeOverflow(cs, courseIdToCellId, "b1", 19, "b3");
+  redistributeOverflow(cs, courseIdToCellId, "b2", 12, "b3");
   return courseIdToCellId;
 }
 

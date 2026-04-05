@@ -17,14 +17,9 @@ function test1(): void {
     want: {
       cells: {
         a1: { taken: 2 },
-        b1: {
-          rawTaken: 33,
-          effectiveTaken: 19,
-          rawMightTake: 1,
-          effectiveMightTake: 0,
-        },
+        b1: { taken: 19, rawMightTake: 1, effectiveMightTake: 0 },
         b2: { taken: 1 },
-        b3: { taken: 3, mightTake: 2 },
+        b3: { taken: 17, mightTake: 2 },
         c1: { taken: 1 },
         d1: { taken: 4 },
         d2: { taken: 15 },
@@ -39,7 +34,7 @@ function test1(): void {
       },
       columns: {
         a: { taken: 2 },
-        b: { taken: 23, mightTake: 2 },
+        b: { taken: 37, mightTake: 2 },
         c: { taken: 1 },
         d: { taken: 19 },
         e: { taken: 13 },
@@ -47,7 +42,7 @@ function test1(): void {
         h: { taken: 9 },
       },
       compulsory: { taken: 16 },
-      elective: { taken: 54, mightTake: 2 },
+      elective: { taken: 68, mightTake: 2 },
     },
   });
 }
