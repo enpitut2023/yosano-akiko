@@ -79,6 +79,5 @@ export async function getMajorConfig(
     classifyRealCourses: req.classifyRealCourses,
     classifyFakeCourses: req.classifyFakeCourses,
     getRemark: req.getRemark,
-    tableViewBox: req.tableViewBox,
   };
 }

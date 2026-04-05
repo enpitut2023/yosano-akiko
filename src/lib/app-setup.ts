@@ -113,7 +113,6 @@ export type MajorConfig = {
   major: Major;
   tableYear: number;
   cellIdToRectRecord: Record<string, Rect>;
-  tableViewBox?: Rect;
   classifyKnownCourses: (
     cs: KnownCourse[],
     opts: ClassifyOptions,

@@ -1,4 +1,3 @@
 /node_modules
 /src/lib/current-courses.ts
 /src/lib/rects
-/src/**/table-view-box.json
