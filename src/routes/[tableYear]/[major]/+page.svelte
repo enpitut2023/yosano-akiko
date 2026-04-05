@@ -1078,7 +1078,74 @@
   {barsVisible ? "⏵" : "⏴"}
 </button>
 
+<div id="mobile-unsupported">
+  <div class="mobile-unsupported-dialog">
+    <img src={asset("/images/akiko.png")} alt="あきこ" />
+    <span>あきこ</span>
+    <span>ごめんなさいね〜</span>
+  </div>
+  <p>
+    現在あきこはスマホの小さい画面やタッチ操作に対応しておらず、パソコンで開いていただく必要があります。
+    私たちは主に単位チェックの正確性を優先して開発を進めており、スマホ対応を優先的に進める目処は立っていません。
+    お手数をおかけして申し訳ございません。
+  </p>
+</div>
+
 <style lang="scss">
+  #mobile-unsupported {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background-color: white;
+
+    @media (pointer: coarse) and (hover: none) {
+      display: block;
+    }
+
+    & > p {
+      margin: 30px;
+    }
+
+    & > .mobile-unsupported-dialog {
+      width: 80%;
+      margin: 20px auto;
+      margin-bottom: 40px;
+
+      display: grid;
+      $icon-size: 70px;
+      grid-template-columns: $icon-size auto;
+      grid-template-rows: $icon-size auto;
+      padding: 10px 20px;
+
+      --h: 350;
+      background-color: oklch(98% 4% var(--h));
+      border: 1px solid oklch(92% 10% var(--h));
+      border-radius: 20px;
+
+      & > img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background-color: hsl(0, 0%, 98%);
+        border: 1px solid oklch(92% 10% var(--h));
+        border-radius: 50%;
+      }
+
+      & > span:first-of-type {
+        place-self: center;
+        margin-top: 5px;
+      }
+
+      & > span:nth-of-type(2) {
+        grid-column: 2/3;
+        grid-row: 1/3;
+        align-self: center;
+        margin-left: 30px;
+      }
+    }
+  }
+
   $color-progress-taken: rgb(51, 204, 51);
   $color-progress-might-take: rgb(255, 204, 0);
   $color-hover-overlay: rgba(0, 0, 0, 0.25);
