@@ -186,7 +186,7 @@ function isD1(id: string): boolean {
   );
 }
 
-function isD2(id: string): boolean {
+function isD2(id: string, tableYear: number): boolean {
   const mathLit = // 数学リテラシー1・2・3
     id === "FA01111" ||
     id === "FA01121" ||
@@ -344,8 +344,9 @@ function isD2(id: string): boolean {
     id === "EC12163" || // 化学実験
     id === "EC12061" || // 資源生物学
     id === "EC12331" || // 基礎数学
-    id === "EC12251" || // 経済学Ⅰ(令和７年度以降開講なし)
-    id === "EC12261" || // 経済学Ⅱ
+    (tableYear <= 2025 &&
+      (id === "EC12251" || // 経済学Ⅰ(令和７年度以降開講なし)
+        id === "EC12261")) || // 経済学Ⅱ
     id === "EC12371" || // 統計学入門
     id === "EC12153" || // 生物資源フィールド学実習
     id === "FCB1743" || // 物理学実験
@@ -582,7 +583,7 @@ function classify(
   if (isB2(id)) return "b2";
   if (isB3(id, specialty)) return "b3";
   if (isD1(id)) return "d1";
-  if (isD2(id)) return "d2";
+  if (isD2(id, tableYear)) return "d2";
   const f = classifyColumnF(id, specialty, mode, tableYear, name);
   if (f !== undefined) return f;
   const h = classifyColumnH(id, specialty);

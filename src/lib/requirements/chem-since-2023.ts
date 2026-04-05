@@ -75,9 +75,13 @@ function isB3(id: string): boolean {
   );
 }
 
-function isB4(id: string): boolean {
+function isB4(id: string, tableYear: number): boolean {
   return (
-    id.startsWith("FE12") || id.startsWith("FE13") || id.startsWith("FE14")
+    (id.startsWith("FE12") || id.startsWith("FE13") || id.startsWith("FE14")) &&
+    !(
+      tableYear >= 2026 &&
+      (id.startsWith("FE11012") || id.startsWith("FE11022")) // 化学基礎セミナー
+    )
   );
 }
 
@@ -196,7 +200,7 @@ function isD1(id: string, tableYear: number): boolean {
   );
 }
 
-function isD2(id: string): boolean {
+function isD2(id: string, tableYear: number): boolean {
   return (
     // EBから始まる専門導入
     id === "EB00001" || // 生物学序説
@@ -218,7 +222,13 @@ function isD2(id: string): boolean {
     id.startsWith("FB") ||
     id.startsWith("FC") ||
     id.startsWith("FE11") ||
-    id.startsWith("EE")
+    id.startsWith("EE") ||
+    (tableYear >= 2026 &&
+      (id.startsWith("FE11012") || // 化学基礎セミナー 1クラス
+        id.startsWith("FE11022") || // 化学基礎セミナー 2クラス
+        id.startsWith("EB00001") || // 生物学序説 !!B!!分類不明
+        id.startsWith("EB00011") || // 生物学序説
+        id.startsWith("EB00021"))) // 生物学序説
   );
 }
 
@@ -299,9 +309,9 @@ function classify(
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";
   if (isB3(id)) return "b3";
-  if (isB4(id)) return "b4";
+  if (isB4(id, tableYear)) return "b4";
   if (isD1(id, tableYear)) return "d1";
-  if (isD2(id)) return "d2";
+  if (isD2(id, tableYear)) return "d2";
   if (isF1(id)) return "f1";
   if (isH1(id)) return "h1";
   if (isH2(id)) return "h2"; // 「...以外」なので最後

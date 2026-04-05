@@ -59,12 +59,12 @@ function isA1(id: string, tableYear: number): boolean {
   );
 }
 
-function isA2(id: string, specialty: Specialty): boolean {
+function isA2(id: string, specialty: Specialty, tableYear: number): boolean {
   switch (specialty) {
     case "gs":
       return (
         id === "EE23041" || // 地球学専門英語2A
-        id === "EE23051" // 地球学専門英語2B
+        (tableYear <= 2025 && id === "EE23051") // 地球学専門英語2B
       );
     case "ees":
       return (
@@ -76,24 +76,7 @@ function isA2(id: string, specialty: Specialty): boolean {
   }
 }
 
-function isB1(id: string, specialty: Specialty): boolean {
-  switch (specialty) {
-    case "gs":
-      return id.startsWith("EE2");
-    case "ees":
-      return id.startsWith("EE3");
-    default:
-      unreachable(specialty);
-  }
-}
-
-function isB2(id: string, tableYear: number): boolean {
-  if (tableYear === 2023 && /^(EE[34]|EG[89])/.test(id)) {
-    return true;
-  }
-  if (tableYear >= 2024 && /^(EE3|EG9)/.test(id)) {
-    return true;
-  }
+function isColumnBChikyu(id: string): boolean {
   return (
     id === "EE11881" || // 地球基礎数学・物理学
     id === "EE11891" || // 地球基礎化学
@@ -101,6 +84,36 @@ function isB2(id: string, tableYear: number): boolean {
     id === "EE11871" || // 地球情報学
     id === "EE11911" // 地球学野外調査法
   );
+}
+
+function classifyColumnB(
+  id: string,
+  specialty: Specialty,
+  tableYear: number,
+): string | undefined {
+  switch (specialty) {
+    case "gs":
+      if (id.startsWith("EE2")) return "b1";
+      if (tableYear >= 2026) {
+        if (id.startsWith("EG9")) return "b2";
+        if (id.startsWith("EE3") || isColumnBChikyu(id)) return "b3";
+      } else if (tableYear >= 2024) {
+        if (/^(EE3|EG9)/.test(id) || isColumnBChikyu(id)) return "b2";
+      } else if (tableYear >= 2023) {
+        if (/^(EE[34]|EG[89])/.test(id) || isColumnBChikyu(id)) return "b2";
+      }
+      break;
+    case "ees":
+      if (id.startsWith("EE3")) return "b1";
+      if (tableYear >= 2024) {
+        if (/^(EE2|EG9)/.test(id) || isColumnBChikyu(id)) return "b2";
+      } else if (tableYear >= 2023) {
+        if (/^(EE[24]|EG[89])/.test(id) || isColumnBChikyu(id)) return "b2";
+      }
+      break;
+    default:
+      unreachable(specialty);
+  }
 }
 
 function isC1(id: string): boolean {
@@ -279,16 +292,16 @@ function classify(
 ): string | undefined {
   // 必修
   if (isA1(id, tableYear)) return "a1";
-  if (isA2(id, specialty)) return "a2";
+  if (isA2(id, specialty, tableYear)) return "a2";
   if (isC1(id)) return "c1";
   if (isE1(id, mode)) return "e1";
   if (isE2(id)) return "e2";
   if (isE3(id)) return "e3";
   if (isE4(id, mode)) return "e4";
-  if (isA2(id, "ees") || isA2(id, "gs")) return undefined;
+  if (isA2(id, "ees", tableYear) || isA2(id, "gs", tableYear)) return undefined;
   // 選択
-  if (isB1(id, specialty)) return "b1";
-  if (isB2(id, tableYear)) return "b2";
+  const b = classifyColumnB(id, specialty, tableYear);
+  if (b !== undefined) return b;
   if (isD1(id, tableYear)) return "d1";
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";
@@ -363,6 +376,36 @@ export function getRemark(id: CellId, _tableYear: number): string | undefined {
     return `注5(地球進化学主専攻の表下部参照)にある通り、専門基礎科目などで指定された科目と同様の内容の講義の場合、ここに表示されていてもここではないマスの単位としてカウントされる場合があるので注意してください。`;
   }
 }
+
+const reqGsSince2026: SetupCreditRequirements = {
+  cells: {
+    a1: { min: 12, max: 12 },
+    a2: { min: 1, max: 1 },
+    b1: { min: 10, max: 64 },
+    b2: { min: 1, max: 25 },
+    b3: { min: 0, max: 40 },
+    c1: { min: 7, max: 7 },
+    d1: { min: 16, max: 44 },
+    e1: { min: 2, max: 2 },
+    e2: { min: 2, max: 2 },
+    e3: { min: 4, max: 4 },
+    e4: { min: 4, max: 4 },
+    f1: { min: 1, max: 5 },
+    f2: { min: 0, max: 24 },
+    h1: { min: 6, max: 34 },
+  },
+  columns: {
+    a: { min: 13, max: 13 },
+    b: { min: 41, max: 69 },
+    c: { min: 7, max: 7 },
+    d: { min: 16, max: 44 },
+    e: { min: 12, max: 12 },
+    f: { min: 1, max: 29 },
+    h: { min: 6, max: 34 },
+  },
+  compulsory: 32,
+  elective: 92,
+};
 
 const reqGsSince2025: SetupCreditRequirements = {
   cells: {
@@ -549,6 +592,7 @@ export function getCreditRequirements(
   const specialty = majorToSpecialtyOrFail(major);
   switch (specialty) {
     case "gs":
+      if (tableYear >= 2026) return reqGsSince2026;
       if (tableYear >= 2025) return reqGsSince2025;
       if (tableYear >= 2024) return reqGsSince2024;
       if (tableYear >= 2023) return reqGsSince2023;

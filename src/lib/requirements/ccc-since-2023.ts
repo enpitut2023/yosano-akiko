@@ -90,8 +90,10 @@ function isC1(id: string): boolean {
   return id.startsWith("AC52");
 }
 
-function isD1(id: string): boolean {
-  return id.startsWith("AC56");
+function isD1(id: string, tableYear: number): boolean {
+  return (
+    (tableYear >= 2026 && /^(AC56|AB5|AE56)/.test(id)) || id.startsWith("AC56")
+  );
 }
 
 function isD2(id: string): boolean {
@@ -188,6 +190,7 @@ function classify(
   name: string,
   mode: Mode,
   _isNative: boolean,
+  tableYear: number,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
@@ -202,7 +205,7 @@ function classify(
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";
-  if (isD1(id)) return "d1";
+  if (isD1(id, tableYear)) return "d1";
   if (isD2(id)) return "d2";
   if (isD3(id)) return "d3";
   if (isD4(id)) return "d4";
@@ -219,10 +222,11 @@ function classify(
 export function classifyKnownCourses(
   cs: KnownCourse[],
   opts: ClassifyOptions,
+  tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "known", opts.isNative);
+    const cellId = classify(c.id, c.name, "known", opts.isNative, tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -233,10 +237,11 @@ export function classifyKnownCourses(
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
+  tableYear: number,
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "real", opts.isNative);
+    const cellId = classify(c.id, c.name, "real", opts.isNative, tableYear);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }

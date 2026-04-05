@@ -50,11 +50,31 @@ function isA4(id: string): boolean {
   );
 }
 
-function isA5(id: string): boolean {
+function isA5(id: string, tableYear: number, mode: Mode): boolean {
+  // スポーツキャリア形成は2023,4,5に開講するI,II,IIIと、2026に開講するA,B,無印
+  // がある。無印の備考には「「スポーツキャリア形成I」を履修していない学生のみ
+  // 受講可」とあり、この科目は救済だと思われる。標準履修年次はI,II, A=1, B=2,
+  // III=3。IとAの科目番号, IIとBの科目番号はそれぞれ同じ。
+  // TODO: !!B!! 現状：2026入学生にはA,Bを表示、2023,4,5入学生には救済とBを表示。
+  // 推測であるため支援室に要確認。
+  if (tableYear >= 2026) {
+    if (
+      id === "W160361" || // スポーツキャリア形成A
+      id === "W160381" // スポーツキャリア形成B
+    )
+      return true;
+  } else {
+    if (
+      id === "W160631" || // スポーツキャリア形成
+      id === "W160381" // スポーツキャリア形成B
+    )
+      return true;
+  }
   return (
-    id === "W160361" || // スポーツキャリア形成I
-    id === "W160371" || // スポーツキャリア形成II
-    id === "W160381" // スポーツキャリア形成III
+    mode === "real" &&
+    (id === "W160361" || // スポーツキャリア形成I
+      id === "W160371" || // スポーツキャリア形成II
+      id === "W160381") // スポーツキャリア形成III
   );
 }
 
@@ -75,6 +95,7 @@ function isB3(id: string): boolean {
 
 function isB4(id: string): boolean {
   // 体育専門学群で開設する専門科目
+  // A, B, ..., H群は5-1.pdfで定義されている。
   // 専門科目の定義: https://spehss.taiiku.tsukuba.ac.jp/curriculum/
   // TODO: b1, b2, b3でほとんどカバーされているだが、真相は不明。 !!B!!
   return /^W1[5-8]/.test(id);
@@ -100,9 +121,11 @@ function isC4(id: string): boolean {
   return id.startsWith("W86"); // !!IP!!
 }
 
-function isC5(id: string): boolean {
-  // 臨海実習
-  return id === "W981915";
+function isC5(id: string, tableYear: number): boolean {
+  if (tableYear >= 2026) {
+    return id.startsWith("W98"); // 実技理論・実習（H群）
+  }
+  return id === "W981915"; // 臨海実習
 }
 
 function isC6(id: string): boolean {
@@ -232,18 +255,19 @@ function classify(
   name: string,
   mode: Mode,
   _isNative: boolean,
+  tableYear: number,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
   if (isA4(id)) return "a4";
-  if (isA5(id)) return "a5";
+  if (isA5(id, tableYear, mode)) return "a5";
   if (isC1(id)) return "c1";
   if (isC2(id)) return "c2";
   if (isC3(id)) return "c3";
   if (isC4(id)) return "c4";
-  if (isC5(id)) return "c5";
+  if (isC5(id, tableYear)) return "c5";
   if (isC6(id)) return "c6";
   if (isE1(id, mode)) return "e1";
   if (isE2(id, mode)) return "e2";
@@ -274,7 +298,13 @@ export function classifyKnownCourses(
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "known", opts.isNative);
+    const cellId = classify(
+      c.id,
+      c.name,
+      "known",
+      opts.isNative,
+      opts.tableYear,
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -288,7 +318,13 @@ export function classifyRealCourses(
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, "real", opts.isNative);
+    const cellId = classify(
+      c.id,
+      c.name,
+      "real",
+      opts.isNative,
+      opts.tableYear,
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -365,9 +401,56 @@ const reqSince2023: SetupCreditRequirements = {
   elective: 91,
 };
 
+const reqSince2026: SetupCreditRequirements = {
+  cells: {
+    a1: { min: 2, max: 2 },
+    a2: { min: 6, max: 6 },
+    a3: { min: 1, max: 1 },
+    a4: { min: 3, max: 3 },
+    a5: { min: 2, max: 2 },
+    b1: { min: 10, max: 10 },
+    b2: { min: 7, max: 7 },
+    b3: { min: 6, max: 6 },
+    b4: { min: 5, max: 20 },
+    c1: { min: 1, max: 1 },
+    c2: { min: 1, max: 1 },
+    c3: { min: 1, max: 1 },
+    c4: { min: 1, max: 1 },
+    c5: { min: 2, max: 2 },
+    c6: { min: 1, max: 1 },
+    d1: { min: 10, max: 10 },
+    d2: { min: 4, max: 4 },
+    d3: { min: 10, max: 10 },
+    d4: { min: 7, max: 7 },
+    d5: { min: 0, max: 8 },
+    e1: { min: 1, max: 1 },
+    e2: { min: 1, max: 1 },
+    e3: { min: 4, max: 4 },
+    e4: { min: 4, max: 4 },
+    e5: { min: 2, max: 2 },
+    f1: { min: 1, max: 3 },
+    f2: { min: 0, max: 3 },
+    f3: { min: 0, max: 4 },
+    h1: { min: 12, max: 20 },
+    h2: { min: 0, max: 5 },
+  },
+  columns: {
+    a: { min: 14, max: 14 },
+    b: { min: 28, max: 43 },
+    c: { min: 7, max: 7 },
+    d: { min: 31, max: 39 },
+    e: { min: 12, max: 12 },
+    f: { min: 1, max: 10 },
+    h: { min: 12, max: 25 },
+  },
+  compulsory: 33,
+  elective: 91,
+};
+
 export function getCreditRequirements(
-  _tableYear: number,
+  tableYear: number,
   _major: Major,
 ): SetupCreditRequirements {
+  if (tableYear >= 2026) return reqSince2026;
   return reqSince2023;
 }
