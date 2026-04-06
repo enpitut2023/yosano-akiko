@@ -521,6 +521,9 @@
     yellow: number;
   };
 
+  // Two-stage derivation: display strings depend only on creditStats, while
+  // rects depend on cellRects (updated on every zoom). Keeping them separate
+  // prevents recomputing display strings on zoom.
   const uiColumnCreditsWithoutRect = $derived.by(() => {
     const res = new Map<string, Omit<UiColumnCredit, "rect">>();
     for (const [colId, stats] of creditStats.columns) {
