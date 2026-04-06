@@ -780,6 +780,7 @@
     </div>
     <div id="credit-sums-container">
       <div id="zoom-control">
+        <img src={asset("/icons/zoom-in.svg")} width="15" alt="zoom" />
         <input
           type="range"
           min="0"
@@ -787,7 +788,6 @@
           step="0.01"
           bind:value={sliderZoomLevel}
         />
-        <span>{zoomLevel.toFixed(1)}x</span>
       </div>
       <div id="column-credit-sums" style="--x: {scrollX}px">
         {#each uiColumnCredits as { colId, rect, display, green, yellow } (colId)}
