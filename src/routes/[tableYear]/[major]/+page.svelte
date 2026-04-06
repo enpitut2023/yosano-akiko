@@ -25,6 +25,8 @@
     type FakeCourse,
     type Grade,
     type RealCourse,
+    cellIdToRow,
+    cellIdToColumnId,
   } from "$lib/akiko";
   import {
     createCreditRequirementsOrFail,
@@ -499,13 +501,52 @@
     return { brief, warning };
   }
 
-  const getPercentage = (taken: number, mightTake: number, min: number) => {
+  function getPercentage(
+    taken: number,
+    mightTake: number,
+    min: number,
+  ): [number, number] {
     if (min === 0) return [100, 100];
     return [
       Math.min(1, taken / min) * 100,
       Math.min(1, (taken + mightTake) / min) * 100,
     ];
+  }
+
+  type UiColumnCredit = {
+    colId: string;
+    rect: { x: number; width: number };
+    display: { brief: string; warning: string | undefined };
+    green: number;
+    yellow: number;
   };
+
+  const uiColumnCreditsWithoutRect = $derived.by(() => {
+    const res = new Map<string, Omit<UiColumnCredit, "rect">>();
+    for (const [colId, stats] of creditStats.columns) {
+      if (!columnIdIsElective(colId)) continue;
+      const display = columnCreditStatsDisplay(stats);
+      const [green, yellow] = getPercentage(
+        stats.effectiveTaken,
+        stats.effectiveMightTake,
+        stats.min,
+      );
+      res.set(colId, { colId, display, green, yellow });
+    }
+    return res;
+  });
+
+  const uiColumnCredits = $derived.by(() => {
+    const res: UiColumnCredit[] = [];
+    for (const rect of cellRects) {
+      if (cellIdToRow(rect.id) !== 1) continue;
+      const colId = cellIdToColumnId(rect.id);
+      const entry = uiColumnCreditsWithoutRect.get(colId);
+      if (entry === undefined) continue;
+      res.push({ ...entry, rect });
+    }
+    return res;
+  });
 
   let metaTitle = $derived(
     `あきこ - ${data.config.tableYear}年度 ${MAJOR_TO_JA[data.config.major]}`,
@@ -735,32 +776,15 @@
     </div>
     <div id="credit-sums-container">
       <div id="column-credit-sums" style="--x: {scrollX}px">
-        {#each creditStats.columns.entries() as [colId, s]}
-          {#if columnIdIsElective(colId)}
-            {@const rect = cellRects.find(
-              (r) => r.id === ((colId + "1") as CellId),
-            )}
-            {#if rect}
-              {@const display = columnCreditStatsDisplay(s)}
-              {@const [green, yellow] = getPercentage(
-                s.effectiveTaken,
-                s.effectiveMightTake,
-                s.min,
-              )}
-              <div
-                style="left:{rect.x}px; width:{rect.width}px; --green-percentage:{green}%; --yellow-percentage:{yellow}%"
-                data-message-on-click={display.warning}
-                onclick={() => display.warning && alert(display.warning)}
-              >
-                <img
-                  src={asset("/icons/warning.svg")}
-                  width="20"
-                  alt="warning"
-                />
-                <span bind:this={columnSpanEls[colId]}>{display.brief}</span>
-              </div>
-            {/if}
-          {/if}
+        {#each uiColumnCredits as { colId, rect, display, green, yellow } (colId)}
+          <div
+            style="left:{rect.x}px; width:{rect.width}px; --green-percentage:{green}%; --yellow-percentage:{yellow}%"
+            data-message-on-click={display.warning}
+            onclick={() => display.warning && alert(display.warning)}
+          >
+            <img src={asset("/icons/warning.svg")} width="20" alt="warning" />
+            <span bind:this={columnSpanEls[colId]}>{display.brief}</span>
+          </div>
         {/each}
       </div>
       {#if creditStats.elective}
