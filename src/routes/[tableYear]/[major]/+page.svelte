@@ -569,6 +569,7 @@
   let overallSpanEl = $state<HTMLSpanElement | undefined>();
 
   $effect(() => {
+    void zoomLevel; // re-run squishing when zoom changes container widths
     const spans: HTMLSpanElement[] = [];
     for (const [colId] of creditStats.columns.entries()) {
       if (!columnIdIsElective(colId)) continue;
