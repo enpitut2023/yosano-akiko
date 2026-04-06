@@ -1161,7 +1161,6 @@
   </div>
 </main>
 
-
 {#if dropGuide}
   <div
     id="drop-guide"
