@@ -778,6 +778,16 @@
       {/each}
     </div>
     <div id="credit-sums-container">
+      <div id="zoom-control">
+        <input
+          type="range"
+          min="0"
+          max={ZOOM_SLIDER_MAX}
+          step="0.01"
+          bind:value={sliderZoomLevel}
+        />
+        <span>{zoomLevel.toFixed(1)}x</span>
+      </div>
       <div id="column-credit-sums" style="--x: {scrollX}px">
         {#each uiColumnCredits as { colId, rect, display, green, yellow } (colId)}
           <div
@@ -1150,18 +1160,6 @@
   </div>
 </main>
 
-{#if dev}
-  <div id="zoom-debug">
-    <input
-      type="range"
-      min="0"
-      max={ZOOM_SLIDER_MAX}
-      step="0.01"
-      bind:value={sliderZoomLevel}
-    />
-    <span>{zoomLevel.toFixed(1)}x</span>
-  </div>
-{/if}
 
 {#if dropGuide}
   <div
@@ -1776,11 +1774,10 @@
     pointer-events: none;
   }
 
-  #zoom-debug {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 9000;
+  #zoom-control {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
     display: flex;
     align-items: center;
     gap: 10px;
