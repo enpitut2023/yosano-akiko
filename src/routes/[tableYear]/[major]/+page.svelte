@@ -302,10 +302,11 @@
       const terms = slots
         .filter((s) => s.when.kind === "regular")
         .map((s) => s.term);
-      if (
-        terms.length > 0 &&
-        (activeTimetableTerm === "other" ||
-          !terms.includes(activeTimetableTerm))
+      if (terms.length === 0) {
+        activeTimetableTerm = "other";
+      } else if (
+        activeTimetableTerm === "other" ||
+        !terms.includes(activeTimetableTerm)
       ) {
         activeTimetableTerm = terms[0];
       }
