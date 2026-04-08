@@ -1137,29 +1137,19 @@
             )}
           {/if}
         </div>
-        <div id="cell-detail" class:no-cell-selected={!selectedCellId}>
-          <h2>単位数</h2>
-          {#if selectedCellId}
-            {@const selectedCellStats = creditStats.cells.get(selectedCellId)}
-            {#if selectedCellStats}
-              {@const display = cellCreditStatsDisplay(selectedCellStats)}
-              <p>
-                {@html `選択されたマスの単位：${display.brief}${display.warning ? `<br>⚠️ ${display.warning}` : ""}`}
-              </p>
-            {/if}
-            {#if data.config.getRemark}
-              {@const remark = data.config.getRemark(
-                selectedCellId,
-                data.config.tableYear,
-                data.config.major,
-              )}
-              {#if remark}
-                <h2>備考</h2>
-                <p style="white-space: pre-line">{remark}</p>
-              {/if}
-            {/if}
+        {#if selectedCellId && data.config.getRemark}
+          {@const remark = data.config.getRemark(
+            selectedCellId,
+            data.config.tableYear,
+            data.config.major,
+          )}
+          {#if remark}
+            <div id="cell-detail">
+              <h2>備考</h2>
+              <p style="white-space: pre-line">{remark}</p>
+            </div>
           {/if}
-        </div>
+        {/if}
       </div>
 
       <div
@@ -1192,7 +1182,20 @@
           onBarDragEnd={handleDragEnd}
         />
         <div id="right-bar-scroll">
-          <h2>取る授業</h2>
+          {#if selectedCellId}
+            {@const selectedCellStats = creditStats.cells.get(selectedCellId)}
+            {#if selectedCellStats}
+              {@const display = cellCreditStatsDisplay(selectedCellStats)}
+              <h2>単位数</h2>
+              <p id="cell-credit-stats">
+                {@html `選択されたマスの単位：${display.brief}${display.warning ? `<br>⚠️ ${display.warning}` : ""}`}
+              </p>
+            {/if}
+          {/if}
+          <div class="list-heading">
+            <h2>取る授業</h2>
+            {#if selectedCellId}{@const s = creditStats.cells.get(selectedCellId)}{#if s}<span class="credit-total">（{s.rawMightTake}単位）</span>{/if}{/if}
+          </div>
           {@render courseTable(
             groupedCourses.mightTake,
             !selectedCellId
@@ -1205,7 +1208,10 @@
             false,
             "might-take",
           )}
-          <h2>単位取得済みの授業</h2>
+          <div class="list-heading">
+            <h2>単位取得済みの授業</h2>
+            {#if selectedCellId}{@const s = creditStats.cells.get(selectedCellId)}{#if s}<span class="credit-total">（{s.rawTaken}単位）</span>{/if}{/if}
+          </div>
           {@render courseTable(
             groupedCourses.taken,
             !selectedCellId
@@ -1506,21 +1512,37 @@
     padding: 0 15px;
     border-top: 1px dashed black;
 
-    & h2 {
+    & h2,
+    & .list-heading {
       position: sticky;
       top: 0;
       background-color: white;
       padding: 5px 0;
+    }
+
+    & .list-heading h2 {
+      position: static;
+      padding: 0;
     }
   }
 
   #cell-detail {
     border-top: 1px dashed black;
     padding: 15px;
+  }
 
-    &.no-cell-selected {
-      display: none;
-    }
+  .list-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .credit-total {
+    font-size: 1rem;
+  }
+
+  #cell-credit-stats {
+    margin-bottom: 30px;
   }
 
   .cell {
