@@ -54,6 +54,8 @@
     courses: UiOverlapCourse[];
   };
 
+  type UiJizentourokuCourse = UiOverlapCourse & { term: TimetableTab };
+
   type UiCourse = {
     id: CourseId;
     name: string;
@@ -394,25 +396,39 @@
   const takenCourseIds = $derived(svelteAkiko.getTakenCourseIds());
   const unclassifiedCourses = $derived(svelteAkiko.getUnclassifiedCourses());
   const exportForTwinsResult = $derived(svelteAkiko.exportForTwins());
+  const uiJizentouroku = $derived.by((): UiJizentourokuCourse[] => {
+    return exportForTwinsResult.jizentouroku.map((kc) => {
+      const rc = realCoursesMap.get(kc.id);
+      const firstSlot = kc.slots[0];
+      const term: TimetableTab =
+        firstSlot !== undefined ? firstSlot.term : "other";
+      return {
+        id: kc.id,
+        name: rc?.name ?? kc.name,
+        cellId: svelteAkiko.getCellId(kc.id),
+        term,
+      };
+    });
+  });
   const uiOverlaps = $derived.by((): UiOverlapGroup[] => {
     if (exportForTwinsResult.kind === "ok") return [];
     return exportForTwinsResult.overlaps.map((overlap) => ({
       slot: slotToString(overlap.slot),
       term: overlap.slot.term,
-      courses: overlap.courseIds.map((id) => {
-        const kc = knownCoursesMap.get(id);
-        const rc = realCoursesMap.get(id);
+      courses: overlap.courses.map((kc) => {
+        const rc = realCoursesMap.get(kc.id);
         return {
-          id,
-          name: rc?.name ?? kc?.name ?? "（不明）",
-          cellId: svelteAkiko.getCellId(id),
+          id: kc.id,
+          name: rc?.name ?? kc.name,
+          cellId: svelteAkiko.getCellId(kc.id),
         };
       }),
     }));
   });
 
   function exportMightTake() {
-    const content = mightTakeCourseIds.join("\n");
+    if (exportForTwinsResult.kind !== "ok") return;
+    const content = exportForTwinsResult.toExport.map((c) => c.id).join("\n");
     const a = document.createElement("a");
     a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(content);
     a.download = "科目番号一覧.csv";
@@ -932,11 +948,57 @@
         <button
           class="button"
           onclick={exportMightTake}
+          disabled={exportForTwinsResult.kind !== "ok"}
           style="margin-bottom: 20px"
         >
           <img src={asset("/icons/export.svg")} width="15px" alt="export" />
           <span>取る授業一覧を出力</span>
         </button>
+        {#if uiJizentouroku.length > 0}
+          <Callout kind="warning">
+            「取る授業」に事前登録対象の授業が存在します。
+            事前登録対象の授業はTWINSへのアップロードではなく、別途事前登録が必要です。
+          </Callout>
+          <h2 style="margin-top: 10px; margin-bottom: 0">
+            事前登録対象の授業
+          </h2>
+          <table>
+            <thead>
+              <tr class="course">
+                <th class="id-name">科目</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each uiJizentouroku as course}
+                <tr class="course">
+                  <td class="id-name">
+                    <span>{course.id}</span><br />
+                    <a
+                      href={getSyllabusUrl(
+                        course.id,
+                        data.config.knownCourseYear,
+                      )}
+                      target="_blank">{course.name}</a
+                    >
+                  </td>
+                  <td>
+                    {#if course.cellId !== undefined}
+                      <button
+                        onclick={() => {
+                          selectedCellId = course.cellId;
+                          activeTimetableTerm = course.term;
+                          barsVisible = true;
+                          activeTab = "courses";
+                        }}>表示</button
+                      >
+                    {/if}
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        {/if}
         {#if uiOverlaps.length > 0}
           <Callout kind="warning">
             「取る授業」に時間が被っている授業が存在します。

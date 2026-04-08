@@ -283,6 +283,10 @@ export type FakeCourse = {
 };
 export type ImportedCourse = RealCourse | FakeCourse;
 
+export function knownCourseIsJizentouroku(k: KnownCourse): boolean {
+  return k.remark.includes("事前登録対象");
+}
+
 export type CellCreditRequirements = { min: number; max: number | undefined };
 export type ColumnCreditRequirements = { min: number; max: number };
 export type CreditRequirements = {
@@ -588,44 +592,52 @@ export function akikoGetUnclassifiedFakeCourses(akiko: Akiko): FakeCourse[] {
   return fcs;
 }
 
-export type Overlap = { slot: Slot; courseIds: CourseId[] };
+export type Overlap = { slot: Slot; courses: KnownCourse[] };
 
 export type AkikoExportForTwinsResult =
-  | { kind: "ok"; courseIds: CourseId[] }
-  | { kind: "err"; overlaps: Overlap[] };
+  | { kind: "ok"; toExport: KnownCourse[]; jizentouroku: KnownCourse[] }
+  | { kind: "err"; overlaps: Overlap[]; jizentouroku: KnownCourse[] };
 
 export function akikoExportForTwins(akiko: Akiko): AkikoExportForTwinsResult {
-  const mightTakeIds: CourseId[] = [];
+  const candidates: KnownCourse[] = [];
   for (const [id, { listKind }] of akiko.coursePositions) {
-    if (listKind === "might-take" && akiko.realCourses.get(id)?.grade !== "wip")
-      mightTakeIds.push(id);
+    const kc = akiko.knownCourses.get(id);
+    if (
+      listKind === "might-take" &&
+      kc !== undefined &&
+      akiko.realCourses.get(id)?.grade !== "wip"
+    )
+      candidates.push(kc);
   }
 
   // Map from "term|dow|period" → CourseId[]
-  const slotMap = new Map<string, { slot: Slot; courseIds: CourseId[] }>();
-  for (const courseId of mightTakeIds) {
-    const kc = akiko.knownCourses.get(courseId);
-    if (kc === undefined) continue;
+  const slotMap = new Map<string, { slot: Slot; courses: KnownCourse[] }>();
+  for (const kc of candidates) {
     for (const slot of kc.slots) {
       if (slot.when.kind !== "regular") continue;
       const key = `${slot.term}|${slot.when.dow}|${slot.when.period}`;
       let entry = slotMap.get(key);
       if (entry === undefined) {
-        entry = { slot, courseIds: [] };
+        entry = { slot, courses: [] };
         slotMap.set(key, entry);
       }
-      entry.courseIds.push(courseId);
+      entry.courses.push(kc);
     }
   }
 
   const overlaps: Overlap[] = [];
   for (const entry of slotMap.values()) {
-    if (entry.courseIds.length >= 2) overlaps.push(entry);
+    if (entry.courses.length >= 2) overlaps.push(entry);
   }
   overlaps.sort((a, b) => slotCompare(a.slot, b.slot));
 
-  if (overlaps.length > 0) return { kind: "err", overlaps };
-  return { kind: "ok", courseIds: mightTakeIds };
+  const jizentouroku = candidates.filter(knownCourseIsJizentouroku);
+  if (overlaps.length > 0) return { kind: "err", overlaps, jizentouroku };
+  return {
+    kind: "ok",
+    toExport: candidates.filter((c) => !knownCourseIsJizentouroku(c)),
+    jizentouroku,
+  };
 }
 
 export type AkikoMoveCourseDst = "wont-take" | "might-take";

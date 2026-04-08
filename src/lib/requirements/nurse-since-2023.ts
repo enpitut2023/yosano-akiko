@@ -615,7 +615,7 @@ function isH1(id: string, specialty: Specialty, tableYear: number): boolean {
         return true;
       break;
     case "nurse-h":
-      // !!B!!どれが該当するか
+      // TODO: !!B!!どれが該当するか
       if (
         id === "AB00221" || // 哲学通論BII
         id === "AB00311" || // 哲学通論CI
