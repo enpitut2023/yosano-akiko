@@ -393,6 +393,20 @@
     };
   });
 
+  const selectedCellStats = $derived(
+    selectedCellId !== undefined
+      ? creditStats.cells.get(selectedCellId)
+      : undefined,
+  );
+  const selectedCellRemark = $derived(
+    selectedCellId !== undefined
+      ? data.config.getRemark?.(
+          selectedCellId,
+          data.config.tableYear,
+          data.config.major,
+        )
+      : undefined,
+  );
   const mightTakeCourseIds = $derived(svelteAkiko.getMightTakeCourseIds());
   const takenCourseIds = $derived(svelteAkiko.getTakenCourseIds());
   const unclassifiedCourses = $derived(svelteAkiko.getUnclassifiedCourses());
@@ -960,9 +974,7 @@
             「取る授業」に事前登録対象の授業が存在します。
             事前登録対象の授業はTWINSへのアップロードではなく、別途事前登録が必要です。
           </Callout>
-          <h2 style="margin-top: 10px; margin-bottom: 0">
-            事前登録対象の授業
-          </h2>
+          <h2 style="margin-top: 10px; margin-bottom: 0">事前登録対象の授業</h2>
           <table>
             <thead>
               <tr class="course">
@@ -1098,57 +1110,60 @@
         ondrop={(e) => handleDrop(e, "wont-take")}
       >
         <div id="left-bar-scroll">
-          <search>
-            <div>
-              <img src={asset("/icons/search.svg")} width="15px" alt="search" />
-            </div>
-            <input
-              type="text"
-              placeholder="科目番号・科目名で検索"
-              bind:value={filterString}
-            />
-          </search>
-          <label class="settings-row">
-            <input type="checkbox" bind:checked={showCourseRemark} />
-            <span>授業の備考を表示</span>
-          </label>
-          <h2>当てはまる授業</h2>
-          {@render courseTable(
-            groupedCourses.wontTake,
-            !selectedCellId
-              ? "no-cell-selected"
-              : groupedCourses.wontTake.length === 0
-                ? "no-courses"
-                : "contains-courses",
-            true,
-            true,
-            true,
-            "wont-take",
-          )}
-          {#if groupedCourses.nonAvailable.length > 0}
-            <h2>今年度開講しない授業</h2>
+          <div class="section controls">
+            <search>
+              <div>
+                <img
+                  src={asset("/icons/search.svg")}
+                  width="15px"
+                  alt="search"
+                />
+              </div>
+              <input
+                type="text"
+                placeholder="科目番号・科目名で検索"
+                bind:value={filterString}
+              />
+            </search>
+            <label class="settings-row">
+              <input type="checkbox" bind:checked={showCourseRemark} />
+              <span>授業の備考を表示</span>
+            </label>
+          </div>
+          <div class="section">
+            <h2>当てはまる授業</h2>
             {@render courseTable(
-              groupedCourses.nonAvailable,
-              "contains-courses",
-              false,
-              false,
+              groupedCourses.wontTake,
+              !selectedCellId
+                ? "no-cell-selected"
+                : groupedCourses.wontTake.length === 0
+                  ? "no-courses"
+                  : "contains-courses",
               true,
-              undefined,
+              true,
+              true,
+              "wont-take",
             )}
+          </div>
+          {#if groupedCourses.nonAvailable.length > 0}
+            <div class="section">
+              <h2>今年度開講しない授業</h2>
+              {@render courseTable(
+                groupedCourses.nonAvailable,
+                "contains-courses",
+                false,
+                false,
+                true,
+                undefined,
+              )}
+            </div>
           {/if}
         </div>
-        {#if selectedCellId && data.config.getRemark}
-          {@const remark = data.config.getRemark(
-            selectedCellId,
-            data.config.tableYear,
-            data.config.major,
-          )}
-          {#if remark}
-            <div id="cell-detail">
-              <h2>備考</h2>
-              <p style="white-space: pre-line">{remark}</p>
-            </div>
-          {/if}
+        {#if selectedCellRemark}
+          <div id="cell-remark">
+            <h2>備考</h2>
+            <p style="white-space: pre-line">{selectedCellRemark}</p>
+          </div>
         {/if}
       </div>
 
@@ -1182,48 +1197,59 @@
           onBarDragEnd={handleDragEnd}
         />
         <div id="right-bar-scroll">
-          {#if selectedCellId}
-            {@const selectedCellStats = creditStats.cells.get(selectedCellId)}
-            {#if selectedCellStats}
-              {@const display = cellCreditStatsDisplay(selectedCellStats)}
+          {#if selectedCellStats}
+            {@const display = cellCreditStatsDisplay(selectedCellStats)}
+            <div class="section">
               <h2>単位数</h2>
-              <p id="cell-credit-stats">
+              <p>
                 {@html `選択されたマスの単位：${display.brief}${display.warning ? `<br>⚠️ ${display.warning}` : ""}`}
               </p>
-            {/if}
+            </div>
           {/if}
-          <div class="list-heading">
-            <h2>取る授業</h2>
-            {#if selectedCellId}{@const s = creditStats.cells.get(selectedCellId)}{#if s}<span class="credit-total">（{s.rawMightTake}単位）</span>{/if}{/if}
+          <div class="section">
+            <div class="list-heading">
+              <h2>取る授業</h2>
+              {#if selectedCellStats}
+                <span class="credit-total">
+                  {selectedCellStats.rawMightTake}単位
+                </span>
+              {/if}
+            </div>
+            {@render courseTable(
+              groupedCourses.mightTake,
+              !selectedCellId
+                ? "no-cell-selected"
+                : groupedCourses.mightTake.length === 0
+                  ? "no-courses"
+                  : "contains-courses",
+              true,
+              true,
+              false,
+              "might-take",
+            )}
           </div>
-          {@render courseTable(
-            groupedCourses.mightTake,
-            !selectedCellId
-              ? "no-cell-selected"
-              : groupedCourses.mightTake.length === 0
-                ? "no-courses"
-                : "contains-courses",
-            true,
-            true,
-            false,
-            "might-take",
-          )}
-          <div class="list-heading">
-            <h2>単位取得済みの授業</h2>
-            {#if selectedCellId}{@const s = creditStats.cells.get(selectedCellId)}{#if s}<span class="credit-total">（{s.rawTaken}単位）</span>{/if}{/if}
+          <div class="section">
+            <div class="list-heading">
+              <h2>単位取得済みの授業</h2>
+              {#if selectedCellStats}
+                <span class="credit-total">
+                  {selectedCellStats.rawTaken}単位
+                </span>
+              {/if}
+            </div>
+            {@render courseTable(
+              groupedCourses.taken,
+              !selectedCellId
+                ? "no-cell-selected"
+                : groupedCourses.taken.length === 0
+                  ? "no-courses"
+                  : "contains-courses",
+              false,
+              false,
+              false,
+              undefined,
+            )}
           </div>
-          {@render courseTable(
-            groupedCourses.taken,
-            !selectedCellId
-              ? "no-cell-selected"
-              : groupedCourses.taken.length === 0
-                ? "no-courses"
-                : "contains-courses",
-            false,
-            false,
-            false,
-            undefined,
-          )}
         </div>
       </div>
     </div>
@@ -1492,12 +1518,22 @@
   #left-bar-scroll {
     overflow-y: scroll;
     padding: 0 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
 
     & h2 {
       position: sticky;
       top: 0;
       background-color: white;
       padding: 5px 0;
+      margin: 0;
+    }
+
+    & .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
   }
 
@@ -1511,6 +1547,13 @@
     overflow-y: scroll;
     padding: 0 15px;
     border-top: 1px dashed black;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+
+    & h2 {
+      margin: 0;
+    }
 
     & h2,
     & .list-heading {
@@ -1526,23 +1569,34 @@
     }
   }
 
-  #cell-detail {
+  #left-bar-scroll,
+  #right-bar-scroll {
+    & p {
+      margin: 10px 0;
+    }
+
+    & > .section:first-child {
+      margin-top: 15px;
+    }
+
+    & > .section:last-child {
+      margin-bottom: 15px;
+    }
+  }
+
+  #cell-remark {
     border-top: 1px dashed black;
     padding: 15px;
   }
 
   .list-heading {
     display: flex;
-    align-items: baseline;
-    gap: 10px;
+    align-items: center;
+    gap: 20px;
   }
 
   .credit-total {
     font-size: 1rem;
-  }
-
-  #cell-credit-stats {
-    margin-bottom: 30px;
   }
 
   .cell {
@@ -1608,7 +1662,6 @@
 
   table {
     width: 100%;
-    margin-bottom: 30px;
 
     .term,
     .when,
@@ -1719,13 +1772,7 @@
     border-radius: 10px;
   }
 
-  #left-bar-scroll > .settings-row {
-    margin-bottom: 20px;
-  }
-
-  #left-bar-scroll > search {
-    margin-top: 15px;
-    margin-bottom: 10px;
+  #left-bar-scroll search {
     width: 100%;
     position: relative;
 
