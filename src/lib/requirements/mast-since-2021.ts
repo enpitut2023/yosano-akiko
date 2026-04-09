@@ -78,11 +78,14 @@ function classifyColumnC(id: CourseId, tableYear: number): string | undefined {
   let offset = 0;
   if (tableYear >= 2025) {
     offset = 1;
-    if (id === "GC12104") {
-      return "c9";
-    }
+    // コンピュータリテラシー
+    if (id === "GC12104") return "c9";
   }
-  if (id === "GC12701") return "c" + (9 + offset); // プログラミング
+  if (
+    id === "GC12701" || // プログラミング (2023,4,5)
+    id === "GC12791" // プログラミング
+  )
+    return "c" + (9 + offset);
   if (id === "GC13101") return "c" + (10 + offset); // コンピュータシステムとOS
   if (id === "GC12401") return "c" + (11 + offset); // データ構造とアルゴリズム
   if (id === "GC12403") return "c" + (12 + offset); // データ構造とアルゴリズム実習
