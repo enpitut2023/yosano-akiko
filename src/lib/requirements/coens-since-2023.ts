@@ -307,8 +307,8 @@ function isC3(id: string, specialty: Specialty): boolean {
     case "mme":
       return (
         id === "FF50051" || // 専門英語1
-        id === "FF50051" || // 専門英語2
-        id === "FF50051" // 専門英語3
+        id === "FF50061" || // 専門英語2
+        id === "FF50071" // 専門英語3
       );
     default:
       unreachable(specialty);
