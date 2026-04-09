@@ -342,9 +342,12 @@ export function classifyRealCourses(
       courseIdToCellId.set(c.id, cellId);
     }
   }
-  redistributeOverflow(cs, courseIdToCellId, "b1", 6, "b4");
-  redistributeOverflow(cs, courseIdToCellId, "b2", 6, "b4");
-  redistributeOverflow(cs, courseIdToCellId, "b3", 6, "b4");
+
+  const req = getCreditRequirements(opts.tableYear, opts.major);
+  redistributeOverflow(cs, courseIdToCellId, "b1", req.cells.b1.min, "b4");
+  redistributeOverflow(cs, courseIdToCellId, "b2", req.cells.b2.min, "b4");
+  redistributeOverflow(cs, courseIdToCellId, "b3", req.cells.b3.min, "b4");
+  redistributeOverflow(cs, courseIdToCellId, "d1", req.cells.d1.min, "d2");
 
   return courseIdToCellId;
 }
