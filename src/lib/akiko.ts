@@ -261,6 +261,7 @@ export type KnownCourse = {
   name: string;
   credit: number | undefined;
   expects: number[];
+  expectsString: string;
   slots: Slot[];
   slotsString: string;
   availability: Availability;
