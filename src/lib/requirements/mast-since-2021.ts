@@ -82,7 +82,7 @@ function classifyColumnC(id: CourseId, tableYear: number): string | undefined {
       return "c9";
     }
   }
-  if (id === "GC12701") return "c" + (9 + offset); // プログラミング
+  if (id === "GC12791" || id === "GC12701") return "c" + (9 + offset); // プログラミング
   if (id === "GC13101") return "c" + (10 + offset); // コンピュータシステムとOS
   if (id === "GC12401") return "c" + (11 + offset); // データ構造とアルゴリズム
   if (id === "GC12403") return "c" + (12 + offset); // データ構造とアルゴリズム実習
