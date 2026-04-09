@@ -60,8 +60,7 @@
     id: CourseId;
     name: string;
     credit: number | undefined;
-    term: string | undefined;
-    when: string | undefined;
+    slots: string | undefined;
     expects: string | undefined;
     grade: Grade | undefined;
     takenYear: number | undefined;
@@ -333,8 +332,7 @@
         id,
         name: rc?.name || kc?.name || "（不明）",
         credit: rc?.credit ?? kc?.credit,
-        term: kc?.term,
-        when: kc?.when,
+        slots: kc?.slotsString,
         expects: kc !== undefined ? expectsToString(kc.expects) : undefined,
         grade: rc?.grade,
         takenYear: rc?.takenYear,
@@ -703,8 +701,7 @@
       {#if c.grade}<br /><span>{gradeDisplay(c.grade)}</span>{/if}
     </td>
     <td class="credit">{c.credit ?? "-"}</td>
-    <td class="term">{c.term ?? "-"}</td>
-    <td class="when">{c.when ?? "-"}</td>
+    <td class="slots">{c.slots ?? "-"}</td>
     <td class="expects">{c.expects ?? "-"}</td>
   </tr>
   {#if showCourseRemark}
@@ -721,8 +718,7 @@
 {#snippet courseTable(
   courses: UiCourse[],
   state: "no-cell-selected" | "no-courses" | "contains-courses",
-  showTerm: boolean,
-  showWhen: boolean,
+  showSlots: boolean,
   showExpects: boolean,
   dragSource: "wont-take" | "might-take" | undefined,
 )}
@@ -731,18 +727,13 @@
   {:else if state === "no-courses"}
     <p>該当する授業がありません</p>
   {:else}
-    {@const colspan = 2 + +showTerm + +showWhen + +showExpects}
-    <table
-      class:show-term={showTerm}
-      class:show-when={showWhen}
-      class:show-expects={showExpects}
-    >
+    {@const colspan = 2 + +showSlots + +showExpects}
+    <table class:show-slots={showSlots} class:show-expects={showExpects}>
       <thead>
         <tr class="course">
           <th class="id-name">科目</th>
           <th class="credit">単位</th>
-          <th class="term">学期</th>
-          <th class="when">時限</th>
+          <th class="slots">時限</th>
           <th class="expects">標準<br />履修<br />年次</th>
         </tr>
       </thead>
@@ -1141,7 +1132,6 @@
                   : "contains-courses",
               true,
               true,
-              true,
               "wont-take",
             )}
           </div>
@@ -1151,7 +1141,6 @@
               {@render courseTable(
                 groupedCourses.nonAvailable,
                 "contains-courses",
-                false,
                 false,
                 true,
                 undefined,
@@ -1223,7 +1212,6 @@
                   ? "no-courses"
                   : "contains-courses",
               true,
-              true,
               false,
               "might-take",
             )}
@@ -1244,7 +1232,6 @@
                 : groupedCourses.taken.length === 0
                   ? "no-courses"
                   : "contains-courses",
-              false,
               false,
               false,
               undefined,
@@ -1663,13 +1650,11 @@
   table {
     width: 100%;
 
-    .term,
-    .when,
+    .slots,
     .expects {
       display: none;
     }
-    &.show-term .term,
-    &.show-when .when,
+    &.show-slots .slots,
     &.show-expects .expects {
       display: revert;
     }

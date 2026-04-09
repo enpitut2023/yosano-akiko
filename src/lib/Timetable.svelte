@@ -238,8 +238,7 @@
             <tr>
               <th class="id-name">科目</th>
               <th class="credit">単位</th>
-              <th class="term">学期</th>
-              <th class="when">時限</th>
+              <th class="slots">時限</th>
             </tr>
           </thead>
           <tbody>
@@ -262,8 +261,7 @@
                     >{/if}
                 </td>
                 <td class="credit">{rc?.credit ?? kc?.credit ?? "-"}</td>
-                <td class="term">{kc?.term || "-"}</td>
-                <td class="when">{kc?.when || "-"}</td>
+                <td class="slots">{kc?.slotsString || "-"}</td>
               </tr>
             {/each}
           </tbody>
