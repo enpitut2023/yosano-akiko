@@ -827,6 +827,9 @@
       id="requirements"
       bind:this={requirementsEl}
       onscroll={(e) => (scrollX = -e.currentTarget.scrollLeft)}
+      onclick={() => {
+        selectedCellId = undefined;
+      }}
     >
       <img
         src={asset(`/tables/${data.config.tableYear}/${data.config.major}.svg`)}
@@ -866,7 +869,8 @@
             class="cell"
             class:selected={selectedCellId === r.id}
             style="left:{r.x}px; top:{r.y}px; width:{r.width}px; height:{r.height}px; --green-percentage:{green}%; --yellow-percentage:{yellow}%"
-            onclick={() => {
+            onclick={(e) => {
+              e.stopPropagation();
               selectedCellId = r.id;
               barsVisible = true;
               activeTab = "courses";
