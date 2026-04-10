@@ -151,14 +151,27 @@ function isB2(id: string): boolean {
   );
 }
 
-function isC1(id: string): boolean {
+/* 
+2026.4.10 あいちゃん
+1単位の線形代数Aがあるが、これは1単位の線形代数Bとともにcoinsの線形代数Aに読み替えられることはない
+GAの微分積分A、線形代数A、GBの微分積分B、線形代数Bは他学類開設であってもcoins、移行生の成績としてカウントされる(注4,7の通り)
+GCの微分積分B、線形代数Bは誰の成績としてもカウントされない(注7の通り)
+プログラミング入門A,B
+- FHはpops開設なので移行生は成績にカウントされる(注15の通り)
+- GAの他学類開設もcoins、移行生の成績としてカウントされる(注4の通り)
+*/
+function isC1(id: string, isNative: boolean, mode: Mode): boolean {
   return (
     id === "GA15211" || //1・2クラス
-    id === "GA15221" //3・4クラス
+    id === "GA15221" || //3・4クラス
+    (mode === "real" &&
+      (id === "GA15231" || // 情報メディア創成学類生および総合学域群生(情報メディア創成学類への移行希望者)優先
+        id === "GA15241")) || // 知識情報・図書館学類生および総合学域群生(知識情報・図書館学類への移行希望者)優先
+    (!isNative && mode === "real" && (id === "FF18724" || id === "FF18734"))
   );
 }
 
-function isC2(id: string): boolean {
+function isC2(id: string, isNative: boolean, mode: Mode): boolean {
   return (
     id === "GB10234" || //1・2クラス
     id === "GB10244" //3・4クラス
@@ -168,7 +181,9 @@ function isC2(id: string): boolean {
 function isC3(id: string): boolean {
   return (
     id === "GA15311" || //1・2クラス
-    id === "GA15321" //3・4クラス
+    id === "GA15321" || //3・4クラス
+    id === "GA15331" || // 情報メディア創成学類生および総合学域群生(情報メディア創成学類への移行希望者)優先
+    id === "GA15341" // 知識情報・図書館学類生および総合学域群生(知識情報・図書館学類への移行希望者)優先
   );
 }
 
@@ -193,6 +208,9 @@ function isC6(id: string): boolean {
 function isC7(id: string, isNative: boolean, mode: Mode): boolean {
   return (
     id === "GA18212" ||
+    (mode === "real" &&
+      (id === "GA18222" || // 情報メディア創成学類生および総合学域群生優先
+        id === "GA18232")) || // 知識学類生および総合学域群生優先
     // 移行生はFHから始まるプロ入Aをcoinsのプロ入Aとして使える
     (!isNative &&
       mode === "real" &&
@@ -203,6 +221,9 @@ function isC7(id: string, isNative: boolean, mode: Mode): boolean {
 function isC8(id: string, isNative: boolean, mode: Mode): boolean {
   return (
     id === "GA18312" ||
+    (mode === "real" &&
+      (id === "GA18322" || // 情報メディア創成学類生および総合学域群生優先
+        id === "GA18332")) || // 知識学類生および総合学域群生優先
     // 移行生はFHから始まるプロ入Bをcoinsのプロ入Bとして使える
     (!isNative &&
       mode === "real" &&
@@ -384,8 +405,8 @@ function classify(
   if (isA1(id, specialty)) return "a1";
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
-  if (isC1(id)) return "c1";
-  if (isC2(id)) return "c2";
+  if (isC1(id, isNative, mode)) return "c1";
+  if (isC2(id, isNative, mode)) return "c2";
   if (isC3(id)) return "c3";
   if (isC4(id)) return "c4";
   if (isC5(id)) return "c5";
