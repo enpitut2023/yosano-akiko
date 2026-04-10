@@ -157,6 +157,92 @@
 
   let barsVisible = $state(true);
   let activeTab = $state<Tab>("courses");
+
+  const SIDEBAR_MARGIN = 100;
+  const SIDEBAR_WIDTH_DEFAULT = 740;
+  const SIDEBAR_WIDTH_MIN = 500;
+
+  let sidebarWidth = $state(SIDEBAR_WIDTH_DEFAULT);
+  let sidebarWidthResizing = $state(false);
+
+  $effect(() => {
+    document.documentElement.style.setProperty(
+      "--sidebar-width",
+      `${sidebarWidth}px`,
+    );
+  });
+
+  function onSidebarResizePointerDown(
+    e: PointerEvent & { currentTarget: HTMLDivElement },
+  ) {
+    if (e.button !== 0) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    sidebarWidthResizing = true;
+  }
+
+  function onSidebarResizePointerMove(e: PointerEvent) {
+    if (!sidebarWidthResizing) return;
+    const raw = window.innerWidth - e.clientX;
+    const snapped = Math.round(raw / 5) * 5;
+    sidebarWidth = Math.min(
+      window.innerWidth - SIDEBAR_MARGIN,
+      Math.max(SIDEBAR_WIDTH_MIN, snapped),
+    );
+  }
+
+  function onSidebarResizePointerUp() {
+    sidebarWidthResizing = false;
+  }
+
+  const TIMETABLE_HEIGHT_DEFAULT = 400;
+  const TIMETABLE_HEIGHT_MIN = 100;
+
+  let timetableHeight = $state(TIMETABLE_HEIGHT_DEFAULT);
+  let timetableHeightResizing = $state(false);
+
+  $effect(() => {
+    document.documentElement.style.setProperty(
+      "--timetable-height",
+      `${timetableHeight}px`,
+    );
+  });
+
+  $effect(() => {
+    const update = () => {
+      if (rightBarEl === undefined) return;
+      document.documentElement.style.setProperty(
+        "--right-bar-top",
+        `${rightBarEl.getBoundingClientRect().top}px`,
+      );
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  });
+
+  function onTimetableResizePointerDown(
+    e: PointerEvent & { currentTarget: HTMLDivElement },
+  ) {
+    if (e.button !== 0) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    timetableHeightResizing = true;
+  }
+
+  function onTimetableResizePointerMove(e: PointerEvent) {
+    if (!timetableHeightResizing || rightBarEl === undefined) return;
+    const top = rightBarEl.getBoundingClientRect().top;
+    const raw = e.clientY - top;
+    const snapped = Math.round(raw / 5) * 5;
+    timetableHeight = Math.min(
+      window.innerHeight - top - SIDEBAR_MARGIN,
+      Math.max(TIMETABLE_HEIGHT_MIN, snapped),
+    );
+  }
+
+  function onTimetableResizePointerUp() {
+    timetableHeightResizing = false;
+  }
+
   let scrollX = $state(0);
 
   // Zoom uses two representations:
@@ -1244,12 +1330,27 @@
 <button
   id="bars-toggle"
   style="left: {barsVisible
-    ? 'calc(100vw - 2 * var(--sidebar-width) - var(--toggle-width))'
+    ? 'calc(100vw - var(--sidebar-width) - var(--toggle-width))'
     : 'calc(100vw - var(--toggle-width))'}"
   onclick={() => (barsVisible = !barsVisible)}
 >
   {barsVisible ? "⏵" : "⏴"}
 </button>
+
+{#if barsVisible}
+  <div
+    id="sidebar-resize-handle"
+    onpointerdown={onSidebarResizePointerDown}
+    onpointermove={onSidebarResizePointerMove}
+    onpointerup={onSidebarResizePointerUp}
+  ></div>
+  <div
+    id="timetable-resize-handle"
+    onpointerdown={onTimetableResizePointerDown}
+    onpointermove={onTimetableResizePointerMove}
+    onpointerup={onTimetableResizePointerUp}
+  ></div>
+{/if}
 
 <div id="mobile-unsupported">
   <div class="mobile-unsupported-dialog">
@@ -1324,8 +1425,10 @@
   $color-hover-overlay: rgba(0, 0, 0, 0.25);
 
   :global(:root) {
-    --sidebar-width: 370px;
+    --sidebar-width: 740px;
     --toggle-width: 30px;
+    --timetable-height: 400px;
+    --right-bar-top: 0px;
   }
 
   main {
@@ -1334,7 +1437,7 @@
     font-size: 14px;
 
     display: grid;
-    grid-template-columns: auto calc(2 * var(--sidebar-width));
+    grid-template-columns: auto var(--sidebar-width);
     grid-template-rows: 100vh;
 
     &.bars-hidden {
@@ -1515,7 +1618,7 @@
 
   #right-bar {
     display: grid;
-    grid-template-rows: 400px 1fr;
+    grid-template-rows: var(--timetable-height) 1fr;
     overflow: hidden;
   }
 
@@ -1681,6 +1784,28 @@
     &:hover {
       background-color: #ddd;
     }
+  }
+
+  #sidebar-resize-handle {
+    position: fixed;
+    top: var(--toggle-width);
+    bottom: 0;
+    left: calc(100vw - var(--sidebar-width));
+    width: 10px;
+    transform: translateX(-5px);
+    cursor: col-resize;
+    z-index: 100;
+  }
+
+  #timetable-resize-handle {
+    position: fixed;
+    top: calc(var(--right-bar-top) + var(--timetable-height));
+    left: calc(100vw - var(--sidebar-width) / 2);
+    right: 0;
+    height: 10px;
+    transform: translateY(-5px);
+    cursor: row-resize;
+    z-index: 100;
   }
 
   input[name="student-type"]:checked + span {
