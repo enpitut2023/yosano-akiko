@@ -180,13 +180,15 @@ function isC2(id: string): boolean {
   );
 }
 
-function isC3(id: string): boolean {
+function isC3(id: string, isNative: boolean, mode: Mode): boolean {
   // 微分積分A
   return (
     id === "GA15311" || //1・2クラス
     id === "GA15321" || //3・4クラス
-    id === "GA15331" || // 情報メディア創成学類生および総合学域群生(情報メディア創成学類への移行希望者)優先
-    id === "GA15341" // 知識情報・図書館学類生および総合学域群生(知識情報・図書館学類への移行希望者)優先
+    (!isNative &&
+      mode === "real" &&
+      (id === "GA15331" || // 情報メディア創成学類生および総合学域群生(情報メディア創成学類への移行希望者)優先
+        id === "GA15341")) // 知識情報・図書館学類生および総合学域群生(知識情報・図書館学類への移行希望者)優先
   );
 }
 
@@ -420,7 +422,7 @@ function classify(
   if (isA3(id)) return "a3";
   if (isC1(id, isNative, mode)) return "c1";
   if (isC2(id)) return "c2";
-  if (isC3(id)) return "c3";
+  if (isC3(id, isNative, mode)) return "c3";
   if (isC4(id)) return "c4";
   if (isC5(id)) return "c5";
   if (isC6(id)) return "c6";
