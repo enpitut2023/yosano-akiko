@@ -92,6 +92,7 @@
   let selectedCellId = $state<CellId | undefined>(undefined);
   let filterString = $state("");
   let showCourseRemark = $state(true);
+  let showNonAvailable = $state(false);
 
   const creditRequirements = $derived(
     createCreditRequirementsOrFail(
@@ -435,6 +436,7 @@
       courseIdCompare(a.id, b.id);
     const allWontTake = res.wontTake.map(toUi).sort(compareByGradeThenId);
     return {
+      allWontTake,
       wontTake: allWontTake.filter((c) => c.availability === "available"),
       nonAvailable: allWontTake.filter((c) => c.availability !== "available"),
       mightTake: res.mightTake.map(toUi).sort(compareByGradeThenId),
@@ -457,9 +459,11 @@
         c.id.toLowerCase().includes(f) || name.toLowerCase().includes(f);
       return { ...c, visible };
     };
+    const wontTakeSource = showNonAvailable
+      ? sortedGroupedCourses.allWontTake
+      : sortedGroupedCourses.wontTake;
     return {
-      wontTake: sortedGroupedCourses.wontTake.map(addVisible),
-      nonAvailable: sortedGroupedCourses.nonAvailable.map(addVisible),
+      wontTake: wontTakeSource.map(addVisible),
       mightTake: sortedGroupedCourses.mightTake.map(addVisible),
       taken: sortedGroupedCourses.taken.map(addVisible),
       fake: sortedGroupedCourses.fake,
@@ -774,6 +778,7 @@
         >{c.name}{c.grade && gradeIsPass(c.grade) ? ` (${c.takenYear})` : ""}</a
       >
       {#if c.grade}<br /><span>{gradeDisplay(c.grade)}</span>{/if}
+      {#if c.availability !== "available"}<br /><span>（非開講）</span>{/if}
     </td>
     <td class="credit">{c.credit ?? "-"}</td>
     <td class="slots">{c.slots ?? "-"}</td>
@@ -1143,6 +1148,13 @@
 
     <div id="settings-tab" class:active={activeTab === "settings"}>
       <section class="settings-section">
+        <h3>当てはまる授業</h3>
+        <label class="settings-row">
+          <input type="checkbox" bind:checked={showNonAvailable} />
+          <span>今年度開講しない授業を表示する</span>
+        </label>
+      </section>
+      <section class="settings-section">
         <h3>時間割</h3>
         <label class="settings-row">
           <input type="checkbox" bind:checked={timetableShowTaken} />
@@ -1214,18 +1226,6 @@
               "wont-take",
             )}
           </div>
-          {#if groupedCourses.nonAvailable.length > 0}
-            <div class="section">
-              <h2>今年度開講しない授業</h2>
-              {@render courseTable(
-                groupedCourses.nonAvailable,
-                "contains-courses",
-                false,
-                true,
-                undefined,
-              )}
-            </div>
-          {/if}
         </div>
         {#if selectedCellRemark}
           <div id="cell-remark">
