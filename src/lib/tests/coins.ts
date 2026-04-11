@@ -82,7 +82,7 @@ function test3(): void {
 ,,GB22031,システム数理III,1.0,-,-,A+,A,2024,通常,
 ,,GB22031,システム数理III,1.0,-,-,D,A,2023,通常,落単して再度履修した場合
 ,,GB13312,情報特別演習I,2.0,-,-,B,A,2024,通常,情報特別演習がB2に表示される
-,,FF18724,線形代数A,1.0,-,-,A,A,2025,通常,coins以外の線形代数をとっていても必修が埋まらない
+,,FH60474,プログラミング入門A,2.0,-,-,A,A,2025,通常,FH...はpopsのプロ入、移行生はこれをとっていても良い
 ,,GB30101,コンピュータネットワーク,2.0,-,-,A,A,2024,通常,GB30がGB3のところにでてこない
 ,,8042104,海外武者修行,1.0,-,-,A,A,2025,通常,f列とh列合計で11単位とっていても、f列で7単位、h列で4単位の場合は11単位にならない
 ,,8049911,日本の歴史,1.0,-,-,A,A,2025,通常,
@@ -111,6 +111,7 @@ function test3(): void {
         b1: { taken: 2 },
         b2: { rawTaken: 25, effectiveTaken: 18 },
         c1: { taken: 2 },
+        c7: { taken: 2 },
         d3: { taken: 2 },
         e3: { taken: 1 },
         f1: { taken: 2 },
@@ -119,13 +120,13 @@ function test3(): void {
       },
       columns: {
         b: { taken: 20 },
-        c: { taken: 2 },
+        c: { taken: 4 },
         d: { taken: 2 },
         e: { taken: 1 },
         f: { rawTaken: 6, effectiveTaken: 5 },
         h: { taken: 4 },
       },
-      compulsory: { taken: 3 },
+      compulsory: { taken: 5 },
       elective: { taken: 31 },
     },
   });
