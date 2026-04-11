@@ -151,16 +151,17 @@ function isB2(id: string): boolean {
   );
 }
 
-/* 
-2026.4.10 あいちゃん
-1単位の線形代数Aがあるが、これは1単位の線形代数Bとともにcoinsの線形代数Aに読み替えられることはない
-GAの微分積分A、線形代数A、GBの微分積分B、線形代数Bは他学類開設であってもcoins、移行生の成績としてカウントされる(注4,7の通り)
-GCの微分積分B、線形代数Bは誰の成績としてもカウントされない(注7の通り)
-プログラミング入門A,B
-- FHはpops開設なので移行生は成績にカウントされる(注15の通り)
-- GAの他学類開設もcoins、移行生の成績としてカウントされる(注4の通り)
-*/
+/**
+ * 2026.4.10 あいちゃん
+ * 1単位の線形代数Aがあるが、これは1単位の線形代数Bとともにcoinsの線形代数Aに読み替えられることはない
+ * GAの微分積分A、線形代数A、GBの微分積分B、線形代数Bは他学類開設であってもcoins、移行生の成績としてカウントされる(注4,7の通り)
+ * GCの微分積分B、線形代数Bは誰の成績としてもカウントされない(注7の通り)
+ * プログラミング入門A,B
+ * - FHはpops開設なので移行生は成績にカウントされる(注15の通り)
+ * - GAの他学類開設もcoins、移行生の成績としてカウントされる(注4の通り)
+ */
 function isC1(id: string, isNative: boolean, mode: Mode): boolean {
+  // 線形代数A
   return (
     id === "GA15211" || //1・2クラス
     id === "GA15221" || //3・4クラス
@@ -171,7 +172,8 @@ function isC1(id: string, isNative: boolean, mode: Mode): boolean {
   );
 }
 
-function isC2(id: string, isNative: boolean, mode: Mode): boolean {
+function isC2(id: string): boolean {
+  // 線形代数B
   return (
     id === "GB10234" || //1・2クラス
     id === "GB10244" //3・4クラス
@@ -179,6 +181,7 @@ function isC2(id: string, isNative: boolean, mode: Mode): boolean {
 }
 
 function isC3(id: string): boolean {
+  // 微分積分A
   return (
     id === "GA15311" || //1・2クラス
     id === "GA15321" || //3・4クラス
@@ -188,6 +191,7 @@ function isC3(id: string): boolean {
 }
 
 function isC4(id: string): boolean {
+  // 微分積分B
   return (
     id === "GB10444" || //1・2クラス
     id === "GB10454" //3・4クラス
@@ -195,6 +199,7 @@ function isC4(id: string): boolean {
 }
 
 function isC5(id: string): boolean {
+  // 情報数学A
   return (
     id === "GA15111" || //1・2クラス
     id === "GA15121" //3・4クラス
@@ -202,10 +207,12 @@ function isC5(id: string): boolean {
 }
 
 function isC6(id: string): boolean {
+  // 専門英語基礎
   return id === "GB19061";
 }
 
 function isC7(id: string, isNative: boolean, mode: Mode): boolean {
+  // プログラミング入門A
   return (
     id === "GA18212" ||
     (mode === "real" &&
@@ -219,6 +226,7 @@ function isC7(id: string, isNative: boolean, mode: Mode): boolean {
 }
 
 function isC8(id: string, isNative: boolean, mode: Mode): boolean {
+  // プログラミング入門B
   return (
     id === "GA18312" ||
     (mode === "real" &&
@@ -232,14 +240,17 @@ function isC8(id: string, isNative: boolean, mode: Mode): boolean {
 }
 
 function isC9(id: string): boolean {
+  // コンピュータとプログラミング
   return id === "GB11964";
 }
 
 function isC10(id: string): boolean {
+  // データ構造とアルゴリズム
   return id === "GB11931";
 }
 
 function isC11(id: string): boolean {
+  // データ構造とアルゴリズム実験
   return (
     id === "GB11956" || // 1・2クラス
     id === "GB11966" // 3・4クラス
@@ -247,10 +258,12 @@ function isC11(id: string): boolean {
 }
 
 function isC12(id: string): boolean {
+  // 論理回路
   return id === "GB10804";
 }
 
 function isC13(id: string): boolean {
+  // 論理回路演習
   return id === "GB12017";
 }
 
@@ -406,7 +419,7 @@ function classify(
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
   if (isC1(id, isNative, mode)) return "c1";
-  if (isC2(id, isNative, mode)) return "c2";
+  if (isC2(id)) return "c2";
   if (isC3(id)) return "c3";
   if (isC4(id)) return "c4";
   if (isC5(id)) return "c5";
