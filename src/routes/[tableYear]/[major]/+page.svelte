@@ -392,13 +392,7 @@
   // search box won't trigger a re-sort.
   const sortedGroupedCourses = $derived.by(() => {
     if (!selectedCellId)
-      return {
-        wontTake: [],
-        nonAvailable: [],
-        mightTake: [],
-        taken: [],
-        fake: [],
-      };
+      return { wontTake: [], mightTake: [], taken: [], fake: [] };
     const res = svelteAkiko.getCoursesInCell(selectedCellId);
 
     function toUi(id: CourseId): UiCourse {
@@ -434,11 +428,8 @@
     };
     const compareById = (a: UiCourse, b: UiCourse) =>
       courseIdCompare(a.id, b.id);
-    const allWontTake = res.wontTake.map(toUi).sort(compareByGradeThenId);
     return {
-      allWontTake,
-      wontTake: allWontTake.filter((c) => c.availability === "available"),
-      nonAvailable: allWontTake.filter((c) => c.availability !== "available"),
+      wontTake: res.wontTake.map(toUi).sort(compareByGradeThenId),
       mightTake: res.mightTake.map(toUi).sort(compareByGradeThenId),
       taken: res.taken.map(toUi).sort(compareById),
       fake: res.fake
@@ -459,11 +450,10 @@
         c.id.toLowerCase().includes(f) || name.toLowerCase().includes(f);
       return { ...c, visible };
     };
-    const wontTakeSource = showNonAvailable
-      ? sortedGroupedCourses.allWontTake
-      : sortedGroupedCourses.wontTake;
     return {
-      wontTake: wontTakeSource.map(addVisible),
+      wontTake: sortedGroupedCourses.wontTake
+        .filter((c) => showNonAvailable || c.availability === "available")
+        .map(addVisible),
       mightTake: sortedGroupedCourses.mightTake.map(addVisible),
       taken: sortedGroupedCourses.taken.map(addVisible),
       fake: sortedGroupedCourses.fake,
@@ -1147,38 +1137,29 @@
     </div>
 
     <div id="settings-tab" class:active={activeTab === "settings"}>
-      <section class="settings-section">
-        <h3>当てはまる授業</h3>
-        <label class="settings-row">
-          <input type="checkbox" bind:checked={showNonAvailable} />
-          <span>今年度開講しない授業を表示する</span>
-        </label>
-      </section>
-      <section class="settings-section">
-        <h3>時間割</h3>
-        <label class="settings-row">
-          <input type="checkbox" bind:checked={timetableShowTaken} />
-          <span>単位取得済みの授業を表示する</span>
-        </label>
-        <label class="settings-row">
-          <span>年度</span>
-          <input
-            type="number"
-            bind:value={timetableYear}
-            min="2020"
-            max="2030"
-          />
-        </label>
-      </section>
-      <section class="settings-section">
-        <h3>データ</h3>
-        <div id="control">
-          <button id="reset" class="button" onclick={() => reset()}>
-            <img src={asset("/icons/trash.svg")} width="15px" alt="reset" />
-            <span>リセット</span>
-          </button>
-        </div>
-      </section>
+      <label class="settings-row">
+        <input type="checkbox" bind:checked={showNonAvailable} />
+        <span>今年度開講しない授業を表示する</span>
+      </label>
+      <label class="settings-row">
+        <input type="checkbox" bind:checked={timetableShowTaken} />
+        <span>単位取得済みの授業を表示する</span>
+      </label>
+      <label class="settings-row">
+        <span>時間割の年度</span>
+        <input
+          type="number"
+          bind:value={timetableYear}
+          min="2020"
+          max="2030"
+        />
+      </label>
+      <div id="control">
+        <button id="reset" class="button" onclick={() => reset()}>
+          <img src={asset("/icons/trash.svg")} width="15px" alt="reset" />
+          <span>リセット</span>
+        </button>
+      </div>
     </div>
 
     <div id="courses-tab" class:active={activeTab === "courses"}>
@@ -1568,8 +1549,7 @@
   }
 
   #import-tab,
-  #export-tab,
-  #settings-tab {
+  #export-tab {
     display: none;
     grid-template-rows: 1fr;
     overflow-y: scroll;
@@ -1578,6 +1558,18 @@
 
     &.active {
       display: grid;
+    }
+  }
+
+  #settings-tab {
+    display: none;
+    overflow-y: scroll;
+    padding: 15px;
+    padding-bottom: 50vh;
+
+    &.active {
+      display: flex;
+      flex-direction: column;
     }
   }
 
@@ -1968,16 +1960,6 @@
     right: 5px;
     bottom: 5px;
     width: 300px;
-  }
-
-  .settings-section {
-    margin-bottom: 30px;
-
-    & > h3 {
-      margin: 0 0 10px 0;
-      font-size: 13px;
-      color: oklch(0.5 0 0);
-    }
   }
 
   .settings-row {
