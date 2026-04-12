@@ -1202,7 +1202,7 @@
       </label>
       <label class="settings-row">
         <input type="checkbox" bind:checked={timetableShowTaken} />
-        <span>単位取得済みの授業を表示する</span>
+        <span>時間割に単位取得済みの授業を表示する</span>
       </label>
       <label class="settings-row">
         <span>時間割の年度</span>
