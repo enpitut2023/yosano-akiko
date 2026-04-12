@@ -1798,7 +1798,8 @@
   #left-bar-scroll,
   #right-bar-scroll {
     & p {
-      margin: 10px 0;
+      margin: 0;
+      margin-top: 0;
     }
 
     & > .section:first-child {
@@ -1813,6 +1814,15 @@
   #cell-remark {
     border-top: 1px dashed black;
     padding: 15px;
+
+    & > h2 {
+      margin: 0;
+    }
+
+    & > p {
+      margin: 0;
+      margin-top: 10px;
+    }
   }
 
   .list-heading {
