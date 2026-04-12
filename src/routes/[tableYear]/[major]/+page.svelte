@@ -41,6 +41,7 @@
   import { assert } from "$lib/util.js";
   import Callout from "$lib/Callout.svelte";
   import { tick, untrack } from "svelte";
+  import { SvelteSet } from "svelte/reactivity";
 
   type UiOverlapCourse = {
     id: CourseId;
@@ -56,17 +57,23 @@
 
   type UiJizentourokuCourse = UiOverlapCourse & { term: TimetableTab };
 
+  type WontTakeFilters = {
+    courseIdOrName: string;
+    credit: SvelteSet<number>;
+    expects: SvelteSet<number>;
+  };
+
   type UiCourse = {
     id: CourseId;
     name: string;
     credit: number | undefined;
     slots: string | undefined;
     expects: string | undefined;
+    expectsRaw: number[];
     grade: Grade | undefined;
     takenYear: number | undefined;
     syllabusYear: number;
     availability: Availability;
-    visible: boolean;
     remark: string;
   };
 
@@ -90,12 +97,17 @@
   let fakeCourses = $state<FakeCourse[]>(initialLocalData.fakeCourses);
   let isNative = $state<boolean>(initialLocalData.native);
   let selectedCellId = $state<CellId | undefined>(undefined);
-  let filterString = $state("");
   let showCourseRemark = $state(true);
   let showNonAvailable = $state(false);
   let wontTakeVisibleLimit = $state(100);
   let leftBarScrollEl = $state<HTMLDivElement | undefined>();
   let wontTakeSentinelEl = $state<HTMLDivElement | undefined>();
+  let filtersOpen = $state(false);
+  let wontTakeFilters = $state<WontTakeFilters>({
+    courseIdOrName: "",
+    credit: new SvelteSet(),
+    expects: new SvelteSet(),
+  });
 
   const creditRequirements = $derived(
     createCreditRequirementsOrFail(
@@ -391,12 +403,11 @@
     }
   }
 
-  // Sorted course lists — does NOT depend on filterString, so typing in the
-  // search box won't trigger a re-sort.
-  const sortedGroupedCourses = $derived.by(() => {
+  // Does not depend on wontTakeFilters
+  const courseLists = $derived.by(() => {
     if (!selectedCellId)
       return { wontTake: [], mightTake: [], taken: [], fake: [] };
-    const res = svelteAkiko.getCoursesInCell(selectedCellId);
+    const cs = svelteAkiko.getCoursesInCell(selectedCellId);
 
     function toUi(id: CourseId): UiCourse {
       const kc = knownCoursesMap.get(id);
@@ -407,6 +418,7 @@
         credit: rc?.credit ?? kc?.credit,
         slots: kc?.slotsString,
         expects: kc?.expectsString,
+        expectsRaw: kc?.expects ?? [],
         grade: rc?.grade,
         takenYear: rc?.takenYear,
         syllabusYear:
@@ -414,7 +426,6 @@
             ? rc.takenYear
             : data.config.knownCourseYear,
         availability: kc?.availability ?? "available",
-        visible: false,
         remark: kc?.remark ?? "",
       };
     }
@@ -432,35 +443,57 @@
     const compareById = (a: UiCourse, b: UiCourse) =>
       courseIdCompare(a.id, b.id);
     return {
-      wontTake: res.wontTake.map(toUi).sort(compareByGradeThenId),
-      mightTake: res.mightTake.map(toUi).sort(compareByGradeThenId),
-      taken: res.taken.map(toUi).sort(compareById),
-      fake: res.fake
+      wontTake: cs.wontTake
+        .map(toUi)
+        .filter((c) => showNonAvailable || c.availability === "available")
+        .sort(compareByGradeThenId),
+      mightTake: cs.mightTake.map(toUi).sort(compareByGradeThenId),
+      taken: cs.taken.map(toUi).sort(compareById),
+      fake: cs.fake
         .map((id) => fakeCourseMap.get(id))
         .filter((fc) => fc !== undefined),
     };
   });
 
-  // Adds the `visible` flag — only this re-runs when filterString changes.
-  const groupedCourses = $derived.by(() => {
-    const addVisible = (c: UiCourse): UiCourse => {
-      if (!filterString) return { ...c, visible: true };
-      const kc = knownCoursesMap.get(c.id);
-      const rc = realCoursesMap.get(c.id);
-      const name = rc?.name || kc?.name || "";
-      const f = filterString.toLowerCase();
-      const visible =
-        c.id.toLowerCase().includes(f) || name.toLowerCase().includes(f);
-      return { ...c, visible };
-    };
+  const filteredCourseLists = $derived.by(() => {
+    let { courseIdOrName, credit, expects } = wontTakeFilters;
+    courseIdOrName = courseIdOrName.toLowerCase();
     return {
-      wontTake: sortedGroupedCourses.wontTake
-        .filter((c) => showNonAvailable || c.availability === "available")
-        .map(addVisible),
-      mightTake: sortedGroupedCourses.mightTake.map(addVisible),
-      taken: sortedGroupedCourses.taken.map(addVisible),
-      fake: sortedGroupedCourses.fake,
+      wontTake: courseLists.wontTake.filter((c) => {
+        if (courseIdOrName) {
+          const kc = knownCoursesMap.get(c.id);
+          const rc = realCoursesMap.get(c.id);
+          const name = rc?.name || kc?.name || "";
+          if (
+            !c.id.toLowerCase().includes(courseIdOrName) &&
+            !name.toLowerCase().includes(courseIdOrName)
+          )
+            return false;
+        }
+        if (credit.size > 0 && !credit.has(c.credit!)) return false;
+        if (expects.size > 0 && !c.expectsRaw.some((e) => expects.has(e)))
+          return false;
+        return true;
+      }),
+      mightTake: courseLists.mightTake,
+      taken: courseLists.taken,
+      fake: courseLists.fake,
     };
+  });
+
+  const availableCredits = $derived.by(() => {
+    const credits = new Set<number>();
+    for (const c of courseLists.wontTake) {
+      if (c.credit !== undefined) credits.add(c.credit);
+    }
+    return Array.from(credits).sort((a, b) => a - b);
+  });
+  const availableExpects = $derived.by(() => {
+    const expects = new Set<number>();
+    for (const c of courseLists.wontTake) {
+      for (const e of c.expectsRaw) expects.add(e);
+    }
+    return Array.from(expects).sort((a, b) => a - b);
   });
 
   $effect(() => {
@@ -473,7 +506,7 @@
       ([entry]) => {
         if (
           entry.isIntersecting &&
-          wontTakeVisibleLimit < groupedCourses.wontTake.length
+          wontTakeVisibleLimit < filteredCourseLists.wontTake.length
         )
           wontTakeVisibleLimit += 100;
       },
@@ -484,7 +517,7 @@
   });
 
   const wontTakeSliced = $derived(
-    groupedCourses.wontTake.slice(0, wontTakeVisibleLimit),
+    filteredCourseLists.wontTake.slice(0, wontTakeVisibleLimit),
   );
 
   const selectedCellStats = $derived(
@@ -777,7 +810,6 @@
   {@const draggable = dragSource !== undefined}
   <tr
     class="course"
-    class:hide={!c.visible}
     {draggable}
     ondragstart={(e) => {
       if (dragSource === undefined) return;
@@ -802,7 +834,7 @@
     <td class="expects">{c.expects ?? "-"}</td>
   </tr>
   {#if showCourseRemark}
-    <tr class="course-remark" class:hide={!c.visible}>
+    <tr class="course-remark">
       {#if c.remark}
         <td {colspan}>{c.remark}</td>
       {:else}
@@ -1207,21 +1239,68 @@
               <input
                 type="text"
                 placeholder="科目番号・科目名で検索"
-                bind:value={filterString}
+                bind:value={wontTakeFilters.courseIdOrName}
               />
             </search>
             <label class="settings-row">
               <input type="checkbox" bind:checked={showCourseRemark} />
               <span>授業の備考を表示</span>
             </label>
+            <div class="filters">
+              <button
+                class="filters-toggle"
+                onclick={() => (filtersOpen = !filtersOpen)}
+              >
+                <span class="filters-toggle-arrow"
+                  >{filtersOpen ? "▼" : "▶"}</span
+                >
+                <span>絞り込み</span>
+              </button>
+              {#if filtersOpen}
+                <div class="filter-group">
+                  <span class="filter-label">単位</span>
+                  {#each availableCredits as v (v)}
+                    <button
+                      class="filter-chip"
+                      class:active={wontTakeFilters.credit.has(v)}
+                      onclick={() => {
+                        wontTakeFilters.credit.has(v)
+                          ? wontTakeFilters.credit.delete(v)
+                          : wontTakeFilters.credit.add(v);
+                      }}>{v}</button
+                    >
+                  {/each}
+                </div>
+                <div class="filter-group">
+                  <span class="filter-label">年次</span>
+                  {#each availableExpects as v (v)}
+                    <button
+                      class="filter-chip"
+                      class:active={wontTakeFilters.expects.has(v)}
+                      onclick={() => {
+                        wontTakeFilters.expects.has(v)
+                          ? wontTakeFilters.expects.delete(v)
+                          : wontTakeFilters.expects.add(v);
+                      }}>{v}</button
+                    >
+                  {/each}
+                </div>
+              {/if}
+            </div>
           </div>
           <div class="section">
-            <h2>当てはまる授業</h2>
+            <h2>
+              当てはまる授業
+              {#if selectedCellId}
+                ({filteredCourseLists.wontTake.length}/{courseLists.wontTake
+                  .length})
+              {/if}
+            </h2>
             {@render courseTable(
               wontTakeSliced,
               !selectedCellId
                 ? "no-cell-selected"
-                : groupedCourses.wontTake.length === 0
+                : courseLists.wontTake.length === 0
                   ? "no-courses"
                   : "contains-courses",
               true,
@@ -1288,10 +1367,10 @@
               {/if}
             </div>
             {@render courseTable(
-              groupedCourses.mightTake,
+              filteredCourseLists.mightTake,
               !selectedCellId
                 ? "no-cell-selected"
-                : groupedCourses.mightTake.length === 0
+                : filteredCourseLists.mightTake.length === 0
                   ? "no-courses"
                   : "contains-courses",
               true,
@@ -1309,10 +1388,10 @@
               {/if}
             </div>
             {@render courseTable(
-              groupedCourses.taken,
+              filteredCourseLists.taken,
               !selectedCellId
                 ? "no-cell-selected"
-                : groupedCourses.taken.length === 0
+                : filteredCourseLists.taken.length === 0
                   ? "no-courses"
                   : "contains-courses",
               false,
@@ -1635,6 +1714,55 @@
     }
   }
 
+  .filters {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .filters-toggle {
+    all: unset;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+  }
+
+  .filters-toggle-arrow {
+    font-size: 10px;
+    color: oklch(0.5 0 0);
+  }
+
+  .filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .filter-label {
+    font-size: 12px;
+    color: oklch(0.5 0 0);
+    min-width: 25px;
+  }
+
+  .filter-chip {
+    all: unset;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0 5px;
+    border: 1px solid oklch(0.7 0 0);
+    border-radius: 3px;
+    line-height: 20px;
+
+    &.active {
+      background-color: oklch(0.2 0 0);
+      border-color: oklch(0.2 0 0);
+      color: white;
+    }
+  }
+
   #right-bar {
     display: grid;
     grid-template-rows: var(--timetable-height) 1fr;
@@ -1732,11 +1860,6 @@
       outline-offset: 4px;
       z-index: 1;
     }
-  }
-
-  .course.hide,
-  .course-remark.hide {
-    display: none;
   }
 
   .course-remark td {
