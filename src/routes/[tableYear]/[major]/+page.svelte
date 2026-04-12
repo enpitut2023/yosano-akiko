@@ -93,6 +93,9 @@
   let filterString = $state("");
   let showCourseRemark = $state(true);
   let showNonAvailable = $state(false);
+  let wontTakeVisibleLimit = $state(100);
+  let leftBarScrollEl = $state<HTMLDivElement | undefined>();
+  let wontTakeSentinelEl = $state<HTMLDivElement | undefined>();
 
   const creditRequirements = $derived(
     createCreditRequirementsOrFail(
@@ -459,6 +462,30 @@
       fake: sortedGroupedCourses.fake,
     };
   });
+
+  $effect(() => {
+    void selectedCellId;
+    wontTakeVisibleLimit = 100;
+  });
+  $effect(() => {
+    if (!wontTakeSentinelEl || !leftBarScrollEl) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (
+          entry.isIntersecting &&
+          wontTakeVisibleLimit < groupedCourses.wontTake.length
+        )
+          wontTakeVisibleLimit += 100;
+      },
+      { root: leftBarScrollEl, rootMargin: "0px 0px 200px 0px" },
+    );
+    observer.observe(wontTakeSentinelEl);
+    return () => observer.disconnect();
+  });
+
+  const wontTakeSliced = $derived(
+    groupedCourses.wontTake.slice(0, wontTakeVisibleLimit),
+  );
 
   const selectedCellStats = $derived(
     selectedCellId !== undefined
@@ -1147,12 +1174,7 @@
       </label>
       <label class="settings-row">
         <span>時間割の年度</span>
-        <input
-          type="number"
-          bind:value={timetableYear}
-          min="2020"
-          max="2030"
-        />
+        <input type="number" bind:value={timetableYear} />
       </label>
       <div id="control">
         <button id="reset" class="button" onclick={() => reset()}>
@@ -1172,7 +1194,7 @@
         }}
         ondrop={(e) => handleDrop(e, "wont-take")}
       >
-        <div id="left-bar-scroll">
+        <div id="left-bar-scroll" bind:this={leftBarScrollEl}>
           <div class="section controls">
             <search>
               <div>
@@ -1196,7 +1218,7 @@
           <div class="section">
             <h2>当てはまる授業</h2>
             {@render courseTable(
-              groupedCourses.wontTake,
+              wontTakeSliced,
               !selectedCellId
                 ? "no-cell-selected"
                 : groupedCourses.wontTake.length === 0
@@ -1206,6 +1228,7 @@
               true,
               "wont-take",
             )}
+            <div bind:this={wontTakeSentinelEl}></div>
           </div>
         </div>
         {#if selectedCellRemark}
