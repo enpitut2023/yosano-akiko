@@ -1226,67 +1226,60 @@
         }}
         ondrop={(e) => handleDrop(e, "wont-take")}
       >
-        <div id="left-bar-scroll" bind:this={leftBarScrollEl}>
-          <div class="section controls">
+        <div id="filter-bar">
+          <button
+            id="filter-bar-toggle"
+            onclick={() => (filtersOpen = !filtersOpen)}
+          >
+            <span>絞り込み</span>
+            <span class="filter-bar-toggle-arrow"
+              >{filtersOpen ? "▲" : "▼"}</span
+            >
+          </button>
+          {#if filtersOpen}
             <search>
-              <div>
-                <img
-                  src={asset("/icons/search.svg")}
-                  width="15px"
-                  alt="search"
-                />
-              </div>
               <input
                 type="text"
-                placeholder="科目番号・科目名で検索"
+                placeholder="科目番号もしくは科目名"
                 bind:value={wontTakeFilters.courseIdOrName}
               />
             </search>
+            <div class="filter-group">
+              <span class="filter-label">単位</span>
+              {#each availableCredits as v (v)}
+                <button
+                  class="filter-chip"
+                  class:active={wontTakeFilters.credit.has(v)}
+                  onclick={() => {
+                    wontTakeFilters.credit.has(v)
+                      ? wontTakeFilters.credit.delete(v)
+                      : wontTakeFilters.credit.add(v);
+                  }}>{v}</button
+                >
+              {/each}
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">年次</span>
+              {#each availableExpects as v (v)}
+                <button
+                  class="filter-chip"
+                  class:active={wontTakeFilters.expects.has(v)}
+                  onclick={() => {
+                    wontTakeFilters.expects.has(v)
+                      ? wontTakeFilters.expects.delete(v)
+                      : wontTakeFilters.expects.add(v);
+                  }}>{v}</button
+                >
+              {/each}
+            </div>
+          {/if}
+        </div>
+        <div id="left-bar-scroll" bind:this={leftBarScrollEl}>
+          <div class="section controls">
             <label class="settings-row">
               <input type="checkbox" bind:checked={showCourseRemark} />
               <span>授業の備考を表示</span>
             </label>
-            <div class="filters">
-              <button
-                class="filters-toggle"
-                onclick={() => (filtersOpen = !filtersOpen)}
-              >
-                <span class="filters-toggle-arrow"
-                  >{filtersOpen ? "▼" : "▶"}</span
-                >
-                <span>絞り込み</span>
-              </button>
-              {#if filtersOpen}
-                <div class="filter-group">
-                  <span class="filter-label">単位</span>
-                  {#each availableCredits as v (v)}
-                    <button
-                      class="filter-chip"
-                      class:active={wontTakeFilters.credit.has(v)}
-                      onclick={() => {
-                        wontTakeFilters.credit.has(v)
-                          ? wontTakeFilters.credit.delete(v)
-                          : wontTakeFilters.credit.add(v);
-                      }}>{v}</button
-                    >
-                  {/each}
-                </div>
-                <div class="filter-group">
-                  <span class="filter-label">年次</span>
-                  {#each availableExpects as v (v)}
-                    <button
-                      class="filter-chip"
-                      class:active={wontTakeFilters.expects.has(v)}
-                      onclick={() => {
-                        wontTakeFilters.expects.has(v)
-                          ? wontTakeFilters.expects.delete(v)
-                          : wontTakeFilters.expects.add(v);
-                      }}>{v}</button
-                    >
-                  {/each}
-                </div>
-              {/if}
-            </div>
           </div>
           <div class="section">
             <h2>
@@ -1687,7 +1680,7 @@
 
   #left-bar {
     display: grid;
-    grid-template-rows: 1fr auto;
+    grid-template-rows: auto 1fr auto;
     border-right: 1px dashed black;
     overflow: hidden;
   }
@@ -1714,22 +1707,27 @@
     }
   }
 
-  .filters {
+  #filter-bar {
+    border-bottom: 1px dashed black;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 10px;
+    padding: 15px;
   }
 
-  .filters-toggle {
+  #filter-bar-toggle {
     all: unset;
     cursor: pointer;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 5px;
-    font-size: 13px;
+
+    &:has(+ *) {
+      margin-bottom: 10px;
+    }
   }
 
-  .filters-toggle-arrow {
+  .filter-bar-toggle-arrow {
     font-size: 10px;
     color: oklch(0.5 0 0);
   }
@@ -2023,27 +2021,12 @@
     border-radius: 10px;
   }
 
-  #left-bar-scroll search {
+  #filter-bar > search > input {
+    box-sizing: border-box;
     width: 100%;
-    position: relative;
-
-    & > div {
-      position: absolute;
-      left: 10px;
-      top: 0;
-      bottom: 0;
-      display: grid;
-      place-content: center;
-      pointer-events: none;
-    }
-
-    & > input {
-      box-sizing: border-box;
-      width: 100%;
-      border: 1px solid gray;
-      border-radius: 10px;
-      padding: 5px 10px 5px 35px;
-    }
+    border: 1px solid gray;
+    border-radius: 10px;
+    padding: 5px 10px;
   }
 
   #credit-sums-container {
