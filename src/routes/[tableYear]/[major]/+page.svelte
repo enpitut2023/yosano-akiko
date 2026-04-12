@@ -1197,6 +1197,10 @@
 
     <div id="settings-tab" class:active={activeTab === "settings"}>
       <label class="settings-row">
+        <input type="checkbox" bind:checked={showCourseRemark} />
+        <span>授業の備考を表示</span>
+      </label>
+      <label class="settings-row">
         <input type="checkbox" bind:checked={showNonAvailable} />
         <span>今年度開講しない授業を表示する</span>
       </label>
@@ -1275,12 +1279,6 @@
           {/if}
         </div>
         <div id="left-bar-scroll" bind:this={leftBarScrollEl}>
-          <div class="section controls">
-            <label class="settings-row">
-              <input type="checkbox" bind:checked={showCourseRemark} />
-              <span>授業の備考を表示</span>
-            </label>
-          </div>
           <div class="section">
             <h2>
               当てはまる授業
@@ -1698,12 +1696,6 @@
       background-color: white;
       padding: 5px 0;
       margin: 0;
-    }
-
-    & .controls {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
     }
   }
 
