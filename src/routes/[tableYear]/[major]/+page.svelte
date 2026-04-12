@@ -835,7 +835,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each courses as c}
+        {#each courses as c (c.id)}
           {@render courseRow(c, dragSource, colspan)}
         {/each}
       </tbody>
@@ -879,7 +879,7 @@
           >
         </nav>
       </div>
-      {#each cellRects as r}
+      {#each cellRects as r (r.id)}
         {@const cellStats = creditStats.cells.get(r.id)}
         {#if cellStats}
           {@const [green, yellow] = getPercentage(
@@ -1014,7 +1014,7 @@
               </tr>
             </thead>
             <tbody>
-              {#each unclassifiedCourses.real as c}
+              {#each unclassifiedCourses.real as c (c.id)}
                 <tr class="course">
                   <td class="id-name">
                     <span>{c.id}</span><br />
@@ -1026,7 +1026,7 @@
                   <td class="term">{gradeDisplay(c.grade)}</td>
                 </tr>
               {/each}
-              {#each unclassifiedCourses.fake as c}
+              {#each unclassifiedCourses.fake as c (c.id)}
                 <tr class="course">
                   <td class="id-name">
                     <span>（科目番号不明）</span><br />
@@ -1075,7 +1075,7 @@
               </tr>
             </thead>
             <tbody>
-              {#each uiJizentouroku as course}
+              {#each uiJizentouroku as course (course.id)}
                 <tr class="course">
                   <td class="id-name">
                     <span>{course.id}</span><br />
@@ -1121,8 +1121,8 @@
               </tr>
             </thead>
             <tbody>
-              {#each uiOverlaps as group}
-                {#each group.courses as course, i}
+              {#each uiOverlaps as group (group.slot)}
+                {#each group.courses as course, i (course.id)}
                   <tr class="course">
                     {#if i === 0}
                       <td
