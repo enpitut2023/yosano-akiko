@@ -735,6 +735,65 @@
     window.addEventListener("wheel", handleWheel, { passive: false });
     return () => window.removeEventListener("wheel", handleWheel);
   });
+
+  // ----- Mobile unsupported detection -----
+  const MOBILE_UNSUPPORTED_MAX_WIDTH = 1024;
+  const MOBILE_UNSUPPORTED_MAX_HEIGHT = 700;
+  let mobileUnsupported = $state(false);
+  let mobileUnsupportedDismissed = $state(false);
+
+  function computeMobileUnsupported(
+    primaryCoarse: boolean,
+    primaryNoHover: boolean,
+    anyFine: boolean,
+    anyHover: boolean,
+    maxWidth: boolean,
+    maxHeight: boolean,
+  ): boolean {
+    const touchOnly = primaryCoarse && primaryNoHover && !anyFine && !anyHover;
+    const smallViewport = maxWidth || maxHeight;
+    return touchOnly && smallViewport;
+  }
+
+  $effect(() => {
+    if (!browser) return;
+
+    const queries = {
+      primaryCoarse: window.matchMedia("(pointer: coarse)"),
+      primaryNoHover: window.matchMedia("(hover: none)"),
+      anyFine: window.matchMedia("(any-pointer: fine)"),
+      anyHover: window.matchMedia("(any-hover: hover)"),
+      maxWidth: window.matchMedia(
+        `(max-width: ${MOBILE_UNSUPPORTED_MAX_WIDTH}px)`,
+      ),
+      maxHeight: window.matchMedia(
+        `(max-height: ${MOBILE_UNSUPPORTED_MAX_HEIGHT}px)`,
+      ),
+    };
+    const mediaQueryLists = Object.values(queries);
+
+    const update = () => {
+      mobileUnsupported = computeMobileUnsupported(
+        queries.primaryCoarse.matches,
+        queries.primaryNoHover.matches,
+        queries.anyFine.matches,
+        queries.anyHover.matches,
+        queries.maxWidth.matches,
+        queries.maxHeight.matches,
+      );
+    };
+
+    update();
+    for (const query of mediaQueryLists)
+      query.addEventListener("change", update);
+    window.addEventListener("resize", update);
+
+    return () => {
+      for (const query of mediaQueryLists)
+        query.removeEventListener("change", update);
+      window.removeEventListener("resize", update);
+    };
+  });
 </script>
 
 <svelte:head>
@@ -1352,33 +1411,54 @@
   ></div>
 {/if}
 
-<div id="mobile-unsupported">
-  <div class="mobile-unsupported-dialog">
-    <img src={asset("/images/akiko.png")} alt="あきこ" />
-    <span>あきこ</span>
-    <span>ごめんなさいね〜</span>
+{#if mobileUnsupported && !mobileUnsupportedDismissed}
+  <div id="mobile-unsupported" role="dialog" aria-modal="true">
+    <div class="mobile-unsupported-dialog">
+      <img src={asset("/images/akiko.png")} alt="あきこ" />
+      <span>あきこ</span>
+      <span>ごめんなさいね〜</span>
+    </div>
+    <p>
+      現在あきこはスマホの小さい画面やタッチ操作に対応しておらず、パソコンで開いていただく必要があります。
+      私たちは主に単位チェックの正確性を優先して開発を進めており、スマホ対応を優先的に進める目処は立っていません。
+      お手数をおかけして申し訳ございません。
+    </p>
+    <div class="mobile-unsupported-actions">
+      <button type="button" onclick={() => (mobileUnsupportedDismissed = true)}>
+        このまま使う
+      </button>
+    </div>
   </div>
-  <p>
-    現在あきこはスマホの小さい画面やタッチ操作に対応しておらず、パソコンで開いていただく必要があります。
-    私たちは主に単位チェックの正確性を優先して開発を進めており、スマホ対応を優先的に進める目処は立っていません。
-    お手数をおかけして申し訳ございません。
-  </p>
-</div>
+{/if}
 
 <style lang="scss">
   #mobile-unsupported {
-    display: none;
     position: fixed;
     inset: 0;
     z-index: 9999;
     background-color: white;
 
-    @media (pointer: coarse) and (hover: none) {
-      display: block;
-    }
-
     & > p {
       margin: 30px;
+    }
+
+    & > .mobile-unsupported-actions {
+      margin: 0 30px 30px;
+      display: flex;
+      justify-content: center;
+
+      & > button {
+        font-size: inherit;
+        padding: 10px 15px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background-color: #f8f8f8;
+        cursor: pointer;
+
+        &:hover {
+          background-color: #eee;
+        }
+      }
     }
 
     & > .mobile-unsupported-dialog {
