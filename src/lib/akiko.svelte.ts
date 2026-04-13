@@ -67,6 +67,35 @@ export class SvelteAkiko {
     return { wontTake, mightTake, taken, fake };
   }
 
+  getAllCourses(): {
+    wontTake: CourseId[];
+    mightTake: CourseId[];
+    taken: CourseId[];
+    fake: FakeCourseId[];
+  } {
+    this.subscribe();
+    const wontTake: CourseId[] = [];
+    const mightTake: CourseId[] = [];
+    const taken: CourseId[] = [];
+    for (const [courseId, pos] of this.akiko.coursePositions) {
+      switch (pos.listKind) {
+        case "wont-take":
+          wontTake.push(courseId);
+          break;
+        case "might-take":
+          mightTake.push(courseId);
+          break;
+        case "taken":
+          taken.push(courseId);
+          break;
+        default:
+          unreachable(pos.listKind);
+      }
+    }
+    const fake = Array.from(this.akiko.fakeCoursePositions.keys());
+    return { wontTake, mightTake, taken, fake };
+  }
+
   getCellId(courseId: CourseId): CellId | undefined {
     this.subscribe();
     return this.akiko.coursePositions.get(courseId)?.cellId;

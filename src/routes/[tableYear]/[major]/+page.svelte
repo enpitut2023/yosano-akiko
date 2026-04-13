@@ -405,9 +405,9 @@
 
   // Does not depend on wontTakeFilters
   const courseLists = $derived.by(() => {
-    if (!selectedCellId)
-      return { wontTake: [], mightTake: [], taken: [], fake: [] };
-    const cs = svelteAkiko.getCoursesInCell(selectedCellId);
+    const cs = selectedCellId
+      ? svelteAkiko.getCoursesInCell(selectedCellId)
+      : svelteAkiko.getAllCourses();
 
     function toUi(id: CourseId): UiCourse {
       const kc = knownCoursesMap.get(id);
@@ -846,14 +846,12 @@
 
 {#snippet courseTable(
   courses: UiCourse[],
-  state: "no-cell-selected" | "no-courses" | "contains-courses",
+  state: "no-courses" | "contains-courses",
   showSlots: boolean,
   showExpects: boolean,
   dragSource: "wont-take" | "might-take" | undefined,
 )}
-  {#if state === "no-cell-selected"}
-    <p>マスを選択してください</p>
-  {:else if state === "no-courses"}
+  {#if state === "no-courses"}
     <p>該当する授業がありません</p>
   {:else}
     {@const colspan = 2 + +showSlots + +showExpects}
@@ -1281,19 +1279,15 @@
         <div id="left-bar-scroll" bind:this={leftBarScrollEl}>
           <div class="section">
             <h2>
-              当てはまる授業
-              {#if selectedCellId}
-                ({filteredCourseLists.wontTake.length}/{courseLists.wontTake
-                  .length})
-              {/if}
+              {selectedCellId ? "当てはまる授業" : "全ての授業"}
+              ({filteredCourseLists.wontTake.length}/{courseLists.wontTake
+                .length})
             </h2>
             {@render courseTable(
               wontTakeSliced,
-              !selectedCellId
-                ? "no-cell-selected"
-                : courseLists.wontTake.length === 0
-                  ? "no-courses"
-                  : "contains-courses",
+              courseLists.wontTake.length === 0
+                ? "no-courses"
+                : "contains-courses",
               true,
               true,
               "wont-take",
@@ -1359,11 +1353,9 @@
             </div>
             {@render courseTable(
               filteredCourseLists.mightTake,
-              !selectedCellId
-                ? "no-cell-selected"
-                : filteredCourseLists.mightTake.length === 0
-                  ? "no-courses"
-                  : "contains-courses",
+              filteredCourseLists.mightTake.length === 0
+                ? "no-courses"
+                : "contains-courses",
               true,
               false,
               "might-take",
@@ -1380,11 +1372,9 @@
             </div>
             {@render courseTable(
               filteredCourseLists.taken,
-              !selectedCellId
-                ? "no-cell-selected"
-                : filteredCourseLists.taken.length === 0
-                  ? "no-courses"
-                  : "contains-courses",
+              filteredCourseLists.taken.length === 0
+                ? "no-courses"
+                : "contains-courses",
               false,
               false,
               undefined,
