@@ -75,6 +75,7 @@
     syllabusYear: number;
     availability: Availability;
     remark: string;
+    cellId: CellId | undefined;
   };
 
   let { data } = $props();
@@ -408,6 +409,7 @@
     const cs = selectedCellId
       ? svelteAkiko.getCoursesInCell(selectedCellId)
       : svelteAkiko.getAllCourses();
+    const coursePositions = svelteAkiko.getCoursePositions();
 
     function toUi(id: CourseId): UiCourse {
       const kc = knownCoursesMap.get(id);
@@ -427,6 +429,7 @@
             : data.config.knownCourseYear,
         availability: kc?.availability ?? "available",
         remark: kc?.remark ?? "",
+        cellId: coursePositions.get(id)?.cellId,
       };
     }
 
@@ -819,7 +822,19 @@
     ondragend={handleDragEnd}
   >
     <td class="id-name">
-      <span>{c.id}</span><br />
+      <span class="course-id">{c.id}</span>
+      {#if !selectedCellId && c.cellId !== undefined}
+        {@const cellId = c.cellId}
+        <button
+          class="goto-cell"
+          onclick={() => {
+            selectedCellId = cellId;
+            barsVisible = true;
+            activeTab = "courses";
+          }}>該当マスを表示</button
+        >
+      {/if}
+      <br />
       <a
         href={getSyllabusUrl(c.id, c.syllabusYear)}
         target="_blank"
@@ -1855,6 +1870,14 @@
     }
   }
 
+  .goto-cell {
+    all: unset;
+    cursor: pointer;
+    font-size: var(--fs-xs);
+    color: oklch(0.4 0.15 250);
+    text-decoration: underline;
+  }
+
   .course-remark td {
     font-size: 0.85em;
     padding: 3px 5px 8px;
@@ -1884,6 +1907,10 @@
     &.show-slots .slots,
     &.show-expects .expects {
       display: revert;
+    }
+
+    & .course-id {
+      vertical-align: middle;
     }
   }
 

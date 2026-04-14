@@ -16,6 +16,7 @@ import {
   type RealCourse,
   type AkikoExportForTwinsResult,
   akikoExportForTwins,
+  type CoursePosition,
 } from "./akiko";
 import { unreachable } from "./util";
 import { createSubscriber } from "svelte/reactivity";
@@ -132,6 +133,16 @@ export class SvelteAkiko {
   getFakeCoursesMap(): Map<FakeCourseId, FakeCourse> {
     this.subscribe();
     return this.akiko.fakeCourses;
+  }
+
+  getCoursePositions(): Map<CourseId, CoursePosition> {
+    this.subscribe();
+    return this.akiko.coursePositions;
+  }
+
+  getFakeCoursePositions(): Map<FakeCourseId, CellId> {
+    this.subscribe();
+    return this.akiko.fakeCoursePositions;
   }
 
   exportForTwins(): AkikoExportForTwinsResult {
