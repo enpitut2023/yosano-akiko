@@ -722,6 +722,16 @@
   let requirementsEl = $state<HTMLDivElement | undefined>();
   let leftBarEl = $state<HTMLDivElement | undefined>();
   let rightBarEl = $state<HTMLDivElement | undefined>();
+
+  function scrollCellIntoView(cellId: CellId) {
+    const rect = cellRects.find((r) => r.id === cellId);
+    if (!rect || !requirementsEl) return;
+    requirementsEl.scrollLeft =
+      rect.x + rect.width / 2 - requirementsEl.clientWidth / 2;
+    requirementsEl.scrollTop =
+      rect.y + rect.height / 2 - requirementsEl.clientHeight / 2;
+  }
+
   let dropGuide = $state<
     { left: number; top: number; width: number; height: number } | undefined
   >();
@@ -816,7 +826,6 @@
     {draggable}
     ondragstart={(e) => {
       if (dragSource === undefined) return;
-      assert(selectedCellId !== undefined);
       handleDragStart(e, c.id, dragSource);
     }}
     ondragend={handleDragEnd}
@@ -829,6 +838,7 @@
           class="goto-cell"
           onclick={() => {
             selectedCellId = cellId;
+            scrollCellIntoView(cellId);
             barsVisible = true;
             activeTab = "courses";
           }}>該当マスを表示</button
@@ -1134,9 +1144,11 @@
                   </td>
                   <td>
                     {#if course.cellId !== undefined}
+                      {@const cellId = course.cellId}
                       <button
                         onclick={() => {
-                          selectedCellId = course.cellId;
+                          selectedCellId = cellId;
+                          scrollCellIntoView(cellId);
                           activeTimetableTerm = course.term;
                           barsVisible = true;
                           activeTab = "courses";
@@ -1188,9 +1200,11 @@
                     </td>
                     <td>
                       {#if course.cellId !== undefined}
+                        {@const cellId = course.cellId}
                         <button
                           onclick={() => {
-                            selectedCellId = course.cellId;
+                            selectedCellId = cellId;
+                            scrollCellIntoView(cellId);
                             activeTimetableTerm = group.term;
                             barsVisible = true;
                             activeTab = "courses";
@@ -1339,6 +1353,7 @@
             const cellId = svelteAkiko.getCellId(courseId);
             if (cellId !== undefined) {
               selectedCellId = cellId;
+              scrollCellIntoView(cellId);
               barsVisible = true;
               activeTab = "courses";
             }
