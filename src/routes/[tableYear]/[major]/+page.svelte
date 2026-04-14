@@ -1503,6 +1503,9 @@
     position: fixed;
     inset: 0;
     font-size: 14px;
+    --fs-xs: 0.75em;
+    --fs-sm: 0.9em;
+    --fs-lg: 1.4em;
 
     display: grid;
     grid-template-columns: auto var(--sidebar-width);
@@ -1710,7 +1713,7 @@
   }
 
   .filter-bar-toggle-arrow {
-    font-size: 10px;
+    font-size: var(--fs-xs);
     color: oklch(0.5 0 0);
   }
 
@@ -1722,7 +1725,7 @@
   }
 
   .filter-label {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: oklch(0.5 0 0);
     min-width: 25px;
   }
@@ -1730,7 +1733,7 @@
   .filter-chip {
     all: unset;
     cursor: pointer;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     padding: 0 5px;
     border: 1px solid oklch(0.7 0 0);
     border-radius: 3px;
@@ -1812,7 +1815,7 @@
   }
 
   .credit-total {
-    font-size: 1rem;
+    font-size: 1em;
   }
 
   .cell {
@@ -1906,7 +1909,7 @@
     border-radius: 0 0 0 10px;
     width: var(--toggle-width);
     height: var(--toggle-width);
-    font-size: 20px;
+    font-size: var(--fs-lg);
     text-align: center;
     background-color: white;
     border: unset;
@@ -2123,7 +2126,7 @@
     background-color: rgba(255, 255, 255, 0.9);
     border: 1px solid #ccc;
     border-radius: 10px;
-    font-size: 13px;
+    font-size: var(--fs-sm);
 
     & > input[type="range"] {
       width: 100px;
