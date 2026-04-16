@@ -16,7 +16,6 @@ import {
   type RealCourse,
   type AkikoExportForTwinsResult,
   akikoExportForTwins,
-  type CoursePosition,
   type CourseIdLists,
   akikoGetCoursesInCell,
   akikoGetAllCourses,
@@ -51,7 +50,7 @@ export class SvelteAkiko {
 
   getCellId(courseId: CourseId): CellId | undefined {
     this.subscribe();
-    return this.akiko.coursePositions.get(courseId)?.cellId;
+    return this.akiko.courseIdToCellId.get(courseId);
   }
 
   getMightTakeCourseIds(): CourseId[] {
@@ -87,9 +86,9 @@ export class SvelteAkiko {
     return this.akiko.fakeCourses;
   }
 
-  getCoursePositions(): Map<CourseId, CoursePosition> {
+  getCourseIdToCellId(): Map<CourseId, CellId> {
     this.subscribe();
-    return this.akiko.coursePositions;
+    return this.akiko.courseIdToCellId;
   }
 
   getFakeCoursePositions(): Map<FakeCourseId, CellId> {

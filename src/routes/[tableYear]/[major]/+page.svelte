@@ -413,7 +413,7 @@
     const cs = selectedCellId
       ? svelteAkiko.getCoursesInCell(selectedCellId)
       : svelteAkiko.getAllCourses();
-    const coursePositions = svelteAkiko.getCoursePositions();
+    const courseCellIds = svelteAkiko.getCourseIdToCellId();
 
     function toUi(id: CourseId): UiCourse {
       const kc = knownCoursesMap.get(id);
@@ -433,7 +433,7 @@
             : data.config.knownCourseYear,
         availability: kc?.availability ?? "available",
         remark: kc?.remark ?? "",
-        cellId: coursePositions.get(id)?.cellId,
+        cellId: courseCellIds.get(id),
       };
     }
 
