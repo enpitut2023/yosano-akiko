@@ -61,6 +61,7 @@
     courseIdOrName: string;
     credit: SvelteSet<number>;
     expects: SvelteSet<number>;
+    courseType: SvelteSet<"has-cell" | "no-cell">;
   };
 
   type UiCourse = {
@@ -108,6 +109,7 @@
     courseIdOrName: "",
     credit: new SvelteSet(),
     expects: new SvelteSet(),
+    courseType: new SvelteSet(),
   });
 
   const creditRequirements = $derived(
@@ -459,7 +461,7 @@
   });
 
   const filteredCourseLists = $derived.by(() => {
-    let { courseIdOrName, credit, expects } = wontTakeFilters;
+    let { courseIdOrName, credit, expects, courseType } = wontTakeFilters;
     courseIdOrName = courseIdOrName.toLowerCase();
     return {
       wontTake: courseLists.wontTake.filter((c) => {
@@ -475,6 +477,11 @@
         }
         if (credit.size > 0 && !credit.has(c.credit!)) return false;
         if (expects.size > 0 && !c.expectsRaw.some((e) => expects.has(e)))
+          return false;
+        if (
+          courseType.size > 0 &&
+          !courseType.has(c.cellId !== undefined ? "has-cell" : "no-cell")
+        )
           return false;
         return true;
       }),
@@ -1300,6 +1307,20 @@
                       ? wontTakeFilters.expects.delete(v)
                       : wontTakeFilters.expects.add(v);
                   }}>{v}</button
+                >
+              {/each}
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">該当マス</span>
+              {#each [["has-cell", "あり"], ["no-cell", "なし"]] as const as [value, label] (value)}
+                <button
+                  class="filter-chip"
+                  class:active={wontTakeFilters.courseType.has(value)}
+                  onclick={() => {
+                    wontTakeFilters.courseType.has(value)
+                      ? wontTakeFilters.courseType.delete(value)
+                      : wontTakeFilters.courseType.add(value);
+                  }}>{label}</button
                 >
               {/each}
             </div>
