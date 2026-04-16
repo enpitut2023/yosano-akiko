@@ -653,25 +653,6 @@ export function akikoGetTakenCourseIds(akiko: Akiko): CourseId[] {
   return res;
 }
 
-export function akikoIsCourseVisible(
-  akiko: Akiko,
-  id: CourseId,
-  idOrName: string,
-): boolean {
-  const kc = akiko.knownCourses.get(id);
-  if (kc !== undefined) {
-    const res = kc.id.includes(idOrName) || kc.name.includes(idOrName);
-    if (res) {
-      return true;
-    }
-  }
-  const rc = akiko.realCourses.get(id);
-  if (rc !== undefined) {
-    return rc.id.includes(idOrName) || rc.name.includes(idOrName);
-  }
-  return false;
-}
-
 export function akikoGetUnclassifiedRealCourses(akiko: Akiko): RealCourse[] {
   const rcs: RealCourse[] = [];
   for (const rc of akiko.realCourses.values()) {
