@@ -62,6 +62,7 @@
     credit: SvelteSet<number>;
     expects: SvelteSet<number>;
     courseType: SvelteSet<"has-cell" | "no-cell">;
+    onlyUnoccupied: boolean;
   };
 
   type UiCourse = {
@@ -110,6 +111,7 @@
     credit: new SvelteSet(),
     expects: new SvelteSet(),
     courseType: new SvelteSet(),
+    onlyUnoccupied: false,
   });
 
   const creditRequirements = $derived(
@@ -460,8 +462,11 @@
     };
   });
 
+  const occupiedSlots = $derived(svelteAkiko.getOccupiedSlots());
+
   const filteredCourseLists = $derived.by(() => {
-    let { courseIdOrName, credit, expects, courseType } = wontTakeFilters;
+    let { courseIdOrName, credit, expects, courseType, onlyUnoccupied } =
+      wontTakeFilters;
     courseIdOrName = courseIdOrName.toLowerCase();
     return {
       wontTake: courseLists.wontTake.filter((c) => {
@@ -482,6 +487,8 @@
           courseType.size > 0 &&
           !courseType.has(c.cellId !== undefined ? "has-cell" : "no-cell")
         )
+          return false;
+        if (onlyUnoccupied && svelteAkiko.isOccupied(occupiedSlots, c.id))
           return false;
         return true;
       }),
@@ -1335,6 +1342,13 @@
                 >
               {/each}
             </div>
+            <label class="filter-checkbox">
+              <input
+                type="checkbox"
+                bind:checked={wontTakeFilters.onlyUnoccupied}
+              />
+              空きコマに入る授業のみ表示
+            </label>
           {/if}
         </div>
         <div id="left-bar-scroll" bind:this={leftBarScrollEl}>
@@ -1790,6 +1804,14 @@
     font-size: var(--fs-sm);
     color: oklch(0.5 0 0);
     min-width: 25px;
+  }
+
+  .filter-checkbox {
+    font-size: var(--fs-sm);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
   }
 
   .filter-chip {

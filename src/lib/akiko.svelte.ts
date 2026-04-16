@@ -20,6 +20,9 @@ import {
   type CourseIdLists,
   akikoGetCoursesInCell,
   akikoGetAllCourses,
+  type OccupiedSlots,
+  akikoGetOccupiedSlots,
+  akikoIsOccupied,
 } from "./akiko";
 import { createSubscriber } from "svelte/reactivity";
 
@@ -92,6 +95,15 @@ export class SvelteAkiko {
   getFakeCoursePositions(): Map<FakeCourseId, CellId> {
     this.subscribe();
     return this.akiko.fakeCoursePositions;
+  }
+
+  getOccupiedSlots(): OccupiedSlots {
+    this.subscribe();
+    return akikoGetOccupiedSlots(this.akiko);
+  }
+
+  isOccupied(occupied: OccupiedSlots, courseId: CourseId): boolean {
+    return akikoIsOccupied(this.akiko, occupied, courseId);
   }
 
   exportForTwins(): AkikoExportForTwinsResult {

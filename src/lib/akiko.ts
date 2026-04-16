@@ -262,6 +262,10 @@ export function slotToString(s: Slot): string {
   return termToString(s.term) + " " + whenToString(s.when);
 }
 
+function slotHash(s: Slot): string {
+  return JSON.stringify(s);
+}
+
 export type Availability = "available" | "unavailable" | "indeterminable";
 
 export type KnownCourse = {
@@ -671,6 +675,40 @@ export function akikoGetUnclassifiedFakeCourses(akiko: Akiko): FakeCourse[] {
     }
   }
   return fcs;
+}
+
+export type OccupiedSlots = Nominal<Set<string>, "OccupiedSlots">;
+
+export function akikoGetOccupiedSlots(akiko: Akiko): OccupiedSlots {
+  const occupied = new Set<string>();
+  for (const [courseId, pos] of akiko.coursePositions) {
+    if (pos.listKind !== "might-take") continue;
+    const kc = akiko.knownCourses.get(courseId);
+    if (kc === undefined) continue;
+    for (const s of kc.slots) {
+      if (s.when.kind === "regular") occupied.add(slotHash(s));
+    }
+  }
+  return occupied as OccupiedSlots;
+}
+
+export function akikoIsOccupied(
+  akiko: Akiko,
+  occupied: OccupiedSlots,
+  courseId: CourseId,
+): boolean {
+  const kc = akiko.knownCourses.get(courseId);
+  if (kc === undefined) return false;
+  for (const s of kc.slots) if (occupied.has(slotHash(s))) return true;
+  return false;
+}
+
+export function akikoFilterOutOccupiedByMightTake(
+  akiko: Akiko,
+  courseIds: CourseId[],
+): CourseId[] {
+  const occupied = akikoGetOccupiedSlots(akiko);
+  return courseIds.filter((id) => !akikoIsOccupied(akiko, occupied, id));
 }
 
 export type Overlap = { slot: Slot; courses: KnownCourse[] };
