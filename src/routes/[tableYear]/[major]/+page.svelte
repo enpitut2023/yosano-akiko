@@ -507,6 +507,17 @@
   });
 
   $effect(() => {
+    for (const v of wontTakeFilters.credit) {
+      if (!availableCredits.includes(v)) wontTakeFilters.credit.delete(v);
+    }
+  });
+  $effect(() => {
+    for (const v of wontTakeFilters.expects) {
+      if (!availableExpects.includes(v)) wontTakeFilters.expects.delete(v);
+    }
+  });
+
+  $effect(() => {
     void selectedCellId;
     wontTakeVisibleLimit = 100;
   });
