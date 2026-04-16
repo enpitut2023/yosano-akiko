@@ -17,8 +17,10 @@ import {
   type AkikoExportForTwinsResult,
   akikoExportForTwins,
   type CoursePosition,
+  type CourseIdLists,
+  akikoGetCoursesInCell,
+  akikoGetAllCourses,
 } from "./akiko";
-import { unreachable } from "./util";
 import { createSubscriber } from "svelte/reactivity";
 
 export class SvelteAkiko {
@@ -34,67 +36,14 @@ export class SvelteAkiko {
     this.akiko = akiko;
   }
 
-  // TODO: should return undefined for unknown cell ids
-  getCoursesInCell(cellId: CellId): {
-    wontTake: CourseId[];
-    mightTake: CourseId[];
-    taken: CourseId[];
-    fake: FakeCourseId[];
-  } {
+  getCoursesInCell(cellId: CellId): CourseIdLists {
     this.subscribe();
-    const wontTake: CourseId[] = [];
-    const mightTake: CourseId[] = [];
-    const taken: CourseId[] = [];
-    const fake: FakeCourseId[] = [];
-    for (const [courseId, pos] of this.akiko.coursePositions) {
-      if (pos.cellId !== cellId) continue;
-      switch (pos.listKind) {
-        case "wont-take":
-          wontTake.push(courseId);
-          break;
-        case "might-take":
-          mightTake.push(courseId);
-          break;
-        case "taken":
-          taken.push(courseId);
-          break;
-        default:
-          unreachable(pos.listKind);
-      }
-    }
-    for (const [fakeCourseId, id] of this.akiko.fakeCoursePositions) {
-      if (cellId === id) fake.push(fakeCourseId);
-    }
-    return { wontTake, mightTake, taken, fake };
+    return akikoGetCoursesInCell(this.akiko, cellId);
   }
 
-  getAllCourses(): {
-    wontTake: CourseId[];
-    mightTake: CourseId[];
-    taken: CourseId[];
-    fake: FakeCourseId[];
-  } {
+  getAllCourses(): CourseIdLists {
     this.subscribe();
-    const wontTake: CourseId[] = [];
-    const mightTake: CourseId[] = [];
-    const taken: CourseId[] = [];
-    for (const [courseId, pos] of this.akiko.coursePositions) {
-      switch (pos.listKind) {
-        case "wont-take":
-          wontTake.push(courseId);
-          break;
-        case "might-take":
-          mightTake.push(courseId);
-          break;
-        case "taken":
-          taken.push(courseId);
-          break;
-        default:
-          unreachable(pos.listKind);
-      }
-    }
-    const fake = Array.from(this.akiko.fakeCoursePositions.keys());
-    return { wontTake, mightTake, taken, fake };
+    return akikoGetAllCourses(this.akiko);
   }
 
   getCellId(courseId: CourseId): CellId | undefined {

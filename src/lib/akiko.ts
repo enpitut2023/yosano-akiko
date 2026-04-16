@@ -104,6 +104,14 @@ export function gradeIsPass(g: Grade): boolean {
   return g === "a+" || g === "a" || g === "b" || g === "c" || g === "pass";
 }
 
+export function gradeIsFail(g: Grade): boolean {
+  return g === "d" || g === "fail";
+}
+
+export function gradeIsWip(g: Grade): boolean {
+  return g === "wip";
+}
+
 export const TERMS = [
   "spring-a",
   "spring-b",
@@ -428,6 +436,98 @@ export function akikoNew(
     coursePositions,
     fakeCoursePositions,
     creditRequirements,
+  };
+}
+
+export type CourseIdLists = {
+  wontTake: CourseId[];
+  mightTake: CourseId[];
+  taken: CourseId[];
+  fake: FakeCourseId[];
+};
+
+// TODO: should return undefined for unknown cell ids
+export function akikoGetCoursesInCell(
+  akiko: Akiko,
+  cellId: CellId,
+): CourseIdLists {
+  const wontTake: CourseId[] = [];
+  const mightTake: CourseId[] = [];
+  const taken: CourseId[] = [];
+  const fake: FakeCourseId[] = [];
+  for (const [courseId, pos] of akiko.coursePositions) {
+    if (pos.cellId !== cellId) continue;
+    switch (pos.listKind) {
+      case "wont-take":
+        wontTake.push(courseId);
+        break;
+      case "might-take":
+        mightTake.push(courseId);
+        break;
+      case "taken":
+        taken.push(courseId);
+        break;
+      default:
+        unreachable(pos.listKind);
+    }
+  }
+  for (const [fakeCourseId, id] of akiko.fakeCoursePositions) {
+    if (cellId === id) fake.push(fakeCourseId);
+  }
+  return { wontTake, mightTake, taken, fake };
+}
+
+export function akikoGetAllCourses(akiko: Akiko): CourseIdLists {
+  const wontTake = new Set<CourseId>();
+  const mightTake = new Set<CourseId>();
+  const taken = new Set<CourseId>();
+  for (const courseId of akiko.knownCourses.keys()) {
+    const pos = akiko.coursePositions.get(courseId);
+    if (pos === undefined) {
+      wontTake.add(courseId);
+      continue;
+    }
+    switch (pos.listKind) {
+      case "wont-take":
+        wontTake.add(courseId);
+        break;
+      case "might-take":
+        mightTake.add(courseId);
+        break;
+      case "taken":
+        taken.add(courseId);
+        break;
+      default:
+        unreachable(pos.listKind);
+    }
+  }
+  for (const rc of akiko.realCourses.values()) {
+    const pos = akiko.coursePositions.get(rc.id);
+    if (pos === undefined) {
+      if (gradeIsFail(rc.grade)) wontTake.add(rc.id);
+      else if (gradeIsWip(rc.grade)) mightTake.add(rc.id);
+      else if (gradeIsPass(rc.grade)) taken.add(rc.id);
+      continue;
+    }
+    switch (pos.listKind) {
+      case "wont-take":
+        wontTake.add(rc.id);
+        break;
+      case "might-take":
+        mightTake.add(rc.id);
+        break;
+      case "taken":
+        taken.add(rc.id);
+        break;
+      default:
+        unreachable(pos.listKind);
+    }
+  }
+  return {
+    wontTake: Array.from(wontTake),
+    mightTake: Array.from(mightTake),
+    taken: Array.from(taken),
+    fake: Array.from(akiko.fakeCourses.keys()),
   };
 }
 
