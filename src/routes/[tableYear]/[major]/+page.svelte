@@ -1245,10 +1245,6 @@
 
     <div id="settings-tab" class:active={activeTab === "settings"}>
       <label class="settings-row">
-        <input type="checkbox" bind:checked={showCourseRemark} />
-        <span>授業の備考を表示</span>
-      </label>
-      <label class="settings-row">
         <input type="checkbox" bind:checked={showNonAvailable} />
         <span>今年度開講しない授業を表示する</span>
       </label>
@@ -1314,13 +1310,19 @@
               {/each}
             </select>
           </div>
-          <label class="filter-checkbox">
-            <input
-              type="checkbox"
-              bind:checked={wontTakeFilters.onlyUnoccupied}
-            />
-            空きコマに入る授業のみ表示
-          </label>
+          <div id="filter-bar-checkboxes">
+            <label class="filter-checkbox">
+              <input
+                type="checkbox"
+                bind:checked={wontTakeFilters.onlyUnoccupied}
+              />
+              空きコマのみ表示
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" bind:checked={showCourseRemark} />
+              備考を表示
+            </label>
+          </div>
         </div>
         <div id="left-bar-scroll" bind:this={leftBarScrollEl}>
           <div class="section">
@@ -1770,11 +1772,15 @@
     }
   }
 
+  #filter-bar-checkboxes {
+    display: flex;
+    gap: 15px;
+  }
+
   .filter-checkbox {
     font-size: var(--fs-sm);
     display: flex;
     align-items: center;
-    gap: 5px;
     cursor: pointer;
   }
 
