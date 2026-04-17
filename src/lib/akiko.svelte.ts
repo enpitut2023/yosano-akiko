@@ -16,8 +16,13 @@ import {
   type RealCourse,
   type AkikoExportForTwinsResult,
   akikoExportForTwins,
+  type CourseIdLists,
+  akikoGetCoursesInCell,
+  akikoGetAllCourses,
+  type OccupiedSlots,
+  akikoGetOccupiedSlots,
+  akikoIsOccupied,
 } from "./akiko";
-import { unreachable } from "./util";
 import { createSubscriber } from "svelte/reactivity";
 
 export class SvelteAkiko {
@@ -33,43 +38,19 @@ export class SvelteAkiko {
     this.akiko = akiko;
   }
 
-  // TODO: should return undefined for unknown cell ids
-  getCoursesInCell(cellId: CellId): {
-    wontTake: CourseId[];
-    mightTake: CourseId[];
-    taken: CourseId[];
-    fake: FakeCourseId[];
-  } {
+  getCoursesInCell(cellId: CellId): CourseIdLists {
     this.subscribe();
-    const wontTake: CourseId[] = [];
-    const mightTake: CourseId[] = [];
-    const taken: CourseId[] = [];
-    const fake: FakeCourseId[] = [];
-    for (const [courseId, pos] of this.akiko.coursePositions) {
-      if (pos.cellId !== cellId) continue;
-      switch (pos.listKind) {
-        case "wont-take":
-          wontTake.push(courseId);
-          break;
-        case "might-take":
-          mightTake.push(courseId);
-          break;
-        case "taken":
-          taken.push(courseId);
-          break;
-        default:
-          unreachable(pos.listKind);
-      }
-    }
-    for (const [fakeCourseId, id] of this.akiko.fakeCoursePositions) {
-      if (cellId === id) fake.push(fakeCourseId);
-    }
-    return { wontTake, mightTake, taken, fake };
+    return akikoGetCoursesInCell(this.akiko, cellId);
+  }
+
+  getAllCourses(): CourseIdLists {
+    this.subscribe();
+    return akikoGetAllCourses(this.akiko);
   }
 
   getCellId(courseId: CourseId): CellId | undefined {
     this.subscribe();
-    return this.akiko.coursePositions.get(courseId)?.cellId;
+    return this.akiko.courseIdToCellId.get(courseId);
   }
 
   getMightTakeCourseIds(): CourseId[] {
@@ -103,6 +84,25 @@ export class SvelteAkiko {
   getFakeCoursesMap(): Map<FakeCourseId, FakeCourse> {
     this.subscribe();
     return this.akiko.fakeCourses;
+  }
+
+  getCourseIdToCellId(): Map<CourseId, CellId> {
+    this.subscribe();
+    return this.akiko.courseIdToCellId;
+  }
+
+  getFakeCoursePositions(): Map<FakeCourseId, CellId> {
+    this.subscribe();
+    return this.akiko.fakeCoursePositions;
+  }
+
+  getOccupiedSlots(): OccupiedSlots {
+    this.subscribe();
+    return akikoGetOccupiedSlots(this.akiko);
+  }
+
+  isOccupied(occupied: OccupiedSlots, courseId: CourseId): boolean {
+    return akikoIsOccupied(this.akiko, occupied, courseId);
   }
 
   exportForTwins(): AkikoExportForTwinsResult {

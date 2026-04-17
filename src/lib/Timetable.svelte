@@ -324,6 +324,7 @@
     display: grid;
     grid-template-rows: auto 1fr;
     overflow: hidden;
+    font-size: 10px;
   }
 
   .term-tabs {
@@ -337,7 +338,7 @@
       border: none;
       border-right: 1px solid black;
       cursor: pointer;
-      font-size: 11px;
+      font-size: 1.1em;
 
       &:last-child {
         border-right: none;
@@ -368,7 +369,6 @@
     td {
       border: 1px solid black;
       border-collapse: collapse;
-      font-size: 10px;
     }
 
     table {
@@ -389,7 +389,6 @@
 
   .tt-cell {
     border: 0.5px solid black;
-    font-size: 10px;
   }
 
   .tt-header,
@@ -447,7 +446,7 @@
   }
 
   .bar-id {
-    font-size: 8px;
+    font-size: 0.8em;
     opacity: 0.7;
     white-space: nowrap;
     overflow: hidden;
@@ -456,7 +455,7 @@
   }
 
   .bar-name {
-    font-size: 9px;
+    font-size: 0.9em;
     display: block;
     word-break: break-all;
   }

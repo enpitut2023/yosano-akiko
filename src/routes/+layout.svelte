@@ -38,7 +38,8 @@
   :global {
     body,
     button,
-    input {
+    input,
+    select {
       font-family: "M PLUS Rounded 1c", sans-serif;
     }
 

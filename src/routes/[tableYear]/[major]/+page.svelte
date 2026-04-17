@@ -56,18 +56,26 @@
 
   type UiJizentourokuCourse = UiOverlapCourse & { term: TimetableTab };
 
+  type WontTakeFilters = {
+    courseIdOrName: string;
+    credit: number | undefined;
+    expects: number | undefined;
+    onlyUnoccupied: boolean;
+  };
+
   type UiCourse = {
     id: CourseId;
     name: string;
     credit: number | undefined;
     slots: string | undefined;
     expects: string | undefined;
+    expectsRaw: number[];
     grade: Grade | undefined;
     takenYear: number | undefined;
     syllabusYear: number;
     availability: Availability;
-    visible: boolean;
     remark: string;
+    cellId: CellId | undefined;
   };
 
   let { data } = $props();
@@ -90,8 +98,17 @@
   let fakeCourses = $state<FakeCourse[]>(initialLocalData.fakeCourses);
   let isNative = $state<boolean>(initialLocalData.native);
   let selectedCellId = $state<CellId | undefined>(undefined);
-  let filterString = $state("");
   let showCourseRemark = $state(true);
+  let showNonAvailable = $state(false);
+  let wontTakeVisibleLimit = $state(100);
+  let leftBarScrollEl = $state<HTMLDivElement | undefined>();
+  let wontTakeSentinelEl = $state<HTMLDivElement | undefined>();
+  let wontTakeFilters = $state<WontTakeFilters>({
+    courseIdOrName: "",
+    credit: undefined,
+    expects: undefined,
+    onlyUnoccupied: false,
+  });
 
   const creditRequirements = $derived(
     createCreditRequirementsOrFail(
@@ -387,18 +404,12 @@
     }
   }
 
-  // Sorted course lists — does NOT depend on filterString, so typing in the
-  // search box won't trigger a re-sort.
-  const sortedGroupedCourses = $derived.by(() => {
-    if (!selectedCellId)
-      return {
-        wontTake: [],
-        nonAvailable: [],
-        mightTake: [],
-        taken: [],
-        fake: [],
-      };
-    const res = svelteAkiko.getCoursesInCell(selectedCellId);
+  // Does not depend on wontTakeFilters
+  const courseLists = $derived.by(() => {
+    const cs = selectedCellId
+      ? svelteAkiko.getCoursesInCell(selectedCellId)
+      : svelteAkiko.getAllCourses();
+    const courseCellIds = svelteAkiko.getCourseIdToCellId();
 
     function toUi(id: CourseId): UiCourse {
       const kc = knownCoursesMap.get(id);
@@ -409,6 +420,7 @@
         credit: rc?.credit ?? kc?.credit,
         slots: kc?.slotsString,
         expects: kc?.expectsString,
+        expectsRaw: kc?.expects ?? [],
         grade: rc?.grade,
         takenYear: rc?.takenYear,
         syllabusYear:
@@ -416,8 +428,8 @@
             ? rc.takenYear
             : data.config.knownCourseYear,
         availability: kc?.availability ?? "available",
-        visible: false,
         remark: kc?.remark ?? "",
+        cellId: courseCellIds.get(id),
       };
     }
 
@@ -433,38 +445,104 @@
     };
     const compareById = (a: UiCourse, b: UiCourse) =>
       courseIdCompare(a.id, b.id);
-    const allWontTake = res.wontTake.map(toUi).sort(compareByGradeThenId);
     return {
-      wontTake: allWontTake.filter((c) => c.availability === "available"),
-      nonAvailable: allWontTake.filter((c) => c.availability !== "available"),
-      mightTake: res.mightTake.map(toUi).sort(compareByGradeThenId),
-      taken: res.taken.map(toUi).sort(compareById),
-      fake: res.fake
+      wontTake: cs.wontTake
+        .map(toUi)
+        .filter((c) => showNonAvailable || c.availability === "available")
+        .sort(compareByGradeThenId),
+      mightTake: cs.mightTake.map(toUi).sort(compareByGradeThenId),
+      taken: cs.taken.map(toUi).sort(compareById),
+      fake: cs.fake
         .map((id) => fakeCourseMap.get(id))
         .filter((fc) => fc !== undefined),
     };
   });
 
-  // Adds the `visible` flag — only this re-runs when filterString changes.
-  const groupedCourses = $derived.by(() => {
-    const addVisible = (c: UiCourse): UiCourse => {
-      if (!filterString) return { ...c, visible: true };
-      const kc = knownCoursesMap.get(c.id);
-      const rc = realCoursesMap.get(c.id);
-      const name = rc?.name || kc?.name || "";
-      const f = filterString.toLowerCase();
-      const visible =
-        c.id.toLowerCase().includes(f) || name.toLowerCase().includes(f);
-      return { ...c, visible };
-    };
+  const occupiedSlots = $derived(svelteAkiko.getOccupiedSlots());
+
+  const filteredCourseLists = $derived.by(() => {
+    let { courseIdOrName, credit, expects, onlyUnoccupied } = wontTakeFilters;
+    courseIdOrName = courseIdOrName.toLowerCase();
     return {
-      wontTake: sortedGroupedCourses.wontTake.map(addVisible),
-      nonAvailable: sortedGroupedCourses.nonAvailable.map(addVisible),
-      mightTake: sortedGroupedCourses.mightTake.map(addVisible),
-      taken: sortedGroupedCourses.taken.map(addVisible),
-      fake: sortedGroupedCourses.fake,
+      wontTake: courseLists.wontTake.filter((c) => {
+        if (courseIdOrName) {
+          const kc = knownCoursesMap.get(c.id);
+          const rc = realCoursesMap.get(c.id);
+          const name = rc?.name || kc?.name || "";
+          if (
+            !c.id.toLowerCase().includes(courseIdOrName) &&
+            !name.toLowerCase().includes(courseIdOrName)
+          )
+            return false;
+        }
+        if (credit !== undefined && c.credit !== credit) return false;
+        if (expects !== undefined && !c.expectsRaw.includes(expects))
+          return false;
+        if (onlyUnoccupied && svelteAkiko.isOccupied(occupiedSlots, c.id))
+          return false;
+        return true;
+      }),
+      mightTake: courseLists.mightTake,
+      taken: courseLists.taken,
+      fake: courseLists.fake,
     };
   });
+
+  const availableCredits = $derived.by(() => {
+    const credits = new Set<number>();
+    for (const c of courseLists.wontTake) {
+      if (c.credit !== undefined) credits.add(c.credit);
+    }
+    return Array.from(credits).sort((a, b) => a - b);
+  });
+  const availableExpects = $derived.by(() => {
+    const expects = new Set<number>();
+    for (const c of courseLists.wontTake) {
+      for (const e of c.expectsRaw) expects.add(e);
+    }
+    return Array.from(expects).sort((a, b) => a - b);
+  });
+
+  $effect(() => {
+    if (
+      wontTakeFilters.credit !== undefined &&
+      !availableCredits.includes(wontTakeFilters.credit)
+    ) {
+      wontTakeFilters.credit = undefined;
+    }
+  });
+  $effect(() => {
+    if (
+      wontTakeFilters.expects !== undefined &&
+      !availableExpects.includes(wontTakeFilters.expects)
+    ) {
+      wontTakeFilters.expects = undefined;
+    }
+  });
+
+  $effect(() => {
+    void selectedCellId;
+    wontTakeVisibleLimit = 100;
+  });
+  $effect(() => {
+    if (!wontTakeSentinelEl || !leftBarScrollEl) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (
+          entry.isIntersecting &&
+          wontTakeVisibleLimit < filteredCourseLists.wontTake.length
+        )
+          wontTakeVisibleLimit += 100;
+      },
+      { root: leftBarScrollEl, rootMargin: "0px 0px 200px 0px" },
+    );
+    observer.observe(wontTakeSentinelEl);
+    return () => observer.disconnect();
+  });
+
+  const wontTakeSliced = $derived(
+    filteredCourseLists.wontTake.slice(0, wontTakeVisibleLimit),
+  );
 
   const selectedCellStats = $derived(
     selectedCellId !== undefined
@@ -665,6 +743,16 @@
   let requirementsEl = $state<HTMLDivElement | undefined>();
   let leftBarEl = $state<HTMLDivElement | undefined>();
   let rightBarEl = $state<HTMLDivElement | undefined>();
+
+  function scrollCellIntoView(cellId: CellId) {
+    const rect = cellRects.find((r) => r.id === cellId);
+    if (!rect || !requirementsEl) return;
+    requirementsEl.scrollLeft =
+      rect.x + rect.width / 2 - requirementsEl.clientWidth / 2;
+    requirementsEl.scrollTop =
+      rect.y + rect.height / 2 - requirementsEl.clientHeight / 2;
+  }
+
   let dropGuide = $state<
     { left: number; top: number; width: number; height: number } | undefined
   >();
@@ -815,17 +903,28 @@
   {@const draggable = dragSource !== undefined}
   <tr
     class="course"
-    class:hide={!c.visible}
     {draggable}
     ondragstart={(e) => {
       if (dragSource === undefined) return;
-      assert(selectedCellId !== undefined);
       handleDragStart(e, c.id, dragSource);
     }}
     ondragend={handleDragEnd}
   >
     <td class="id-name">
-      <span>{c.id}</span><br />
+      <span class="course-id">{c.id}</span>
+      {#if !selectedCellId && c.cellId !== undefined}
+        {@const cellId = c.cellId}
+        <button
+          class="goto-cell"
+          onclick={() => {
+            selectedCellId = cellId;
+            scrollCellIntoView(cellId);
+            barsVisible = true;
+            activeTab = "courses";
+          }}>該当マスを表示</button
+        >
+      {/if}
+      <br />
       <a
         href={getSyllabusUrl(c.id, c.syllabusYear)}
         target="_blank"
@@ -833,13 +932,14 @@
         >{c.name}{c.grade && gradeIsPass(c.grade) ? ` (${c.takenYear})` : ""}</a
       >
       {#if c.grade}<br /><span>{gradeDisplay(c.grade)}</span>{/if}
+      {#if c.availability !== "available"}<br /><span>（非開講）</span>{/if}
     </td>
     <td class="credit">{c.credit ?? "-"}</td>
     <td class="slots">{c.slots ?? "-"}</td>
     <td class="expects">{c.expects ?? "-"}</td>
   </tr>
   {#if showCourseRemark}
-    <tr class="course-remark" class:hide={!c.visible}>
+    <tr class="course-remark">
       {#if c.remark}
         <td {colspan}>{c.remark}</td>
       {:else}
@@ -851,14 +951,12 @@
 
 {#snippet courseTable(
   courses: UiCourse[],
-  state: "no-cell-selected" | "no-courses" | "contains-courses",
+  state: "no-courses" | "contains-courses",
   showSlots: boolean,
   showExpects: boolean,
   dragSource: "wont-take" | "might-take" | undefined,
 )}
-  {#if state === "no-cell-selected"}
-    <p>マスを選択してください</p>
-  {:else if state === "no-courses"}
+  {#if state === "no-courses"}
     <p>該当する授業がありません</p>
   {:else}
     {@const colspan = 2 + +showSlots + +showExpects}
@@ -872,7 +970,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each courses as c}
+        {#each courses as c (c.id)}
           {@render courseRow(c, dragSource, colspan)}
         {/each}
       </tbody>
@@ -886,6 +984,9 @@
       id="requirements"
       bind:this={requirementsEl}
       onscroll={(e) => (scrollX = -e.currentTarget.scrollLeft)}
+      onclick={() => {
+        selectedCellId = undefined;
+      }}
     >
       <img
         src={asset(`/tables/${data.config.tableYear}/${data.config.major}.svg`)}
@@ -913,7 +1014,7 @@
           >
         </nav>
       </div>
-      {#each cellRects as r}
+      {#each cellRects as r (r.id)}
         {@const cellStats = creditStats.cells.get(r.id)}
         {#if cellStats}
           {@const [green, yellow] = getPercentage(
@@ -925,7 +1026,8 @@
             class="cell"
             class:selected={selectedCellId === r.id}
             style="left:{r.x}px; top:{r.y}px; width:{r.width}px; height:{r.height}px; --green-percentage:{green}%; --yellow-percentage:{yellow}%"
-            onclick={() => {
+            onclick={(e) => {
+              e.stopPropagation();
               selectedCellId = r.id;
               barsVisible = true;
               activeTab = "courses";
@@ -1047,7 +1149,7 @@
               </tr>
             </thead>
             <tbody>
-              {#each unclassifiedCourses.real as c}
+              {#each unclassifiedCourses.real as c (c.id)}
                 <tr class="course">
                   <td class="id-name">
                     <span>{c.id}</span><br />
@@ -1059,7 +1161,7 @@
                   <td class="term">{gradeDisplay(c.grade)}</td>
                 </tr>
               {/each}
-              {#each unclassifiedCourses.fake as c}
+              {#each unclassifiedCourses.fake as c (c.id)}
                 <tr class="course">
                   <td class="id-name">
                     <span>（科目番号不明）</span><br />
@@ -1108,7 +1210,7 @@
               </tr>
             </thead>
             <tbody>
-              {#each uiJizentouroku as course}
+              {#each uiJizentouroku as course (course.id)}
                 <tr class="course">
                   <td class="id-name">
                     <span>{course.id}</span><br />
@@ -1122,9 +1224,11 @@
                   </td>
                   <td>
                     {#if course.cellId !== undefined}
+                      {@const cellId = course.cellId}
                       <button
                         onclick={() => {
-                          selectedCellId = course.cellId;
+                          selectedCellId = cellId;
+                          scrollCellIntoView(cellId);
                           activeTimetableTerm = course.term;
                           barsVisible = true;
                           activeTab = "courses";
@@ -1154,8 +1258,8 @@
               </tr>
             </thead>
             <tbody>
-              {#each uiOverlaps as group}
-                {#each group.courses as course, i}
+              {#each uiOverlaps as group (group.slot)}
+                {#each group.courses as course, i (course.id)}
                   <tr class="course">
                     {#if i === 0}
                       <td
@@ -1176,9 +1280,11 @@
                     </td>
                     <td>
                       {#if course.cellId !== undefined}
+                        {@const cellId = course.cellId}
                         <button
                           onclick={() => {
-                            selectedCellId = course.cellId;
+                            selectedCellId = cellId;
+                            scrollCellIntoView(cellId);
                             activeTimetableTerm = group.term;
                             barsVisible = true;
                             activeTab = "courses";
@@ -1197,31 +1303,24 @@
     </div>
 
     <div id="settings-tab" class:active={activeTab === "settings"}>
-      <section class="settings-section">
-        <h3>時間割</h3>
-        <label class="settings-row">
-          <input type="checkbox" bind:checked={timetableShowTaken} />
-          <span>単位取得済みの授業を表示する</span>
-        </label>
-        <label class="settings-row">
-          <span>年度</span>
-          <input
-            type="number"
-            bind:value={timetableYear}
-            min="2020"
-            max="2030"
-          />
-        </label>
-      </section>
-      <section class="settings-section">
-        <h3>データ</h3>
-        <div id="control">
-          <button id="reset" class="button" onclick={() => reset()}>
-            <img src={asset("/icons/trash.svg")} width="15px" alt="reset" />
-            <span>リセット</span>
-          </button>
-        </div>
-      </section>
+      <label class="settings-row">
+        <input type="checkbox" bind:checked={showNonAvailable} />
+        <span>今年度開講しない授業を表示する</span>
+      </label>
+      <label class="settings-row">
+        <input type="checkbox" bind:checked={timetableShowTaken} />
+        <span>時間割に単位取得済みの授業を表示する</span>
+      </label>
+      <label class="settings-row">
+        <span>時間割の年度</span>
+        <input type="number" bind:value={timetableYear} />
+      </label>
+      <div id="control">
+        <button id="reset" class="button" onclick={() => reset()}>
+          <img src={asset("/icons/trash.svg")} width="15px" alt="reset" />
+          <span>リセット</span>
+        </button>
+      </div>
     </div>
 
     <div id="courses-tab" class:active={activeTab === "courses"}>
@@ -1234,53 +1333,74 @@
         }}
         ondrop={(e) => handleDrop(e, "wont-take")}
       >
-        <div id="left-bar-scroll">
-          <div class="section controls">
+        <div id="filter-bar">
+          <div id="filter-bar-row">
             <search>
-              <div>
-                <img
-                  src={asset("/icons/search.svg")}
-                  width="15px"
-                  alt="search"
-                />
-              </div>
               <input
                 type="text"
-                placeholder="科目番号・科目名で検索"
-                bind:value={filterString}
+                placeholder="科目番号もしくは科目名"
+                bind:value={wontTakeFilters.courseIdOrName}
               />
             </search>
-            <label class="settings-row">
+            <select
+              value={wontTakeFilters.credit ?? ""}
+              class:placeholder={wontTakeFilters.credit === undefined}
+              onchange={(e) => {
+                const v = e.currentTarget.value;
+                wontTakeFilters.credit = v === "" ? undefined : Number(v);
+              }}
+            >
+              <option value="">全単位</option>
+              {#each availableCredits as v (v)}
+                <option value={v}>{v}単位</option>
+              {/each}
+            </select>
+            <select
+              value={wontTakeFilters.expects ?? ""}
+              class:placeholder={wontTakeFilters.expects === undefined}
+              onchange={(e) => {
+                const v = e.currentTarget.value;
+                wontTakeFilters.expects = v === "" ? undefined : Number(v);
+              }}
+            >
+              <option value="">全年次</option>
+              {#each availableExpects as v (v)}
+                <option value={v}>{v}年次</option>
+              {/each}
+            </select>
+          </div>
+          <div id="filter-bar-checkboxes">
+            <label class="filter-checkbox">
+              <input
+                type="checkbox"
+                bind:checked={wontTakeFilters.onlyUnoccupied}
+              />
+              空きコマのみ表示
+            </label>
+            <label class="filter-checkbox">
               <input type="checkbox" bind:checked={showCourseRemark} />
-              <span>授業の備考を表示</span>
+              備考を表示
             </label>
           </div>
+        </div>
+        <div id="left-bar-scroll" bind:this={leftBarScrollEl}>
           <div class="section">
-            <h2>当てはまる授業</h2>
+            <h2>
+              {selectedCellId ? "当てはまる授業" : "全ての授業"}
+              ({filteredCourseLists.wontTake.length}/{courseLists.wontTake
+                .length})
+            </h2>
             {@render courseTable(
-              groupedCourses.wontTake,
-              !selectedCellId
-                ? "no-cell-selected"
-                : groupedCourses.wontTake.length === 0
-                  ? "no-courses"
-                  : "contains-courses",
+              wontTakeSliced,
+              courseLists.wontTake.length === 0
+                ? "no-courses"
+                : "contains-courses",
               true,
               true,
               "wont-take",
             )}
+            <div bind:this={wontTakeSentinelEl}></div>
           </div>
-          {#if groupedCourses.nonAvailable.length > 0}
-            <div class="section">
-              <h2>今年度開講しない授業</h2>
-              {@render courseTable(
-                groupedCourses.nonAvailable,
-                "contains-courses",
-                false,
-                true,
-                undefined,
-              )}
-            </div>
-          {/if}
         </div>
         {#if selectedCellRemark}
           <div id="cell-remark">
@@ -1311,6 +1431,7 @@
             const cellId = svelteAkiko.getCellId(courseId);
             if (cellId !== undefined) {
               selectedCellId = cellId;
+              scrollCellIntoView(cellId);
               barsVisible = true;
               activeTab = "courses";
             }
@@ -1339,12 +1460,10 @@
               {/if}
             </div>
             {@render courseTable(
-              groupedCourses.mightTake,
-              !selectedCellId
-                ? "no-cell-selected"
-                : groupedCourses.mightTake.length === 0
-                  ? "no-courses"
-                  : "contains-courses",
+              filteredCourseLists.mightTake,
+              filteredCourseLists.mightTake.length === 0
+                ? "no-courses"
+                : "contains-courses",
               true,
               false,
               "might-take",
@@ -1360,12 +1479,10 @@
               {/if}
             </div>
             {@render courseTable(
-              groupedCourses.taken,
-              !selectedCellId
-                ? "no-cell-selected"
-                : groupedCourses.taken.length === 0
-                  ? "no-courses"
-                  : "contains-courses",
+              filteredCourseLists.taken,
+              filteredCourseLists.taken.length === 0
+                ? "no-courses"
+                : "contains-courses",
               false,
               false,
               undefined,
@@ -1515,6 +1632,9 @@
     position: fixed;
     inset: 0;
     font-size: 14px;
+    --fs-xs: 0.75em;
+    --fs-sm: 0.9em;
+    --fs-lg: 1.4em;
 
     display: grid;
     grid-template-columns: auto var(--sidebar-width);
@@ -1644,8 +1764,7 @@
   }
 
   #import-tab,
-  #export-tab,
-  #settings-tab {
+  #export-tab {
     display: none;
     grid-template-rows: 1fr;
     overflow-y: scroll;
@@ -1654,6 +1773,18 @@
 
     &.active {
       display: grid;
+    }
+  }
+
+  #settings-tab {
+    display: none;
+    overflow-y: scroll;
+    padding: 15px;
+    padding-bottom: 50vh;
+
+    &.active {
+      display: flex;
+      flex-direction: column;
     }
   }
 
@@ -1669,7 +1800,7 @@
 
   #left-bar {
     display: grid;
-    grid-template-rows: 1fr auto;
+    grid-template-rows: auto 1fr auto;
     border-right: 1px dashed black;
     overflow: hidden;
   }
@@ -1688,12 +1819,49 @@
       padding: 5px 0;
       margin: 0;
     }
+  }
 
-    & .controls {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+  #filter-bar {
+    border-bottom: 1px dashed black;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+  }
+
+  #filter-bar-row {
+    display: flex;
+    gap: 5px;
+
+    & > search {
+      flex: 1;
+      min-width: 0;
     }
+
+    & > select {
+      font-size: var(--fs-sm);
+      border: 1px solid gray;
+      border-radius: 10px;
+      padding: 5px 0px 5px 5px;
+      background-color: white;
+      cursor: pointer;
+
+      &.placeholder {
+        color: oklch(0.6 0 0);
+      }
+    }
+  }
+
+  #filter-bar-checkboxes {
+    display: flex;
+    gap: 15px;
+  }
+
+  .filter-checkbox {
+    font-size: var(--fs-sm);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
   }
 
   #right-bar {
@@ -1731,7 +1899,8 @@
   #left-bar-scroll,
   #right-bar-scroll {
     & p {
-      margin: 10px 0;
+      margin: 0;
+      margin-top: 0;
     }
 
     & > .section:first-child {
@@ -1746,6 +1915,15 @@
   #cell-remark {
     border-top: 1px dashed black;
     padding: 15px;
+
+    & > h2 {
+      margin: 0;
+    }
+
+    & > p {
+      margin: 0;
+      margin-top: 10px;
+    }
   }
 
   .list-heading {
@@ -1755,7 +1933,7 @@
   }
 
   .credit-total {
-    font-size: 1rem;
+    font-size: 1em;
   }
 
   .cell {
@@ -1795,9 +1973,12 @@
     }
   }
 
-  .course.hide,
-  .course-remark.hide {
-    display: none;
+  .goto-cell {
+    all: unset;
+    cursor: pointer;
+    font-size: var(--fs-xs);
+    color: oklch(0.4 0.15 250);
+    text-decoration: underline;
   }
 
   .course-remark td {
@@ -1830,6 +2011,10 @@
     &.show-expects .expects {
       display: revert;
     }
+
+    & .course-id {
+      vertical-align: middle;
+    }
   }
 
   th {
@@ -1854,7 +2039,7 @@
     border-radius: 0 0 0 10px;
     width: var(--toggle-width);
     height: var(--toggle-width);
-    font-size: 20px;
+    font-size: var(--fs-lg);
     text-align: center;
     background-color: white;
     border: unset;
@@ -1951,27 +2136,12 @@
     border-radius: 10px;
   }
 
-  #left-bar-scroll search {
+  #filter-bar-row > search > input {
+    box-sizing: border-box;
     width: 100%;
-    position: relative;
-
-    & > div {
-      position: absolute;
-      left: 10px;
-      top: 0;
-      bottom: 0;
-      display: grid;
-      place-content: center;
-      pointer-events: none;
-    }
-
-    & > input {
-      box-sizing: border-box;
-      width: 100%;
-      border: 1px solid gray;
-      border-radius: 10px;
-      padding: 5px 10px 5px 35px;
-    }
+    border: 1px solid gray;
+    border-radius: 10px;
+    padding: 5px 10px;
   }
 
   #credit-sums-container {
@@ -2046,16 +2216,6 @@
     width: 300px;
   }
 
-  .settings-section {
-    margin-bottom: 30px;
-
-    & > h3 {
-      margin: 0 0 10px 0;
-      font-size: 13px;
-      color: oklch(0.5 0 0);
-    }
-  }
-
   .settings-row {
     display: flex;
     align-items: center;
@@ -2096,7 +2256,7 @@
     background-color: rgba(255, 255, 255, 0.9);
     border: 1px solid #ccc;
     border-radius: 10px;
-    font-size: 13px;
+    font-size: var(--fs-sm);
 
     & > input[type="range"] {
       width: 100px;

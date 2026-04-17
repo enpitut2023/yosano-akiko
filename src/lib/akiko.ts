@@ -104,6 +104,14 @@ export function gradeIsPass(g: Grade): boolean {
   return g === "a+" || g === "a" || g === "b" || g === "c" || g === "pass";
 }
 
+export function gradeIsFail(g: Grade): boolean {
+  return g === "d" || g === "fail";
+}
+
+export function gradeIsWip(g: Grade): boolean {
+  return g === "wip";
+}
+
 export const TERMS = [
   "spring-a",
   "spring-b",
@@ -254,6 +262,10 @@ export function slotToString(s: Slot): string {
   return termToString(s.term) + " " + whenToString(s.when);
 }
 
+function slotHash(s: Slot): string {
+  return JSON.stringify(s);
+}
+
 export type Availability = "available" | "unavailable" | "indeterminable";
 
 export type KnownCourse = {
@@ -344,12 +356,12 @@ function baseCreditStatsNew(
 }
 
 export type ListKind = "wont-take" | "might-take" | "taken";
-export type CoursePosition = { cellId: CellId; listKind: ListKind };
 export type Akiko = {
   knownCourses: Map<CourseId, KnownCourse>;
   realCourses: Map<CourseId, RealCourse>;
   fakeCourses: Map<FakeCourseId, FakeCourse>;
-  coursePositions: Map<CourseId, CoursePosition>;
+  courseIdToCellId: Map<CourseId, CellId>;
+  courseIdToListKind: Map<CourseId, ListKind>;
   fakeCoursePositions: Map<FakeCourseId, CellId>;
   creditRequirements: CreditRequirements;
 };
@@ -382,59 +394,148 @@ export function akikoNew(
     fakeCourses.set(c.id, c);
   }
 
-  const coursePositions = new Map<CourseId, CoursePosition>();
-  for (let [courseId, cellId] of courseIdToCellId) {
-    coursePositions.set(courseId, { cellId, listKind: "wont-take" });
-  }
+  courseIdToCellId = new Map(courseIdToCellId);
+  const courseIdToListKind = new Map<CourseId, ListKind>();
 
   for (const id of mightTakeCourseIds) {
-    const pos = coursePositions.get(id);
-    if (pos !== undefined) {
-      pos.listKind = "might-take";
-    }
+    courseIdToListKind.set(id, "might-take");
   }
 
-  for (const [courseId, cellId] of realCoursePositions) {
-    const realCourse = realCourses.get(courseId);
-    if (realCourse === undefined) {
-      return undefined;
-    }
-    let listKind: ListKind;
-    switch (realCourse.grade) {
+  for (const rc of realCourses.values()) {
+    switch (rc.grade) {
       case "wip":
-        listKind = "might-take";
+        courseIdToListKind.set(rc.id, "might-take");
         break;
       case "a+":
       case "a":
       case "b":
       case "c":
       case "pass":
-        listKind = "taken";
+        courseIdToListKind.set(rc.id, "taken");
         break;
       case "d":
       case "fail":
-        listKind = "wont-take";
+        courseIdToListKind.delete(rc.id);
         break;
       default:
-        unreachable(realCourse.grade);
+        unreachable(rc.grade);
     }
-    coursePositions.set(courseId, { cellId, listKind });
+  }
+
+  for (const [courseId, cellId] of realCoursePositions) {
+    courseIdToCellId.set(courseId, cellId);
   }
 
   return {
     knownCourses,
     realCourses,
     fakeCourses,
-    coursePositions,
+    courseIdToCellId,
+    courseIdToListKind,
     fakeCoursePositions,
     creditRequirements,
+  };
+}
+
+export function akikoGetListKind(akiko: Akiko, courseId: CourseId): ListKind {
+  return akiko.courseIdToListKind.get(courseId) ?? "wont-take";
+}
+
+export type CourseIdLists = {
+  wontTake: CourseId[];
+  mightTake: CourseId[];
+  taken: CourseId[];
+  fake: FakeCourseId[];
+};
+
+// TODO: should return undefined for unknown cell ids
+export function akikoGetCoursesInCell(
+  akiko: Akiko,
+  cellId: CellId,
+): CourseIdLists {
+  const wontTake: CourseId[] = [];
+  const mightTake: CourseId[] = [];
+  const taken: CourseId[] = [];
+  const fake: FakeCourseId[] = [];
+  for (const [courseId, cid] of akiko.courseIdToCellId) {
+    if (cid !== cellId) continue;
+    const listKind = akikoGetListKind(akiko, courseId);
+    switch (listKind) {
+      case "wont-take":
+        wontTake.push(courseId);
+        break;
+      case "might-take":
+        mightTake.push(courseId);
+        break;
+      case "taken":
+        taken.push(courseId);
+        break;
+      default:
+        unreachable(listKind);
+    }
+  }
+  for (const [fakeCourseId, id] of akiko.fakeCoursePositions) {
+    if (cellId === id) fake.push(fakeCourseId);
+  }
+  return { wontTake, mightTake, taken, fake };
+}
+
+export function akikoGetAllCourses(akiko: Akiko): CourseIdLists {
+  const wontTake = new Set<CourseId>();
+  const mightTake = new Set<CourseId>();
+  const taken = new Set<CourseId>();
+  for (const courseId of akiko.knownCourses.keys()) {
+    const listKind = akikoGetListKind(akiko, courseId);
+    switch (listKind) {
+      case "wont-take":
+        wontTake.add(courseId);
+        break;
+      case "might-take":
+        mightTake.add(courseId);
+        break;
+      case "taken":
+        taken.add(courseId);
+        break;
+      default:
+        unreachable(listKind);
+    }
+  }
+  for (const rc of akiko.realCourses.values()) {
+    if (akiko.knownCourses.has(rc.id)) continue;
+    const explicit = akiko.courseIdToListKind.get(rc.id);
+    if (explicit !== undefined) {
+      switch (explicit) {
+        case "wont-take":
+          wontTake.add(rc.id);
+          break;
+        case "might-take":
+          mightTake.add(rc.id);
+          break;
+        case "taken":
+          taken.add(rc.id);
+          break;
+        default:
+          unreachable(explicit);
+      }
+    } else {
+      if (gradeIsFail(rc.grade)) wontTake.add(rc.id);
+      else if (gradeIsWip(rc.grade)) mightTake.add(rc.id);
+      else if (gradeIsPass(rc.grade)) taken.add(rc.id);
+    }
+  }
+  return {
+    wontTake: Array.from(wontTake),
+    mightTake: Array.from(mightTake),
+    taken: Array.from(taken),
+    fake: Array.from(akiko.fakeCourses.keys()),
   };
 }
 
 export function akikoGetCreditStats(akiko: Akiko): CreditStats {
   const cellIdToMightTakeIds = new Map<CellId, CourseId[]>();
   const cellIdToTakenIds = new Map<CellId, CourseId[]>();
-  for (const [courseId, { cellId, listKind }] of akiko.coursePositions) {
+  for (const [courseId, cellId] of akiko.courseIdToCellId) {
+    const listKind = akikoGetListKind(akiko, courseId);
     let map: Map<CellId, CourseId[]>;
     if (listKind === "might-take") {
       map = cellIdToMightTakeIds;
@@ -539,7 +640,7 @@ export function akikoGetCreditStats(akiko: Akiko): CreditStats {
 
 export function akikoGetMightTakeCourseIds(akiko: Akiko): CourseId[] {
   const res: CourseId[] = [];
-  for (const [id, { listKind }] of akiko.coursePositions) {
+  for (const [id, listKind] of akiko.courseIdToListKind) {
     if (listKind === "might-take") res.push(id);
   }
   return res;
@@ -547,37 +648,16 @@ export function akikoGetMightTakeCourseIds(akiko: Akiko): CourseId[] {
 
 export function akikoGetTakenCourseIds(akiko: Akiko): CourseId[] {
   const res: CourseId[] = [];
-  for (const [id, { listKind }] of akiko.coursePositions) {
+  for (const [id, listKind] of akiko.courseIdToListKind) {
     if (listKind === "taken") res.push(id);
   }
   return res;
 }
 
-export function akikoIsCourseVisible(
-  akiko: Akiko,
-  id: CourseId,
-  idOrName: string,
-): boolean {
-  const kc = akiko.knownCourses.get(id);
-  if (kc !== undefined) {
-    const res = kc.id.includes(idOrName) || kc.name.includes(idOrName);
-    if (res) {
-      return true;
-    }
-  }
-  const rc = akiko.realCourses.get(id);
-  if (rc !== undefined) {
-    return rc.id.includes(idOrName) || rc.name.includes(idOrName);
-  }
-  return false;
-}
-
 export function akikoGetUnclassifiedRealCourses(akiko: Akiko): RealCourse[] {
   const rcs: RealCourse[] = [];
   for (const rc of akiko.realCourses.values()) {
-    if (!akiko.coursePositions.has(rc.id)) {
-      rcs.push(rc);
-    }
+    if (!akiko.courseIdToCellId.has(rc.id)) rcs.push(rc);
   }
   return rcs;
 }
@@ -592,6 +672,40 @@ export function akikoGetUnclassifiedFakeCourses(akiko: Akiko): FakeCourse[] {
   return fcs;
 }
 
+export type OccupiedSlots = Nominal<Set<string>, "OccupiedSlots">;
+
+export function akikoGetOccupiedSlots(akiko: Akiko): OccupiedSlots {
+  const occupied = new Set<string>();
+  for (const [courseId, listKind] of akiko.courseIdToListKind) {
+    if (listKind !== "might-take") continue;
+    const kc = akiko.knownCourses.get(courseId);
+    if (kc === undefined) continue;
+    for (const s of kc.slots) {
+      if (s.when.kind === "regular") occupied.add(slotHash(s));
+    }
+  }
+  return occupied as OccupiedSlots;
+}
+
+export function akikoIsOccupied(
+  akiko: Akiko,
+  occupied: OccupiedSlots,
+  courseId: CourseId,
+): boolean {
+  const kc = akiko.knownCourses.get(courseId);
+  if (kc === undefined) return false;
+  for (const s of kc.slots) if (occupied.has(slotHash(s))) return true;
+  return false;
+}
+
+export function akikoFilterOutOccupiedByMightTake(
+  akiko: Akiko,
+  courseIds: CourseId[],
+): CourseId[] {
+  const occupied = akikoGetOccupiedSlots(akiko);
+  return courseIds.filter((id) => !akikoIsOccupied(akiko, occupied, id));
+}
+
 export type Overlap = { slot: Slot; courses: KnownCourse[] };
 
 export type AkikoExportForTwinsResult =
@@ -600,7 +714,7 @@ export type AkikoExportForTwinsResult =
 
 export function akikoExportForTwins(akiko: Akiko): AkikoExportForTwinsResult {
   const candidates: KnownCourse[] = [];
-  for (const [id, { listKind }] of akiko.coursePositions) {
+  for (const [id, listKind] of akiko.courseIdToListKind) {
     const kc = akiko.knownCourses.get(id);
     if (
       listKind === "might-take" &&
@@ -653,9 +767,15 @@ export function akikoMoveCourse(
   courseId: CourseId,
   dst: AkikoMoveCourseDst,
 ): AkikoMoveCourseResult {
-  const pos = akiko.coursePositions.get(courseId);
-  if (pos === undefined) return "no-such-course";
-  if (pos.listKind === "taken") return "course-taken";
-  if (pos.listKind === dst) return "course-does-not-move";
-  pos.listKind = dst;
+  if (!akiko.knownCourses.has(courseId) && !akiko.realCourses.has(courseId)) {
+    return "no-such-course";
+  }
+  if (akikoGetListKind(akiko, courseId) === "taken") return "course-taken";
+  const current = akikoGetListKind(akiko, courseId);
+  if (current === dst) return "course-does-not-move";
+  if (dst === "wont-take") {
+    akiko.courseIdToListKind.delete(courseId);
+  } else {
+    akiko.courseIdToListKind.set(courseId, dst);
+  }
 }
