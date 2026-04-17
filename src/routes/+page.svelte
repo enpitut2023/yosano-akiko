@@ -8,6 +8,7 @@
     majorCompare,
   } from "$lib/constants";
   import { assert } from "$lib/util";
+  import Nav from "$lib/Nav.svelte";
 
   const description =
     "筑波大生向けの履修サポートWebツールです。単位の計算・授業探し・Twinsへの登録を楽に終わらせましょう！";
@@ -52,6 +53,8 @@
     content="https://github.com/user-attachments/assets/be6c928e-36fa-48e4-ac5b-5a0406a0adb2"
   />
 </svelte:head>
+
+<Nav />
 
 <h1>あきこ</h1>
 
