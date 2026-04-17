@@ -41,7 +41,6 @@
   import { assert } from "$lib/util.js";
   import Callout from "$lib/Callout.svelte";
   import { tick, untrack } from "svelte";
-  import { SvelteSet } from "svelte/reactivity";
 
   type UiOverlapCourse = {
     id: CourseId;
@@ -59,8 +58,8 @@
 
   type WontTakeFilters = {
     courseIdOrName: string;
-    credit: SvelteSet<number>;
-    expects: SvelteSet<number>;
+    credit: number | undefined;
+    expects: number | undefined;
     onlyUnoccupied: boolean;
   };
 
@@ -104,11 +103,10 @@
   let wontTakeVisibleLimit = $state(100);
   let leftBarScrollEl = $state<HTMLDivElement | undefined>();
   let wontTakeSentinelEl = $state<HTMLDivElement | undefined>();
-  let filtersOpen = $state(false);
   let wontTakeFilters = $state<WontTakeFilters>({
     courseIdOrName: "",
-    credit: new SvelteSet(),
-    expects: new SvelteSet(),
+    credit: undefined,
+    expects: undefined,
     onlyUnoccupied: false,
   });
 
@@ -463,8 +461,7 @@
   const occupiedSlots = $derived(svelteAkiko.getOccupiedSlots());
 
   const filteredCourseLists = $derived.by(() => {
-    let { courseIdOrName, credit, expects, onlyUnoccupied } =
-      wontTakeFilters;
+    let { courseIdOrName, credit, expects, onlyUnoccupied } = wontTakeFilters;
     courseIdOrName = courseIdOrName.toLowerCase();
     return {
       wontTake: courseLists.wontTake.filter((c) => {
@@ -478,8 +475,8 @@
           )
             return false;
         }
-        if (credit.size > 0 && !credit.has(c.credit!)) return false;
-        if (expects.size > 0 && !c.expectsRaw.some((e) => expects.has(e)))
+        if (credit !== undefined && c.credit !== credit) return false;
+        if (expects !== undefined && !c.expectsRaw.includes(expects))
           return false;
         if (onlyUnoccupied && svelteAkiko.isOccupied(occupiedSlots, c.id))
           return false;
@@ -507,13 +504,19 @@
   });
 
   $effect(() => {
-    for (const v of wontTakeFilters.credit) {
-      if (!availableCredits.includes(v)) wontTakeFilters.credit.delete(v);
+    if (
+      wontTakeFilters.credit !== undefined &&
+      !availableCredits.includes(wontTakeFilters.credit)
+    ) {
+      wontTakeFilters.credit = undefined;
     }
   });
   $effect(() => {
-    for (const v of wontTakeFilters.expects) {
-      if (!availableExpects.includes(v)) wontTakeFilters.expects.delete(v);
+    if (
+      wontTakeFilters.expects !== undefined &&
+      !availableExpects.includes(wontTakeFilters.expects)
+    ) {
+      wontTakeFilters.expects = undefined;
     }
   });
 
@@ -1276,16 +1279,7 @@
         ondrop={(e) => handleDrop(e, "wont-take")}
       >
         <div id="filter-bar">
-          <button
-            id="filter-bar-toggle"
-            onclick={() => (filtersOpen = !filtersOpen)}
-          >
-            <span>絞り込み</span>
-            <span class="filter-bar-toggle-arrow"
-              >{filtersOpen ? "▲" : "▼"}</span
-            >
-          </button>
-          {#if filtersOpen}
+          <div id="filter-bar-row">
             <search>
               <input
                 type="text"
@@ -1293,42 +1287,40 @@
                 bind:value={wontTakeFilters.courseIdOrName}
               />
             </search>
-            <div class="filter-group">
-              <span class="filter-label">単位</span>
+            <select
+              value={wontTakeFilters.credit ?? ""}
+              class:placeholder={wontTakeFilters.credit === undefined}
+              onchange={(e) => {
+                const v = e.currentTarget.value;
+                wontTakeFilters.credit = v === "" ? undefined : Number(v);
+              }}
+            >
+              <option value="">全単位</option>
               {#each availableCredits as v (v)}
-                <button
-                  class="filter-chip"
-                  class:active={wontTakeFilters.credit.has(v)}
-                  onclick={() => {
-                    wontTakeFilters.credit.has(v)
-                      ? wontTakeFilters.credit.delete(v)
-                      : wontTakeFilters.credit.add(v);
-                  }}>{v}</button
-                >
+                <option value={v}>{v}単位</option>
               {/each}
-            </div>
-            <div class="filter-group">
-              <span class="filter-label">年次</span>
+            </select>
+            <select
+              value={wontTakeFilters.expects ?? ""}
+              class:placeholder={wontTakeFilters.expects === undefined}
+              onchange={(e) => {
+                const v = e.currentTarget.value;
+                wontTakeFilters.expects = v === "" ? undefined : Number(v);
+              }}
+            >
+              <option value="">全年次</option>
               {#each availableExpects as v (v)}
-                <button
-                  class="filter-chip"
-                  class:active={wontTakeFilters.expects.has(v)}
-                  onclick={() => {
-                    wontTakeFilters.expects.has(v)
-                      ? wontTakeFilters.expects.delete(v)
-                      : wontTakeFilters.expects.add(v);
-                  }}>{v}</button
-                >
+                <option value={v}>{v}年次</option>
               {/each}
-            </div>
-            <label class="filter-checkbox">
-              <input
-                type="checkbox"
-                bind:checked={wontTakeFilters.onlyUnoccupied}
-              />
-              空きコマに入る授業のみ表示
-            </label>
-          {/if}
+            </select>
+          </div>
+          <label class="filter-checkbox">
+            <input
+              type="checkbox"
+              bind:checked={wontTakeFilters.onlyUnoccupied}
+            />
+            空きコマに入る授業のみ表示
+          </label>
         </div>
         <div id="left-bar-scroll" bind:this={leftBarScrollEl}>
           <div class="section">
@@ -1755,34 +1747,27 @@
     padding: 15px;
   }
 
-  #filter-bar-toggle {
-    all: unset;
-    cursor: pointer;
+  #filter-bar-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    &:has(+ *) {
-      margin-bottom: 10px;
-    }
-  }
-
-  .filter-bar-toggle-arrow {
-    font-size: var(--fs-xs);
-    color: oklch(0.5 0 0);
-  }
-
-  .filter-group {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
     gap: 5px;
-  }
 
-  .filter-label {
-    font-size: var(--fs-sm);
-    color: oklch(0.5 0 0);
-    min-width: 25px;
+    & > search {
+      flex: 1;
+      min-width: 0;
+    }
+
+    & > select {
+      font-size: var(--fs-sm);
+      border: 1px solid gray;
+      border-radius: 10px;
+      padding: 5px 0px 5px 5px;
+      background-color: white;
+      cursor: pointer;
+
+      &.placeholder {
+        color: oklch(0.6 0 0);
+      }
+    }
   }
 
   .filter-checkbox {
@@ -1791,22 +1776,6 @@
     align-items: center;
     gap: 5px;
     cursor: pointer;
-  }
-
-  .filter-chip {
-    all: unset;
-    cursor: pointer;
-    font-size: var(--fs-sm);
-    padding: 0 5px;
-    border: 1px solid oklch(0.7 0 0);
-    border-radius: 3px;
-    line-height: 20px;
-
-    &.active {
-      background-color: oklch(0.2 0 0);
-      border-color: oklch(0.2 0 0);
-      color: white;
-    }
   }
 
   #right-bar {
@@ -2081,7 +2050,7 @@
     border-radius: 10px;
   }
 
-  #filter-bar > search > input {
+  #filter-bar-row > search > input {
     box-sizing: border-box;
     width: 100%;
     border: 1px solid gray;
