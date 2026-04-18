@@ -3,6 +3,7 @@
   import HowToImportFromTwins from "$lib/HowToImportFromTwins.svelte";
   import HowToExportForTwins from "$lib/HowToExportForTwins.svelte";
   import Callout from "$lib/Callout.svelte";
+  import Nav from "$lib/Nav.svelte";
   const title = "あきこの使い方";
   const description = "あきこの使い方やTWINSとの連携方法などの説明です。";
 </script>
@@ -17,6 +18,8 @@
     content="https://github.com/user-attachments/assets/be6c928e-36fa-48e4-ac5b-5a0406a0adb2"
   />
 </svelte:head>
+
+<Nav />
 
 <h1>{title}</h1>
 
