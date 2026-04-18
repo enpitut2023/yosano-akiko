@@ -1,7 +1,7 @@
 <script lang="ts">
   import { browser } from "$app/environment";
 
-  const ENCODED = "gbqb@rknzcyr.pbz";
+  const ENCODED = "nxvxb-pbagnpg@gbrvqb.wc";
 
   function rot13(s: string): string {
     return s.replace(/[a-zA-Z]/g, (c) => {
