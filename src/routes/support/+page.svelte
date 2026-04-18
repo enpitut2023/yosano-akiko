@@ -43,7 +43,7 @@
     <span class="price">500円〜</span>
     <span class="price-label">/ 1口</span>
   </div>
-  <a class="payment-button" href="TODO" aria-disabled="true"
+  <a class="payment-button" href="https://example.com" aria-disabled="true"
     ><HandHeart />支援する（Stripe申請中）</a
   >
   <p class="stripe-note">
