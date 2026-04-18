@@ -1,6 +1,14 @@
 <script lang="ts">
   import { asset, resolve } from "$app/paths";
-  import { Server, Wrench, Gift, LayoutList, Clock, Pencil, HandHeart } from "lucide-svelte";
+  import {
+    Server,
+    Wrench,
+    Gift,
+    LayoutList,
+    Clock,
+    Pencil,
+    HandHeart,
+  } from "lucide-svelte";
   import ContactEmail from "$lib/ContactEmail.svelte";
   import Nav from "$lib/Nav.svelte";
   const title = "あきこを支援する";
@@ -35,7 +43,9 @@
     <span class="price">500円〜</span>
     <span class="price-label">/ 1口</span>
   </div>
-  <a class="payment-button" href="TODO" aria-disabled="true"><HandHeart />支援する（Stripe申請中）</a>
+  <a class="payment-button" href="TODO" aria-disabled="true"
+    ><HandHeart />支援する（Stripe申請中）</a
+  >
   <p class="stripe-note">
     Powered by <strong>Stripe</strong> — クレジットカード対応
   </p>
@@ -55,7 +65,9 @@
     <div class="card">
       <Wrench />
       <h3>保守メンテナンス</h3>
-      <p>履修データの更新や不具合修正など、継続的な保守メンテナンスにかかる費用</p>
+      <p>
+        履修データの更新や不具合修正など、継続的な保守メンテナンスにかかる費用
+      </p>
     </div>
     <div class="card">
       <Gift />
@@ -84,7 +96,9 @@
     <div class="card">
       <Pencil />
       <h3>お名前の指定</h3>
-      <p>決済画面にて、掲載希望のニックネーム等をご入力ください。（※公序良俗に反する名前は掲載をお断りする場合があります）</p>
+      <p>
+        決済画面にて、掲載希望のニックネーム等をご入力ください。（※公序良俗に反する名前は掲載をお断りする場合があります）
+      </p>
     </div>
   </div>
 </section>
