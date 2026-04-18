@@ -60,7 +60,8 @@
     h5,
     h6,
     strong,
-    th {
+    th,
+    dt {
       font-family: "M PLUS 1p", sans-serif;
     }
 

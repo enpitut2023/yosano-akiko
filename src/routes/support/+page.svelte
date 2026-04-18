@@ -35,7 +35,7 @@
     <span class="price">500円〜</span>
     <span class="price-label">/ 1口</span>
   </div>
-  <a class="payment-button" href="TODO"><HandHeart />支援する</a>
+  <a class="payment-button" href="TODO" aria-disabled="true"><HandHeart />支援する（Stripe申請中）</a>
   <p class="stripe-note">
     Powered by <strong>Stripe</strong> — クレジットカード対応
   </p>
@@ -185,6 +185,11 @@
 
     &:hover {
       background-color: oklch(0.45 0.2 250);
+    }
+
+    &[aria-disabled] {
+      background-color: oklch(0.8 0 0);
+      cursor: not-allowed;
     }
   }
 
