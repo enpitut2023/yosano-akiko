@@ -5,6 +5,7 @@
 <nav>
   <a href={resolve("/")}>トップページ</a>
   <a href={resolve("/docs")}>あきこの使い方</a>
+  <a href={resolve("/contributors")}>貢献者一覧</a>
 </nav>
 
 <style lang="scss">
