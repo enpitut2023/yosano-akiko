@@ -228,6 +228,15 @@ export const MAJOR_TO_DOCS_PAGE_NAME = {
   "art-jad": "art",
 } as const satisfies { [K in Major]: DocsPageName };
 
+// Docs page names whose major pages are temporarily closed. The links stay in
+// place but the app pages render a closure notice instead of the tool. Empty
+// this set to reopen.
+const CLOSED_DOCS_PAGE_NAMES = new Set<DocsPageName>(["help"]);
+
+export function majorIsClosed(major: Major): boolean {
+  return CLOSED_DOCS_PAGE_NAMES.has(MAJOR_TO_DOCS_PAGE_NAME[major]);
+}
+
 export const DOCS_PAGE_NAME_TO_JA = {
   help: "人文学類",
   ccc: "比較文化学類",
