@@ -33,6 +33,7 @@
     classifyCoursesOrFail,
     type MajorConfig,
   } from "$lib/app-setup";
+  import { trackEvent } from "$lib/analytics";
   import {
     localDataDefault,
     localDataFromJson,
@@ -309,6 +310,7 @@
       if (result.kind === "ok") {
         realCourses = result.realCourses;
         fakeCourses = result.fakeCourses;
+        trackEvent("grades", "import-grades", `${config.tableYear}/${config.major}`);
         if (dev) debugPrintCreditStats(svelteAkiko.getCreditStats());
       } else {
         alert("CSVファイルを正しく読み込めませんでした。");
@@ -385,7 +387,15 @@
     event.preventDefault();
     const courseId = event.dataTransfer?.getData("text/plain");
     if (courseId === undefined || !isCourseId(courseId)) return;
-    svelteAkiko.moveCourse(courseId, dst); // TODO: use the return value
+    // undefined means the course actually moved (see akikoMoveCourse); only
+    // track real moves so no-op re-drops onto the same list don't count.
+    if (svelteAkiko.moveCourse(courseId, dst) === undefined) {
+      trackEvent(
+        "plan",
+        dst === "might-take" ? "add-course" : "remove-course",
+        courseId,
+      );
+    }
     if (dst === "might-take") {
       timetableYear = config.knownCourseYear;
       const slots = knownCoursesMap.get(courseId)?.slots ?? [];
@@ -594,6 +604,12 @@
   function exportMightTake() {
     if (exportForTwinsResult.kind !== "ok") return;
     const content = exportForTwinsResult.toExport.map((c) => c.id).join("\n");
+    trackEvent(
+      "export",
+      "export-for-twins",
+      `${config.tableYear}/${config.major}`,
+      exportForTwinsResult.toExport.length,
+    );
     const a = document.createElement("a");
     a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(content);
     a.download = "科目番号一覧.csv";
