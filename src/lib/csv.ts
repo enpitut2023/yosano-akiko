@@ -110,11 +110,11 @@ export function parseImportedCsv(csv: string): ParseImportedCsvResult {
 
   for (const row of parseResult.data) {
     const ic = parseImportedCourse(row);
-    if (ic === undefined) {
-      return { kind: "unexpected-csv-content" };
-    } else if (ic.grade === "free") {
+    if (ic === undefined) return { kind: "unexpected-csv-content" };
+    if (ic.grade === "free") {
       fakeCourses.push(ic);
-    } else {
+    } else if (!ic.id.startsWith("0")) {
+      // Ignore imported graduate courses
       realCourses.push(ic);
     }
   }
