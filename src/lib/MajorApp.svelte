@@ -307,16 +307,54 @@
     const file = input.files?.[0];
     if (!file) return;
     file.text().then((csv) => {
+      // 同じファイルをもう一度選んだときにも change が発火するようにする
+      // （インポートをキャンセルして選び直す場合など）
+      input.value = "";
       const result = parseImportedCsv(csv);
       if (result.kind === "ok") {
-        realCourses = result.realCourses;
-        fakeCourses = result.fakeCourses;
-        trackEvent("grades", "import-grades", `${config.tableYear}/${config.major}`);
-        if (dev) debugPrintCreditStats(svelteAkiko.getCreditStats());
+        pendingImport = {
+          realCourses: result.realCourses,
+          fakeCourses: result.fakeCourses,
+        };
       } else {
         alert("CSVファイルを正しく読み込めませんでした。");
       }
     });
+  }
+
+  /** 「取る授業」をリセットするか確認するまで待っている、読み込み済みの成績データ */
+  type PendingImport = {
+    realCourses: RealCourse[];
+    fakeCourses: FakeCourse[];
+  };
+
+  let pendingImport = $state<PendingImport | undefined>(undefined);
+
+  function applyImport(pending: PendingImport, resetPlan: boolean) {
+    if (resetPlan && browser) {
+      // svelteAkiko は上書きを localStorage から直接読むので、下の代入で再構築
+      // が走る前に消しておく
+      const localData: LocalDataV3 = {
+        version: 3,
+        listKindOverrides: new Map(),
+        realCourses: pending.realCourses,
+        fakeCourses: pending.fakeCourses,
+        native: isNative,
+      };
+      localStorage.setItem(localDataKey, localDataToJson(localData));
+    }
+    realCourses = pending.realCourses;
+    fakeCourses = pending.fakeCourses;
+    pendingImport = undefined;
+    trackEvent("grades", "import-grades", `${config.tableYear}/${config.major}`);
+    if (resetPlan) {
+      trackEvent(
+        "plan",
+        "reset-plan-on-import",
+        `${config.tableYear}/${config.major}`,
+      );
+    }
+    if (dev) debugPrintCreditStats(svelteAkiko.getCreditStats());
   }
 
   function debugPrintCreditStats(stats: CreditStats) {
@@ -1585,6 +1623,34 @@
   ></div>
 {/if}
 
+{#if pendingImport}
+  {@const pending = pendingImport}
+  <div id="import-confirm" role="dialog" aria-modal="true">
+    <div class="import-confirm-panel">
+      <p>
+        成績をインポートすると「取る授業」に移動した授業が一度リセットされます。
+        リセットすることで、履修中の授業のみが「取る授業」に残り、自分で移動した授業との混乱を防ぐことができます。
+        リセットしてよろしいですか？
+      </p>
+      <div class="import-confirm-actions">
+        <button type="button" onclick={() => (pendingImport = undefined)}>
+          キャンセル
+        </button>
+        <button type="button" onclick={() => applyImport(pending, false)}>
+          リセットせずにインポートする
+        </button>
+        <button
+          type="button"
+          class="primary"
+          onclick={() => applyImport(pending, true)}
+        >
+          リセットしてインポートする（推奨）
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
 {#if mobileUnsupported && !mobileUnsupportedDismissed}
   <div id="mobile-unsupported" role="dialog" aria-modal="true">
     <div class="mobile-unsupported-dialog">
@@ -1606,6 +1672,60 @@
 {/if}
 
 <style lang="scss">
+  #import-confirm {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    & > .import-confirm-panel {
+      width: min(700px, calc(100vw - 60px));
+      padding: 20px 25px;
+      background-color: white;
+      border-radius: 15px;
+      // main の外にあるのでフォントサイズを引き継がない
+      font-size: 14px;
+
+      & > p {
+        margin: 0;
+      }
+
+      & > .import-confirm-actions {
+        margin-top: 25px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+
+        & > button {
+          font-size: inherit;
+          white-space: nowrap;
+          padding: 10px 15px;
+          border: 1px solid #ccc;
+          border-radius: 10px;
+          background-color: #f8f8f8;
+          cursor: pointer;
+
+          &:hover {
+            background-color: #eee;
+          }
+
+          &.primary {
+            border-color: oklch(60% 15% 250);
+            background-color: oklch(95% 5% 250);
+
+            &:hover {
+              background-color: oklch(90% 8% 250);
+            }
+          }
+        }
+      }
+    }
+  }
+
   #mobile-unsupported {
     position: fixed;
     inset: 0;
