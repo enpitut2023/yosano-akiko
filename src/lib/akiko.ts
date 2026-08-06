@@ -527,7 +527,7 @@ export function akikoGetAllCourses(akiko: Akiko): CourseIdLists {
     wontTake: Array.from(wontTake),
     mightTake: Array.from(mightTake),
     taken: Array.from(taken),
-    fake: Array.from(akiko.fakeCourses.keys()),
+    fake: Array.from(akiko.fakeCoursePositions.keys()),
   };
 }
 

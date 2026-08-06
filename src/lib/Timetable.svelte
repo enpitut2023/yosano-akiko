@@ -4,6 +4,7 @@
     termToString,
     type CourseId,
     type Dow,
+    type FakeCourse,
     type Grade,
     type KnownCourse,
     type RealCourse,
@@ -17,6 +18,7 @@
     activeTerm: TimetableTab;
     mightTakeCourseIds: CourseId[];
     takenCourseIds: CourseId[];
+    fakeCourses: FakeCourse[];
     showTaken: boolean;
     knownCoursesMap: Map<CourseId, KnownCourse>;
     realCoursesMap: Map<CourseId, RealCourse>;
@@ -30,6 +32,7 @@
     activeTerm = $bindable(),
     mightTakeCourseIds,
     takenCourseIds,
+    fakeCourses,
     showTaken,
     knownCoursesMap,
     realCoursesMap,
@@ -117,6 +120,10 @@
       }))
       .sort((a, b) => courseIdCompare(a.id, b.id));
   });
+
+  const otherTabFakeCourses = $derived(
+    showTaken ? fakeCourses.filter((c) => c.takenYear === year) : [],
+  );
 
   const bars = $derived.by(() => {
     if (activeTerm === "other") return [];
@@ -230,7 +237,7 @@
   </div>
   {#if activeTerm === "other"}
     <div class="other-tab">
-      {#if otherTabCourses.length === 0}
+      {#if otherTabCourses.length + otherTabFakeCourses.length === 0}
         <p>該当する授業はありません</p>
       {:else}
         <table>
@@ -262,6 +269,16 @@
                 </td>
                 <td class="credit">{rc?.credit ?? kc?.credit ?? "-"}</td>
                 <td class="slots">{kc?.slotsString || "-"}</td>
+              </tr>
+            {/each}
+            {#each otherTabFakeCourses as c (c.id)}
+              <tr>
+                <td class="id-name">
+                  <span>{c.name}</span><br />
+                  <span>（認可）</span>
+                </td>
+                <td class="credit">{c.credit ?? "-"}</td>
+                <td class="slots">-</td>
               </tr>
             {/each}
           </tbody>

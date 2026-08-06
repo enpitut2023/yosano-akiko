@@ -497,6 +497,17 @@
     };
   });
 
+  // Fake courses that landed in a cell, i.e. those that count toward graduation
+  const classifiedFakeCourses = $derived(
+    Array.from(svelteAkiko.getFakeCoursePositions().keys())
+      .map((id) => fakeCourseMap.get(id))
+      .filter((c) => c !== undefined),
+  );
+
+  const fakeCreditTotal = $derived(
+    filteredCourseLists.fake.reduce((sum, c) => sum + (c.credit ?? 0), 0),
+  );
+
   const availableCredits = $derived.by(() => {
     const credits = new Set<number>();
     for (const c of courseLists.wontTake) {
@@ -993,6 +1004,25 @@
   {/if}
 {/snippet}
 
+{#snippet fakeCourseTable(courses: FakeCourse[])}
+  <table>
+    <thead>
+      <tr class="course">
+        <th class="id-name">科目</th>
+        <th class="credit">単位</th>
+      </tr>
+    </thead>
+    <tbody>
+      {#each courses as c (c.id)}
+        <tr class="course">
+          <td class="id-name">{c.name} ({c.takenYear})</td>
+          <td class="credit">{c.credit ?? "-"}</td>
+        </tr>
+      {/each}
+    </tbody>
+  </table>
+{/snippet}
+
 <main class:bars-hidden={!barsVisible}>
   <div id="table-view">
     <div
@@ -1439,6 +1469,7 @@
           bind:activeTerm={activeTimetableTerm}
           {mightTakeCourseIds}
           {takenCourseIds}
+          fakeCourses={classifiedFakeCourses}
           showTaken={timetableShowTaken}
           {knownCoursesMap}
           {realCoursesMap}
@@ -1503,6 +1534,15 @@
               undefined,
             )}
           </div>
+          {#if filteredCourseLists.fake.length > 0}
+            <div class="section">
+              <div class="list-heading">
+                <h2>認可された授業</h2>
+                <span class="credit-total">{fakeCreditTotal}単位</span>
+              </div>
+              {@render fakeCourseTable(filteredCourseLists.fake)}
+            </div>
+          {/if}
         </div>
       </div>
     </div>
