@@ -356,21 +356,49 @@ function baseCreditStatsNew(
 }
 
 export type ListKind = "wont-take" | "might-take" | "taken";
+
+/**
+ * 成績から決まる配置を上書きする、ユーザーが明示的に動かした授業の記録。
+ * 「取る授業」に入れた落単済みの授業（再履修）や、「取る授業」から出した履修中
+ * の授業など、成績だけからは復元できない意図を保持する。
+ */
+export type ListKindOverride = "wont-take" | "might-take";
+export type ListKindOverrides = Map<CourseId, ListKindOverride>;
+
 export type Akiko = {
   knownCourses: Map<CourseId, KnownCourse>;
   realCourses: Map<CourseId, RealCourse>;
   fakeCourses: Map<FakeCourseId, FakeCourse>;
   courseIdToCellId: Map<CourseId, CellId>;
   courseIdToListKind: Map<CourseId, ListKind>;
+  listKindOverrides: ListKindOverrides;
   fakeCoursePositions: Map<FakeCourseId, CellId>;
   creditRequirements: CreditRequirements;
 };
+
+function realCourseListKind(grade: Grade): ListKind {
+  switch (grade) {
+    case "wip":
+      return "might-take";
+    case "a+":
+    case "a":
+    case "b":
+    case "c":
+    case "pass":
+      return "taken";
+    case "d":
+    case "fail":
+      return "wont-take";
+    default:
+      unreachable(grade);
+  }
+}
 
 export function akikoNew(
   knownCoursesArray: KnownCourse[],
   realCoursesArray: RealCourse[],
   fakeCoursesArray: FakeCourse[],
-  mightTakeCourseIds: CourseId[],
+  listKindOverrides: ListKindOverrides,
   courseIdToCellId: Map<CourseId, CellId>,
   realCoursePositions: Map<CourseId, CellId>,
   fakeCoursePositions: Map<FakeCourseId, CellId>,
@@ -397,29 +425,22 @@ export function akikoNew(
   courseIdToCellId = new Map(courseIdToCellId);
   const courseIdToListKind = new Map<CourseId, ListKind>();
 
-  for (const id of mightTakeCourseIds) {
-    courseIdToListKind.set(id, "might-take");
+  // 成績から決まる配置を先に求め、その上にユーザーの意図を被せる。順序が逆だと
+  // 成績が常に勝ってしまい、再履修の予定などが成績データを読むたびに消える。
+  for (const rc of realCourses.values()) {
+    courseIdToListKind.set(rc.id, realCourseListKind(rc.grade));
   }
 
-  for (const rc of realCourses.values()) {
-    switch (rc.grade) {
-      case "wip":
-        courseIdToListKind.set(rc.id, "might-take");
-        break;
-      case "a+":
-      case "a":
-      case "b":
-      case "c":
-      case "pass":
-        courseIdToListKind.set(rc.id, "taken");
-        break;
-      case "d":
-      case "fail":
-        courseIdToListKind.delete(rc.id);
-        break;
-      default:
-        unreachable(rc.grade);
+  listKindOverrides = new Map(listKindOverrides);
+  for (const [courseId, override] of listKindOverrides) {
+    const fromGrade = courseIdToListKind.get(courseId) ?? "wont-take";
+    // 単位取得済みの授業は動かせないので、成績が勝つ。成績と同じ配置を指す
+    // 上書きは意味がないので、どちらの場合も記録から消す。
+    if (fromGrade === "taken" || fromGrade === override) {
+      listKindOverrides.delete(courseId);
+      continue;
     }
+    courseIdToListKind.set(courseId, override);
   }
 
   for (const [courseId, cellId] of realCoursePositions) {
@@ -432,6 +453,7 @@ export function akikoNew(
     fakeCourses,
     courseIdToCellId,
     courseIdToListKind,
+    listKindOverrides,
     fakeCoursePositions,
     creditRequirements,
   };
@@ -770,12 +792,23 @@ export function akikoMoveCourse(
   if (!akiko.knownCourses.has(courseId) && !akiko.realCourses.has(courseId)) {
     return "no-such-course";
   }
-  if (akikoGetListKind(akiko, courseId) === "taken") return "course-taken";
   const current = akikoGetListKind(akiko, courseId);
+  if (current === "taken") return "course-taken";
   if (current === dst) return "course-does-not-move";
-  if (dst === "wont-take") {
-    akiko.courseIdToListKind.delete(courseId);
+  akiko.courseIdToListKind.set(courseId, dst);
+
+  // 成績から決まる配置とずれたときだけ記録する。成績どおりの配置に戻ったときは
+  // 記録を消し、無意味な上書きが溜まらないようにする。
+  const rc = akiko.realCourses.get(courseId);
+  const fromGrade =
+    rc === undefined ? "wont-take" : realCourseListKind(rc.grade);
+  if (fromGrade === dst) {
+    akiko.listKindOverrides.delete(courseId);
   } else {
-    akiko.courseIdToListKind.set(courseId, dst);
+    akiko.listKindOverrides.set(courseId, dst);
   }
+}
+
+export function akikoGetListKindOverrides(akiko: Akiko): ListKindOverrides {
+  return akiko.listKindOverrides;
 }

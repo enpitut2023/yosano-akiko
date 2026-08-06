@@ -51,7 +51,7 @@ export function getCreditStats(params: {
     [],
     result.realCourses,
     result.fakeCourses,
-    [],
+    new Map(),
     courseIdToCellId,
     realCoursePositions,
     fakeCoursePositions,

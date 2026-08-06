@@ -6,6 +6,7 @@ import "./coens";
 import "./coins";
 import "./esys";
 import "./klis";
+import "./local-data";
 import "./mast";
 import "./math";
 import "./meds";

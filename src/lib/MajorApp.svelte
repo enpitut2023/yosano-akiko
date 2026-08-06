@@ -37,7 +37,8 @@
   import {
     localDataDefault,
     localDataFromJson,
-    type LocalDataV2,
+    localDataToJson,
+    type LocalDataV3,
   } from "$lib/local-data";
   import { browser, dev } from "$app/environment";
   import { assert } from "$lib/util.js";
@@ -86,7 +87,7 @@
 
   // TODO: should identify ways loading can fail and let the user know that the
   // data will be overwritten by the default value
-  function localDataLoad(): LocalDataV2 {
+  function localDataLoad(): LocalDataV3 {
     if (!browser) return localDataDefault();
     const json = localStorage.getItem(localDataKey);
     if (json === null) return localDataDefault();
@@ -137,7 +138,7 @@
       config.knownCourses,
       realCourses,
       fakeCourses,
-      localData.mightTakeCourseIds,
+      localData.listKindOverrides,
       courseIdToCellId,
       realCoursePositions,
       fakeCoursePositions,
@@ -156,14 +157,14 @@
 
   $effect(() => {
     if (!browser) return;
-    const localData: LocalDataV2 = {
-      version: 2,
-      mightTakeCourseIds,
+    const localData: LocalDataV3 = {
+      version: 3,
+      listKindOverrides,
       realCourses: Array.from(realCourses),
       fakeCourses: Array.from(fakeCourses),
       native: isNative,
     };
-    localStorage.setItem(localDataKey, JSON.stringify(localData));
+    localStorage.setItem(localDataKey, localDataToJson(localData));
   });
 
   type Tab = "import" | "export" | "courses" | "settings";
@@ -579,6 +580,7 @@
       : undefined,
   );
   const mightTakeCourseIds = $derived(svelteAkiko.getMightTakeCourseIds());
+  const listKindOverrides = $derived(svelteAkiko.getListKindOverrides());
   const takenCourseIds = $derived(svelteAkiko.getTakenCourseIds());
   const unclassifiedCourses = $derived(svelteAkiko.getUnclassifiedCourses());
   const exportForTwinsResult = $derived(svelteAkiko.exportForTwins());

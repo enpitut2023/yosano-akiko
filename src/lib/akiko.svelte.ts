@@ -6,8 +6,10 @@ import {
   type FakeCourse,
   type FakeCourseId,
   type CreditStats,
+  akikoGetListKindOverrides,
   akikoGetMightTakeCourseIds,
   akikoGetTakenCourseIds,
+  type ListKindOverrides,
   akikoGetUnclassifiedRealCourses,
   akikoGetUnclassifiedFakeCourses,
   type AkikoMoveCourseDst,
@@ -56,6 +58,11 @@ export class SvelteAkiko {
   getMightTakeCourseIds(): CourseId[] {
     this.subscribe();
     return akikoGetMightTakeCourseIds(this.akiko);
+  }
+
+  getListKindOverrides(): ListKindOverrides {
+    this.subscribe();
+    return akikoGetListKindOverrides(this.akiko);
   }
 
   getTakenCourseIds(): CourseId[] {
