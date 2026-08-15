@@ -516,3 +516,10 @@ export function getDocMeta(name: DocsPageName) {
     description: `${ja}のあきこが科目判定に対応していない部分、単位計算が正しくない部分などの説明です。`,
   };
 }
+
+/** ご意見・バグ報告を受け付けているGoogleフォーム。 */
+export const FEEDBACK_FORM_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfUbueFsF6fbyJxCohNTqh5S8bYdxNgqx_HQ76RCR5TJQkpyQ/viewform?usp=dialog";
+
+/** あきこが生まれた授業enPiTのページ。 */
+export const ENPIT_URL = "https://enpit.coins.tsukuba.ac.jp/";

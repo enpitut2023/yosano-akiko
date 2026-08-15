@@ -5,6 +5,8 @@
 <nav>
   <a href={resolve("/")}>トップページ</a>
   <a href={resolve("/docs")}>あきこの使い方</a>
+  <a href={resolve("/faq")}>よくある質問</a>
+  <a href={resolve("/contact")}>お問い合わせ</a>
   <a href={resolve("/contributors")}>貢献者一覧</a>
 </nav>
 
