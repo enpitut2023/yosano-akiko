@@ -1,6 +1,6 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
-  import { ENPIT_URL, FEEDBACK_FORM_URL } from "$lib/constants";
+  import { AKIKO_X_URL, ENPIT_URL, FEEDBACK_FORM_URL } from "$lib/constants";
   import Nav from "$lib/Nav.svelte";
 
   const title = "よくある質問";
@@ -84,14 +84,14 @@
   <section>
     <h2>総合学域群のページってない？</h2>
     <p>
-      総合学域群1年生向けのページはありませんが、移行した先の学類のページはお使いいただけます。
-      総合学域群向けの授業などの単位読み替えは、最善を尽くしていますが正確性に欠ける場合があります。
-      ご自身で目視での確認や、間違いがあった場合の<a
+      総合学域群1年生向けのページはありませんが、移行先の学類のページはお使いいただけます。
+      総合学域群向けの授業などの単位の読み替えについても、できる限り対応していますが、ここは正確ではない部分も多いのが現状です。
+      わからない部分や「ここ違うんじゃない？」というところがあれば、<a
         href={FEEDBACK_FORM_URL}
         target="_blank"
-        rel="noreferrer">バグ報告</a
-      >にご協力いただけると幸いです。
-      また、総合学域群1年生向けのツールの開発も検討中です。
+        rel="noreferrer">こちら</a
+      >または<a href={AKIKO_X_URL} target="_blank" rel="noreferrer">X</a
+      >からお気軽にお問い合わせください。こちらで確認し、Xでもご報告します。
     </p>
   </section>
 

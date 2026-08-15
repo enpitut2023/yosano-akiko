@@ -521,5 +521,8 @@ export function getDocMeta(name: DocsPageName) {
 export const FEEDBACK_FORM_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSfUbueFsF6fbyJxCohNTqh5S8bYdxNgqx_HQ76RCR5TJQkpyQ/viewform?usp=dialog";
 
+/** あきこ公式Xアカウント。 */
+export const AKIKO_X_URL = "https://x.com/akiko_tsukuba";
+
 /** あきこが生まれた授業enPiTのページ。 */
 export const ENPIT_URL = "https://enpit.coins.tsukuba.ac.jp/";

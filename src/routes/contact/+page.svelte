@@ -1,6 +1,6 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
-  import { FEEDBACK_FORM_URL } from "$lib/constants";
+  import { AKIKO_X_URL, FEEDBACK_FORM_URL } from "$lib/constants";
   import ContactEmail from "$lib/ContactEmail.svelte";
   import Nav from "$lib/Nav.svelte";
 
@@ -30,7 +30,7 @@
 
   <p>
     あきこに関するお問い合わせは、<a
-      href="https://x.com/akiko_tsukuba"
+      href={AKIKO_X_URL}
       target="_blank"
       rel="noreferrer">あきこ公式Xアカウント</a
     >にDMを送っていただくか、<ContactEmail />にご連絡ください。
