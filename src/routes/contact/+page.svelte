@@ -2,22 +2,14 @@
   import { resolve } from "$app/paths";
   import { AKIKO_X_URL, FEEDBACK_FORM_URL } from "$lib/constants";
   import ContactEmail from "$lib/ContactEmail.svelte";
+  import Meta from "$lib/Meta.svelte";
   import Nav from "$lib/Nav.svelte";
 
   const title = "あきこへのお問い合わせ";
   const description = "あきこへのお問い合わせ方法をご案内します。";
 </script>
 
-<svelte:head>
-  <title>{title}</title>
-  <meta name="description" content={description} />
-  <meta property="og:title" content={title} />
-  <meta property="og:description" content={description} />
-  <meta
-    property="og:image"
-    content="https://github.com/user-attachments/assets/be6c928e-36fa-48e4-ac5b-5a0406a0adb2"
-  />
-</svelte:head>
+<Meta {title} {description} />
 
 <Nav />
 

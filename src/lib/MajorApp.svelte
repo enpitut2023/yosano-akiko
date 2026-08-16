@@ -3,6 +3,7 @@
   import Timetable, { type TimetableTab } from "$lib/Timetable.svelte";
   import HowToImportFromTwins from "$lib/HowToImportFromTwins.svelte";
   import HowToExportForTwins from "$lib/HowToExportForTwins.svelte";
+  import Meta from "$lib/Meta.svelte";
   import { SvelteAkiko } from "$lib/akiko.svelte";
   import { MAJOR_TO_JA } from "$lib/constants";
   import { parseImportedCsv } from "$lib/csv";
@@ -950,16 +951,7 @@
   });
 </script>
 
-<svelte:head>
-  <title>{metaTitle}</title>
-  <meta name="description" content={metaDescription} />
-  <meta property="og:title" content={metaTitle} />
-  <meta property="og:description" content={metaDescription} />
-  <meta
-    property="og:image"
-    content="https://github.com/user-attachments/assets/be6c928e-36fa-48e4-ac5b-5a0406a0adb2"
-  />
-</svelte:head>
+<Meta title={metaTitle} description={metaDescription} />
 
 {#snippet courseRow(
   c: UiCourse,

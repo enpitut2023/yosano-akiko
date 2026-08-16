@@ -1,22 +1,14 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import { AKIKO_X_URL, ENPIT_URL, FEEDBACK_FORM_URL } from "$lib/constants";
+  import Meta from "$lib/Meta.svelte";
   import Nav from "$lib/Nav.svelte";
 
   const title = "よくある質問";
   const description = "あきこについてよく寄せられる質問と回答をまとめました。";
 </script>
 
-<svelte:head>
-  <title>{title}</title>
-  <meta name="description" content={description} />
-  <meta property="og:title" content={title} />
-  <meta property="og:description" content={description} />
-  <meta
-    property="og:image"
-    content="https://github.com/user-attachments/assets/be6c928e-36fa-48e4-ac5b-5a0406a0adb2"
-  />
-</svelte:head>
+<Meta {title} {description} />
 
 <Nav />
 

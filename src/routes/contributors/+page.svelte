@@ -1,6 +1,7 @@
 <script lang="ts">
   import { asset } from "$app/paths";
   import { DOCS_PAGE_NAME_TO_JA, type DocsPageName } from "$lib/constants";
+  import Meta from "$lib/Meta.svelte";
   import Nav from "$lib/Nav.svelte";
 
   const title = "あきこの主な貢献者一覧";
@@ -22,16 +23,7 @@
   ];
 </script>
 
-<svelte:head>
-  <title>{title}</title>
-  <meta name="description" content={description} />
-  <meta property="og:title" content={title} />
-  <meta property="og:description" content={description} />
-  <meta
-    property="og:image"
-    content="https://github.com/user-attachments/assets/be6c928e-36fa-48e4-ac5b-5a0406a0adb2"
-  />
-</svelte:head>
+<Meta {title} {description} />
 
 <Nav />
 
