@@ -51,7 +51,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each contributors as c}
+      {#each contributors as c (c.name)}
         <tr>
           <td>{c.name}</td>
           <td>{DOCS_PAGE_NAME_TO_JA[c.major]}</td>

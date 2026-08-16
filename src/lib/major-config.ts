@@ -17,6 +17,15 @@ function findViewBox(
   return { width, height };
 }
 
+type RequirementsModule = Pick<
+  MajorConfig,
+  | "getCreditRequirements"
+  | "classifyKnownCourses"
+  | "classifyRealCourses"
+  | "classifyFakeCourses"
+  | "getRemark"
+>;
+
 export async function getMajorConfig(
   tableYear: number,
   major: Major,
@@ -24,7 +33,7 @@ export async function getMajorConfig(
 ): Promise<MajorConfig> {
   assert(tableYear >= 2021);
 
-  let req: any;
+  let req: RequirementsModule;
   if (major.startsWith("coins")) {
     req = await import("./requirements/coins-since-2021");
   } else if (major.startsWith("klis")) {
@@ -81,7 +90,9 @@ export async function getMajorConfig(
     throw new Error(`Bad major: ${major}`);
   }
 
-  const rects = await import(`./rects/${tableYear}/${major}.json`);
+  const rects = (await import(`./rects/${tableYear}/${major}.json`)) as {
+    default: MajorConfig["cellIdToRectRecord"];
+  };
 
   const svgUrl = asset(`/tables/${tableYear}/${major}.svg`);
   const svgResponse = await fetch(svgUrl);

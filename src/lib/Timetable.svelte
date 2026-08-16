@@ -10,8 +10,7 @@
     type RealCourse,
     type Term,
   } from "$lib/akiko";
-
-  export type TimetableTab = Term | "other";
+  import { type TimetableTab } from "$lib/timetable";
 
   type Props = {
     year: number;
@@ -224,7 +223,7 @@
 
 <div class="timetable">
   <div class="term-tabs">
-    {#each TERMS as term}
+    {#each TERMS as term (term)}
       <button
         class:active={activeTerm === term}
         onclick={() => (activeTerm = term)}>{termToString(term)}</button
@@ -249,7 +248,7 @@
             </tr>
           </thead>
           <tbody>
-            {#each otherTabCourses as { id, kc, rc, draggable }}
+            {#each otherTabCourses as { id, kc, rc, draggable } (id)}
               <tr
                 {draggable}
                 ondragstart={(e) => {
@@ -288,7 +287,7 @@
   {:else}
     <div class="grid">
       <div class="tt-cell tt-corner" style="grid-column: 1; grid-row: 1"></div>
-      {#each DAYS as day, di}
+      {#each DAYS as day, di (day)}
         <div
           class="tt-cell tt-header"
           style="grid-column: {di + 2}; grid-row: 1"
@@ -296,7 +295,7 @@
           {day}
         </div>
       {/each}
-      {#each PERIODS as period, pi}
+      {#each PERIODS as period, pi (period)}
         {@const lastRow = pi === PERIODS.length - 1}
         <div
           class="tt-cell tt-period"
@@ -305,7 +304,7 @@
         >
           {period}
         </div>
-        {#each [0, 1, 2, 3, 4] as _, di}
+        {#each [0, 1, 2, 3, 4] as _, di (di)}
           <div
             class="tt-cell"
             class:last-row={lastRow}
@@ -313,7 +312,7 @@
           ></div>
         {/each}
       {/each}
-      {#each bars as bar}
+      {#each bars as bar (`${bar.courseId}-${bar.x}-${bar.yStart}`)}
         <div
           class="bar-outer"
           style="grid-column: {bar.x + 2}; grid-row: {bar.yStart +

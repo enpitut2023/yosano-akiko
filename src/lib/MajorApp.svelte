@@ -1,6 +1,7 @@
 <script lang="ts">
   import { resolve, asset } from "$app/paths";
-  import Timetable, { type TimetableTab } from "$lib/Timetable.svelte";
+  import Timetable from "$lib/Timetable.svelte";
+  import { type TimetableTab } from "$lib/timetable";
   import HowToImportFromTwins from "$lib/HowToImportFromTwins.svelte";
   import HowToExportForTwins from "$lib/HowToExportForTwins.svelte";
   import Meta from "$lib/Meta.svelte";
@@ -307,7 +308,7 @@
     if (!(input instanceof HTMLInputElement)) return;
     const file = input.files?.[0];
     if (!file) return;
-    file.text().then((csv) => {
+    void file.text().then((csv) => {
       // 同じファイルをもう一度選んだときにも change が発火するようにする
       // （インポートをキャンセルして選び直す場合など）
       input.value = "";
@@ -887,8 +888,9 @@
 
   $effect(() => {
     if (!browser) return;
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
+    const onWheel = (e: WheelEvent) => void handleWheel(e);
+    window.addEventListener("wheel", onWheel, { passive: false });
+    return () => window.removeEventListener("wheel", onWheel);
   });
 
   // ----- Mobile unsupported detection -----
@@ -1505,7 +1507,7 @@
           showTaken={timetableShowTaken}
           {knownCoursesMap}
           {realCoursesMap}
-          onBarClick={(courseId) => {
+          onBarClick={(courseId: CourseId) => {
             const cellId = svelteAkiko.getCellId(courseId);
             if (cellId !== undefined) {
               selectedCellId = cellId;
@@ -1514,7 +1516,7 @@
               activeTab = "courses";
             }
           }}
-          onBarDragStart={(e, courseId) =>
+          onBarDragStart={(e: DragEvent, courseId: CourseId) =>
             handleDragStart(e, courseId, "might-take")}
           onBarDragEnd={handleDragEnd}
         />
@@ -1524,7 +1526,8 @@
             <div class="section">
               <h2>単位数</h2>
               <p>
-                {@html `選択されたマスの単位：${display.brief}${display.warning ? `<br>⚠️ ${display.warning}` : ""}`}
+                選択されたマスの単位：{display.brief}
+                {#if display.warning}<br />⚠️ {display.warning}{/if}
               </p>
             </div>
           {/if}

@@ -1,8 +1,9 @@
 <script lang="ts">
   import MajorApp from "$lib/MajorApp.svelte";
   import ClosedNotice from "$lib/ClosedNotice.svelte";
+  import type { PageProps } from "./$types";
 
-  let { data } = $props();
+  let { data }: PageProps = $props();
 </script>
 
 {#if data.closed}

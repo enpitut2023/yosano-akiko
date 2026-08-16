@@ -179,7 +179,7 @@ export function isSecondForeignLanguageAdvanced(
  */
 export function isElectiveSecondForeignLanguage(
   id: string,
-  name: string,
+  _name: string,
 ): boolean {
   return (
     isForeignLanguage(id) && !isJapaneseAsForeignLanguage(id) && !isEnglish(id)
@@ -345,7 +345,7 @@ export function findExactCombination(
 
   // dp[i] は「合計単位数を i にできる科目の組み合わせ（配列）」を保持する
   // 達成不可能な場合は undefined とする
-  const dp: ((RealCourse & { credit: number })[] | undefined)[] = Array(
+  const dp = Array<(RealCourse & { credit: number })[] | undefined>(
     totalCredits + 1,
   ).fill(undefined);
 
@@ -365,7 +365,7 @@ export function findExactCombination(
       // 「現在の科目単位数を引いた値(prevTarget)」が達成可能であり、
       // かつ「現在の目標値(currentTarget)」がまだ未達成の場合、組み合わせを記録する
       if (dp[prevTarget] !== undefined && dp[currentTarget] === undefined) {
-        dp[currentTarget] = [...dp[prevTarget]!, course];
+        dp[currentTarget] = [...dp[prevTarget], course];
       }
     }
   }

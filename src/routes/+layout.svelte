@@ -1,7 +1,8 @@
 <script lang="ts">
   import { dev } from "$app/environment";
+  import type { LayoutProps } from "./$types";
 
-  let { children } = $props();
+  let { children }: LayoutProps = $props();
 </script>
 
 <svelte:head>

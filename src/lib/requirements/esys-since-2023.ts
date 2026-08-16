@@ -27,7 +27,6 @@ import {
   isJiyuukamoku,
   isKyoushoku,
   isKyoutsuu,
-  isSecondForeignLanguageAdvanced,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 

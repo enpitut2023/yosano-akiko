@@ -87,11 +87,11 @@
   また、支援室はあきこ上の誤った単位計算などによる損害の責任を負いません。
 </p>
 
-{#each sections as s}
+{#each sections as s (s.tableYear)}
   <section>
     <h3>{s.tableYear}年度入学</h3>
     <ul>
-      {#each s.instances as i}
+      {#each s.instances as i (i.major)}
         <li class:gap={i.gap}>
           <a
             href={resolve("/[tableYear]/[major]", {

@@ -101,12 +101,15 @@ export function runTest(params: RunTestParams): void {
  * `effectiveMightTake` を0に設定したものとして扱われる。 `taken` についても同
  * 様。
  */
+/* eslint-disable @typescript-eslint/no-empty-object-type --
+   `{}` はどちらのキーも指定しない場合を表す。 */
 export type WantBaseCreditStats = (
   | { rawMightTake: number; effectiveMightTake: number }
   | { mightTake: number }
   | {}
 ) &
   ({ rawTaken: number; effectiveTaken: number } | { taken: number } | {});
+/* eslint-enable @typescript-eslint/no-empty-object-type */
 
 export type WantCreditStats = {
   cells: Record<string, WantBaseCreditStats>;
