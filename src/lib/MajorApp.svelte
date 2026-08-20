@@ -1,5 +1,6 @@
 <script lang="ts">
   import { resolve, asset } from "$app/paths";
+  import ChevronRight from "lucide-svelte/icons/chevron-right";
   import Timetable from "$lib/Timetable.svelte";
   import { type TimetableTab } from "$lib/timetable";
   import HowToImportFromTwins from "$lib/HowToImportFromTwins.svelte";
@@ -1167,12 +1168,18 @@
         ><span class="icon" style="--src: url({asset('/icons/math.svg')})"
         ></span>単位チェック</button
       >
+      <span class="workflow-arrow" aria-hidden="true">
+        <ChevronRight size={15} />
+      </span>
       <button
         class:active={activeTab === "courses"}
         onclick={() => (activeTab = "courses")}
         ><span class="icon" style="--src: url({asset('/icons/book.svg')})"
         ></span>履修を組む</button
       >
+      <span class="workflow-arrow" aria-hidden="true">
+        <ChevronRight size={15} />
+      </span>
       <button
         class:active={activeTab === "export"}
         onclick={() => (activeTab = "export")}
@@ -1180,6 +1187,7 @@
         ></span>TWINSに出力</button
       >
       <button
+        class="settings"
         class:active={activeTab === "settings"}
         onclick={() => (activeTab = "settings")}
         ><span class="icon" style="--src: url({asset('/icons/cog.svg')})"
@@ -1898,9 +1906,16 @@
 
   #tab-header {
     display: flex;
+    align-items: center;
     gap: 10px;
     padding: 10px;
     border-bottom: 1px solid black;
+
+    & > .workflow-arrow {
+      display: flex;
+      margin: 0 -10px;
+      color: #999;
+    }
 
     & > button {
       display: flex;
@@ -1911,6 +1926,10 @@
       color: #444;
       border: 1px solid currentColor;
       border-radius: 10px;
+
+      &.settings {
+        margin-left: auto;
+      }
 
       &:hover {
         background-color: oklch(95% 0 0);
