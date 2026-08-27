@@ -9,6 +9,8 @@ import {
 import type { ClassifyOptions, SetupCreditRequirements } from "$lib/app-setup";
 import type { Major } from "$lib/constants";
 import {
+  handleFaCalculus,
+  handleFaLinearAlgebra,
   isArt,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
@@ -256,7 +258,16 @@ export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
 ): Map<CourseId, string> {
+  cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
+
+  // 注10: 総合学域群からの移行生はFAから始まる微積分1と2で微分積分Aに、
+  // 線形代数1と2で線形代数Aに読み替えられる
+  if (!opts.isNative) {
+    handleFaCalculus(cs, courseIdToCellId, "c1");
+    handleFaLinearAlgebra(cs, courseIdToCellId, "c3");
+  }
+
   for (const c of cs) {
     const cellId = classify(
       c.id,
@@ -294,14 +305,7 @@ export function getRemark(id: CellId, _tableYear: number): string | undefined {
     // !!E!!
     return `注8(表の下部参照)には対応していません。`;
   }
-  if (
-    id === "c1" ||
-    id === "c2" ||
-    id === "c3" ||
-    id === "c4" ||
-    id === "c7" ||
-    id === "c8"
-  ) {
+  if (id === "c2" || id === "c4" || id === "c7" || id === "c8") {
     // !!D!!
     return `総合学域群からの移行学生に関する注10(表の下部参照)には対応していません。`;
   }
