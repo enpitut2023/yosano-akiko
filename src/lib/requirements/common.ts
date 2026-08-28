@@ -1,4 +1,5 @@
 import { gradeIsPass, type CourseId, type RealCourse } from "$lib/akiko";
+import { arrayRemove, assert } from "$lib/util";
 
 /**
  * 共通科目
@@ -414,4 +415,119 @@ export function redistributeOverflow(
       }
     }
   }
+}
+
+const FA_LINEAR_ALGEBRA_1 = new Set([
+  "FA01611",
+  "FA01621",
+  "FA01631",
+  "FA01641",
+  "FA01651",
+  "FA01661",
+  "FA01671",
+  "FA01681",
+  "FA01691",
+  "FA016A1",
+  "FA016C1",
+  "FA016D1",
+]);
+
+const FA_LINEAR_ALGEBRA_2 = new Set([
+  "FA01711",
+  "FA01721",
+  "FA01731",
+  "FA01741",
+  "FA01751",
+  "FA01761",
+  "FA01771",
+  "FA01781",
+  "FA01791",
+  "FA017A1",
+  "FA017C1",
+  "FA017D1",
+]);
+
+const FA_CALCULUS_1 = new Set([
+  "FA01311",
+  "FA01321",
+  "FA01331",
+  "FA01341",
+  "FA01351",
+  "FA01361",
+  "FA01371",
+  "FA01381",
+  "FA01391",
+  "FA013A1",
+  "FA013C1",
+  "FA013D1",
+]);
+
+const FA_CALCULUS_2 = new Set([
+  "FA01411",
+  "FA01421",
+  "FA01431",
+  "FA01441",
+  "FA01451",
+  "FA01461",
+  "FA01471",
+  "FA01481",
+  "FA01491",
+  "FA014A1",
+  "FA014C1",
+  "FA014D1",
+]);
+
+/**
+ * 1単位ずつの2科目を、2単位の1科目として読み替える。
+ * 両方揃っている場合のみ読み替え、読み替えた科目はcsから取り除いて通常の分類の
+ * 対象外にする。
+ */
+function handleFaPair(
+  cs: RealCourse[],
+  courseIdToCellId: Map<CourseId, string>,
+  cellId: string,
+  ids1: Set<string>,
+  ids2: Set<string>,
+): void {
+  const c1 = cs.find((c) => ids1.has(c.id));
+  const c2 = cs.find((c) => ids2.has(c.id));
+  if (c1 === undefined || c2 === undefined) {
+    return;
+  }
+  courseIdToCellId.set(c1.id, cellId);
+  courseIdToCellId.set(c2.id, cellId);
+  assert(arrayRemove(cs, c1));
+  assert(arrayRemove(cs, c2));
+}
+
+/**
+ * 移行生はFAから始まる線形代数1と2を両方取っていると情報学群の線形代数Aとして
+ * 使える。
+ * @param cellId 線形代数AのセルID（学類ごとに異なる）
+ */
+export function handleFaLinearAlgebra(
+  cs: RealCourse[],
+  courseIdToCellId: Map<CourseId, string>,
+  cellId: string,
+): void {
+  handleFaPair(
+    cs,
+    courseIdToCellId,
+    cellId,
+    FA_LINEAR_ALGEBRA_1,
+    FA_LINEAR_ALGEBRA_2,
+  );
+}
+
+/**
+ * 移行生はFAから始まる微積分1と2を両方取っていると情報学群の微分積分Aとして
+ * 使える。
+ * @param cellId 微分積分AのセルID（学類ごとに異なる）
+ */
+export function handleFaCalculus(
+  cs: RealCourse[],
+  courseIdToCellId: Map<CourseId, string>,
+  cellId: string,
+): void {
+  handleFaPair(cs, courseIdToCellId, cellId, FA_CALCULUS_1, FA_CALCULUS_2);
 }

@@ -9,6 +9,8 @@ import {
 import type { ClassifyOptions, SetupCreditRequirements } from "$lib/app-setup";
 import type { Major } from "$lib/constants";
 import {
+  handleFaCalculus,
+  handleFaLinearAlgebra,
   isArt,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
@@ -25,7 +27,7 @@ import {
   isKyoushoku,
   isKyoutsuu,
 } from "$lib/requirements/common";
-import { arrayRemove, assert, unreachable } from "$lib/util";
+import { unreachable } from "$lib/util";
 
 type Specialty = "scs" | "cs" | "mimt";
 
@@ -474,95 +476,6 @@ export function classifyKnownCourses(
   return courseIdToCellId;
 }
 
-const FA_LINEAR_ALGEBRA_1 = new Set([
-  "FA01611",
-  "FA01621",
-  "FA01631",
-  "FA01641",
-  "FA01651",
-  "FA01661",
-  "FA01671",
-  "FA01681",
-  "FA01691",
-  "FA016A1",
-  "FA016C1",
-  "FA016D1",
-]);
-
-const FA_LINEAR_ALGEBRA_2 = new Set([
-  "FA01711",
-  "FA01721",
-  "FA01731",
-  "FA01741",
-  "FA01751",
-  "FA01761",
-  "FA01771",
-  "FA01781",
-  "FA01791",
-  "FA017A1",
-  "FA017C1",
-  "FA017D1",
-]);
-
-// 移行生はFAから始まる線形代数1と2を両方取っているとcoinsの線形代数Aとして使える
-function handleFaLinearAlgebra(
-  cs: RealCourse[],
-  map: Map<CourseId, string>,
-): void {
-  const c1 = cs.find((c) => FA_LINEAR_ALGEBRA_1.has(c.id));
-  const c2 = cs.find((c) => FA_LINEAR_ALGEBRA_2.has(c.id));
-  if (c1 === undefined || c2 === undefined) {
-    return;
-  }
-  map.set(c1.id, "c1");
-  map.set(c2.id, "c1");
-  assert(arrayRemove(cs, c1));
-  assert(arrayRemove(cs, c2));
-}
-
-const FA_CALCULUS_1 = new Set([
-  "FA01311",
-  "FA01321",
-  "FA01331",
-  "FA01341",
-  "FA01351",
-  "FA01361",
-  "FA01371",
-  "FA01381",
-  "FA01391",
-  "FA013A1",
-  "FA013C1",
-  "FA013D1",
-]);
-
-const FA_CALCULUS_2 = new Set([
-  "FA01411",
-  "FA01421",
-  "FA01431",
-  "FA01441",
-  "FA01451",
-  "FA01461",
-  "FA01471",
-  "FA01481",
-  "FA01491",
-  "FA014A1",
-  "FA014C1",
-  "FA014D1",
-]);
-
-// 移行生はFAから始まる微積分1と2を両方取っているとcoinsの微分積分Aとして使える
-function handleFaCalculus(cs: RealCourse[], map: Map<CourseId, string>): void {
-  const c1 = cs.find((c) => FA_CALCULUS_1.has(c.id));
-  const c2 = cs.find((c) => FA_CALCULUS_2.has(c.id));
-  if (c1 === undefined || c2 === undefined) {
-    return;
-  }
-  map.set(c1.id, "c3");
-  map.set(c2.id, "c3");
-  assert(arrayRemove(cs, c1));
-  assert(arrayRemove(cs, c2));
-}
-
 export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
@@ -572,8 +485,8 @@ export function classifyRealCourses(
   const courseIdToCellId = new Map<CourseId, string>();
 
   if (!opts.isNative) {
-    handleFaLinearAlgebra(cs, courseIdToCellId);
-    handleFaCalculus(cs, courseIdToCellId);
+    handleFaLinearAlgebra(cs, courseIdToCellId, "c1");
+    handleFaCalculus(cs, courseIdToCellId, "c3");
   }
 
   for (const c of cs) {
