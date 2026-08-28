@@ -59,7 +59,7 @@ function isA3(id: string, specialty: Specialty): boolean {
     case "science":
       return id === "GE50712"; //専門英語B-1 知識科学主専攻生 知識情報システム主専攻の一部
     case "system":
-      return id === "GE50712" || id === "GE50732";
+      return id === "GE50712" || id === "GE50722" || id === "GE50732";
     case "rm":
       return id === "GE50732"; // 専門英語B-3　情報資源経営主専攻　知識情報システム主専攻の一部
   }
