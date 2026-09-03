@@ -68,15 +68,70 @@ function isB1(id: string) {
   return id.startsWith("GC5") || id.startsWith("GA4");
 }
 
-function classifyColumnC(id: CourseId, tableYear: number): string | undefined {
-  if (id === "GA15331") return "c1"; // 微分積分A
+function isCalcA(id: CourseId, mode: Mode, isNative: boolean): boolean {
+  // 微分積分A
+  return (
+    id === "GA15331" || // mast
+    (mode === "real" &&
+      !isNative &&
+      (id === "GA15311" || // coins 1,2クラス
+        id === "GA15321" || // coins 3,4クラス
+        id === "GA15341")) // klis
+  );
+}
+
+function isLinAlgA(id: CourseId, mode: Mode, isNative: boolean): boolean {
+  // 線形代数A
+  return (
+    id === "GA15231" || // mast
+    (mode === "real" &&
+      !isNative &&
+      (id === "GA15211" || // coins 1,2クラス
+        id === "GA15221" || // coins 3,4クラス
+        id === "GA15241")) // klis
+  );
+}
+
+function isInfoMathA(id: CourseId, mode: Mode, isNative: boolean): boolean {
+  // 情報数学A
+  return (
+    id === "GA15131" || // mast
+    (mode === "real" &&
+      !isNative &&
+      (id === "GA15111" || // coins 1,2クラス
+        id === "GA15121" || // coins 3,4クラス
+        id === "GA15141")) // klis
+  );
+}
+
+function isProgIntroA(id: CourseId, mode: Mode, isNative: boolean): boolean {
+  // プログラミング入門A
+  return (
+    id === "GA18222" || (mode === "real" && !isNative && id === "FH60474") // 総合学域群優先
+  );
+}
+
+function isProgIntroB(id: CourseId, mode: Mode, isNative: boolean): boolean {
+  // プログラミング入門B
+  return (
+    id === "GA18322" || (mode === "real" && !isNative && id === "FH60574") // 総合学域群優先
+  );
+}
+
+function classifyColumnC(
+  id: CourseId,
+  tableYear: number,
+  mode: Mode,
+  isNative: boolean,
+): string | undefined {
+  if (isCalcA(id, mode, isNative)) return "c1"; // 微分積分A
   if (id === "GC11701") return "c2"; // 微分積分B
-  if (id === "GA15231") return "c3"; // 線形代数A
+  if (isLinAlgA(id, mode, isNative)) return "c3"; // 線形代数A
   if (id === "GC11801") return "c4"; // 線形代数B
-  if (id === "GA15131") return "c5"; // 情報数学A
+  if (isInfoMathA(id, mode, isNative)) return "c5"; // 情報数学A
   if (id === "GC11601") return "c6"; // 確率と統計
-  if (id === "GA18222") return "c7"; // プログラミング入門A
-  if (id === "GA18322") return "c8"; // プログラミング入門B
+  if (isProgIntroA(id, mode, isNative)) return "c7"; // プログラミング入門A
+  if (isProgIntroB(id, mode, isNative)) return "c8"; // プログラミング入門B
   let offset = 0;
   if (tableYear >= 2025) {
     offset = 1;
@@ -210,7 +265,7 @@ function classify(
   id: CourseId,
   name: string,
   tableYear: number,
-  _isNative: boolean,
+  isNative: boolean,
   mode: Mode,
 ): string | undefined {
   // 必修
@@ -220,7 +275,7 @@ function classify(
   if (isA4(id)) return "a4";
   if (isA5(id)) return "a5";
   if (isA6(id)) return "a6";
-  const c = classifyColumnC(id, tableYear);
+  const c = classifyColumnC(id, tableYear, mode, isNative);
   if (c !== undefined) return c;
   if (isE1(id, mode)) return "e1";
   if (isE2(id, mode)) return "e2";

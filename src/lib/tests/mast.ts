@@ -1,8 +1,11 @@
+import type { CourseId, Grade } from "$lib/akiko";
+import type { Major } from "$lib/constants";
 import {
   classifyFakeCourses,
   classifyRealCourses,
   getCreditRequirements,
 } from "$lib/requirements/mast-since-2021";
+import { assert } from "$lib/util";
 import { runTest } from "./util";
 
 function test1(): void {
@@ -57,5 +60,77 @@ function test1(): void {
   });
 }
 
+function classifySingleRealCourse(params: {
+  courseId: string;
+  courseName?: string;
+  courseGrade?: Grade;
+  courseCredit?: number;
+  courseTakenYear?: number;
+  isNative: boolean;
+  major: Major;
+  tableYear: number;
+}): string | undefined {
+  return classifyRealCourses(
+    [
+      {
+        id: params.courseId as CourseId,
+        name: params.courseName ?? "",
+        grade: params.courseGrade ?? "a+",
+        credit: params.courseCredit ?? 1,
+        takenYear: params.courseTakenYear ?? params.tableYear,
+      },
+    ],
+    params,
+  ).get(params.courseId as CourseId);
+}
+
+function test2(): void {
+  const tests = [
+    ["GA15311", "c1", false], // 微分積分A coins 1,2クラス
+    ["GA15321", "c1", false], // 微分積分A coins 3,4クラス
+    ["GA15331", "c1", true], // 微分積分A mast
+    ["GA15341", "c1", false], // 微分積分A klis
+    ["GA15211", "c3", false], // 線形代数A coins 1,2クラス
+    ["GA15221", "c3", false], // 線形代数A coins 3,4クラス
+    ["GA15231", "c3", true], // 線形代数A mast
+    ["GA15241", "c3", false], // 線形代数A klis
+    ["GA15111", "c5", false], // 情報数学A coins 1,2クラス
+    ["GA15121", "c5", false], // 情報数学A coins 3,4クラス
+    ["GA15131", "c5", true], // 情報数学A mast
+    ["GA15141", "c5", false], // 情報数学A klis
+    ["GA18222", "c7", true], // プログラミング入門A mast
+    ["FH60474", "c7", false], // プログラミング入門A 総合学域群優先
+    ["GA18322", "c8", true], // プログラミング入門B mast
+    ["FH60574", "c8", false], // プログラミング入門B 総合学域群優先
+  ] as const;
+  for (const [courseId, want, isMast] of tests) {
+    const gotNonNative = classifySingleRealCourse({
+      courseId,
+      isNative: false,
+      major: "mast",
+      tableYear: 2026,
+    });
+    assert(
+      want === gotNonNative,
+      `Bad non-native classification for ${courseId}:
+  want: ${want}
+  got: ${gotNonNative}`,
+    );
+    const gotNative = classifySingleRealCourse({
+      courseId,
+      isNative: true,
+      major: "mast",
+      tableYear: 2026,
+    });
+    assert(
+      isMast ? want === gotNative : want !== gotNative,
+      `Bad native classification for ${courseId}:
+  want: ${want}
+  got: ${gotNative}`,
+    );
+  }
+}
+
 test1();
+test2();
 console.log(import.meta.filename, "ok");
