@@ -107,14 +107,24 @@ function isInfoMathA(id: CourseId, mode: Mode, isNative: boolean): boolean {
 function isProgIntroA(id: CourseId, mode: Mode, isNative: boolean): boolean {
   // プログラミング入門A
   return (
-    id === "GA18222" || (mode === "real" && !isNative && id === "FH60474") // 総合学域群優先
+    id === "GA18222" || // mast
+    (mode === "real" &&
+      !isNative &&
+      (id === "FH60474" || // 総合学域群優先
+        id === "GA18212" || // coins
+        id === "GA18232")) // klis
   );
 }
 
 function isProgIntroB(id: CourseId, mode: Mode, isNative: boolean): boolean {
   // プログラミング入門B
   return (
-    id === "GA18322" || (mode === "real" && !isNative && id === "FH60574") // 総合学域群優先
+    id === "GA18322" || // mast
+    (mode === "real" &&
+      !isNative &&
+      (id === "FH60574" || // 総合学域群優先
+        id === "GA18312" || // coins
+        id === "GA18332")) // klis
   );
 }
 

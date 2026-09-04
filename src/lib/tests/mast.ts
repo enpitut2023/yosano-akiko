@@ -98,10 +98,14 @@ function test2(): void {
     ["GA15121", "c5", false], // 情報数学A coins 3,4クラス
     ["GA15131", "c5", true], // 情報数学A mast
     ["GA15141", "c5", false], // 情報数学A klis
-    ["GA18222", "c7", true], // プログラミング入門A mast
     ["FH60474", "c7", false], // プログラミング入門A 総合学域群優先
-    ["GA18322", "c8", true], // プログラミング入門B mast
+    ["GA18212", "c7", false], // プログラミング入門A coins
+    ["GA18222", "c7", true], // プログラミング入門A mast
+    ["GA18232", "c7", false], // プログラミング入門A klis
     ["FH60574", "c8", false], // プログラミング入門B 総合学域群優先
+    ["GA18312", "c8", false], // プログラミング入門B coins
+    ["GA18322", "c8", true], // プログラミング入門B mast
+    ["GA18332", "c8", false], // プログラミング入門B klis
   ] as const;
   for (const [courseId, want, isMast] of tests) {
     const gotNonNative = classifySingleRealCourse({
