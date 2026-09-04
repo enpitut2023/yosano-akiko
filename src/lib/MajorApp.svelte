@@ -116,10 +116,7 @@
 
   const creditRequirements = $derived(
     createCreditRequirementsOrFail(
-      config.getCreditRequirements(
-        config.tableYear,
-        config.major,
-      ),
+      config.getCreditRequirements(config.tableYear, config.major),
     ),
   );
 
@@ -349,7 +346,11 @@
     realCourses = pending.realCourses;
     fakeCourses = pending.fakeCourses;
     pendingImport = undefined;
-    trackEvent("grades", "import-grades", `${config.tableYear}/${config.major}`);
+    trackEvent(
+      "grades",
+      "import-grades",
+      `${config.tableYear}/${config.major}`,
+    );
     if (resetPlan) {
       trackEvent(
         "plan",
@@ -613,11 +614,7 @@
   );
   const selectedCellRemark = $derived(
     selectedCellId !== undefined
-      ? config.getRemark?.(
-          selectedCellId,
-          config.tableYear,
-          config.major,
-        )
+      ? config.getRemark?.(selectedCellId, config.tableYear, config.major)
       : undefined,
   );
   const mightTakeCourseIds = $derived(svelteAkiko.getMightTakeCourseIds());
@@ -1302,10 +1299,7 @@
                   <td class="id-name">
                     <span>{course.id}</span><br />
                     <a
-                      href={getSyllabusUrl(
-                        course.id,
-                        config.knownCourseYear,
-                      )}
+                      href={getSyllabusUrl(course.id, config.knownCourseYear)}
                       target="_blank">{course.name}</a
                     >
                   </td>
@@ -1358,10 +1352,7 @@
                     <td class="id-name">
                       <span>{course.id}</span><br />
                       <a
-                        href={getSyllabusUrl(
-                          course.id,
-                          config.knownCourseYear,
-                        )}
+                        href={getSyllabusUrl(course.id, config.knownCourseYear)}
                         target="_blank">{course.name}</a
                       >
                     </td>
