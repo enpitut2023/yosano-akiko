@@ -12,11 +12,16 @@
   import {
     columnIdIsElective,
     courseIdCompare,
+    DOWS,
+    dowCompare,
+    dowToString,
     gradeIsPass,
     isCellId,
     isCourseId,
     akikoNew,
     slotToString,
+    termCompare,
+    termToString,
     type Availability,
     type BaseCreditStats,
     type CellCreditStats,
@@ -24,10 +29,13 @@
     type CellId,
     type ColumnCreditStats,
     type CourseId,
+    type Dow,
     type ElectiveCreditStats,
     type FakeCourse,
     type Grade,
     type RealCourse,
+    type Slot,
+    type Term,
     cellIdToRow,
     cellIdToColumnId,
   } from "$lib/akiko";
@@ -66,6 +74,8 @@
     courseIdOrName: string;
     credit: number | undefined;
     expects: number | undefined;
+    term: Term | undefined;
+    dows: Dow[];
     onlyUnoccupied: boolean;
   };
 
@@ -76,6 +86,7 @@
     slots: string | undefined;
     expects: string | undefined;
     expectsRaw: number[];
+    slotsRaw: Slot[];
     grade: Grade | undefined;
     takenYear: number | undefined;
     syllabusYear: number;
@@ -111,6 +122,8 @@
     courseIdOrName: "",
     credit: undefined,
     expects: undefined,
+    term: undefined,
+    dows: [],
     onlyUnoccupied: false,
   });
 
@@ -457,6 +470,7 @@
         slots: kc?.slotsString,
         expects: kc?.expectsString,
         expectsRaw: kc?.expects ?? [],
+        slotsRaw: kc?.slots ?? [],
         grade: rc?.grade,
         takenYear: rc?.takenYear,
         syllabusYear:
@@ -496,8 +510,26 @@
 
   const occupiedSlots = $derived(svelteAkiko.getOccupiedSlots());
 
+  /**
+   * 学期と曜日のフィルタに当てはまるか。学期と曜日は同じ Slot が両方を満たす必要
+   * があり、曜日を選ぶと曜時限のない授業（集中・応談など）は除外される。
+   */
+  function matchesSlotFilters(
+    slots: Slot[],
+    term: Term | undefined,
+    dows: Dow[],
+  ): boolean {
+    if (term === undefined && dows.length === 0) return true;
+    return slots.some((s) => {
+      if (term !== undefined && s.term !== term) return false;
+      if (dows.length === 0) return true;
+      return s.when.kind === "regular" && dows.includes(s.when.dow);
+    });
+  }
+
   const filteredCourseLists = $derived.by(() => {
-    let { courseIdOrName, credit, expects, onlyUnoccupied } = wontTakeFilters;
+    let { courseIdOrName, credit, expects, term, dows, onlyUnoccupied } =
+      wontTakeFilters;
     courseIdOrName = courseIdOrName.toLowerCase();
     return {
       wontTake: courseLists.wontTake.filter((c) => {
@@ -514,6 +546,7 @@
         if (credit !== undefined && c.credit !== credit) return false;
         if (expects !== undefined && !c.expectsRaw.includes(expects))
           return false;
+        if (!matchesSlotFilters(c.slotsRaw, term, dows)) return false;
         if (onlyUnoccupied && svelteAkiko.isOccupied(occupiedSlots, c.id))
           return false;
         return true;
@@ -549,6 +582,46 @@
     }
     return Array.from(expects).sort((a, b) => a - b);
   });
+  const availableDows = $derived.by(() => {
+    const dows = new Set<Dow>();
+    for (const c of courseLists.wontTake) {
+      for (const s of c.slotsRaw) {
+        if (s.when.kind === "regular") dows.add(s.when.dow);
+      }
+    }
+    return Array.from(dows).sort(dowCompare);
+  });
+
+  const TERM_GROUP_LABELS = ["モジュール", "学期", "その他"] as const;
+  type TermGroupLabel = (typeof TERM_GROUP_LABELS)[number];
+  // 春Aと春学期のように紛らわしい学期があるので、選択肢を分類して並べる
+  const TERM_TO_GROUP: Record<Term, TermGroupLabel> = {
+    "spring-a": "モジュール",
+    "spring-b": "モジュール",
+    "spring-c": "モジュール",
+    "autumn-a": "モジュール",
+    "autumn-b": "モジュール",
+    "autumn-c": "モジュール",
+    spring: "学期",
+    autumn: "学期",
+    "all-year": "学期",
+    "spring-break": "その他",
+    "summer-break": "その他",
+  };
+
+  const availableTerms = $derived.by(() => {
+    const terms = new Set<Term>();
+    for (const c of courseLists.wontTake) {
+      for (const s of c.slotsRaw) terms.add(s.term);
+    }
+    return Array.from(terms).sort(termCompare);
+  });
+  const availableTermGroups = $derived(
+    TERM_GROUP_LABELS.map((label) => ({
+      label,
+      terms: availableTerms.filter((t) => TERM_TO_GROUP[t] === label),
+    })).filter((g) => g.terms.length > 0),
+  );
 
   $effect(() => {
     if (
@@ -564,6 +637,20 @@
       !availableExpects.includes(wontTakeFilters.expects)
     ) {
       wontTakeFilters.expects = undefined;
+    }
+  });
+  $effect(() => {
+    if (
+      wontTakeFilters.term !== undefined &&
+      !availableTerms.includes(wontTakeFilters.term)
+    ) {
+      wontTakeFilters.term = undefined;
+    }
+  });
+  $effect(() => {
+    const kept = wontTakeFilters.dows.filter((d) => availableDows.includes(d));
+    if (kept.length !== wontTakeFilters.dows.length) {
+      wontTakeFilters.dows = kept;
     }
   });
 
@@ -1431,6 +1518,42 @@
               {/each}
             </select>
           </div>
+          <div id="filter-bar-slot-row">
+            <select
+              value={wontTakeFilters.term ?? ""}
+              class:placeholder={wontTakeFilters.term === undefined}
+              onchange={(e) => {
+                const v = e.currentTarget.value;
+                wontTakeFilters.term = v === "" ? undefined : (v as Term);
+              }}
+            >
+              <option value="">全学期</option>
+              {#each availableTermGroups as group (group.label)}
+                <optgroup label={group.label}>
+                  {#each group.terms as t (t)}
+                    <option value={t}>{termToString(t)}</option>
+                  {/each}
+                </optgroup>
+              {/each}
+            </select>
+            <div id="dow-chips" role="group" aria-label="曜日で絞り込む">
+              {#each DOWS as d (d)}
+                {@const active = wontTakeFilters.dows.includes(d)}
+                <button
+                  type="button"
+                  class="dow-chip"
+                  class:active
+                  aria-pressed={active}
+                  disabled={!availableDows.includes(d)}
+                  onclick={() => {
+                    wontTakeFilters.dows = active
+                      ? wontTakeFilters.dows.filter((x) => x !== d)
+                      : [...wontTakeFilters.dows, d];
+                  }}>{dowToString(d)}</button
+                >
+              {/each}
+            </div>
+          </div>
           <div id="filter-bar-checkboxes">
             <label class="filter-checkbox">
               <input
@@ -1921,18 +2044,55 @@
       flex: 1;
       min-width: 0;
     }
+  }
 
-    & > select {
-      font-size: var(--fs-sm);
-      border: 1px solid gray;
-      border-radius: 10px;
-      padding: 5px 0px 5px 5px;
-      background-color: white;
-      cursor: pointer;
+  #filter-bar-slot-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
 
-      &.placeholder {
-        color: oklch(0.6 0 0);
-      }
+  #filter-bar select {
+    font-size: var(--fs-sm);
+    border: 1px solid gray;
+    border-radius: 10px;
+    padding: 5px 0px 5px 5px;
+    background-color: white;
+    cursor: pointer;
+
+    &.placeholder {
+      color: oklch(0.6 0 0);
+    }
+  }
+
+  #dow-chips {
+    display: flex;
+    gap: 5px;
+  }
+
+  .dow-chip {
+    font-size: var(--fs-sm);
+    min-width: 30px;
+    padding: 5px 0;
+    border: 1px solid gray;
+    border-radius: 10px;
+    background-color: white;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background-color: oklch(95% 0 0);
+    }
+
+    &.active {
+      border-color: oklch(60% 15% 250);
+      background-color: oklch(90% 8% 250);
+    }
+
+    &:disabled {
+      color: oklch(0.6 0 0);
+      border-color: oklch(0.8 0 0);
+      cursor: default;
     }
   }
 
