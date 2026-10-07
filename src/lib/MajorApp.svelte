@@ -356,6 +356,11 @@
       `${config.tableYear}/${config.major}`,
     );
     if (dev) debugPrintCreditStats(svelteAkiko.getCreditStats());
+    if (svelteAkiko.getUnclassifiedCourses().fake.length > 4) {
+      alert(
+        "申し訳ございませんが、TWINSの仕様のため編入生の認可された科目のみ単位チェック時に正しく単位を計算することができません。認可されていない通常の科目の成績は正しく計算されます。",
+      );
+    }
   }
 
   function debugPrintCreditStats(stats: CreditStats) {
