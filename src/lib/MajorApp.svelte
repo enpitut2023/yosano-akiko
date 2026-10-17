@@ -1,5 +1,6 @@
 <script lang="ts">
   import { resolve, asset } from "$app/paths";
+  import BadgeJapaneseYen from "lucide-svelte/icons/badge-japanese-yen";
   import ChevronRight from "lucide-svelte/icons/chevron-right";
   import Timetable from "$lib/Timetable.svelte";
   import { type TimetableTab } from "$lib/timetable";
@@ -1259,8 +1260,13 @@
         ><span class="icon" style="--src: url({asset('/icons/itf.svg')})"
         ></span>TWINSに出力</button
       >
+      <a
+        class="support"
+        href="https://buymeacoffee.com/akiko.tsukuba"
+        target="_blank"
+        rel="noreferrer"><BadgeJapaneseYen size={15} />支援</a
+      >
       <button
-        class="settings"
         class:active={activeTab === "settings"}
         onclick={() => (activeTab = "settings")}
         ><span class="icon" style="--src: url({asset('/icons/cog.svg')})"
@@ -1938,7 +1944,8 @@
       color: #999;
     }
 
-    & > button {
+    & > button,
+    & > a {
       display: flex;
       align-items: center;
       gap: 5px;
@@ -1948,8 +1955,17 @@
       border: 1px solid currentColor;
       border-radius: 10px;
 
-      &.settings {
+      &.support {
         margin-left: auto;
+        // UA default button font size, so the link matches the tab buttons
+        font-size: 13.333px;
+        text-decoration: none;
+        background-color: oklch(97% 0.05 90);
+        color: oklch(45% 0.1 75);
+
+        &:hover {
+          background-color: oklch(93% 0.08 90);
+        }
       }
 
       &:hover {
