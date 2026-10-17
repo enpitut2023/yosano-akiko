@@ -689,6 +689,19 @@
       ? creditStats.cells.get(selectedCellId)
       : undefined,
   );
+  const listCreditTotals = $derived({
+    mightTake: courseLists.mightTake.reduce((s, c) => s + (c.credit ?? 0), 0),
+    taken: courseLists.taken.reduce((s, c) => s + (c.credit ?? 0), 0),
+  });
+  const graduationCredits = $derived.by(() => {
+    const { compulsory: c, elective: e } = creditStats;
+    return {
+      min: c.min + e.min,
+      max: c.max + e.max,
+      effectiveTaken: c.effectiveTaken + e.effectiveTaken,
+      effectiveMightTake: c.effectiveMightTake + e.effectiveMightTake,
+    };
+  });
   const selectedCellRemark = $derived(
     selectedCellId !== undefined
       ? config.getRemark?.(selectedCellId, config.tableYear, config.major)
@@ -766,17 +779,24 @@
     return `${min}~${max}`;
   }
 
+  function creditProgressToString(c: {
+    min: number;
+    max: number | undefined;
+    effectiveTaken: number;
+    effectiveMightTake: number;
+  }): string {
+    const progress =
+      c.effectiveMightTake === 0
+        ? c.effectiveTaken.toString()
+        : `${c.effectiveTaken}→${c.effectiveTaken + c.effectiveMightTake}`;
+    return progress + "　要:" + creditBoundsToString(c.min, c.max);
+  }
+
   function cellCreditStatsDisplay(c: CellCreditStats): {
     brief: string;
     warning: string | undefined;
   } {
-    let brief = "計:";
-    if (c.effectiveMightTake === 0) {
-      brief += c.effectiveTaken.toString();
-    } else {
-      brief += `${c.effectiveTaken}→${c.effectiveTaken + c.effectiveMightTake}`;
-    }
-    brief += "　要:" + creditBoundsToString(c.min, c.max);
+    const brief = "計:" + creditProgressToString(c);
 
     let warning: string | undefined;
     if (c.overflowTotal > 0) {
@@ -790,13 +810,7 @@
     brief: string;
     warning: string | undefined;
   } {
-    let brief = "計:";
-    if (c.effectiveMightTake === 0) {
-      brief += c.effectiveTaken.toString();
-    } else {
-      brief += `${c.effectiveTaken}→${c.effectiveTaken + c.effectiveMightTake}`;
-    }
-    brief += "　要:" + creditBoundsToString(c.min, c.max);
+    const brief = "計:" + creditProgressToString(c);
 
     let warning: string | undefined;
     if (c.overflowTotal > 0) {
@@ -810,13 +824,7 @@
     brief: string;
     warning: string | undefined;
   } {
-    let brief = "選択科目計:";
-    if (c.effectiveMightTake === 0) {
-      brief += c.effectiveTaken.toString();
-    } else {
-      brief += `${c.effectiveTaken}→${c.effectiveTaken + c.effectiveMightTake}`;
-    }
-    brief += "　要:" + creditBoundsToString(c.min, c.max);
+    const brief = "選択科目計:" + creditProgressToString(c);
 
     let warning: string | undefined;
     if (c.overflowTotal > 0) {
@@ -1647,13 +1655,26 @@
                 {#if display.warning}<br />⚠️ {display.warning}{/if}
               </p>
             </div>
+          {:else if selectedCellId === undefined}
+            {@const electiveWarning = electiveCreditStatsDisplay(
+              creditStats.elective,
+            ).warning}
+            <div class="section">
+              <h2>単位数</h2>
+              <p>
+                必修科目：{creditProgressToString(creditStats.compulsory)}<br />
+                選択科目：{creditProgressToString(creditStats.elective)}<br />
+                合計：{creditProgressToString(graduationCredits)}
+                {#if electiveWarning}<br />⚠️ {electiveWarning}{/if}
+              </p>
+            </div>
           {/if}
           <div class="section">
             <div class="list-heading">
               <h2>取る授業</h2>
-              {#if selectedCellStats}
+              {#if listCreditTotals.mightTake > 0}
                 <span class="credit-total">
-                  {selectedCellStats.rawMightTake}単位
+                  {listCreditTotals.mightTake}単位
                 </span>
               {/if}
             </div>
@@ -1670,9 +1691,9 @@
           <div class="section">
             <div class="list-heading">
               <h2>単位取得済みの授業</h2>
-              {#if selectedCellStats}
+              {#if listCreditTotals.taken > 0}
                 <span class="credit-total">
-                  {selectedCellStats.rawTaken}単位
+                  {listCreditTotals.taken}単位
                 </span>
               {/if}
             </div>
