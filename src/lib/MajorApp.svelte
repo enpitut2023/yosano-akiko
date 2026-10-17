@@ -1976,23 +1976,25 @@
       border: 1px solid currentColor;
       border-radius: 10px;
 
-      &.support {
-        margin-left: auto;
-        // UA default button font size, so the link matches the tab buttons
-        font-size: 13.333px;
-        text-decoration: none;
-        background-color: oklch(97% 0.05 90);
-        color: oklch(45% 0.1 75);
-
-        &:hover {
-          background-color: oklch(93% 0.08 90);
-        }
-      }
-
       &:hover {
         background-color: oklch(95% 0 0);
       }
+    }
 
+    & > a.support {
+      margin-left: auto;
+      // UA default button font size, so the link matches the tab buttons
+      font-size: 13.333px;
+      text-decoration: none;
+      background-color: oklch(97% 0.05 90);
+      color: oklch(45% 0.1 75);
+
+      &:hover {
+        background-color: oklch(93% 0.08 90);
+      }
+    }
+
+    & > button {
       &.active {
         $c: oklch(70% 50% 270);
         background-color: $c;
