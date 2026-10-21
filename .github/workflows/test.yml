@@ -1,0 +1,11 @@
+name: Test pull requests
+on:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # build also runs the grade CSV lint and tests, and prerendering catches
+      # missing rects and table SVGs.
+      - run: npm i && npm run check && npm run lint && npm run build
