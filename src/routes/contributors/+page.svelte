@@ -1,25 +1,25 @@
 <script lang="ts">
   import { asset } from "$app/paths";
-  import { DOCS_PAGE_NAME_TO_JA, type DocsPageName } from "$lib/constants";
+  import { COLLEGE_TO_JA, type College } from "$lib/constants";
   import Meta from "$lib/Meta.svelte";
   import Nav from "$lib/Nav.svelte";
 
   const title = "あきこの主な貢献者一覧";
   const description = "あきこに主に貢献した人たちの一覧です。";
 
-  type Contributor = { name: string; major: DocsPageName };
+  type Contributor = { name: string; college: College };
 
   const contributors: Contributor[] = [
-    { name: "白井拓翔（企画・代表）", major: "coins" },
-    { name: "髙橋怜佑", major: "coins" },
-    { name: "中山佳汰", major: "coens" },
-    { name: "河名翼", major: "coins" },
-    { name: "加藤愛緯", major: "ccc" },
-    { name: "安田和也", major: "coins" },
-    { name: "齊藤慎太郎", major: "klis" },
-    { name: "島崎悠人", major: "coins" },
-    { name: "田部萌々佳", major: "klis" },
-    { name: "高木直希", major: "coins" },
+    { name: "白井拓翔（企画・代表）", college: "coins" },
+    { name: "髙橋怜佑", college: "coins" },
+    { name: "中山佳汰", college: "coens" },
+    { name: "河名翼", college: "coins" },
+    { name: "加藤愛緯", college: "ccc" },
+    { name: "安田和也", college: "coins" },
+    { name: "齊藤慎太郎", college: "klis" },
+    { name: "島崎悠人", college: "coins" },
+    { name: "田部萌々佳", college: "klis" },
+    { name: "高木直希", college: "coins" },
   ];
 </script>
 
@@ -54,7 +54,7 @@
       {#each contributors as c (c.name)}
         <tr>
           <td>{c.name}</td>
-          <td>{DOCS_PAGE_NAME_TO_JA[c.major]}</td>
+          <td>{COLLEGE_TO_JA[c.college]}</td>
         </tr>
       {/each}
     </tbody>

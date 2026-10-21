@@ -137,7 +137,8 @@ export function majorCompare(a: Major, b: Major): number {
   return ai - bi;
 }
 
-export const DOCS_PAGE_NAMES = [
+/** 学類。主専攻を持たない専門学群 (pe, art) も1つの学類として扱う。 */
+export const COLLEGES = [
   "help",
   "ccc",
   "jpjp",
@@ -164,9 +165,9 @@ export const DOCS_PAGE_NAMES = [
   "pe",
   "art",
 ] as const;
-export type DocsPageName = (typeof DOCS_PAGE_NAMES)[number];
+export type College = (typeof COLLEGES)[number];
 
-export const MAJOR_TO_DOCS_PAGE_NAME = {
+export const MAJOR_TO_COLLEGE = {
   "help-p": "help",
   "help-h": "help",
   "help-af": "help",
@@ -222,18 +223,18 @@ export const MAJOR_TO_DOCS_PAGE_NAME = {
   pe: "pe",
   art: "art",
   "art-jad": "art",
-} as const satisfies { [K in Major]: DocsPageName };
+} as const satisfies { [K in Major]: College };
 
 // Docs page names whose major pages are temporarily closed. The links stay in
 // place but the app pages render a closure notice instead of the tool. Empty
 // this set to reopen.
-const CLOSED_DOCS_PAGE_NAMES = new Set<DocsPageName>(["help"]);
+const CLOSED_COLLEGES = new Set<College>(["help"]);
 
 export function majorIsClosed(major: Major): boolean {
-  return CLOSED_DOCS_PAGE_NAMES.has(MAJOR_TO_DOCS_PAGE_NAME[major]);
+  return CLOSED_COLLEGES.has(MAJOR_TO_COLLEGE[major]);
 }
 
-export const DOCS_PAGE_NAME_TO_JA = {
+export const COLLEGE_TO_JA = {
   help: "人文学類",
   ccc: "比較文化学類",
   jpjp: "日本語・日本文化学類",
@@ -259,7 +260,7 @@ export const DOCS_PAGE_NAME_TO_JA = {
   meds: "医療科学類",
   pe: "体育専門学群",
   art: "芸術専門学群",
-} as const satisfies { [K in DocsPageName]: string };
+} as const satisfies { [K in College]: string };
 
 export type Instance = {
   tableYear: number;

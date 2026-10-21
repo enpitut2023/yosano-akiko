@@ -3,7 +3,7 @@
   import {
     instances,
     MAJOR_TO_JA,
-    MAJOR_TO_DOCS_PAGE_NAME,
+    MAJOR_TO_COLLEGE,
     type Instance,
     majorCompare,
   } from "$lib/constants";
@@ -37,8 +37,7 @@
         majorJa: MAJOR_TO_JA[i.major],
         gap:
           index > 0 &&
-          MAJOR_TO_DOCS_PAGE_NAME[is[index - 1].major] !==
-            MAJOR_TO_DOCS_PAGE_NAME[i.major],
+          MAJOR_TO_COLLEGE[is[index - 1].major] !== MAJOR_TO_COLLEGE[i.major],
       })),
     };
   });
