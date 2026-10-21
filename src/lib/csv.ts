@@ -8,7 +8,7 @@ import {
   fakeCourseIdFromContent,
   isCourseId,
 } from "./akiko";
-import { tryParseFloat, tryParseInt } from "./util";
+import { strictParseFloat, strictParseInt } from "./util";
 const { parse: parseCsv } = papaparse;
 
 function parseImportedCourseGrade(s: string): Grade | "free" | undefined {
@@ -67,8 +67,8 @@ function parseImportedCourse(row: unknown): ImportedCourse | undefined {
   const rawYearTaken = trimmed["開講年度"].trim();
 
   const grade = parseImportedCourseGrade(rawGrade);
-  const credit = tryParseFloat(rawCredit);
-  const takenYear = tryParseInt(rawYearTaken);
+  const credit = strictParseFloat(rawCredit);
+  const takenYear = strictParseInt(rawYearTaken);
   if (!(grade !== undefined && takenYear !== undefined)) {
     return undefined;
   }
