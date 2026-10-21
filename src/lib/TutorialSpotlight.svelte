@@ -18,6 +18,7 @@
 </script>
 
 <script lang="ts">
+  import { asset } from "$app/paths";
   import X from "lucide-svelte/icons/x";
   import { onMount, tick, untrack } from "svelte";
 
@@ -196,6 +197,7 @@
     style="left:{popoverPosition.left}px; top:{popoverPosition.top}px"
   >
     <header>
+      <img src={asset("/images/akiko.png")} alt="あきこ" />
       <h2 id="tutorial-title">{step.title}</h2>
       <span class="count">{index + 1} / {steps.length}</span>
       <button class="close" aria-label="チュートリアルを閉じる" onclick={onclose}
@@ -260,6 +262,15 @@
     display: flex;
     align-items: center;
     gap: 10px;
+
+    & > img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      background-color: hsl(0, 0%, 98%);
+      border: 1px solid #ddd;
+      border-radius: 50%;
+    }
 
     & > h2 {
       margin: 0 auto 0 0;
