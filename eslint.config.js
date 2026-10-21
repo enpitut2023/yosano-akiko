@@ -10,7 +10,7 @@ const gitignorePath = path.resolve(import.meta.dirname, ".gitignore");
 
 export default defineConfig(
   includeIgnoreFile(gitignorePath),
-  { ignores: ["src/lib/current-courses.ts", "src/lib/rects/"] },
+  { ignores: ["src/lib/current-courses.ts", "static/rects/"] },
   js.configs.recommended,
   ts.configs.recommendedTypeChecked,
   svelte.configs.recommended,

@@ -1,4 +1,5 @@
 import { asset } from "$app/paths";
+import z from "zod";
 import { type MajorConfig } from "./app-setup";
 import { type Major } from "./constants";
 import { knownCourses, knownCourseYear } from "./current-courses";
@@ -16,6 +17,16 @@ function findViewBox(
   if (x !== 0 || y !== 0) return undefined;
   return { width, height };
 }
+
+const cellIdToRectRecordParser = z.record(
+  z.string(),
+  z.object({
+    x: z.number(),
+    y: z.number(),
+    width: z.number(),
+    height: z.number(),
+  }),
+);
 
 type RequirementsModule = Pick<
   MajorConfig,
@@ -103,9 +114,13 @@ export async function getMajorConfig(
   }
   const req: RequirementsModule = await loadRequirements();
 
-  const rects = (await import(`./rects/${tableYear}/${major}.json`)) as {
-    default: MajorConfig["cellIdToRectRecord"];
-  };
+  const rectsUrl = asset(`/rects/${tableYear}/${major}.json`);
+  const rectsResponse = await fetch(rectsUrl);
+  if (!rectsResponse.ok) {
+    throw new Error(`Failed to fetch ${rectsUrl}: ${rectsResponse.status}`);
+  }
+  const cellIdToRectRecord: MajorConfig["cellIdToRectRecord"] =
+    cellIdToRectRecordParser.parse(await rectsResponse.json());
 
   const svgUrl = asset(`/tables/${tableYear}/${major}.svg`);
   const svgResponse = await fetch(svgUrl);
@@ -123,7 +138,7 @@ export async function getMajorConfig(
     getCreditRequirements: req.getCreditRequirements,
     major,
     tableYear,
-    cellIdToRectRecord: rects.default,
+    cellIdToRectRecord,
     tableViewBox,
     classifyKnownCourses: req.classifyKnownCourses,
     classifyRealCourses: req.classifyRealCourses,
