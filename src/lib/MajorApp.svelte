@@ -1142,9 +1142,10 @@
     },
     {
       id: "export",
-      target: ["export-control"],
+      target: ["export-button"],
       title: "TWINSに出力",
-      body: "「取る授業一覧を出力」を押してみてください。取る授業の科目番号が並んだCSVファイルがダウンロードされます。押せない場合は、下に表示されている時間の被りを「履修を組む」タブで解消してください。",
+      body: "「取る授業一覧を出力」を押してみてください。取る授業の科目番号が並んだCSVファイルがダウンロードされます。時間が被っている授業があると押せないので、その場合は次へを押して、チュートリアルの後で「履修を組む」タブで解消してください。",
+      nextLabel: "次へ",
       onEnter: () => {
         showTab("export");
         tutorialSnapshot();
@@ -1499,9 +1500,10 @@
     </div>
 
     <div id="export-tab" class:active={activeTab === "export"}>
-      <div id="control" data-tutorial="export-control">
+      <div id="control">
         <button
           class="button"
+          data-tutorial="export-button"
           onclick={exportMightTake}
           disabled={exportForTwinsResult.kind !== "ok"}
           style="margin-bottom: 20px"
