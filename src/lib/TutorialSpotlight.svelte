@@ -6,11 +6,13 @@
     target?: string[];
     title: string;
     body: string;
-    /** 押すと id のステップに進むボタン */
+    /** 次のステップに進むボタンの文言。最後のステップでは閉じる。なければボタンを出さない */
+    nextLabel?: string;
+    /** 押すと next の id のステップに飛ぶボタン */
     choices?: { label: string; next: string }[];
     /** ステップに入るときに呼ばれる。タブの切り替えや状態の記録に使う */
     onEnter?(): void;
-    /** 次へを無効にし、true を返したら自動で次に進む */
+    /** true を返したら自動で次に進む */
     waitFor?(): boolean;
   };
 </script>
@@ -27,8 +29,6 @@
   const GAP = 20;
 
   let index = $state(0);
-  // 戻るで分岐の手前に戻れるように、通ったステップを積む
-  let history = $state<number[]>([]);
   let hole = $state<Rect | undefined>();
   let popoverEl = $state<HTMLDivElement | undefined>();
   let popoverWidth = $state(0);
@@ -37,9 +37,8 @@
   let innerHeight = $state(0);
 
   const step = $derived(steps[index]);
-  const isLast = $derived(index === steps.length - 1);
 
-  async function enter(i: number) {
+  async function goto(i: number) {
     steps[i].onEnter?.();
     index = i;
     await tick();
@@ -52,24 +51,14 @@
     popoverEl?.focus();
   }
 
-  function goto(i: number) {
-    history.push(index);
-    void enter(i);
-  }
-
   function next() {
-    if (isLast) onclose();
-    else goto(index + 1);
-  }
-
-  function back() {
-    const prev = history.pop();
-    if (prev !== undefined) void enter(prev);
+    if (index === steps.length - 1) onclose();
+    else void goto(index + 1);
   }
 
   function choose(id: string) {
     const i = steps.findIndex((s) => s.id === id);
-    if (i !== -1) goto(i);
+    if (i !== -1) void goto(i);
   }
 
   $effect(() => {
@@ -111,7 +100,7 @@
   }
 
   onMount(() => {
-    void enter(0);
+    void goto(0);
     // ズームやスクロール、サイドバーのリサイズなど、要素が動く原因は多いので
     // イベントを個別に拾わず毎フレーム測る
     let raf = 0;
@@ -213,24 +202,16 @@
       >
     </header>
     <p>{step.body}</p>
-    {#if step.choices}
-      <div class="choices">
-        {#each step.choices as c (c.next)}
+    {#if step.choices !== undefined || step.nextLabel !== undefined}
+      <footer>
+        {#each step.choices ?? [] as c (c.next)}
           <button onclick={() => choose(c.next)}>{c.label}</button>
         {/each}
-      </div>
+        {#if step.nextLabel !== undefined}
+          <button class="primary" onclick={next}>{step.nextLabel}</button>
+        {/if}
+      </footer>
     {/if}
-    <footer>
-      {#if history.length > 0}
-        <button onclick={back}>戻る</button>
-      {/if}
-      <button
-        class="primary"
-        disabled={step.waitFor !== undefined}
-        onclick={next}
-        >{index === 0 ? "はじめる" : isLast ? "おわる" : "次へ"}</button
-      >
-    </footer>
   </div>
 </div>
 
@@ -296,11 +277,6 @@
     line-height: 1.6;
   }
 
-  .choices {
-    display: flex;
-    gap: 10px;
-  }
-
   footer {
     display: flex;
     justify-content: flex-end;
@@ -314,7 +290,7 @@
     border-radius: 10px;
     background-color: white;
 
-    &:hover:not(:disabled) {
+    &:hover {
       background-color: oklch(95% 0 0);
     }
 
@@ -324,12 +300,8 @@
       border-color: $c;
       color: white;
 
-      &:hover:not(:disabled) {
+      &:hover {
         background-color: oklch(65% 50% 270);
-      }
-
-      &:disabled {
-        opacity: 0.5;
       }
     }
 

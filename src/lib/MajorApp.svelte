@@ -1079,13 +1079,14 @@
       id: "welcome",
       title: "あきこへようこそ！",
       body: "あきこは、卒業に必要な単位のチェックから授業探し、TWINSへの履修登録までをお手伝いするツールです。実際に操作しながら使い方を説明します。",
+      nextLabel: "はじめる",
     },
     {
       id: "import",
       target: ["import-tab"],
       title: "成績データをインポート",
       body: "下の手順でTWINSから成績データをダウンロードし、「TWINSの成績データをインポート」を押してそのファイルを選んでください。インポートすると次に進みます。",
-      choices: [{ label: "成績なしで続ける", next: "cell" }],
+      choices: [{ label: "まだ成績ファイルを持っていない（新入生）", next: "cell" }],
       onEnter: () => {
         showTab("import");
         tutorialSnapshot();
@@ -1097,6 +1098,7 @@
       target: ["requirements"],
       title: "マスの色で進み具合がわかる",
       body: "表のマスに、取得済みの単位の割合が緑色で表示されるようになりました。右端まで緑色になったマスは、必要な単位を満たしています。なお、必要な単位が0のマスは最初から緑色です。",
+      nextLabel: "次へ",
     },
     {
       id: "cell",
@@ -1115,6 +1117,7 @@
       target: ["left-bar"],
       title: "シラバスを確認する",
       body: "「当てはまる授業」に、このマスの授業が並んでいます。授業名はシラバスへのリンクになっていて、押すと新しいタブで開きます。",
+      nextLabel: "次へ",
       onEnter: () => showTab("courses"),
     },
     {
@@ -1133,7 +1136,8 @@
       id: "more",
       target: ["requirements", "left-bar", "right-bar"],
       title: "どんどん追加しよう",
-      body: "他のマスも押して、取りたい授業を追加していきましょう。マスの黄色い部分は、取る授業の単位を取得したときに増える分です。準備ができたら次へを押してください。",
+      body: "他のマスも押して、取りたい授業を追加していきましょう。マスの黄色い部分は、取る授業の単位を取得したときに増える分です。いくつか授業を追加できたら次へを押してください。",
+      nextLabel: "次へ",
       onEnter: () => showTab("courses"),
     },
     {
@@ -1152,12 +1156,14 @@
       target: ["export-howto"],
       title: "TWINSでまとめて履修登録",
       body: "ダウンロードしたファイルを、ここに書かれている手順でTWINSにアップロードすれば、まとめて履修登録できます。",
+      nextLabel: "次へ",
       onEnter: () => showTab("export"),
     },
     {
       id: "done",
       title: "準備完了！",
       body: "このチュートリアルは、左上の「チュートリアル」からいつでも見直せます。",
+      nextLabel: "おわる",
     },
   ];
 </script>
