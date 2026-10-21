@@ -18,6 +18,7 @@
 </script>
 
 <script lang="ts">
+  import X from "lucide-svelte/icons/x";
   import { onMount, tick, untrack } from "svelte";
 
   type Rect = { left: number; top: number; right: number; bottom: number };
@@ -198,7 +199,7 @@
       <h2 id="tutorial-title">{step.title}</h2>
       <span class="count">{index + 1} / {steps.length}</span>
       <button class="close" aria-label="チュートリアルを閉じる" onclick={onclose}
-        >×</button
+        ><X size={20} /></button
       >
     </header>
     <p>{step.body}</p>
@@ -247,7 +248,6 @@
     flex-direction: column;
     gap: 15px;
     background-color: white;
-    border: 1px solid oklch(92% 10% 350);
     border-radius: 20px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
 
@@ -258,7 +258,7 @@
 
   header {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 10px;
 
     & > h2 {
@@ -306,11 +306,14 @@
     }
 
     &.close {
-      padding: 0 5px;
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      padding: 0;
       border-color: transparent;
+      border-radius: 50%;
       color: #888;
-      font-size: 1.4em;
-      line-height: 1;
     }
   }
 </style>
