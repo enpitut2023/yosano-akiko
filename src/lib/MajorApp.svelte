@@ -55,7 +55,11 @@
   import { browser, dev } from "$app/environment";
   import { assert } from "$lib/util.js";
   import Callout from "$lib/Callout.svelte";
-  import { tick, untrack } from "svelte";
+  import { onMount, tick, untrack } from "svelte";
+  import { markTutorialSeen, tutorialSeen } from "$lib/tutorial";
+  import TutorialSpotlight, {
+    type TutorialStep,
+  } from "$lib/TutorialSpotlight.svelte";
 
   type UiOverlapCourse = {
     id: CourseId;
@@ -742,8 +746,11 @@
     }));
   });
 
+  let exportCount = $state(0);
+
   function exportMightTake() {
     if (exportForTwinsResult.kind !== "ok") return;
+    exportCount++;
     const content = exportForTwinsResult.toExport.map((c) => c.id).join("\n");
     trackEvent(
       "export",
@@ -1034,6 +1041,129 @@
       window.removeEventListener("resize", update);
     };
   });
+
+  let tutorialOpen = $state(false);
+
+  // mobileUnsupported を決める上の $effect の後に実行される
+  onMount(() => {
+    if (!mobileUnsupported && !tutorialSeen()) tutorialOpen = true;
+  });
+
+  function closeTutorial() {
+    tutorialOpen = false;
+    markTutorialSeen();
+  }
+
+  // 操作を待つステップは、ステップに入った時点からの変化を見る
+  let tutorialEntry = {
+    realCourses: [] as RealCourse[],
+    mightTakeCount: 0,
+    exportCount: 0,
+  };
+
+  function tutorialSnapshot() {
+    tutorialEntry = {
+      realCourses,
+      mightTakeCount: mightTakeCourseIds.length,
+      exportCount,
+    };
+  }
+
+  function showTab(tab: Tab) {
+    barsVisible = true;
+    activeTab = tab;
+  }
+
+  const tutorialSteps: TutorialStep[] = [
+    {
+      id: "welcome",
+      title: "あきこへようこそ！",
+      body: "あきこは、卒業に必要な単位のチェックから授業探し、TWINSへの履修登録までをお手伝いするツールです。実際に操作しながら使い方を説明します。TWINSの成績データはありますか？",
+      choices: [
+        { label: "はい", next: "import", primary: true },
+        { label: "まだない", next: "cell" },
+      ],
+    },
+    {
+      id: "import",
+      target: ["import-tab"],
+      title: "成績データをインポート",
+      body: "下の手順でTWINSから成績データをダウンロードし、「TWINSの成績データをインポート」を押してそのファイルを選んでください。インポートすると次に進みます。",
+      choices: [{ label: "成績なしで続ける", next: "cell" }],
+      onEnter: () => {
+        showTab("import");
+        tutorialSnapshot();
+      },
+      waitFor: () => realCourses !== tutorialEntry.realCourses,
+    },
+    {
+      id: "progress",
+      target: ["requirements"],
+      title: "マスの色で進み具合がわかる",
+      body: "表のマスに、取得済みの単位の割合が緑色で表示されるようになりました。右端まで緑色になったマスは、必要な単位を満たしています。なお、必要な単位が0のマスは最初から緑色です。",
+    },
+    {
+      id: "cell",
+      target: ["requirements"],
+      title: "マスを押して授業を探す",
+      body: "表のマスをどれか押してみてください。そのマスに当てはまる授業が右側に表示されます。当てはまる授業がなかった場合は、別のマスを押してください。",
+      onEnter: () => {
+        selectedCellId = undefined;
+        showTab("courses");
+      },
+      waitFor: () =>
+        selectedCellId !== undefined && courseLists.wontTake.length > 0,
+    },
+    {
+      id: "syllabus",
+      target: ["left-bar"],
+      title: "シラバスを確認する",
+      body: "「当てはまる授業」に、このマスの授業が並んでいます。授業名はシラバスへのリンクになっていて、押すと新しいタブで開きます。",
+      onEnter: () => showTab("courses"),
+    },
+    {
+      id: "drag",
+      target: ["left-bar", "right-bar"],
+      title: "ドラッグで時間割に追加",
+      body: "取りたい授業の行を右側にドラッグしてみてください。「取る授業」に入り、時間割に表示されます。",
+      onEnter: () => {
+        showTab("courses");
+        tutorialSnapshot();
+      },
+      waitFor: () =>
+        mightTakeCourseIds.length > tutorialEntry.mightTakeCount,
+    },
+    {
+      id: "more",
+      target: ["requirements", "left-bar", "right-bar"],
+      title: "どんどん追加しよう",
+      body: "他のマスも押して、取りたい授業を追加していきましょう。マスの黄色い部分は、取る授業の単位を取得したときに増える分です。準備ができたら次へを押してください。",
+      onEnter: () => showTab("courses"),
+    },
+    {
+      id: "export",
+      target: ["export-control"],
+      title: "TWINSに出力",
+      body: "「取る授業一覧を出力」を押してみてください。取る授業の科目番号が並んだCSVファイルがダウンロードされます。押せない場合は、下に表示されている時間の被りを「履修を組む」タブで解消してください。",
+      onEnter: () => {
+        showTab("export");
+        tutorialSnapshot();
+      },
+      waitFor: () => exportCount > tutorialEntry.exportCount,
+    },
+    {
+      id: "register",
+      target: ["export-howto"],
+      title: "TWINSでまとめて履修登録",
+      body: "ダウンロードしたファイルを、ここに書かれている手順でTWINSにアップロードすれば、まとめて履修登録できます。",
+      onEnter: () => showTab("export"),
+    },
+    {
+      id: "done",
+      title: "準備完了！",
+      body: "このチュートリアルは、左上の「チュートリアル」からいつでも見直せます。より詳しい使い方は「あきこの使い方」にまとめています。",
+    },
+  ];
 </script>
 
 <Meta title={metaTitle} description={metaDescription} />
@@ -1144,6 +1274,7 @@
   <div id="table-view">
     <div
       id="requirements"
+      data-tutorial="requirements"
       bind:this={requirementsEl}
       onscroll={(e) => (scrollX = -e.currentTarget.scrollLeft)}
       onclick={() => {
@@ -1169,6 +1300,9 @@
         <nav>
           <a href="{resolve('/')}#app-page-links">学類一覧に戻る</a>
           <a href={resolve("/docs")}>あきこの使い方</a>
+          <button class="tutorial-button" onclick={() => (tutorialOpen = true)}
+            >チュートリアル</button
+          >
           <a
             href="https://docs.google.com/forms/d/e/1FAIpQLSfUbueFsF6fbyJxCohNTqh5S8bYdxNgqx_HQ76RCR5TJQkpyQ/viewform?usp=dialog"
             target="_blank"
@@ -1282,7 +1416,11 @@
       >
     </div>
 
-    <div id="import-tab" class:active={activeTab === "import"}>
+    <div
+      id="import-tab"
+      data-tutorial="import-tab"
+      class:active={activeTab === "import"}
+    >
       <div id="control">
         <label id="import-grades-button" class="button">
           <img src={asset("/icons/import.svg")} width="15px" alt="import" />
@@ -1360,7 +1498,7 @@
     </div>
 
     <div id="export-tab" class:active={activeTab === "export"}>
-      <div id="control">
+      <div id="control" data-tutorial="export-control">
         <button
           class="button"
           onclick={exportMightTake}
@@ -1467,7 +1605,7 @@
           </table>
         {/if}
       </div>
-      <HowToExportForTwins />
+      <div data-tutorial="export-howto"><HowToExportForTwins /></div>
     </div>
 
     <div id="settings-tab" class:active={activeTab === "settings"}>
@@ -1495,6 +1633,7 @@
       <div
         bind:this={leftBarEl}
         id="left-bar"
+        data-tutorial="left-bar"
         ondragover={(e) => {
           e.preventDefault();
           if (e.dataTransfer !== null) e.dataTransfer.dropEffect = "move";
@@ -1617,6 +1756,7 @@
       <div
         bind:this={rightBarEl}
         id="right-bar"
+        data-tutorial="right-bar"
         ondragover={(e) => {
           e.preventDefault();
           if (e.dataTransfer !== null) e.dataTransfer.dropEffect = "move";
@@ -1774,6 +1914,10 @@
       </button>
     </div>
   </div>
+{/if}
+
+{#if tutorialOpen}
+  <TutorialSpotlight steps={tutorialSteps} onclose={closeTutorial} />
 {/if}
 
 <style lang="scss">
@@ -1935,6 +2079,13 @@
     & > span > strong {
       font-size: 1.2em;
     }
+  }
+
+  .tutorial-button {
+    all: unset;
+    cursor: pointer;
+    color: LinkText;
+    text-decoration: underline;
   }
 
   #sidebar {
