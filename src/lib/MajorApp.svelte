@@ -114,7 +114,7 @@
   let fakeCourses = $state<FakeCourse[]>(initialLocalData.fakeCourses);
   let isNative = $state<boolean>(initialLocalData.native);
   let selectedCellId = $state<CellId | undefined>(undefined);
-  let showCourseRemark = $state(true);
+  let showCourseRemark = $state(false);
   let showNonAvailable = $state(false);
   let wontTakeVisibleLimit = $state(100);
   let leftBarScrollEl = $state<HTMLDivElement | undefined>();
