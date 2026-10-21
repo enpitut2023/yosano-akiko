@@ -1299,7 +1299,6 @@
         >
         <nav>
           <a href="{resolve('/')}#app-page-links">学類一覧に戻る</a>
-          <a href={resolve("/docs")}>あきこの使い方</a>
           <button class="tutorial-button" onclick={() => (tutorialOpen = true)}
             >チュートリアル</button
           >
