@@ -1086,7 +1086,9 @@
       target: ["import-tab"],
       title: "成績データをインポート",
       body: "まずはTWINSの成績データをちょうだいね。下の手順でダウンロードして、「TWINSの成績データをインポート」からそのファイルを選んでくれたら、次に進むわよ〜。",
-      choices: [{ label: "まだ成績ファイルを持っていない（新入生）", next: "cell" }],
+      choices: [
+        { label: "まだ成績ファイルを持っていない（新入生）", next: "cell" },
+      ],
       onEnter: () => {
         showTab("import");
         tutorialSnapshot();
@@ -1129,8 +1131,7 @@
         showTab("courses");
         tutorialSnapshot();
       },
-      waitFor: () =>
-        mightTakeCourseIds.length > tutorialEntry.mightTakeCount,
+      waitFor: () => mightTakeCourseIds.length > tutorialEntry.mightTakeCount,
     },
     {
       id: "more",

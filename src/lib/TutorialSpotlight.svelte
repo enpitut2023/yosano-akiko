@@ -171,7 +171,10 @@
     ></div>
     <!-- 穴の外のクリックを止める。穴の中は下の要素をそのまま操作できる -->
     <div class="blocker" style="left:0; top:0; right:0; height:{h.top}px"></div>
-    <div class="blocker" style="left:0; top:{h.bottom}px; right:0; bottom:0"></div>
+    <div
+      class="blocker"
+      style="left:0; top:{h.bottom}px; right:0; bottom:0"
+    ></div>
     <div
       class="blocker"
       style="left:0; top:{h.top}px; width:{h.left}px; height:{h.bottom -
@@ -200,8 +203,10 @@
       <img src={asset("/images/akiko.png")} alt="あきこ" />
       <h2 id="tutorial-title">{step.title}</h2>
       <span class="count">{index + 1} / {steps.length}</span>
-      <button class="close" aria-label="チュートリアルを閉じる" onclick={onclose}
-        ><X size={20} /></button
+      <button
+        class="close"
+        aria-label="チュートリアルを閉じる"
+        onclick={onclose}><X size={20} /></button
       >
     </header>
     <p>{step.body}</p>
