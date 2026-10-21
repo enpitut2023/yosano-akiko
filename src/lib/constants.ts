@@ -166,10 +166,6 @@ export const DOCS_PAGE_NAMES = [
 ] as const;
 export type DocsPageName = (typeof DOCS_PAGE_NAMES)[number];
 
-export function isDocsPageName(s: string): s is DocsPageName {
-  return (DOCS_PAGE_NAMES as readonly string[]).includes(s);
-}
-
 export const MAJOR_TO_DOCS_PAGE_NAME = {
   "help-p": "help",
   "help-h": "help",
@@ -502,20 +498,6 @@ export const instances: Instance[] = [
   { tableYear: 2026, major: "css-ps" },
   { tableYear: 2026, major: "css-e" },
 ];
-
-export function getDocMeta(name: DocsPageName) {
-  if (name === "help") {
-    return {
-      title: "あきこの使い方",
-      description: "あきこの使い方やTWINSとの連携方法などの説明です。",
-    };
-  }
-  const ja = DOCS_PAGE_NAME_TO_JA[name];
-  return {
-    title: `あきこ未対応の部分など | ${ja}`,
-    description: `${ja}のあきこが科目判定に対応していない部分、単位計算が正しくない部分などの説明です。`,
-  };
-}
 
 /** ご意見・バグ報告を受け付けているGoogleフォーム。 */
 export const FEEDBACK_FORM_URL =
