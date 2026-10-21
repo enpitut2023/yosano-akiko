@@ -419,7 +419,7 @@ function classify(
   }
 
   // 必修
-  if (isA1(id, specialty)) return "a1";
+  if (isA1(id, specialty)) return "a2";
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
   if (isC1(id, isNative, mode)) return "c1";
