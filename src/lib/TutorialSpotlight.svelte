@@ -7,7 +7,7 @@
     title: string;
     body: string;
     /** 押すと id のステップに進むボタン */
-    choices?: { label: string; next: string; primary?: boolean }[];
+    choices?: { label: string; next: string }[];
     /** ステップに入るときに呼ばれる。タブの切り替えや状態の記録に使う */
     onEnter?(): void;
     /** 次へを無効にし、true を返したら自動で次に進む */
@@ -38,10 +38,6 @@
 
   const step = $derived(steps[index]);
   const isLast = $derived(index === steps.length - 1);
-  // 選択肢だけのステップでは次へが曖昧になるので出さない
-  const showNext = $derived(
-    step.choices === undefined || step.waitFor !== undefined,
-  );
 
   async function enter(i: number) {
     steps[i].onEnter?.();
@@ -212,27 +208,28 @@
     <header>
       <h2 id="tutorial-title">{step.title}</h2>
       <span class="count">{index + 1} / {steps.length}</span>
+      <button class="close" aria-label="チュートリアルを閉じる" onclick={onclose}
+        >×</button
+      >
     </header>
     <p>{step.body}</p>
     {#if step.choices}
       <div class="choices">
         {#each step.choices as c (c.next)}
-          <button class:primary={c.primary} onclick={() => choose(c.next)}
-            >{c.label}</button
-          >
+          <button onclick={() => choose(c.next)}>{c.label}</button>
         {/each}
       </div>
     {/if}
     <footer>
-      <button class="skip" onclick={onclose}>スキップ</button>
-      <button disabled={history.length === 0} onclick={back}>戻る</button>
-      {#if showNext}
-        <button
-          class="primary"
-          disabled={step.waitFor !== undefined}
-          onclick={next}>{isLast ? "おわる" : "次へ"}</button
-        >
+      {#if history.length > 0}
+        <button onclick={back}>戻る</button>
       {/if}
+      <button
+        class="primary"
+        disabled={step.waitFor !== undefined}
+        onclick={next}
+        >{index === 0 ? "はじめる" : isLast ? "おわる" : "次へ"}</button
+      >
     </footer>
   </div>
 </div>
@@ -281,11 +278,10 @@
   header {
     display: flex;
     align-items: baseline;
-    justify-content: space-between;
     gap: 10px;
 
     & > h2 {
-      margin: 0;
+      margin: 0 auto 0 0;
       font-size: 1.2em;
     }
   }
@@ -307,11 +303,8 @@
 
   footer {
     display: flex;
+    justify-content: flex-end;
     gap: 10px;
-
-    & > .skip {
-      margin-right: auto;
-    }
   }
 
   button {
@@ -340,9 +333,12 @@
       }
     }
 
-    &.skip {
+    &.close {
+      padding: 0 5px;
       border-color: transparent;
       color: #888;
+      font-size: 1.4em;
+      line-height: 1;
     }
   }
 </style>
