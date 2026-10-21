@@ -172,13 +172,7 @@
   });
 </script>
 
-<svelte:window
-  bind:innerWidth
-  bind:innerHeight
-  onkeydown={(e: KeyboardEvent) => {
-    if (e.key === "Escape") onclose();
-  }}
-/>
+<svelte:window bind:innerWidth bind:innerHeight />
 
 <div class="tutorial">
   {#if hole}
