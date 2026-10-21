@@ -26,6 +26,70 @@ type RequirementsModule = Pick<
   | "getRemark"
 >;
 
+/**
+ * Imported lazily so each major page bundles only its own requirements module.
+ * `undefined` marks a major with no requirements module yet.
+ */
+const MAJOR_TO_REQUIREMENTS = {
+  "help-p": () => import("./requirements/help-since-2023"),
+  "help-h": () => import("./requirements/help-since-2023"),
+  "help-af": () => import("./requirements/help-since-2023"),
+  "help-l": () => import("./requirements/help-since-2023"),
+  ccc: () => import("./requirements/ccc-since-2023"),
+  jpjp: () => import("./requirements/jpjp-since-2023"),
+  "jpjp-jltt": () => import("./requirements/jpjp-since-2023"),
+  "css-s": () => import("./requirements/css-since-2023"),
+  "css-l": () => import("./requirements/css-since-2023"),
+  "css-ps": () => import("./requirements/css-since-2023"),
+  "css-e": () => import("./requirements/css-since-2023"),
+  "cis-ir": () => import("./requirements/cis-since-2023"),
+  "cis-id": () => import("./requirements/cis-since-2023"),
+  edu: () => import("./requirements/edu-since-2023"),
+  psy: () => import("./requirements/psy-since-2023"),
+  ds: () => import("./requirements/ds-since-2023"),
+  biol: undefined,
+  bres: () => import("./requirements/bres-since-2023"),
+  "bres-as": () => import("./requirements/bres-since-2023"),
+  "bres-les": () => import("./requirements/bres-les-since-2023"),
+  "earth-gs": () => import("./requirements/earth-since-2023"),
+  "earth-ees": () => import("./requirements/earth-since-2023"),
+  "earth-les": () => import("./requirements/earth-les-since-2024"),
+  math: () => import("./requirements/math-since-2023"),
+  physics: () => import("./requirements/physics-since-2023"),
+  chem: () => import("./requirements/chem-since-2023"),
+  "coens-ap": () => import("./requirements/coens-since-2023"),
+  "coens-eqe": () => import("./requirements/coens-since-2023"),
+  "coens-mse": () => import("./requirements/coens-since-2023"),
+  "coens-mme": () => import("./requirements/coens-since-2023"),
+  "esys-ies": () => import("./requirements/esys-since-2023"),
+  "esys-eme": () => import("./requirements/esys-since-2023"),
+  "pops-ses": () => import("./requirements/pops-since-2023"),
+  "pops-mse": () => import("./requirements/pops-since-2023"),
+  "pops-urp": () => import("./requirements/pops-since-2023"),
+  coins: () => import("./requirements/coins-since-2021"),
+  "coins-cs": () => import("./requirements/coins-since-2021"),
+  "coins-mimt": () => import("./requirements/coins-since-2021"),
+  mast: () => import("./requirements/mast-since-2021"),
+  "klis-science": () => import("./requirements/klis-since-2023"),
+  "klis-system": () => import("./requirements/klis-since-2023"),
+  "klis-rm": () => import("./requirements/klis-since-2023"),
+  med: () => import("./requirements/med-since-2023"),
+  "med-new": () => import("./requirements/med-since-2023"),
+  "med-2": () => import("./requirements/med-since-2023"),
+  "med-2-new": () => import("./requirements/med-since-2023"),
+  "nurse-n": () => import("./requirements/nurse-since-2023"),
+  "nurse-phn": () => import("./requirements/nurse-since-2023"),
+  "nurse-h": () => import("./requirements/nurse-since-2023"),
+  "meds-ms": () => import("./requirements/meds-since-2023"),
+  "meds-ims": () => import("./requirements/meds-since-2023"),
+  "meds-mspis": () => import("./requirements/meds-since-2023"),
+  pe: () => import("./requirements/pe-since-2023"),
+  art: () => import("./requirements/art-since-2023"),
+  "art-jad": () => import("./requirements/art-since-2023"),
+} as const satisfies {
+  [K in Major]: (() => Promise<RequirementsModule>) | undefined;
+};
+
 export async function getMajorConfig(
   tableYear: number,
   major: Major,
@@ -33,62 +97,11 @@ export async function getMajorConfig(
 ): Promise<MajorConfig> {
   assert(tableYear >= 2021);
 
-  let req: RequirementsModule;
-  if (major.startsWith("coins")) {
-    req = await import("./requirements/coins-since-2021");
-  } else if (major.startsWith("klis")) {
-    req = await import("./requirements/klis-since-2023");
-  } else if (major === "mast") {
-    req = await import("./requirements/mast-since-2021");
-  } else if (major === "math") {
-    req = await import("./requirements/math-since-2023");
-  } else if (major === "physics") {
-    req = await import("./requirements/physics-since-2023");
-  } else if (major.startsWith("esys")) {
-    req = await import("./requirements/esys-since-2023");
-  } else if (major.startsWith("coens")) {
-    req = await import("./requirements/coens-since-2023");
-  } else if (major.startsWith("pops")) {
-    req = await import("./requirements/pops-since-2023");
-  } else if (major === "chem") {
-    req = await import("./requirements/chem-since-2023");
-  } else if (major.startsWith("jpjp")) {
-    req = await import("./requirements/jpjp-since-2023");
-  } else if (major === "ccc") {
-    req = await import("./requirements/ccc-since-2023");
-  } else if (major === "earth-les") {
-    req = await import("./requirements/earth-les-since-2024");
-  } else if (major.startsWith("earth")) {
-    req = await import("./requirements/earth-since-2023");
-  } else if (major === "edu") {
-    req = await import("./requirements/edu-since-2023");
-  } else if (major === "psy") {
-    req = await import("./requirements/psy-since-2023");
-  } else if (major === "ds") {
-    req = await import("./requirements/ds-since-2023");
-  } else if (major.startsWith("cis")) {
-    req = await import("./requirements/cis-since-2023");
-  } else if (major === "pe") {
-    req = await import("./requirements/pe-since-2023");
-  } else if (major.startsWith("med-") || major === "med") {
-    req = await import("./requirements/med-since-2023");
-  } else if (major.startsWith("meds")) {
-    req = await import("./requirements/meds-since-2023");
-  } else if (major === "bres-les") {
-    req = await import("./requirements/bres-les-since-2023");
-  } else if (major.startsWith("bres")) {
-    req = await import("./requirements/bres-since-2023");
-  } else if (major.startsWith("nurse")) {
-    req = await import("./requirements/nurse-since-2023");
-  } else if (major.startsWith("art")) {
-    req = await import("./requirements/art-since-2023");
-  } else if (major.startsWith("css")) {
-    req = await import("./requirements/css-since-2023");
-  } else if (major.startsWith("help")) {
-    req = await import("./requirements/help-since-2023");
-  } else {
-    throw new Error(`Bad major: ${major}`);
+  const loadRequirements = MAJOR_TO_REQUIREMENTS[major];
+  if (loadRequirements === undefined) {
+    throw new Error(`No requirements for major: ${major}`);
   }
+  const req: RequirementsModule = await loadRequirements();
 
   const rects = (await import(`./rects/${tableYear}/${major}.json`)) as {
     default: MajorConfig["cellIdToRectRecord"];
