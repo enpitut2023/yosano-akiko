@@ -1,8 +1,9 @@
 #!/usr/bin/env sh
 
-if [ $# == 0 ]
+if [ $# -eq 0 ]
 then
     echo "Usage: $0 [file.svg ...]" 1>&2
+    exit 1
 fi
 
 temp_file="$(mktemp).svg"
