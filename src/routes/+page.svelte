@@ -4,6 +4,8 @@
     instances,
     MAJOR_TO_JA,
     MAJOR_TO_COLLEGE,
+    COLLEGE_TO_JA,
+    type College,
     type Instance,
     majorCompare,
   } from "$lib/constants";
@@ -31,8 +33,19 @@
     const is = yearToInstances.get(tableYear);
     assert(is !== undefined);
     is.sort((a, b) => majorCompare(a.major, b.major));
+    const colleges: { college: College; instances: Instance[] }[] = [];
+    for (const i of is) {
+      const college = MAJOR_TO_COLLEGE[i.major];
+      const last = colleges.at(-1);
+      if (last?.college === college) {
+        last.instances.push(i);
+      } else {
+        colleges.push({ college, instances: [i] });
+      }
+    }
     return {
       tableYear,
+      colleges,
       instances: is.map((i, index) => ({
         ...i,
         majorJa: MAJOR_TO_JA[i.major],
@@ -42,6 +55,30 @@
       })),
     };
   });
+
+  function pageHref(i: Instance): string {
+    return resolve("/[tableYear]/[major]", {
+      tableYear: i.tableYear.toString(),
+      major: i.major,
+    });
+  }
+
+  /** 学類名を除いた主専攻名。学類名そのものなら学類名を返す */
+  function majorOnlyJa(i: Instance): string {
+    const full = MAJOR_TO_JA[i.major];
+    const college = COLLEGE_TO_JA[MAJOR_TO_COLLEGE[i.major]];
+    return full.slice(college.length).trim() || full;
+  }
+
+  let pickedYear = $state<number | undefined>();
+  let pickedCollege = $state<College | undefined>();
+  const pickedSection = $derived(
+    sections.find((s) => s.tableYear === pickedYear),
+  );
+  const pickedCollegeInstances = $derived(
+    pickedSection?.colleges.find((c) => c.college === pickedCollege)
+      ?.instances,
+  );
 </script>
 
 <Meta title="あきこ" {description} />
@@ -75,11 +112,63 @@
 </div>
 
 <h2 id="app-page-links">年度・学類一覧</h2>
-<div class="dialog akiko" style="margin-bottom: 20px">
+<div class="dialog akiko">
   <img src={asset("/images/akiko.png")} alt="あきこ" />
   <span>あきこ</span>
-  <span>まずは入学年度と学類を教えてね〜</span>
+  <span>まずは入学年度を教えてね〜</span>
 </div>
+<div class="choices">
+  {#each sections as s (s.tableYear)}
+    <button
+      class="choice"
+      class:picked={pickedYear === s.tableYear}
+      onclick={() => {
+        pickedYear = s.tableYear;
+        pickedCollege = undefined;
+      }}>{s.tableYear}年度入学</button
+    >
+  {/each}
+</div>
+
+{#if pickedSection}
+  <div class="dialog akiko">
+    <img src={asset("/images/akiko.png")} alt="あきこ" />
+    <span>あきこ</span>
+    <span>学類はどこかしら？</span>
+  </div>
+  <div class="choices">
+    {#each pickedSection.colleges as c (c.college)}
+      {@const checked = c.instances.every((i) => i.checked)}
+      {#if c.instances.length === 1}
+        <a class="choice" href={pageHref(c.instances[0])}
+          >{COLLEGE_TO_JA[c.college]}{#if checked}&nbsp;✅{/if}</a
+        >
+      {:else}
+        <button
+          class="choice"
+          class:picked={pickedCollege === c.college}
+          onclick={() => (pickedCollege = c.college)}
+          >{COLLEGE_TO_JA[c.college]}{#if checked}&nbsp;✅{/if}</button
+        >
+      {/if}
+    {/each}
+  </div>
+{/if}
+
+{#if pickedCollegeInstances}
+  <div class="dialog akiko">
+    <img src={asset("/images/akiko.png")} alt="あきこ" />
+    <span>あきこ</span>
+    <span>主専攻も教えてね〜</span>
+  </div>
+  <div class="choices">
+    {#each pickedCollegeInstances as i (i.major)}
+      <a class="choice" href={pageHref(i)}
+        >{majorOnlyJa(i)}{#if i.checked}&nbsp;✅{/if}</a
+      >
+    {/each}
+  </div>
+{/if}
 
 <p class="remark">
   チェックマーク✅は、その学類の支援室があきこの正しさをある程度確認済みであること表します。
@@ -91,25 +180,23 @@
   あらかじめご了承ください。
 </p>
 
-{#each sections as s (s.tableYear)}
-  <section>
-    <h3>{s.tableYear}年度入学</h3>
-    <ul>
-      {#each s.instances as i (i.major)}
-        <li class:gap={i.gap}>
-          <a
-            href={resolve("/[tableYear]/[major]", {
-              tableYear: s.tableYear.toString(),
-              major: i.major,
-            })}>{i.majorJa}</a
-          >
-          {#if i.checked}<span>✅</span>{/if}
-          {#if i.comment}<span>{i.comment}</span>{/if}
-        </li>
-      {/each}
-    </ul>
-  </section>
-{/each}
+<details>
+  <summary>すべての学類を表示</summary>
+  {#each sections as s (s.tableYear)}
+    <section>
+      <h3>{s.tableYear}年度入学</h3>
+      <ul>
+        {#each s.instances as i (i.major)}
+          <li class:gap={i.gap}>
+            <a href={pageHref(i)}>{i.majorJa}</a>
+            {#if i.checked}<span>✅</span>{/if}
+            {#if i.comment}<span>{i.comment}</span>{/if}
+          </li>
+        {/each}
+      </ul>
+    </section>
+  {/each}
+</details>
 
 <div class="disclaimer">
   <Callout kind="warning">
@@ -147,6 +234,45 @@
       color: #444;
       border-left: 5px solid #aaa;
       padding-left: 10px;
+    }
+  }
+
+  .choices {
+    width: 80%;
+    margin: 15px auto 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .choice {
+    font-size: inherit;
+    padding: 5px 15px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: white;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      background-color: oklch(95% 0 0);
+    }
+
+    &.picked {
+      $c: oklch(70% 50% 270);
+      background-color: $c;
+      border-color: $c;
+      color: white;
+    }
+  }
+
+  details {
+    margin: 30px 0;
+
+    & > summary {
+      cursor: pointer;
+      margin-bottom: 20px;
     }
   }
 
