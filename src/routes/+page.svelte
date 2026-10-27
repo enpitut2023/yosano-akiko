@@ -48,14 +48,6 @@
 
 <Nav />
 
-<div class="disclaimer">
-  <Callout kind="warning">
-    あきこは筑波大学が公式に作成したものではなく有志の学生が作成したものなので、授業一覧や単位計算に誤りがある可能性があります。
-    卒業に必要な単位をあきこで管理する場合は、利用者本人の責任のもとで管理してください。
-    また、不明な点がある場合は、学生支援室にて相談してください。
-  </Callout>
-</div>
-
 <h1>あきこ</h1>
 
 <div class="dialog student">
@@ -119,6 +111,14 @@
   </section>
 {/each}
 
+<div class="disclaimer">
+  <Callout kind="warning">
+    あきこは筑波大学が公式に作成したものではなく有志の学生が作成したものなので、授業一覧や単位計算に誤りがある可能性があります。
+    卒業に必要な単位をあきこで管理する場合は、利用者本人の責任のもとで管理してください。
+    また、不明な点がある場合は、学生支援室にて相談してください。
+  </Callout>
+</div>
+
 <style lang="scss">
   :global(body) {
     max-width: var(--content-max-width);
@@ -128,7 +128,7 @@
   }
 
   .disclaimer {
-    margin-top: 20px;
+    margin: 30px 0;
   }
 
   h1 {
