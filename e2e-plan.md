@@ -244,20 +244,21 @@ filter by file instead.
 
 ### 履修を組む (courses)
 
-- [ ] Clicking a cell selects it and lists that cell's courses in
+- [x] Clicking a cell selects it and lists that cell's courses in
       当てはまる授業.
-- [ ] Clicking the table background deselects the cell.
-- [ ] 全ての授業を見る lists every course.
-- [ ] Searching by course ID and by name filters the list.
-- [ ] Each filter works: credits, expected year, term, day of week, only free
+- [x] Clicking the table background deselects the cell.
+- [x] 全ての授業を見る lists every course.
+- [x] Searching by course ID and by name filters the list.
+- [x] Each filter works: credits, expected year, term, day of week, only free
       time slots. The badge counts active filters.
-- [ ] Dragging a course to the right adds it to 取る授業 and shows it in the
+- [x] Dragging a course to the right adds it to 取る授業 and shows it in the
       timetable on its term.
-- [ ] Dragging it back removes it.
-- [ ] The timetable term tabs switch terms.
-- [ ] 該当マスを表示 selects the course's cell and scrolls it into view.
-- [ ] A course name links to its KdB syllabus page.
-- [ ] Courses moved by hand stay moved after a reload.
+- [x] Dragging it back removes it.
+- [x] The timetable term tabs switch terms. A course without a fixed time
+      slot shows under その他.
+- [x] 該当マスを表示 selects the course's cell and scrolls it into view.
+- [x] A course name links to its KdB syllabus page.
+- [x] Courses moved by hand stay moved after a reload.
 
 ### TWINSに出力 (export)
 
