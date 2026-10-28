@@ -1,3 +1,4 @@
+import { test } from "vitest";
 import {
   classifyFakeCourses,
   classifyRealCourses,
@@ -5,7 +6,7 @@ import {
 } from "$lib/requirements/klis-since-2023";
 import { runTest } from "./util";
 
-function test1(): void {
+test("grade-csvs/2023/klis-rm-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/klis-rm-1.csv",
     isNative: true,
@@ -56,9 +57,9 @@ function test1(): void {
       elective: { taken: 71, rawMightTake: 16, effectiveMightTake: 12 },
     },
   });
-}
+});
 
-function test2(): void {
+test("grade-csvs/2023/klis-system-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/klis-system-1.csv",
     isNative: true,
@@ -110,9 +111,9 @@ function test2(): void {
       elective: { taken: 78, mightTake: 5 },
     },
   });
-}
+});
 
-function test3(): void {
+test("grade-csvs/2023/klis-science-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/klis-science-1.csv",
     isNative: true,
@@ -164,9 +165,4 @@ function test3(): void {
       elective: { taken: 68, rawMightTake: 16, effectiveMightTake: 15 },
     },
   });
-}
-
-test1();
-test2();
-test3();
-console.log(import.meta.filename, "ok");
+});

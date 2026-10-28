@@ -24,9 +24,9 @@ and assets go through `resolve()` / `asset()` from `$app/paths`.
   - `lint:format`: Prettier in check mode
   - `lint:grade-csvs`: validates `grade-csvs/`
 - `npm test`: unit and e2e tests.
-- `npm run test:unit`: each unit test is a plain module that asserts when
-  imported, so run one with `npx tsx src/lib/tests/coins.ts`. New test files
-  must be imported from `src/lib/tests/index.ts`.
+- `npm run test:unit`: Vitest, on every `src/**/*.test.ts`. Run one file with
+  `npx vitest run coins`, or tests by name with `-t "<name>"`; `npx vitest`
+  watches.
 - `npm run test:e2e`: Playwright tests in `tests/e2e/`, against a production
   build with a test-only course catalog. Run one with
   `npx playwright test -g "<name>"`. Read `tests/e2e/README.md` before writing
@@ -94,7 +94,9 @@ listener takes in what another tab of the same page saved. Nothing else reads
 localStorage. `major-app-size.md` describes what makes `MajorApp` large and how
 to keep splitting it.
 
-**Tests.** Most tests call `runTest` (`src/lib/tests/util.ts`) with a real
+**Tests.** A unit test sits next to the module it tests, as `<module>.test.ts`.
+The per-major tests are the exception: they're in `src/lib/tests/`, one file
+per major, and each calls `runTest` (`src/lib/tests/util.ts`) with a real
 grades CSV from `grade-csvs/` and the expected credit stats per cell. In dev,
 importing a grades file logs the current stats in that same shape.
 

@@ -1,6 +1,7 @@
 import { sveltekit } from "@sveltejs/kit/vite";
 import { fileURLToPath } from "node:url";
-import { defineConfig, type Plugin } from "vite";
+import type { Plugin } from "vite";
+import { defineConfig } from "vitest/config";
 
 const e2e = process.env.AKIKO_E2E !== undefined;
 
@@ -35,4 +36,6 @@ export default defineConfig({
   plugins: [e2e && useE2eCatalog(), sveltekit()],
   server: { port: 42263 },
   build: { chunkSizeWarningLimit: 1000 },
+  // The default pattern would also pick up the Playwright specs in tests/e2e
+  test: { include: ["src/**/*.test.ts"] },
 });

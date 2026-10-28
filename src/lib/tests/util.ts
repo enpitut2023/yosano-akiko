@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { expect } from "vitest";
 import {
   type BaseCreditStats,
   type CreditStats,
@@ -15,13 +16,6 @@ import {
 import { parseImportedCsv } from "$lib/csv";
 import { assert } from "$lib/util";
 import type { Major } from "$lib/constants";
-
-function indent(s: string, n: number): string {
-  return s
-    .split("\n")
-    .map((l) => " ".repeat(n) + l)
-    .join("\n");
-}
 
 export function getCreditStats(params: {
   csv: string;
@@ -92,7 +86,7 @@ export function runTest(params: RunTestParams): void {
     classifyRealCourses: params.classifyRealCourses,
     classifyFakeCourses: params.classifyFakeCourses,
   });
-  assertCreditStatsEqual(got, params.want);
+  expectCreditStats(got, params.want);
 }
 
 /**
@@ -118,56 +112,66 @@ export type WantCreditStats = {
   elective: WantBaseCreditStats;
 };
 
-export function assertCreditStatsEqual(
-  got: CreditStats,
-  want: WantCreditStats,
-): void {
-  function f(
-    got: BaseCreditStats,
-    want: WantBaseCreditStats | undefined,
-    name: string,
-  ): void {
-    let rawMightTake = 0;
-    let rawTaken = 0;
-    let effectiveMightTake = 0;
-    let effectiveTaken = 0;
-    if (want !== undefined) {
-      if ("rawMightTake" in want) {
-        rawMightTake = want.rawMightTake;
-        effectiveMightTake = want.effectiveMightTake;
-      } else if ("mightTake" in want) {
-        rawMightTake = want.mightTake;
-        effectiveMightTake = want.mightTake;
-      } else {
-        rawMightTake = 0;
-        effectiveMightTake = 0;
-      }
-      if ("rawTaken" in want) {
-        rawTaken = want.rawTaken;
-        effectiveTaken = want.effectiveTaken;
-      } else if ("taken" in want) {
-        rawTaken = want.taken;
-        effectiveTaken = want.taken;
-      } else {
-        rawTaken = 0;
-        effectiveTaken = 0;
-      }
+function normalize(want: WantBaseCreditStats | undefined) {
+  let rawMightTake = 0;
+  let effectiveMightTake = 0;
+  let rawTaken = 0;
+  let effectiveTaken = 0;
+  if (want !== undefined) {
+    if ("rawMightTake" in want) {
+      rawMightTake = want.rawMightTake;
+      effectiveMightTake = want.effectiveMightTake;
+    } else if ("mightTake" in want) {
+      rawMightTake = want.mightTake;
+      effectiveMightTake = want.mightTake;
     }
-    const message = `Bad ${name}:
-${indent(`want: ` + JSON.stringify(want, undefined, 2), 2)}
-${indent(`got: ` + JSON.stringify(got, undefined, 2), 2)}`;
-    assert(got.rawMightTake === rawMightTake, message);
-    assert(got.rawTaken === rawTaken, message);
-    assert(got.effectiveMightTake === effectiveMightTake, message);
-    assert(got.effectiveTaken === effectiveTaken, message);
+    if ("rawTaken" in want) {
+      rawTaken = want.rawTaken;
+      effectiveTaken = want.effectiveTaken;
+    } else if ("taken" in want) {
+      rawTaken = want.taken;
+      effectiveTaken = want.taken;
+    }
   }
+  return { rawMightTake, effectiveMightTake, rawTaken, effectiveTaken };
+}
 
-  for (const [id, gotCell] of got.cells) {
-    f(gotCell, want.cells[id], `cell ${id}`);
+function pick(s: BaseCreditStats) {
+  const { rawMightTake, effectiveMightTake, rawTaken, effectiveTaken } = s;
+  return { rawMightTake, effectiveMightTake, rawTaken, effectiveTaken };
+}
+
+/**
+ * Expects the credit stats of every cell and column in `got` or `want`, with
+ * one diff for all of them. Those missing from `want` are expected to be zero.
+ */
+export function expectCreditStats(got: CreditStats, want: WantCreditStats) {
+  function byId(
+    gotById: Map<string, BaseCreditStats>,
+    wantById: Record<string, WantBaseCreditStats>,
+  ) {
+    const ids = [...new Set([...gotById.keys(), ...Object.keys(wantById)])];
+    return {
+      got: Object.fromEntries(
+        ids.map((id) => {
+          const s = gotById.get(id);
+          return [id, s && pick(s)];
+        }),
+      ),
+      want: Object.fromEntries(ids.map((id) => [id, normalize(wantById[id])])),
+    };
   }
-  for (const [id, gotColumn] of got.columns) {
-    f(gotColumn, want.columns[id], `column ${id}`);
-  }
-  f(got.compulsory, want.compulsory, "compulsory");
-  f(got.elective, want.elective, "elective");
+  const cells = byId(got.cells, want.cells);
+  const columns = byId(got.columns, want.columns);
+  expect({
+    cells: cells.got,
+    columns: columns.got,
+    compulsory: pick(got.compulsory),
+    elective: pick(got.elective),
+  }).toEqual({
+    cells: cells.want,
+    columns: columns.want,
+    compulsory: normalize(want.compulsory),
+    elective: normalize(want.elective),
+  });
 }

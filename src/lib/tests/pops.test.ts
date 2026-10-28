@@ -1,3 +1,4 @@
+import { test } from "vitest";
 import {
   classifyFakeCourses,
   classifyRealCourses,
@@ -5,7 +6,7 @@ import {
 } from "$lib/requirements/pops-since-2023";
 import { runTest } from "./util";
 
-function test1(): void {
+test("grade-csvs/2023/pops-ses-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/pops-ses-1.csv",
     isNative: true,
@@ -47,9 +48,9 @@ function test1(): void {
       elective: { rawTaken: 104, effectiveTaken: 95 },
     },
   });
-}
+});
 
-function test2(): void {
+test("grade-csvs/2024/pops-ses-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2024/pops-ses-1.csv",
     isNative: true,
@@ -88,8 +89,4 @@ function test2(): void {
       elective: { taken: 60, mightTake: 6 },
     },
   });
-}
-
-test1();
-test2();
-console.log(import.meta.filename, "ok");
+});

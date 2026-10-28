@@ -1,3 +1,4 @@
+import { test } from "vitest";
 import {
   classifyFakeCourses,
   classifyRealCourses,
@@ -5,7 +6,7 @@ import {
 } from "$lib/requirements/bres-since-2023";
 import { runTest } from "./util";
 
-function test1(): void {
+test("grade-csvs/2024/bres-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2024/bres-1.csv",
     isNative: true,
@@ -45,7 +46,4 @@ function test1(): void {
       elective: { taken: 68, mightTake: 2 },
     },
   });
-}
-
-test1();
-console.log(import.meta.filename, "ok");
+});

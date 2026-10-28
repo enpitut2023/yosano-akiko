@@ -1,3 +1,4 @@
+import { test } from "vitest";
 import {
   classifyFakeCourses,
   classifyRealCourses,
@@ -5,7 +6,7 @@ import {
 } from "$lib/requirements/physics-since-2023";
 import { runTest } from "./util";
 
-function test1(): void {
+test("grade-csvs/2023/physics-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/physics-1.csv",
     isNative: false,
@@ -59,7 +60,4 @@ function test1(): void {
       },
     },
   });
-}
-
-test1();
-console.log(import.meta.filename, "ok");
+});

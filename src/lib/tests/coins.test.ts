@@ -1,3 +1,4 @@
+import { test } from "vitest";
 import {
   classifyFakeCourses,
   classifyRealCourses,
@@ -5,7 +6,7 @@ import {
 } from "$lib/requirements/coins-since-2021";
 import { runTest } from "./util";
 
-function test2(): void {
+test("grade-csvs/2023/coins-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/coins-1.csv",
     isNative: true,
@@ -57,9 +58,10 @@ function test2(): void {
       elective: { taken: 61, mightTake: 8 },
     },
   });
-}
+});
 
-function test3(): void {
+// Each row's コメント column says what it checks
+test("edge cases", () => {
   const csv = `
 学籍番号,学生氏名,科目番号,科目名,単位数,春学期,秋学期,総合評価,科目区分,開講年度,開講区分,コメント
 ,,FA016C1,線形代数1,1.0,-,-,A,C,2025,通常,総合の人間が線形代数をFAで取っていた時にちゃんと反映される
@@ -130,8 +132,4 @@ function test3(): void {
       elective: { taken: 31 },
     },
   });
-}
-
-test2();
-test3();
-console.log(import.meta.filename, "ok");
+});

@@ -1,3 +1,4 @@
+import { test } from "vitest";
 import {
   classifyFakeCourses,
   classifyRealCourses,
@@ -5,7 +6,7 @@ import {
 } from "$lib/requirements/esys-since-2023";
 import { runTest } from "./util";
 
-function test1(): void {
+test("grade-csvs/2023/esys-ies-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/esys-ies-1.csv",
     isNative: true,
@@ -71,9 +72,9 @@ function test1(): void {
       elective: { taken: 42, mightTake: 3 },
     },
   });
-}
+});
 
-function test2(): void {
+test("grade-csvs/2023/esys-ies-2.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/esys-ies-2.csv",
     isNative: true,
@@ -142,8 +143,4 @@ function test2(): void {
       elective: { taken: 47, mightTake: 5 },
     },
   });
-}
-
-test1();
-test2();
-console.log(import.meta.filename, "ok");
+});
