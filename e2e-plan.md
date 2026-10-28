@@ -85,6 +85,12 @@ stale code.
 - **Ports:** the regular dev server stays on :42263, so both can run at once.
 - **No separate Vite cache needed:** only the dev server uses Vite's
   dependency cache, so sharing `node_modules/.vite` is fine.
+- **Plugin cost:** the catalog plugin's `resolveId` hook declares a filter
+  (`/current-courses/`) so the bundler doesn't call it for every import.
+  Without it, the plugin took about half the build's plugin time.
+- **Known noise:** SvelteKit warns that `tsconfig.json` should extend
+  `.svelte-kit-e2e/tsconfig.json`, because of the separate output folder. It's
+  harmless; the root tsconfig is only for editors and `npm run check`.
 
 ### Where the tests live
 
@@ -193,11 +199,24 @@ written to match the fixture catalog so expected results are obvious:
 
 ### Smoke
 
-- [x] Every `instances` page loads with no console errors or hydration
-      errors, and reacts to a tab click. Closed colleges show the closed notice.
-      All 223 pages take about 1 minute, including the build.
-- [ ] Closed colleges' notice has the right title.
-- [ ] The top page links to every major page.
+Every test fails if the page logs an error or a hydration warning (the `page`
+fixture in `tests/e2e/test.ts`), so the smoke tests mostly just load pages.
+
+- [x] Every `instances` page loads, has the right title and reacts to a tab
+      click. Closed colleges show the closed notice with the college's title.
+- [x] The top page, `/faq`, `/contact`, `/contributors`, `/twins-grades` and
+      `/twins-register` load.
+- [x] On the top page, year → college → major opens that major's page, and a
+      college with one major links straight to it.
+- [x] ✅ marks exactly the colleges whose majors are all `checked`.
+- Not tested: whether internal links resolve. Prerendering in `npm run build`
+  already fails on links to missing pages or anchors. External links aren't
+  checked either, since tests are kept off the network.
+
+The whole suite takes about 1 minute, including the build. Run a subset with
+`-g`, which matches the file name plus the test name (e.g. `-g "2023/coins"`,
+or `-g " /[a-z-]* loads"` for the non-major pages). Positional arguments
+filter by file instead.
 
 ### 単位チェック (import)
 

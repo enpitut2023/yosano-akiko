@@ -25,8 +25,9 @@ and assets go through `resolve()` / `asset()` from `$app/paths`.
   plugin in `vite.config.ts` swap the course catalog for
   `tests/e2e/fixtures/courses.ts` and sends the output to `build-e2e/` and
   `.svelte-kit-e2e/`. Run one with `npx playwright test -g "<name>"`. Import
-  `test` from `tests/e2e/test.ts`: it marks the tutorial and pan hint as seen
-  and stubs requests to other origins (Matomo).
+  `test` from `tests/e2e/test.ts`: it marks the tutorial and pan hint as seen,
+  stubs requests to other origins (Matomo), and fails the test if the page logs
+  an error.
 - `npm run build`: validates `grade-csvs/`, runs the tests, then prerenders every
   page into `build/`. Prerendering fails if a page's rects JSON or table SVG is
   missing.

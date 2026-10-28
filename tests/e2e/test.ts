@@ -1,12 +1,14 @@
-import { test as base } from "@playwright/test";
+import { test as base, expect, type Locator } from "@playwright/test";
 import { SEEN_KEYS } from "../../src/routes/[tableYear]/[major]/seen";
 
-export { expect } from "@playwright/test";
+export { expect, type Page } from "@playwright/test";
 
 /**
- * Playwright's `test`, with the things shown on a first visit (the tutorial,
- * the pan hint) already marked as seen. Tests of those use
- * `test.use({ seen: false })`.
+ * Playwright's `test`, with:
+ * - requests to other origins answered with an empty response;
+ * - the things shown on a first visit (the tutorial, the pan hint) already
+ *   marked as seen. Tests of those use `test.use({ seen: false })`;
+ * - a failure if the page logs an error or a hydration warning.
  */
 export const test = base.extend<{ seen: boolean }>({
   seen: [true, { option: true }],
@@ -27,6 +29,28 @@ export const test = base.extend<{ seen: boolean }>({
         for (const key of keys) localStorage.setItem(key, "1");
       }, Object.values(SEEN_KEYS));
     }
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    page.on("console", (m) => {
+      if (m.type() === "error" || /hydrat/i.test(m.text())) {
+        errors.push(m.text());
+      }
+    });
     await use(page);
+    expect(errors, "errors logged by the page").toEqual([]);
   },
 });
+
+/**
+ * Clicks `target` until `check` passes. Pages are prerendered, so a click
+ * before hydration does nothing.
+ */
+export async function clickUntil(
+  target: Locator,
+  check: () => Promise<void>,
+): Promise<void> {
+  await expect(async () => {
+    await target.click();
+    await check();
+  }).toPass();
+}
