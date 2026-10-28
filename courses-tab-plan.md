@@ -61,14 +61,14 @@ Steps:
 
 Facts about courses that don't depend on this page.
 
-- [ ] **One course, from both sources:** `akikoGetCourse(akiko, id)` merges the
+- [x] **One course, from both sources:** `akikoGetMergedCourse(akiko, id)` merges the
       catalog entry and the grades row (name, credit, grade, year taken, cell).
       Today each place merges them by hand, slightly differently:
   - the course lists use `rc?.name || kc?.name || "（不明）"`;
   - the search uses `rc?.name || kc?.name || ""`, though the course already
     has a `name`;
   - `Timetable` and `ExportTab` use `rc?.name ?? kc.name`.
-- [ ] **The syllabus year.** Four rules today:
+- [x] **The syllabus year.** Four rules today:
 
   | Where        | Year                                                                      |
   | ------------ | ------------------------------------------------------------------------- |
@@ -78,24 +78,25 @@ Facts about courses that don't depend on this page.
   | Import tab   | always the year taken                                                     |
 
   Decided: the year taken if passed, else the catalog's year, since that's
-  the syllabus the student took it or would take it under. Put the rule in
-  `akikoGetCourse`, and use it everywhere a syllabus is linked. Wherever a
-  link goes to a year, show which year, so a link to an old syllabus isn't
-  mistaken for this year's. (The course lists already show the year taken
-  after a passed course's name; the timetable, export and import tab don't.)
+  the syllabus the student took it or would take it under. The rule is in
+  `akikoGetMergedCourse` (which is why `Akiko` now holds the catalog's year), and
+  every syllabus link goes through `SyllabusLink.svelte`, which shows the year
+  after the name only when it isn't the catalog's.
 
-- [ ] **Fake courses that count:** `akikoGetClassifiedFakeCourses`, the
+- [x] **Fake courses that count:** `akikoGetClassifiedFakeCourses`, the
       counterpart of `akikoGetUnclassifiedFakeCourses`. `MajorApp` builds it
       inline from `fakeCoursePositions`.
-- [ ] **Total credits:** `akikoGetCreditStats` also returns `total` (必修 plus
+- [x] **Total credits:** `akikoGetCreditStats` also returns `total` (必修 plus
       選択), which `MajorApp` adds up as `graduationCredits`.
-- [ ] **Summing credits:** a `creditSum(courses)` for the five
+- [x] **Summing credits:** a `creditSum(courses)` for the five
       `reduce((s, c) => s + (c.credit ?? 0), 0)` in `MajorApp`, `ExportTab` and
       `ImportTab`.
-- [ ] **List order** (履修中, then failed, then by ID): next to
+- [x] **List order** (履修中, then failed, then by ID): next to
       `akikoGetCoursesInCell`, since it's about what the lists mean. Decided.
-- [ ] Remove `knownCoursesMap` from `MajorApp`; `akiko.knownCourses` already
-      holds it. `Timetable` takes `akiko` instead.
+- [x] Remove `knownCoursesMap` from `MajorApp`; `akiko.knownCourses` already
+      holds it. `Timetable` takes `akiko` instead, and derives its lists
+      from it.
+- [x] `MajorApp`'s `UiCourse` is gone: the course lists are `MergedCourse`s.
 
 ## 2. Into `course-filters.ts` (next to the page)
 

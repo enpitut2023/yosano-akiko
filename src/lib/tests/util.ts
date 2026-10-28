@@ -43,6 +43,8 @@ export function getCreditStats(params: {
     );
   const akiko = akikoNew(
     [],
+    // No catalog, so its year doesn't matter
+    0,
     result.realCourses,
     result.fakeCourses,
     new Map(),

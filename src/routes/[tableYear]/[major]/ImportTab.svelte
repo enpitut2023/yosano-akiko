@@ -4,15 +4,17 @@
   import FileUp from "lucide-svelte/icons/file-up";
   import Lock from "lucide-svelte/icons/lock";
   import {
+    akikoGetMergedCourse,
     akikoGetUnclassifiedFakeCourses,
     akikoGetUnclassifiedRealCourses,
+    creditSum,
     gradeIsPass,
     type Akiko,
     type FakeCourse,
     type RealCourse,
   } from "$lib/akiko";
   import { gradeDisplay } from "./credit-display";
-  import { syllabusUrl } from "./links";
+  import SyllabusLink from "./SyllabusLink.svelte";
 
   let {
     akiko,
@@ -33,13 +35,15 @@
 
   const gradesImported = $derived(realCourses.length + fakeCourses.length > 0);
   const importedCredits = $derived(
-    [...realCourses.filter((c) => gradeIsPass(c.grade)), ...fakeCourses].reduce(
-      (sum, c) => sum + (c.credit ?? 0),
-      0,
-    ),
+    creditSum([
+      ...realCourses.filter((c) => gradeIsPass(c.grade)),
+      ...fakeCourses,
+    ]),
   );
   const unclassifiedCourses = $derived({
-    real: akikoGetUnclassifiedRealCourses(akiko),
+    real: akikoGetUnclassifiedRealCourses(akiko)
+      .map((rc) => akikoGetMergedCourse(akiko, rc.id))
+      .filter((c) => c !== undefined),
     fake: akikoGetUnclassifiedFakeCourses(akiko),
   });
 
@@ -148,12 +152,10 @@
             <tr class="course">
               <td class="id-name">
                 <span>{c.id}</span><br />
-                <a href={syllabusUrl(c.id, c.takenYear)} target="_blank"
-                  >{c.name}</a
-                >
+                <SyllabusLink course={c} catalogYear={akiko.knownCourseYear} />
               </td>
               <td class="credit">{c.credit ?? "-"}</td>
-              <td class="term">{gradeDisplay(c.grade)}</td>
+              <td class="term">{c.real && gradeDisplay(c.real.grade)}</td>
             </tr>
           {/each}
           {#each unclassifiedCourses.fake as c (c.id)}

@@ -324,11 +324,14 @@ export type CellCreditStats = { max: number | undefined } & BaseCreditStats;
 export type ColumnCreditStats = { max: number } & BaseCreditStats;
 export type CompulsoryCreditStats = { max: number } & BaseCreditStats;
 export type ElectiveCreditStats = { max: number } & BaseCreditStats;
+export type TotalCreditStats = { max: number } & BaseCreditStats;
 export type CreditStats = {
   cells: Map<CellId, CellCreditStats>;
   columns: Map<ColumnId, ColumnCreditStats>;
   compulsory: CompulsoryCreditStats;
   elective: ElectiveCreditStats;
+  /** 必修 and 選択 together: the credits toward graduation. */
+  total: TotalCreditStats;
 };
 
 function baseCreditStatsNew(
@@ -367,6 +370,8 @@ export type ListKindOverrides = Map<CourseId, ListKindOverride>;
 
 export type Akiko = {
   knownCourses: Map<CourseId, KnownCourse>;
+  /** The academic year the catalog in `knownCourses` is for. */
+  knownCourseYear: number;
   realCourses: Map<CourseId, RealCourse>;
   fakeCourses: Map<FakeCourseId, FakeCourse>;
   courseIdToCellId: Map<CourseId, CellId>;
@@ -396,6 +401,7 @@ function realCourseListKind(grade: Grade): ListKind {
 
 export function akikoNew(
   knownCoursesArray: KnownCourse[],
+  knownCourseYear: number,
   realCoursesArray: RealCourse[],
   fakeCoursesArray: FakeCourse[],
   listKindOverrides: ListKindOverrides,
@@ -449,6 +455,7 @@ export function akikoNew(
 
   return {
     knownCourses,
+    knownCourseYear,
     realCourses,
     fakeCourses,
     courseIdToCellId,
@@ -463,12 +470,78 @@ export function akikoGetListKind(akiko: Akiko, courseId: CourseId): ListKind {
   return akiko.courseIdToListKind.get(courseId) ?? "wont-take";
 }
 
+/** A course with what the catalog and the grades file say about it. */
+export type MergedCourse = {
+  id: CourseId;
+  /** The grades file's, if it has one, else the catalog's. */
+  name: string;
+  /** The grades file's, if it has one, else the catalog's. */
+  credit: number | undefined;
+  known: KnownCourse | undefined;
+  real: RealCourse | undefined;
+  cellId: CellId | undefined;
+  /**
+   * The year of the syllabus the student took the course under, or would take
+   * it under: the year taken if passed, else the catalog's year.
+   */
+  syllabusYear: number;
+};
+
+/** Undefined if neither the catalog nor the grades file has the course. */
+export function akikoGetMergedCourse(
+  akiko: Akiko,
+  courseId: CourseId,
+): MergedCourse | undefined {
+  const known = akiko.knownCourses.get(courseId);
+  const real = akiko.realCourses.get(courseId);
+  if (known === undefined && real === undefined) return undefined;
+  return {
+    id: courseId,
+    name: real?.name || known?.name || "（不明）",
+    credit: real?.credit ?? known?.credit,
+    known,
+    real,
+    cellId: akiko.courseIdToCellId.get(courseId),
+    syllabusYear:
+      real !== undefined && gradeIsPass(real.grade)
+        ? real.takenYear
+        : akiko.knownCourseYear,
+  };
+}
+
+/** The courses' credits added up, counting unknown ones as 0. */
+export function creditSum(courses: { credit: number | undefined }[]): number {
+  return courses.reduce((sum, c) => sum + (c.credit ?? 0), 0);
+}
+
+/**
+ * The courses of each list, each sorted with 履修中 courses first, then failed
+ * ones, each group by ID.
+ */
 export type CourseIdLists = {
   wontTake: CourseId[];
   mightTake: CourseId[];
   taken: CourseId[];
   fake: FakeCourseId[];
 };
+
+function courseIdListsSort(akiko: Akiko, lists: CourseIdLists): CourseIdLists {
+  function priority(id: CourseId): number {
+    const grade = akiko.realCourses.get(id)?.grade;
+    if (grade === undefined) return 2;
+    if (gradeIsWip(grade)) return 0;
+    if (gradeIsFail(grade)) return 1;
+    return 2;
+  }
+  const sort = (ids: CourseId[]) =>
+    ids.sort((a, b) => priority(a) - priority(b) || courseIdCompare(a, b));
+  return {
+    wontTake: sort(lists.wontTake),
+    mightTake: sort(lists.mightTake),
+    taken: sort(lists.taken),
+    fake: lists.fake,
+  };
+}
 
 // TODO: should return undefined for unknown cell ids
 export function akikoGetCoursesInCell(
@@ -499,7 +572,7 @@ export function akikoGetCoursesInCell(
   for (const [fakeCourseId, id] of akiko.fakeCoursePositions) {
     if (cellId === id) fake.push(fakeCourseId);
   }
-  return { wontTake, mightTake, taken, fake };
+  return courseIdListsSort(akiko, { wontTake, mightTake, taken, fake });
 }
 
 export function akikoGetAllCourses(akiko: Akiko): CourseIdLists {
@@ -545,12 +618,12 @@ export function akikoGetAllCourses(akiko: Akiko): CourseIdLists {
       else if (gradeIsPass(rc.grade)) taken.add(rc.id);
     }
   }
-  return {
+  return courseIdListsSort(akiko, {
     wontTake: Array.from(wontTake),
     mightTake: Array.from(mightTake),
     taken: Array.from(taken),
     fake: Array.from(akiko.fakeCoursePositions.keys()),
-  };
+  });
 }
 
 export function akikoGetCreditStats(akiko: Akiko): CreditStats {
@@ -636,28 +709,36 @@ export function akikoGetCreditStats(akiko: Akiko): CreditStats {
     }
   }
 
-  return {
-    cells,
-    columns,
-    compulsory: {
-      max: akiko.creditRequirements.compulsoryMin,
-      ...baseCreditStatsNew(
-        compulsoryRawMightTake,
-        compulsoryRawTaken,
-        akiko.creditRequirements.compulsoryMin,
-        akiko.creditRequirements.compulsoryMin,
-      ),
-    },
-    elective: {
-      max: akiko.creditRequirements.electiveMin,
-      ...baseCreditStatsNew(
-        electiveRawMightTake,
-        electiveRawTaken,
-        akiko.creditRequirements.electiveMin,
-        akiko.creditRequirements.electiveMin,
-      ),
-    },
+  const { compulsoryMin, electiveMin } = akiko.creditRequirements;
+  const compulsory: CompulsoryCreditStats = {
+    max: compulsoryMin,
+    ...baseCreditStatsNew(
+      compulsoryRawMightTake,
+      compulsoryRawTaken,
+      compulsoryMin,
+      compulsoryMin,
+    ),
   };
+  const elective: ElectiveCreditStats = {
+    max: electiveMin,
+    ...baseCreditStatsNew(
+      electiveRawMightTake,
+      electiveRawTaken,
+      electiveMin,
+      electiveMin,
+    ),
+  };
+  const totalMin = compulsoryMin + electiveMin;
+  const total: TotalCreditStats = {
+    max: totalMin,
+    ...baseCreditStatsNew(
+      compulsory.effectiveMightTake + elective.effectiveMightTake,
+      compulsory.effectiveTaken + elective.effectiveTaken,
+      totalMin,
+      totalMin,
+    ),
+  };
+  return { cells, columns, compulsory, elective, total };
 }
 
 export function akikoGetMightTakeCourseIds(akiko: Akiko): CourseId[] {
@@ -682,6 +763,16 @@ export function akikoGetUnclassifiedRealCourses(akiko: Akiko): RealCourse[] {
     if (!akiko.courseIdToCellId.has(rc.id)) rcs.push(rc);
   }
   return rcs;
+}
+
+/** The fake courses that landed in a cell, so count toward graduation. */
+export function akikoGetClassifiedFakeCourses(akiko: Akiko): FakeCourse[] {
+  const fcs: FakeCourse[] = [];
+  for (const id of akiko.fakeCoursePositions.keys()) {
+    const fc = akiko.fakeCourses.get(id);
+    if (fc !== undefined) fcs.push(fc);
+  }
+  return fcs;
 }
 
 export function akikoGetUnclassifiedFakeCourses(akiko: Akiko): FakeCourse[] {

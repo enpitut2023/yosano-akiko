@@ -1,40 +1,36 @@
 <script lang="ts">
   import {
+    akikoGetClassifiedFakeCourses,
+    akikoGetMergedCourse,
+    akikoGetMightTakeCourseIds,
+    akikoGetTakenCourseIds,
     courseIdCompare,
     termToString,
+    type Akiko,
     type CourseId,
     type Dow,
-    type FakeCourse,
-    type Grade,
-    type KnownCourse,
-    type RealCourse,
     type Term,
   } from "$lib/akiko";
+  import { gradeDisplay } from "./credit-display";
+  import SyllabusLink from "./SyllabusLink.svelte";
   import { type TimetableTab } from "./timetable";
 
   type Props = {
+    akiko: Akiko;
+    /** Taken courses show only if taken in this year. */
     year: number;
     activeTerm: TimetableTab;
-    mightTakeCourseIds: CourseId[];
-    takenCourseIds: CourseId[];
-    fakeCourses: FakeCourse[];
     showTaken: boolean;
-    knownCoursesMap: Map<CourseId, KnownCourse>;
-    realCoursesMap: Map<CourseId, RealCourse>;
     onBarClick: (courseId: CourseId) => void;
     onBarDragStart: (event: DragEvent, courseId: CourseId) => void;
     onBarDragEnd: () => void;
   };
 
   let {
+    akiko,
     year,
     activeTerm = $bindable(),
-    mightTakeCourseIds,
-    takenCourseIds,
-    fakeCourses,
     showTaken,
-    knownCoursesMap,
-    realCoursesMap,
     onBarClick,
     onBarDragStart,
     onBarDragEnd,
@@ -72,19 +68,9 @@
     return `${term}:${x}:${y}`;
   }
 
-  function getSyllabusUrl(
-    courseId: string,
-    takenYear: number | undefined,
-  ): string {
-    return `https://kdb.tsukuba.ac.jp/syllabi/${takenYear ?? year}/${courseId}/jpn`;
-  }
-
-  function gradeDisplay(g: Grade): string {
-    if (g === "wip") return "（履修中）";
-    if (g === "d" || g === "fail") return "（落単済み）";
-    if (g === "pass") return "評価：P";
-    return `評価：${g.toUpperCase()}`;
-  }
+  const mightTakeCourseIds = $derived(akikoGetMightTakeCourseIds(akiko));
+  const takenCourseIds = $derived(akikoGetTakenCourseIds(akiko));
+  const fakeCourses = $derived(akikoGetClassifiedFakeCourses(akiko));
 
   const TIMETABLE_TERMS = new Set<Term>([
     "spring-a",
@@ -99,25 +85,23 @@
     const ids = [...mightTakeCourseIds];
     if (showTaken) {
       for (const id of takenCourseIds) {
-        if (realCoursesMap.get(id)?.takenYear === year) ids.push(id);
+        if (akiko.realCourses.get(id)?.takenYear === year) ids.push(id);
       }
     }
     return ids
-      .filter((id) => {
-        const kc = knownCoursesMap.get(id);
-        return (
-          kc?.slots.some(
+      .sort(courseIdCompare)
+      .map((id) => akikoGetMergedCourse(akiko, id))
+      .filter((c) => c !== undefined)
+      .filter(
+        (c) =>
+          c.known?.slots.some(
             (s) => !TIMETABLE_TERMS.has(s.term) || s.when.kind !== "regular",
-          ) ?? false
-        );
-      })
-      .map((id) => ({
-        id,
-        kc: knownCoursesMap.get(id),
-        rc: realCoursesMap.get(id),
-        draggable: mightTakeCourseIds.includes(id),
-      }))
-      .sort((a, b) => courseIdCompare(a.id, b.id));
+          ) ?? false,
+      )
+      .map((course) => ({
+        course,
+        draggable: mightTakeCourseIds.includes(course.id),
+      }));
   });
 
   const otherTabFakeCourses = $derived(
@@ -132,16 +116,14 @@
     const ids = [...mightTakeCourseIds];
     if (showTaken) {
       for (const courseId of takenCourseIds) {
-        if (realCoursesMap.get(courseId)?.takenYear === year)
+        if (akiko.realCourses.get(courseId)?.takenYear === year)
           ids.push(courseId);
       }
     }
     for (const courseId of ids) {
-      const kc = knownCoursesMap.get(courseId);
-      if (!kc) continue;
-      const rc = realCoursesMap.get(courseId);
-      const name = rc?.name ?? kc.name;
-      for (const slot of kc.slots) {
+      const course = akikoGetMergedCourse(akiko, courseId);
+      if (course?.known === undefined) continue;
+      for (const slot of course.known.slots) {
         if (slot.term !== activeTerm) continue;
         if (slot.when.kind !== "regular") continue;
         const x = DOW_COL[slot.when.dow];
@@ -155,7 +137,7 @@
           yStart: y,
           yEnd: y,
           courseId,
-          courseName: name,
+          courseName: course.name,
           nudge: 0,
           taken: takenCourseIds.includes(courseId),
         });
@@ -248,26 +230,23 @@
             </tr>
           </thead>
           <tbody>
-            {#each otherTabCourses as { id, kc, rc, draggable } (id)}
+            {#each otherTabCourses as { course, draggable } (course.id)}
               <tr
                 {draggable}
                 ondragstart={(e) => {
-                  if (draggable) onBarDragStart(e, id);
+                  if (draggable) onBarDragStart(e, course.id);
                 }}
                 ondragend={() => onBarDragEnd()}
               >
                 <td class="id-name">
-                  <span>{id}</span><br />
-                  <a
-                    href={getSyllabusUrl(id, rc?.takenYear)}
-                    target="_blank"
-                    draggable="false">{rc?.name ?? kc?.name ?? "（不明）"}</a
-                  >
-                  {#if rc?.grade}<br /><span>{gradeDisplay(rc.grade)}</span
+                  <span>{course.id}</span><br />
+                  <SyllabusLink {course} catalogYear={akiko.knownCourseYear} />
+                  {#if course.real}<br /><span
+                      >{gradeDisplay(course.real.grade)}</span
                     >{/if}
                 </td>
-                <td class="credit">{rc?.credit ?? kc?.credit ?? "-"}</td>
-                <td class="slots">{kc?.slotsString || "-"}</td>
+                <td class="credit">{course.credit ?? "-"}</td>
+                <td class="slots">{course.known?.slotsString || "-"}</td>
               </tr>
             {/each}
             {#each otherTabFakeCourses as c (c.id)}

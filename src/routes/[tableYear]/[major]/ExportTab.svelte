@@ -4,16 +4,19 @@
   import TriangleAlert from "lucide-svelte/icons/triangle-alert";
   import {
     akikoExportForTwins,
+    akikoGetMergedCourse,
+    creditSum,
     slotToString,
     type Akiko,
+    type MergedCourse,
     type CellId,
-    type CourseId,
     type KnownCourse,
   } from "$lib/akiko";
   import { trackEvent } from "$lib/analytics";
   import type { MajorConfig } from "$lib/app-setup";
   import Dialog from "$lib/Dialog.svelte";
-  import { SUPPORT_URL, syllabusUrl } from "./links";
+  import { SUPPORT_URL } from "./links";
+  import SyllabusLink from "./SyllabusLink.svelte";
   import type { TimetableTab } from "./timetable";
 
   let {
@@ -31,36 +34,27 @@
     onDownload: () => void;
   } = $props();
 
-  type UiOverlapCourse = {
-    id: CourseId;
-    name: string;
-    cellId: CellId | undefined;
-  };
-
   type UiOverlapGroup = {
     slot: string;
     term: TimetableTab;
-    courses: UiOverlapCourse[];
+    courses: MergedCourse[];
   };
 
-  type UiLeftOutCourse = UiOverlapCourse & { term: TimetableTab };
+  type UiLeftOutCourse = { course: MergedCourse; term: TimetableTab };
 
-  const realCoursesMap = $derived(akiko.realCourses);
   const exportForTwinsResult = $derived(akikoExportForTwins(akiko));
 
+  function toCourses(kcs: KnownCourse[]): MergedCourse[] {
+    return kcs
+      .map((kc) => akikoGetMergedCourse(akiko, kc.id))
+      .filter((c) => c !== undefined);
+  }
+
   function toUiLeftOut(kcs: KnownCourse[]): UiLeftOutCourse[] {
-    return kcs.map((kc) => {
-      const rc = realCoursesMap.get(kc.id);
-      const firstSlot = kc.slots[0];
-      const term: TimetableTab =
-        firstSlot !== undefined ? firstSlot.term : "other";
-      return {
-        id: kc.id,
-        name: rc?.name ?? kc.name,
-        cellId: akiko.courseIdToCellId.get(kc.id),
-        term,
-      };
-    });
+    return toCourses(kcs).map((course) => ({
+      course,
+      term: course.known?.slots[0]?.term ?? "other",
+    }));
   }
 
   const uiJizentouroku = $derived(
@@ -68,24 +62,17 @@
   );
   const uiUnavailable = $derived(toUiLeftOut(exportForTwinsResult.unavailable));
   const exportCourses = $derived(
-    exportForTwinsResult.kind === "ok" ? exportForTwinsResult.toExport : [],
+    exportForTwinsResult.kind === "ok"
+      ? toCourses(exportForTwinsResult.toExport)
+      : [],
   );
-  const exportCredits = $derived(
-    exportCourses.reduce((sum, c) => sum + (c.credit ?? 0), 0),
-  );
+  const exportCredits = $derived(creditSum(exportCourses));
   const uiOverlaps = $derived.by((): UiOverlapGroup[] => {
     if (exportForTwinsResult.kind === "ok") return [];
     return exportForTwinsResult.overlaps.map((overlap) => ({
       slot: slotToString(overlap.slot),
       term: overlap.slot.term,
-      courses: overlap.courses.map((kc) => {
-        const rc = realCoursesMap.get(kc.id);
-        return {
-          id: kc.id,
-          name: rc?.name ?? kc.name,
-          cellId: akiko.courseIdToCellId.get(kc.id),
-        };
-      }),
+      courses: toCourses(overlap.courses),
     }));
   });
 
@@ -114,21 +101,16 @@
     <p class="step-problem"><TriangleAlert size={15} />{message}</p>
     <table>
       <tbody>
-        {#each courses as course (course.id)}
+        {#each courses as { course, term } (course.id)}
           <tr class="course">
             <td class="id-name">
               <span>{course.id}</span><br />
-              <a
-                href={syllabusUrl(course.id, config.knownCourseYear)}
-                target="_blank">{course.name}</a
-              >
+              <SyllabusLink {course} catalogYear={akiko.knownCourseYear} />
             </td>
             <td>
               {#if course.cellId !== undefined}
                 {@const cellId = course.cellId}
-                <button onclick={() => onShowCell(cellId, course.term)}
-                  >表示</button
-                >
+                <button onclick={() => onShowCell(cellId, term)}>表示</button>
               {/if}
             </td>
           </tr>
@@ -162,10 +144,10 @@
                   {/if}
                   <td class="id-name">
                     <span>{course.id}</span><br />
-                    <a
-                      href={syllabusUrl(course.id, config.knownCourseYear)}
-                      target="_blank">{course.name}</a
-                    >
+                    <SyllabusLink
+                      {course}
+                      catalogYear={akiko.knownCourseYear}
+                    />
                   </td>
                   <td>
                     {#if course.cellId !== undefined}
@@ -189,10 +171,10 @@
                 <tr class="course">
                   <td class="id-name">
                     <span>{course.id}</span><br />
-                    <a
-                      href={syllabusUrl(course.id, config.knownCourseYear)}
-                      target="_blank">{course.name}</a
-                    >
+                    <SyllabusLink
+                      {course}
+                      catalogYear={akiko.knownCourseYear}
+                    />
                   </td>
                   <td class="credit">{course.credit ?? "-"}</td>
                 </tr>

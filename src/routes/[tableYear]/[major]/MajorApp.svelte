@@ -11,31 +11,29 @@
   import { parseImportedCsv } from "$lib/csv";
   import {
     columnIdIsElective,
-    courseIdCompare,
     DOWS,
     dowCompare,
     dowToString,
-    gradeIsPass,
     isCellId,
     isCourseId,
     akikoGetAllCourses,
+    akikoGetMergedCourse,
     akikoGetCoursesInCell,
     akikoGetCreditStats,
     akikoGetMightTakeCourseIds,
     akikoGetOccupiedSlots,
-    akikoGetTakenCourseIds,
     akikoGetUnclassifiedFakeCourses,
     akikoIsOccupied,
     akikoMoveCourse,
     akikoNew,
+    creditSum,
+    type MergedCourse,
     termCompare,
     termToString,
-    type Availability,
     type CellId,
     type CourseId,
     type Dow,
     type FakeCourse,
-    type Grade,
     type RealCourse,
     type Slot,
     type Term,
@@ -70,10 +68,11 @@
   import { mobileUnsupported } from "./mobile-unsupported";
   import MobileUnsupportedNotice from "./MobileUnsupportedNotice.svelte";
   import SettingsTab from "./SettingsTab.svelte";
+  import SyllabusLink from "./SyllabusLink.svelte";
   import Tutorial from "./Tutorial.svelte";
   import ImportTab from "./ImportTab.svelte";
   import ExportTab from "./ExportTab.svelte";
-  import { SUPPORT_URL, syllabusUrl } from "./links";
+  import { SUPPORT_URL } from "./links";
   import { panZoom, resizeHandle } from "./gestures";
   import type { TutorialStep } from "./tutorial";
 
@@ -84,22 +83,6 @@
     term: Term | undefined;
     dows: Dow[];
     onlyUnoccupied: boolean;
-  };
-
-  type UiCourse = {
-    id: CourseId;
-    name: string;
-    credit: number | undefined;
-    slots: string | undefined;
-    expects: string | undefined;
-    expectsRaw: number[];
-    slotsRaw: Slot[];
-    grade: Grade | undefined;
-    takenYear: number | undefined;
-    syllabusYear: number;
-    availability: Availability;
-    remark: string;
-    cellId: CellId | undefined;
   };
 
   let { config }: { config: MajorConfig } = $props();
@@ -164,6 +147,7 @@
       classification;
     const a = akikoNew(
       config.knownCourses,
+      config.knownCourseYear,
       realCourses,
       fakeCourses,
       saved.listKindOverrides,
@@ -177,11 +161,6 @@
   });
 
   const creditStats = $derived(akikoGetCreditStats(akiko));
-  const knownCoursesMap = $derived(
-    new Map(config.knownCourses.map((c) => [c.id, c])),
-  );
-  const realCoursesMap = $derived(akiko.realCourses);
-  const fakeCourseMap = $derived(akiko.fakeCourses);
 
   $effect(() => {
     if (!browser) return;
@@ -402,7 +381,7 @@
     }
     if (dst === "might-take") {
       timetableYear = config.knownCourseYear;
-      const slots = knownCoursesMap.get(courseId)?.slots ?? [];
+      const slots = akiko.knownCourses.get(courseId)?.slots ?? [];
       const terms = slots
         .filter((s) => s.when.kind === "regular")
         .map((s) => s.term);
@@ -417,57 +396,27 @@
     }
   }
 
+  function isUnavailable(c: MergedCourse): boolean {
+    return c.known !== undefined && c.known.availability !== "available";
+  }
+
   // Does not depend on wontTakeFilters
   const courseLists = $derived.by(() => {
-    const cs = selectedCellId
+    const ids = selectedCellId
       ? akikoGetCoursesInCell(akiko, selectedCellId)
       : akikoGetAllCourses(akiko);
-    const courseCellIds = akiko.courseIdToCellId;
-
-    function toUi(id: CourseId): UiCourse {
-      const kc = knownCoursesMap.get(id);
-      const rc = realCoursesMap.get(id);
-      return {
-        id,
-        name: rc?.name || kc?.name || "（不明）",
-        credit: rc?.credit ?? kc?.credit,
-        slots: kc?.slotsString,
-        expects: kc?.expectsString,
-        expectsRaw: kc?.expects ?? [],
-        slotsRaw: kc?.slots ?? [],
-        grade: rc?.grade,
-        takenYear: rc?.takenYear,
-        syllabusYear:
-          rc?.grade && gradeIsPass(rc.grade)
-            ? rc.takenYear
-            : config.knownCourseYear,
-        availability: kc?.availability ?? "available",
-        remark: kc?.remark ?? "",
-        cellId: courseCellIds.get(id),
-      };
-    }
-
-    function gradePriority(g: Grade | undefined): number {
-      if (g === "wip") return 0;
-      if (g === "d" || g === "fail") return 1;
-      return 2;
-    }
-    const compareByGradeThenId = (a: UiCourse, b: UiCourse): number => {
-      const gd = gradePriority(a.grade) - gradePriority(b.grade);
-      if (gd !== 0) return gd;
-      return courseIdCompare(a.id, b.id);
-    };
-    const compareById = (a: UiCourse, b: UiCourse) =>
-      courseIdCompare(a.id, b.id);
+    const courses = (ids: CourseId[]) =>
+      ids
+        .map((id) => akikoGetMergedCourse(akiko, id))
+        .filter((c) => c !== undefined);
     return {
-      wontTake: cs.wontTake
-        .map(toUi)
-        .filter((c) => showNonAvailable || c.availability === "available")
-        .sort(compareByGradeThenId),
-      mightTake: cs.mightTake.map(toUi).sort(compareByGradeThenId),
-      taken: cs.taken.map(toUi).sort(compareById),
-      fake: cs.fake
-        .map((id) => fakeCourseMap.get(id))
+      wontTake: courses(ids.wontTake).filter(
+        (c) => showNonAvailable || !isUnavailable(c),
+      ),
+      mightTake: courses(ids.mightTake),
+      taken: courses(ids.taken),
+      fake: ids.fake
+        .map((id) => akiko.fakeCourses.get(id))
         .filter((fc) => fc !== undefined),
     };
   });
@@ -497,20 +446,16 @@
     courseIdOrName = courseIdOrName.toLowerCase();
     return {
       wontTake: courseLists.wontTake.filter((c) => {
-        if (courseIdOrName) {
-          const kc = knownCoursesMap.get(c.id);
-          const rc = realCoursesMap.get(c.id);
-          const name = rc?.name || kc?.name || "";
-          if (
-            !c.id.toLowerCase().includes(courseIdOrName) &&
-            !name.toLowerCase().includes(courseIdOrName)
-          )
-            return false;
-        }
-        if (credit !== undefined && c.credit !== credit) return false;
-        if (expects !== undefined && !c.expectsRaw.includes(expects))
+        if (
+          courseIdOrName &&
+          !c.id.toLowerCase().includes(courseIdOrName) &&
+          !c.name.toLowerCase().includes(courseIdOrName)
+        )
           return false;
-        if (!matchesSlotFilters(c.slotsRaw, term, dows)) return false;
+        if (credit !== undefined && c.credit !== credit) return false;
+        if (expects !== undefined && !c.known?.expects.includes(expects))
+          return false;
+        if (!matchesSlotFilters(c.known?.slots ?? [], term, dows)) return false;
         if (onlyUnoccupied && akikoIsOccupied(akiko, occupiedSlots, c.id))
           return false;
         return true;
@@ -521,16 +466,7 @@
     };
   });
 
-  // Fake courses that landed in a cell, i.e. those that count toward graduation
-  const classifiedFakeCourses = $derived(
-    Array.from(akiko.fakeCoursePositions.keys())
-      .map((id) => fakeCourseMap.get(id))
-      .filter((c) => c !== undefined),
-  );
-
-  const fakeCreditTotal = $derived(
-    filteredCourseLists.fake.reduce((sum, c) => sum + (c.credit ?? 0), 0),
-  );
+  const fakeCreditTotal = $derived(creditSum(filteredCourseLists.fake));
 
   const availableCredits = $derived.by(() => {
     const credits = new Set<number>();
@@ -542,14 +478,14 @@
   const availableExpects = $derived.by(() => {
     const expects = new Set<number>();
     for (const c of courseLists.wontTake) {
-      for (const e of c.expectsRaw) expects.add(e);
+      for (const e of c.known?.expects ?? []) expects.add(e);
     }
     return Array.from(expects).sort((a, b) => a - b);
   });
   const availableDows = $derived.by(() => {
     const dows = new Set<Dow>();
     for (const c of courseLists.wontTake) {
-      for (const s of c.slotsRaw) {
+      for (const s of c.known?.slots ?? []) {
         if (s.when.kind === "regular") dows.add(s.when.dow);
       }
     }
@@ -576,7 +512,7 @@
   const availableTerms = $derived.by(() => {
     const terms = new Set<Term>();
     for (const c of courseLists.wontTake) {
-      for (const s of c.slotsRaw) terms.add(s.term);
+      for (const s of c.known?.slots ?? []) terms.add(s.term);
     }
     return Array.from(terms).sort(termCompare);
   });
@@ -663,17 +599,8 @@
       : undefined,
   );
   const listCreditTotals = $derived({
-    mightTake: courseLists.mightTake.reduce((s, c) => s + (c.credit ?? 0), 0),
-    taken: courseLists.taken.reduce((s, c) => s + (c.credit ?? 0), 0),
-  });
-  const graduationCredits = $derived.by(() => {
-    const { compulsory: c, elective: e } = creditStats;
-    return {
-      min: c.min + e.min,
-      max: c.max + e.max,
-      effectiveTaken: c.effectiveTaken + e.effectiveTaken,
-      effectiveMightTake: c.effectiveMightTake + e.effectiveMightTake,
-    };
+    mightTake: creditSum(courseLists.mightTake),
+    taken: creditSum(courseLists.taken),
   });
   const selectedCellRemark = $derived(
     selectedCellId !== undefined
@@ -681,7 +608,6 @@
       : undefined,
   );
   const mightTakeCourseIds = $derived(akikoGetMightTakeCourseIds(akiko));
-  const takenCourseIds = $derived(akikoGetTakenCourseIds(akiko));
   let exportCount = $state(0);
 
   type UiColumnCredit = {
@@ -945,7 +871,7 @@
 <svelte:window onstorage={onStorage} />
 
 {#snippet courseRow(
-  c: UiCourse,
+  c: MergedCourse,
   dragSource: "wont-take" | "might-take" | undefined,
   colspan: number,
 )}
@@ -974,23 +900,18 @@
         >
       {/if}
       <br />
-      <a
-        href={syllabusUrl(c.id, c.syllabusYear)}
-        target="_blank"
-        draggable="false"
-        >{c.name}{c.grade && gradeIsPass(c.grade) ? ` (${c.takenYear})` : ""}</a
-      >
-      {#if c.grade}<br /><span>{gradeDisplay(c.grade)}</span>{/if}
-      {#if c.availability !== "available"}<br /><span>（非開講）</span>{/if}
+      <SyllabusLink course={c} catalogYear={config.knownCourseYear} />
+      {#if c.real}<br /><span>{gradeDisplay(c.real.grade)}</span>{/if}
+      {#if isUnavailable(c)}<br /><span>（非開講）</span>{/if}
     </td>
     <td class="credit">{c.credit ?? "-"}</td>
-    <td class="slots">{c.slots ?? "-"}</td>
-    <td class="expects">{c.expects ?? "-"}</td>
+    <td class="slots">{c.known?.slotsString ?? "-"}</td>
+    <td class="expects">{c.known?.expectsString ?? "-"}</td>
   </tr>
   {#if showCourseRemark}
     <tr class="course-remark">
-      {#if c.remark}
-        <td {colspan}>{c.remark}</td>
+      {#if c.known?.remark}
+        <td {colspan}>{c.known.remark}</td>
       {:else}
         <td {colspan} class="no-remark">（備考なし）</td>
       {/if}
@@ -999,7 +920,7 @@
 {/snippet}
 
 {#snippet courseTable(
-  courses: UiCourse[],
+  courses: MergedCourse[],
   state: "no-courses" | "contains-courses",
   showSlots: boolean,
   showExpects: boolean,
@@ -1407,12 +1328,8 @@
         <Timetable
           year={timetableYear}
           bind:activeTerm={activeTimetableTerm}
-          {mightTakeCourseIds}
-          {takenCourseIds}
-          fakeCourses={classifiedFakeCourses}
+          {akiko}
           showTaken={timetableShowTaken}
-          {knownCoursesMap}
-          {realCoursesMap}
           onBarClick={(courseId: CourseId) => {
             const cellId = akiko.courseIdToCellId.get(courseId);
             if (cellId !== undefined) {
@@ -1445,7 +1362,7 @@
               <p>
                 必修科目：{creditProgressToString(creditStats.compulsory)}<br />
                 選択科目：{creditProgressToString(creditStats.elective)}<br />
-                合計：{creditProgressToString(graduationCredits)}
+                合計：{creditProgressToString(creditStats.total)}
                 {#if electiveWarning}<br />⚠️ {electiveWarning}{/if}
               </p>
             </div>

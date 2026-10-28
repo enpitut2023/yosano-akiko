@@ -249,6 +249,47 @@ test("a course name links to its syllabus", async ({ page }) => {
   await expect(link).toHaveAttribute("target", "_blank");
 });
 
+test("a passed course links to the syllabus of the year it was taken", async ({
+  page,
+}) => {
+  await importGrades(
+    page,
+    gradesFile([
+      {
+        id: "GB26403",
+        name: "ソフトウェアサイエンス実験A",
+        credit: 3,
+        grade: "A",
+        year: 2023,
+      },
+      // Failed, so it would be taken under this year's syllabus
+      {
+        id: "GB27001",
+        name: "ソフトウェア工学演習",
+        credit: 1,
+        grade: "D",
+        year: 2024,
+      },
+    ]),
+  );
+  await openTab(page, "履修を組む");
+  await page.getByTestId("cell-a1").click();
+  // The year shows only when it isn't this year's
+  await expect(
+    page.getByRole("link", { name: "ソフトウェアサイエンス実験A (2023)" }),
+  ).toHaveAttribute(
+    "href",
+    "https://kdb.tsukuba.ac.jp/syllabi/2023/GB26403/jpn",
+  );
+  await page.getByTestId("cell-b2").click();
+  await expect(
+    page.getByRole("link", { name: "ソフトウェア工学演習", exact: true }),
+  ).toHaveAttribute(
+    "href",
+    `https://kdb.tsukuba.ac.jp/syllabi/${knownCourseYear}/GB27001/jpn`,
+  );
+});
+
 test("courses moved by hand stay moved after a reload", async ({ page }) => {
   await dragToMightTake(page, "b1", "GB20401");
   await page.reload();
