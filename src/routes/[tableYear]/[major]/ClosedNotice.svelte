@@ -1,8 +1,14 @@
 <script lang="ts">
   import Dialog from "$lib/Dialog.svelte";
+  import Meta from "$lib/Meta.svelte";
 
   let { name }: { name: string } = $props();
 </script>
+
+<Meta
+  title="あきこ - {name}"
+  description="{name}のページは、支援室の要請により一時的に閉鎖しています。"
+/>
 
 <div id="closed-notice" role="dialog" aria-modal="true">
   <Dialog>ごめんなさいね〜</Dialog>
