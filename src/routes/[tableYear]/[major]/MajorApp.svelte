@@ -5,7 +5,7 @@
   import Funnel from "lucide-svelte/icons/funnel";
   import Hand from "lucide-svelte/icons/hand";
   import Timetable from "./Timetable.svelte";
-  import { type TimetableTab } from "./timetable";
+  import { timetableTabAfterPlanning, type TimetableTab } from "./timetable";
   import Meta from "$lib/Meta.svelte";
   import { FEEDBACK_FORM_URL, MAJOR_TO_JA } from "$lib/constants";
   import { parseImportedCsv } from "$lib/csv";
@@ -368,18 +368,10 @@
     }
     if (dst === "might-take") {
       timetableYear = config.knownCourseYear;
-      const slots = akiko.knownCourses.get(courseId)?.slots ?? [];
-      const terms = slots
-        .filter((s) => s.when.kind === "regular")
-        .map((s) => s.term);
-      if (terms.length === 0) {
-        activeTimetableTerm = "other";
-      } else if (
-        activeTimetableTerm === "other" ||
-        !terms.includes(activeTimetableTerm)
-      ) {
-        activeTimetableTerm = terms[0];
-      }
+      activeTimetableTerm = timetableTabAfterPlanning(
+        akiko.knownCourses.get(courseId)?.slots ?? [],
+        activeTimetableTerm,
+      );
     }
   }
 

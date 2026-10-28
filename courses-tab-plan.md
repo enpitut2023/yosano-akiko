@@ -119,10 +119,10 @@ they live beside it rather than in `$lib`.
 
 ## 3. Into `timetable.ts`
 
-- [ ] `termAfterPlanning(slots, current)`: the tab to show after a course is
-      added to 取る授業. Now the end of `handleDrop`. Tests: no fixed slot goes
-      to その他; a course already on the current term stays; otherwise its
-      first term.
+- [x] `timetableTabAfterPlanning(slots, current)`: the tab to show after a
+      course is added to 取る授業. Was the end of `handleDrop`. Tests: no fixed
+      slot goes to その他; a course already on the current term stays;
+      otherwise its first term.
 
 ## 4. Components
 
