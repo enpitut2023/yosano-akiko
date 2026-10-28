@@ -789,6 +789,8 @@
 
   let exportCount = $state(0);
 
+  const supportUrl = "https://buymeacoffee.com/akiko.tsukuba";
+
   function exportMightTake() {
     if (exportForTwinsResult.kind !== "ok") return;
     exportCount++;
@@ -1352,6 +1354,9 @@
             target="_blank"
             rel="noreferrer">ご意見はこちらから</a
           >
+          <a class="support" href={supportUrl} target="_blank" rel="noreferrer"
+            ><BadgeJapaneseYen size={15} />開発を支援</a
+          >
         </nav>
       </div>
       {#each cellRects as r (r.id)}
@@ -1446,13 +1451,8 @@
         ><span class="icon" style="--src: url({asset('/icons/itf.svg')})"
         ></span>TWINSに出力</button
       >
-      <a
-        class="support"
-        href="https://buymeacoffee.com/akiko.tsukuba"
-        target="_blank"
-        rel="noreferrer"><BadgeJapaneseYen size={15} />支援</a
-      >
       <button
+        class="settings"
         class:active={activeTab === "settings"}
         onclick={() => (activeTab = "settings")}
         ><span class="icon" style="--src: url({asset('/icons/cog.svg')})"
@@ -1729,6 +1729,19 @@
             </p>
           </li>
         </ol>
+        {#if exportCount > 0}
+          <div id="support-ask" class="akiko-dialog">
+            <img src={asset("/images/akiko.png")} alt="あきこ" />
+            <span>あきこ</span>
+            <span
+              >あきこが役に立ったら、<a
+                href={supportUrl}
+                target="_blank"
+                rel="noreferrer">開発を支援</a
+              >してもらえると嬉しいわ〜</span
+            >
+          </div>
+        {/if}
       </div>
     </div>
 
@@ -2049,7 +2062,7 @@
 
 {#if mobileUnsupported && !mobileUnsupportedDismissed}
   <div id="mobile-unsupported" role="dialog" aria-modal="true">
-    <div class="mobile-unsupported-dialog">
+    <div class="akiko-dialog">
       <img src={asset("/images/akiko.png")} alt="あきこ" />
       <span>あきこ</span>
       <span>ごめんなさいね〜</span>
@@ -2101,42 +2114,44 @@
       }
     }
 
-    & > .mobile-unsupported-dialog {
+    & > .akiko-dialog {
       width: 80%;
       margin: 20px auto;
       margin-bottom: 40px;
+    }
+  }
 
-      display: grid;
-      $icon-size: 70px;
-      grid-template-columns: $icon-size auto;
-      grid-template-rows: $icon-size auto;
-      padding: 10px 20px;
+  .akiko-dialog {
+    display: grid;
+    $icon-size: 70px;
+    grid-template-columns: $icon-size auto;
+    grid-template-rows: $icon-size auto;
+    padding: 10px 20px;
 
-      --h: 350;
-      background-color: oklch(98% 4% var(--h));
+    --h: 350;
+    background-color: oklch(98% 4% var(--h));
+    border: 1px solid oklch(92% 10% var(--h));
+    border-radius: 20px;
+
+    & > img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background-color: hsl(0, 0%, 98%);
       border: 1px solid oklch(92% 10% var(--h));
-      border-radius: 20px;
+      border-radius: 50%;
+    }
 
-      & > img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        background-color: hsl(0, 0%, 98%);
-        border: 1px solid oklch(92% 10% var(--h));
-        border-radius: 50%;
-      }
+    & > span:first-of-type {
+      place-self: center;
+      margin-top: 5px;
+    }
 
-      & > span:first-of-type {
-        place-self: center;
-        margin-top: 5px;
-      }
-
-      & > span:nth-of-type(2) {
-        grid-column: 2/3;
-        grid-row: 1/3;
-        align-self: center;
-        margin-left: 30px;
-      }
+    & > span:nth-of-type(2) {
+      grid-column: 2/3;
+      grid-row: 1/3;
+      align-self: center;
+      margin-left: 30px;
     }
   }
 
@@ -2224,7 +2239,24 @@
       margin: 0;
       padding: 0;
       display: flex;
+      align-items: center;
       gap: 20px;
+
+      & > .support {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0 10px;
+        border: 1px solid oklch(85% 0.1 85);
+        border-radius: 50px;
+        background-color: oklch(97% 0.05 90);
+        color: oklch(45% 0.1 75);
+        text-decoration: none;
+
+        &:hover {
+          background-color: oklch(93% 0.08 90);
+        }
+      }
     }
 
     & > span > strong {
@@ -2256,52 +2288,43 @@
 
   #tab-header {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 10px;
-    padding: 10px;
+    padding: 10px 10px 0;
     border-bottom: 1px solid black;
 
     & > .workflow-arrow {
       display: flex;
+      align-self: center;
       margin: 0 -10px;
       color: #999;
     }
 
-    & > button,
-    & > a {
+    & > button {
       display: flex;
       align-items: center;
       gap: 5px;
-      padding: 5px 10px;
-      background-color: white;
-      color: #444;
-      border: 1px solid currentColor;
-      border-radius: 10px;
+      // Overlaps the header's bottom border so the active tab joins its content
+      margin-bottom: -1px;
+      padding: 10px 15px;
+      background-color: oklch(95% 0 0);
+      color: #666;
+      border: 1px solid black;
+      border-radius: 10px 10px 0 0;
 
       &:hover {
-        background-color: oklch(95% 0 0);
+        background-color: oklch(90% 0 0);
       }
-    }
 
-    & > a.support {
-      margin-left: auto;
-      // UA default button font size, so the link matches the tab buttons
-      font-size: 13.333px;
-      text-decoration: none;
-      background-color: oklch(97% 0.05 90);
-      color: oklch(45% 0.1 75);
-
-      &:hover {
-        background-color: oklch(93% 0.08 90);
+      &.settings {
+        margin-left: auto;
       }
-    }
 
-    & > button {
       &.active {
-        $c: oklch(70% 50% 270);
-        background-color: $c;
-        border-color: $c;
-        color: white;
+        background-color: white;
+        border-bottom-color: white;
+        color: oklch(45% 30% 270);
+        box-shadow: inset 0 3px 0 oklch(70% 50% 270);
       }
 
       & > .icon {
@@ -2876,6 +2899,10 @@
       flex-shrink: 0;
       height: 1lh;
     }
+  }
+
+  #support-ask {
+    margin-top: 50px;
   }
 
   .step-problem {
