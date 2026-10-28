@@ -1,6 +1,6 @@
 <script lang="ts">
-  import MajorApp from "$lib/MajorApp.svelte";
-  import ClosedNotice from "$lib/ClosedNotice.svelte";
+  import MajorApp from "./MajorApp.svelte";
+  import ClosedNotice from "./ClosedNotice.svelte";
   import type { PageProps } from "./$types";
 
   let { data }: PageProps = $props();

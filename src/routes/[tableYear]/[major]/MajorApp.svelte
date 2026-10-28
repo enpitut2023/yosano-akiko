@@ -9,8 +9,8 @@
   import CircleCheck from "lucide-svelte/icons/circle-check";
   import Download from "lucide-svelte/icons/download";
   import TriangleAlert from "lucide-svelte/icons/triangle-alert";
-  import Timetable from "$lib/Timetable.svelte";
-  import { type TimetableTab } from "$lib/timetable";
+  import Timetable from "./Timetable.svelte";
+  import { type TimetableTab } from "./timetable";
   import Meta from "$lib/Meta.svelte";
   import { SvelteAkiko } from "$lib/akiko.svelte";
   import { MAJOR_TO_JA } from "$lib/constants";
@@ -29,14 +29,9 @@
     termCompare,
     termToString,
     type Availability,
-    type BaseCreditStats,
-    type CellCreditStats,
-    type CreditStats,
     type CellId,
-    type ColumnCreditStats,
     type CourseId,
     type Dow,
-    type ElectiveCreditStats,
     type FakeCourse,
     type Grade,
     type RealCourse,
@@ -60,11 +55,22 @@
   import { browser, dev } from "$app/environment";
   import { assert } from "$lib/util.js";
   import { onMount, tick, untrack } from "svelte";
-  import { markTutorialSeen, tutorialSeen } from "$lib/tutorial";
-  import { markPanHintSeen, panHintSeen } from "$lib/pan-hint";
+  import { markSeen, seen } from "./seen";
+  import {
+    cellCreditStatsDisplay,
+    columnCreditStatsDisplay,
+    creditProgressToString,
+    electiveCreditStatsDisplay,
+    getPercentage,
+    gradeDisplay,
+  } from "./credit-display";
+  import { debugPrintCreditStats } from "./debug";
+  import { mobileUnsupported } from "./mobile-unsupported";
+  import MobileUnsupportedNotice from "./MobileUnsupportedNotice.svelte";
+  import Dialog from "$lib/Dialog.svelte";
   import TutorialSpotlight, {
     type TutorialStep,
-  } from "$lib/TutorialSpotlight.svelte";
+  } from "./TutorialSpotlight.svelte";
 
   type UiOverlapCourse = {
     id: CourseId;
@@ -380,42 +386,6 @@
         "申し訳ございませんが、TWINSの仕様のため編入生の認可された科目のみ単位チェック時に正しく単位を計算することができません。認可されていない通常の科目の成績は正しく計算されます。",
       );
     }
-  }
-
-  function debugPrintCreditStats(stats: CreditStats) {
-    function fmt(s: BaseCreditStats): Record<string, number> {
-      const o: Record<string, number> = {};
-      if (s.rawTaken > 0) {
-        if (s.overflowTaken === 0) {
-          o.taken = s.rawTaken;
-        } else {
-          o.rawTaken = s.rawTaken;
-          o.effectiveTaken = s.effectiveTaken;
-        }
-      }
-      if (s.rawMightTake > 0) {
-        if (s.overflowMightTake === 0) {
-          o.mightTake = s.rawMightTake;
-        } else {
-          o.rawMightTake = s.rawMightTake;
-          o.effectiveMightTake = s.effectiveMightTake;
-        }
-      }
-      return o;
-    }
-    const cells: Record<string, object> = {};
-    for (const [cellId, stat] of stats.cells) {
-      const cell = fmt(stat);
-      if (Object.keys(cell).length > 0) cells[cellId] = cell;
-    }
-    const columns: Record<string, object> = {};
-    for (const [colId, stat] of stats.columns) {
-      const col = fmt(stat);
-      if (Object.keys(col).length > 0) columns[colId] = col;
-    }
-    const compulsory = fmt(stats.compulsory);
-    const elective = fmt(stats.elective);
-    console.log(JSON.stringify({ cells, columns, compulsory, elective }));
   }
 
   function getSyllabusUrl(courseId: string, year: number) {
@@ -818,86 +788,6 @@
     }
   }
 
-  function gradeDisplay(g: Grade): string {
-    if (g === "wip") return "（履修中）";
-    if (g === "d" || g === "fail") return "（落単済み）";
-    if (g === "pass") return "評価：P";
-    return `評価：${g.toUpperCase()}`;
-  }
-
-  function creditBoundsToString(min: number, max: number | undefined): string {
-    if (max === undefined) return `${min}~`;
-    if (min === max) return min.toString();
-    return `${min}~${max}`;
-  }
-
-  function creditProgressToString(c: {
-    min: number;
-    max: number | undefined;
-    effectiveTaken: number;
-    effectiveMightTake: number;
-  }): string {
-    const progress =
-      c.effectiveMightTake === 0
-        ? c.effectiveTaken.toString()
-        : `${c.effectiveTaken}→${c.effectiveTaken + c.effectiveMightTake}`;
-    return progress + "　要:" + creditBoundsToString(c.min, c.max);
-  }
-
-  function cellCreditStatsDisplay(c: CellCreditStats): {
-    brief: string;
-    warning: string | undefined;
-  } {
-    const brief = "計:" + creditProgressToString(c);
-
-    let warning: string | undefined;
-    if (c.overflowTotal > 0) {
-      warning = `このマスは合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、残りの${c.overflowTotal}単位は卒業単位に含まれません。`;
-    }
-
-    return { brief, warning };
-  }
-
-  function columnCreditStatsDisplay(c: ColumnCreditStats): {
-    brief: string;
-    warning: string | undefined;
-  } {
-    const brief = "計:" + creditProgressToString(c);
-
-    let warning: string | undefined;
-    if (c.overflowTotal > 0) {
-      warning = `この列は合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、残りの${c.overflowTotal}単位は卒業単位に含まれません。`;
-    }
-
-    return { brief, warning };
-  }
-
-  function electiveCreditStatsDisplay(c: ElectiveCreditStats): {
-    brief: string;
-    warning: string | undefined;
-  } {
-    const brief = "選択科目計:" + creditProgressToString(c);
-
-    let warning: string | undefined;
-    if (c.overflowTotal > 0) {
-      warning = `選択科目全体は合計で${c.max}単位まで有効です。「取る授業」と「単位取得済みの授業」は合計で${c.rawTotal}単位なので、残りの${c.overflowTotal}単位は卒業単位に含まれません。`;
-    }
-
-    return { brief, warning };
-  }
-
-  function getPercentage(
-    taken: number,
-    mightTake: number,
-    min: number,
-  ): [number, number] {
-    if (min === 0) return [100, 100];
-    return [
-      Math.min(1, taken / min) * 100,
-      Math.min(1, (taken + mightTake) / min) * 100,
-    ];
-  }
-
   type UiColumnCredit = {
     colId: string;
     rect: { x: number; width: number };
@@ -1011,7 +901,7 @@
 
   onMount(() => {
     panHintVisible =
-      window.matchMedia("(any-pointer: fine)").matches && !panHintSeen();
+      window.matchMedia("(any-pointer: fine)").matches && !seen("panHint");
   });
 
   function onRequirementsPointerDown(
@@ -1055,7 +945,7 @@
     if (!panning) return;
     panning = false;
     panHintVisible = false;
-    markPanHintSeen();
+    markSeen("panHint");
     // ドラッグの直後に来るクリックで、マスの選択が外れたり変わったりしないようにする
     suppressClick = true;
     setTimeout(() => (suppressClick = false));
@@ -1090,75 +980,15 @@
     return () => window.removeEventListener("wheel", onWheel);
   });
 
-  // ----- Mobile unsupported detection -----
-  const MOBILE_UNSUPPORTED_MAX_WIDTH = 1024;
-  const MOBILE_UNSUPPORTED_MAX_HEIGHT = 700;
-  let mobileUnsupported = $state(false);
-  let mobileUnsupportedDismissed = $state(false);
-
-  function computeMobileUnsupported(
-    primaryCoarse: boolean,
-    primaryNoHover: boolean,
-    anyFine: boolean,
-    anyHover: boolean,
-    maxWidth: boolean,
-    maxHeight: boolean,
-  ): boolean {
-    const touchOnly = primaryCoarse && primaryNoHover && !anyFine && !anyHover;
-    const smallViewport = maxWidth || maxHeight;
-    return touchOnly && smallViewport;
-  }
-
-  $effect(() => {
-    if (!browser) return;
-
-    const queries = {
-      primaryCoarse: window.matchMedia("(pointer: coarse)"),
-      primaryNoHover: window.matchMedia("(hover: none)"),
-      anyFine: window.matchMedia("(any-pointer: fine)"),
-      anyHover: window.matchMedia("(any-hover: hover)"),
-      maxWidth: window.matchMedia(
-        `(max-width: ${MOBILE_UNSUPPORTED_MAX_WIDTH}px)`,
-      ),
-      maxHeight: window.matchMedia(
-        `(max-height: ${MOBILE_UNSUPPORTED_MAX_HEIGHT}px)`,
-      ),
-    };
-    const mediaQueryLists = Object.values(queries);
-
-    const update = () => {
-      mobileUnsupported = computeMobileUnsupported(
-        queries.primaryCoarse.matches,
-        queries.primaryNoHover.matches,
-        queries.anyFine.matches,
-        queries.anyHover.matches,
-        queries.maxWidth.matches,
-        queries.maxHeight.matches,
-      );
-    };
-
-    update();
-    for (const query of mediaQueryLists)
-      query.addEventListener("change", update);
-    window.addEventListener("resize", update);
-
-    return () => {
-      for (const query of mediaQueryLists)
-        query.removeEventListener("change", update);
-      window.removeEventListener("resize", update);
-    };
-  });
-
   let tutorialOpen = $state(false);
 
-  // mobileUnsupported を決める上の $effect の後に実行される
   onMount(() => {
-    if (!mobileUnsupported && !tutorialSeen()) tutorialOpen = true;
+    if (!mobileUnsupported() && !seen("tutorial")) tutorialOpen = true;
   });
 
   function closeTutorial() {
     tutorialOpen = false;
-    markTutorialSeen();
+    markSeen("tutorial");
   }
 
   // 操作を待つステップは、ステップに入った時点からの変化を見る
@@ -1821,17 +1651,13 @@
           </li>
         </ol>
         {#if exportCount > 0}
-          <div id="support-ask" class="akiko-dialog">
-            <img src={asset("/images/akiko.png")} alt="あきこ" />
-            <span>あきこ</span>
-            <span
-              >あきこが役に立ったら、<a
-                href={supportUrl}
-                target="_blank"
-                rel="noreferrer">開発を支援</a
-              >してもらえると嬉しいわ〜</span
-            >
-          </div>
+          <Dialog id="support-ask"
+            >あきこが役に立ったら、<a
+              href={supportUrl}
+              target="_blank"
+              rel="noreferrer">開発を支援</a
+            >してもらえると嬉しいわ〜</Dialog
+          >
         {/if}
       </div>
     </div>
@@ -2151,101 +1977,13 @@
   ></div>
 {/if}
 
-{#if mobileUnsupported && !mobileUnsupportedDismissed}
-  <div id="mobile-unsupported" role="dialog" aria-modal="true">
-    <div class="akiko-dialog">
-      <img src={asset("/images/akiko.png")} alt="あきこ" />
-      <span>あきこ</span>
-      <span>ごめんなさいね〜</span>
-    </div>
-    <p>
-      現在あきこはスマホの小さい画面やタッチ操作に対応しておらず、パソコンで開いていただく必要があります。
-      私たちは主に単位チェックの正確性を優先して開発を進めており、スマホ対応を優先的に進める目処は立っていません。
-      お手数をおかけして申し訳ございません。
-    </p>
-    <div class="mobile-unsupported-actions">
-      <button type="button" onclick={() => (mobileUnsupportedDismissed = true)}>
-        このまま使う
-      </button>
-    </div>
-  </div>
-{/if}
+<MobileUnsupportedNotice />
 
 {#if tutorialOpen}
   <TutorialSpotlight steps={tutorialSteps} onclose={closeTutorial} />
 {/if}
 
 <style lang="scss">
-  #mobile-unsupported {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    background-color: white;
-
-    & > p {
-      margin: 30px;
-    }
-
-    & > .mobile-unsupported-actions {
-      margin: 0 30px 30px;
-      display: flex;
-      justify-content: center;
-
-      & > button {
-        font-size: inherit;
-        padding: 10px 15px;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        background-color: #f8f8f8;
-        cursor: pointer;
-
-        &:hover {
-          background-color: #eee;
-        }
-      }
-    }
-
-    & > .akiko-dialog {
-      width: 80%;
-      margin: 20px auto;
-      margin-bottom: 40px;
-    }
-  }
-
-  .akiko-dialog {
-    display: grid;
-    $icon-size: 70px;
-    grid-template-columns: $icon-size auto;
-    grid-template-rows: $icon-size auto;
-    padding: 10px 20px;
-
-    --h: 350;
-    background-color: oklch(98% 4% var(--h));
-    border: 1px solid oklch(92% 10% var(--h));
-    border-radius: 20px;
-
-    & > img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background-color: hsl(0, 0%, 98%);
-      border: 1px solid oklch(92% 10% var(--h));
-      border-radius: 50%;
-    }
-
-    & > span:first-of-type {
-      place-self: center;
-      margin-top: 5px;
-    }
-
-    & > span:nth-of-type(2) {
-      grid-column: 2/3;
-      grid-row: 1/3;
-      align-self: center;
-      margin-left: 30px;
-    }
-  }
-
   $color-progress-taken: rgb(51, 204, 51);
   $color-progress-might-take: rgb(255, 204, 0);
   $color-hover-overlay: rgba(0, 0, 0, 0.25);
@@ -3015,7 +2753,8 @@
     }
   }
 
-  #support-ask {
+  .steps-panel > :global(#support-ask) {
+    width: auto;
     margin-top: 50px;
   }
 

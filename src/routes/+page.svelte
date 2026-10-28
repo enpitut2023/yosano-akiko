@@ -11,6 +11,7 @@
   } from "$lib/constants";
   import { assert } from "$lib/util";
   import Callout from "$lib/Callout.svelte";
+  import Dialog from "$lib/Dialog.svelte";
   import Meta from "$lib/Meta.svelte";
   import Nav from "$lib/Nav.svelte";
   import ArrowDown from "lucide-svelte/icons/arrow-down";
@@ -117,18 +118,13 @@
   <p>筑波大生のための履修サポートWebツール</p>
 </header>
 
-<div class="dialog student">
-  <img src={asset("/images/student-stressed-2.png")} alt="困っている学生" />
-  <span>学生</span>
-  <span
-    >筑波大は履修する授業を探すのも、取れた単位を計算するのも大変だな...</span
-  >
-</div>
-<div class="dialog akiko">
-  <img src={asset("/images/akiko.png")} alt="あきこ" />
-  <span>あきこ</span>
-  <span>履修はあきこと一緒に3ステップで終わらせましょ〜</span>
-</div>
+<Dialog
+  speaker="student"
+  image="/images/student-stressed-2.png"
+  alt="困っている学生"
+  >筑波大は履修する授業を探すのも、取れた単位を計算するのも大変だな...</Dialog
+>
+<Dialog>履修はあきこと一緒に3ステップで終わらせましょ〜</Dialog>
 
 <ol class="features">
   {#each features as f, i (f.body)}
@@ -143,21 +139,17 @@
   {/each}
 </ol>
 
-<div class="dialog student">
-  <img src={asset("/images/student-relieved.png")} alt="嬉しい学生" />
-  <span>学生</span>
-  <span>あきこさん！ありがとう！！！</span>
-</div>
+<Dialog speaker="student" image="/images/student-relieved.png" alt="嬉しい学生"
+  >あきこさん！ありがとう！！！</Dialog
+>
 
 <div class="flow-arrow" aria-hidden="true">
   <ArrowDown size={40} />
 </div>
 
-<div id="app-page-links" class="dialog akiko">
-  <img src={asset("/images/akiko.png")} alt="あきこ" />
-  <span>あきこ</span>
-  <span>さっそく始めましょ〜<br />まずは入学年度を教えてね</span>
-</div>
+<Dialog id="app-page-links"
+  >さっそく始めましょ〜<br />まずは入学年度を教えてね</Dialog
+>
 <div class="choices years">
   {#each sections as s (s.tableYear)}
     <button
@@ -172,11 +164,7 @@
 </div>
 
 {#if pickedSection}
-  <div class="dialog akiko">
-    <img src={asset("/images/akiko.png")} alt="あきこ" />
-    <span>あきこ</span>
-    <span>学類はどこかしら？</span>
-  </div>
+  <Dialog>学類はどこかしら？</Dialog>
   <div class="choices">
     {#each pickedSection.colleges as c (c.college)}
       {@const checked = c.instances.every((i) => i.checked)}
@@ -197,11 +185,7 @@
 {/if}
 
 {#if pickedCollegeInstances}
-  <div class="dialog akiko">
-    <img src={asset("/images/akiko.png")} alt="あきこ" />
-    <span>あきこ</span>
-    <span>主専攻も教えてね〜</span>
-  </div>
+  <Dialog>主専攻も教えてね〜</Dialog>
   <div class="choices">
     {#each pickedCollegeInstances as i (i.major)}
       <a class="choice" href={pageHref(i)}
@@ -441,59 +425,6 @@
 
     & > ul > li.gap {
       margin-top: 10px;
-    }
-  }
-
-  .dialog {
-    width: 80%;
-    margin-left: auto;
-    margin-right: auto;
-
-    display: grid;
-    $icon-size: 70px;
-    grid-template-columns: $icon-size auto;
-    grid-template-rows: $icon-size auto;
-    padding: 10px 20px;
-
-    --fill-l: 98%;
-    --fill-c: 4%;
-    --outline-l: 92%;
-    --outline-c: 10%;
-    background-color: oklch(var(--fill-l) var(--fill-c) var(--h));
-    border: 1px solid oklch(var(--outline-l) var(--outline-c) var(--h));
-    border-radius: 20px;
-
-    &.akiko {
-      --h: 350;
-    }
-
-    &.student {
-      --h: 270;
-    }
-
-    & + .dialog {
-      margin-top: 10px;
-    }
-
-    & > img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background-color: hsl(0, 0%, 98%);
-      border: 1px solid oklch(var(--outline-l) var(--outline-c) var(--h));
-      border-radius: 50%;
-    }
-
-    & > span:first-of-type {
-      place-self: center;
-      margin-top: 5px;
-    }
-
-    & > span:nth-of-type(2) {
-      grid-column: 2/3;
-      grid-row: 1/3;
-      align-self: center;
-      margin-left: 30px;
     }
   }
 </style>

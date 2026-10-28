@@ -10,7 +10,7 @@
     type RealCourse,
     type Term,
   } from "$lib/akiko";
-  import { type TimetableTab } from "$lib/timetable";
+  import { type TimetableTab } from "./timetable";
 
   type Props = {
     year: number;

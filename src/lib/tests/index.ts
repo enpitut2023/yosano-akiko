@@ -4,6 +4,7 @@ import "./chem";
 import "./cis";
 import "./coens";
 import "./coins";
+import "./credit-display";
 import "./esys";
 import "./klis";
 import "./local-data";
