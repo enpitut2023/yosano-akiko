@@ -6,6 +6,8 @@ import {
   mightTakeIds,
   openTab,
   test,
+  timetableBar,
+  timetableTerm,
   wontTakeIds,
   type Page,
 } from "./test";
@@ -25,14 +27,6 @@ test.beforeEach(async ({ page }) => {
   await page.goto("2023/coins");
   await openTab(page, "履修を組む");
 });
-
-function timetableTerm(page: Page, name: string) {
-  return page.locator(".term-tabs").getByRole("button", { name, exact: true });
-}
-
-function timetableBar(page: Page, courseId: string) {
-  return page.locator(".bar-inner", { hasText: courseId });
-}
 
 function filterSelect(page: Page, anyOption: string) {
   return page

@@ -103,6 +103,16 @@ export async function dragToMightTake(
   await expect(row).toHaveCount(0);
 }
 
+/** A term's tab above the timetable, by its label (春A, …, その他). */
+export function timetableTerm(page: Page, name: string): Locator {
+  return page.locator(".term-tabs").getByRole("button", { name, exact: true });
+}
+
+/** A course's bars in the timetable, on the term shown. */
+export function timetableBar(page: Page, courseId: string): Locator {
+  return page.locator(".bar-inner", { hasText: courseId });
+}
+
 /** Clicks the table's left margin, which no cell covers. */
 export async function deselectCell(page: Page): Promise<void> {
   await page.getByAltText("Table").click({ position: { x: 10, y: 300 } });

@@ -114,9 +114,6 @@ them, so adding a row for one test can't break another.
 
 ### Tests
 
-- [ ] 設定: 今年度開講しない授業を表示する and 時間割に単位取得済みの授業を表示する
-      show and hide what they say; 時間割の年度 changes the timetable;
-      cancelling リセット keeps the data.
 - [ ] Saved data from the v1 and v2 formats loads (the migration itself has
       unit tests).
 - [ ] Mobile: with touch emulation and a small viewport, the unsupported

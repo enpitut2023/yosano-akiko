@@ -316,13 +316,13 @@ How courses moved by hand interact with grades, rebuilds and what's saved.
 - [x] The sidebar and timetable resize handles resize within their limits.
 - [x] The bars toggle hides and shows the sidebar.
 
-### 設定
+### 設定 (`settings.spec.ts`)
 
-- [ ] 今年度開講しない授業を表示する shows and hides unavailable courses.
-- [ ] 時間割に単位取得済みの授業を表示する shows and hides taken courses in the
+- [x] 今年度開講しない授業を表示する shows and hides unavailable courses.
+- [x] 時間割に単位取得済みの授業を表示する shows and hides taken courses in the
       timetable.
-- [ ] Changing 時間割の年度 changes the timetable.
-- [ ] リセット asks for confirmation. Cancelling keeps the data; confirming
+- [x] Changing 時間割の年度 changes the timetable.
+- [x] リセット asks for confirmation. Cancelling keeps the data; confirming
       clears it.
 
 ### Saved data
