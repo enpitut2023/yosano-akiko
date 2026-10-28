@@ -1123,6 +1123,15 @@
       title: "はじめまして〜",
       body: "あきこよ〜。卒業に必要な単位のチェックから、授業探し、TWINSへの履修登録までお手伝いするわね。実際に触りながら使い方を教えるから、一緒にやってみましょ〜",
       nextLabel: "お願いします！",
+      onEnter: () => showTab("courses"),
+    },
+    {
+      id: "tab-import",
+      target: ["tab-import"],
+      title: "タブで画面を切り替える",
+      body: "右側の画面は、上のタブで切り替えるの。まずは「単位チェック」タブを押してみて〜",
+      onEnter: () => (barsVisible = true),
+      waitFor: () => activeTab === "import",
     },
     {
       id: "import",
@@ -1130,12 +1139,12 @@
       title: "成績データをインポート",
       body: "まずはTWINSの成績データをちょうだいね。「手順を見る」のとおりにダウンロードして、そのファイルを枠にドロップするか選んでくれたら、次に進むわよ〜",
       choices: [
-        { label: "まだ成績ファイルを持っていない（新入生）", next: "cell" },
+        {
+          label: "まだ成績ファイルを持っていない（新入生）",
+          next: "tab-courses",
+        },
       ],
-      onEnter: () => {
-        showTab("import");
-        tutorialSnapshot();
-      },
+      onEnter: tutorialSnapshot,
       waitFor: () => realCourses !== tutorialEntry.realCourses,
     },
     {
@@ -1146,14 +1155,19 @@
       nextLabel: "次へ",
     },
     {
+      id: "tab-courses",
+      target: ["tab-courses"],
+      title: "授業を探しに行こう",
+      body: "次は授業探しよ。「履修を組む」タブを押してね〜",
+      onEnter: () => (barsVisible = true),
+      waitFor: () => activeTab === "courses",
+    },
+    {
       id: "cell",
       target: ["requirements"],
       title: "マスを押して授業を探す",
       body: "表のマスをどれか押してみて〜。そのマスに当てはまる授業を右側に出すわね。授業が出てこなかったら、別のマスを試してみてちょうだい",
-      onEnter: () => {
-        selectedCellId = undefined;
-        showTab("courses");
-      },
+      onEnter: () => (selectedCellId = undefined),
       waitFor: () =>
         selectedCellId !== undefined && courseLists.wontTake.length > 0,
     },
@@ -1163,17 +1177,13 @@
       title: "シラバスを確認する",
       body: "「当てはまる授業」に、このマスの授業を並べておいたわ。授業名を押すと、シラバスが新しいタブで開くわよ〜",
       nextLabel: "次へ",
-      onEnter: () => showTab("courses"),
     },
     {
       id: "drag",
       target: ["left-bar", "right-bar"],
       title: "ドラッグで時間割に追加",
       body: "取りたい授業があったら、その行を右側にドラッグしてみて。「取る授業」に入って、時間割にも出てくるわ〜",
-      onEnter: () => {
-        showTab("courses");
-        tutorialSnapshot();
-      },
+      onEnter: tutorialSnapshot,
       waitFor: () => mightTakeCourseIds.length > tutorialEntry.mightTakeCount,
     },
     {
@@ -1182,7 +1192,14 @@
       title: "どんどん追加しよう",
       body: "その調子〜！他のマスも押して、どんどん追加しちゃいましょ。マスの黄色いところは、取る授業の単位が取れたら増える分よ。いくつか追加できたら次へを押してね",
       nextLabel: "次へ",
-      onEnter: () => showTab("courses"),
+    },
+    {
+      id: "tab-export",
+      target: ["tab-export"],
+      title: "TWINSに出力しよう",
+      body: "取る授業が決まったら、「TWINSに出力」タブを押してね〜",
+      onEnter: () => (barsVisible = true),
+      waitFor: () => activeTab === "export",
     },
     {
       id: "export",
@@ -1190,10 +1207,7 @@
       title: "TWINSに出力",
       body: "「ダウンロード」を押してみて〜。取る授業の科目番号を並べたCSVファイルをダウンロードするわ。時間が被ってる授業があると押せないから、そのときは次へを押して、あとで「履修を組む」タブで直してね",
       nextLabel: "次へ",
-      onEnter: () => {
-        showTab("export");
-        tutorialSnapshot();
-      },
+      onEnter: tutorialSnapshot,
       waitFor: () => exportCount > tutorialEntry.exportCount,
     },
     {
@@ -1202,7 +1216,6 @@
       title: "TWINSでまとめて履修登録",
       body: "ダウンロードしたファイルは、「手順を見る」に書いてある方法でTWINSにアップロードしてね。それだけで、まとめて履修登録できちゃうわよ〜",
       nextLabel: "次へ",
-      onEnter: () => showTab("export"),
     },
     {
       id: "done",
@@ -1428,6 +1441,7 @@
   <div id="sidebar">
     <div id="tab-header">
       <button
+        data-tutorial="tab-import"
         class:active={activeTab === "import"}
         onclick={() => (activeTab = "import")}
         ><span class="icon" style="--src: url({asset('/icons/math.svg')})"
@@ -1437,6 +1451,7 @@
         <ChevronRight size={15} />
       </span>
       <button
+        data-tutorial="tab-courses"
         class:active={activeTab === "courses"}
         onclick={() => (activeTab = "courses")}
         ><span class="icon" style="--src: url({asset('/icons/book.svg')})"
@@ -1446,6 +1461,7 @@
         <ChevronRight size={15} />
       </span>
       <button
+        data-tutorial="tab-export"
         class:active={activeTab === "export"}
         onclick={() => (activeTab = "export")}
         ><span class="icon" style="--src: url({asset('/icons/itf.svg')})"
