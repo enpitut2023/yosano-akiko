@@ -68,9 +68,8 @@
   import { mobileUnsupported } from "./mobile-unsupported";
   import MobileUnsupportedNotice from "./MobileUnsupportedNotice.svelte";
   import Dialog from "$lib/Dialog.svelte";
-  import TutorialSpotlight, {
-    type TutorialStep,
-  } from "./TutorialSpotlight.svelte";
+  import Tutorial from "./Tutorial.svelte";
+  import type { TutorialStep } from "./tutorial";
 
   type UiOverlapCourse = {
     id: CourseId;
@@ -1980,7 +1979,7 @@
 <MobileUnsupportedNotice />
 
 {#if tutorialOpen}
-  <TutorialSpotlight steps={tutorialSteps} onclose={closeTutorial} />
+  <Tutorial steps={tutorialSteps} onclose={closeTutorial} />
 {/if}
 
 <style lang="scss">

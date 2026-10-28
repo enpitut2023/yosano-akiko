@@ -1,26 +1,8 @@
-<script module lang="ts">
-  /** チュートリアルの1ステップ */
-  export type TutorialStep = {
-    id: string;
-    /** 穴を開ける要素の data-tutorial の値。全要素を囲む矩形が穴になる */
-    target?: string[];
-    title: string;
-    body: string;
-    /** 次のステップに進むボタンの文言。最後のステップでは閉じる。なければボタンを出さない */
-    nextLabel?: string;
-    /** 押すと next の id のステップに飛ぶボタン */
-    choices?: { label: string; next: string }[];
-    /** ステップに入るときに呼ばれる。タブの切り替えや状態の記録に使う */
-    onEnter?(): void;
-    /** true を返したら自動で次に進む */
-    waitFor?(): boolean;
-  };
-</script>
-
 <script lang="ts">
   import { asset } from "$app/paths";
   import X from "lucide-svelte/icons/x";
   import { onMount, tick, untrack } from "svelte";
+  import type { TutorialStep } from "./tutorial";
 
   type Rect = { left: number; top: number; right: number; bottom: number };
 
