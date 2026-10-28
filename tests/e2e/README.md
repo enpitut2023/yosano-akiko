@@ -112,13 +112,9 @@ them, so adding a row for one test can't break another.
 - [ ] Courses with `availability: "indeterminable"` are exported without a
       warning. Should they get one like the courses not offered this year?
 
-### Tests
-
-- [ ] Mobile: with touch emulation and a small viewport, the unsupported
-      overlay shows, このまま使う dismisses it, and the tutorial doesn't open on
-      its own.
-
 ### Setup
 
 - [ ] Cache the Playwright browser in CI if installing it gets slow.
 - [ ] Firefox and WebKit, if needed.
+- [ ] Visual regression snapshots, generated and compared only in CI, so
+      fonts don't differ between runs.
