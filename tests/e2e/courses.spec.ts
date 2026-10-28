@@ -1,4 +1,14 @@
-import { dragToMightTake, expect, openTab, test, type Page } from "./test";
+import {
+  deselectCell,
+  dragToMightTake,
+  dragToWontTake,
+  expect,
+  mightTakeIds,
+  openTab,
+  test,
+  wontTakeIds,
+  type Page,
+} from "./test";
 
 // Every available course in the fixture catalog; GB41001 isn't offered
 const ALL = [
@@ -15,16 +25,6 @@ test.beforeEach(async ({ page }) => {
   await page.goto("2023/coins");
   await openTab(page, "履修を組む");
 });
-
-/** The IDs listed in 当てはまる授業 (or 全ての授業). */
-function wontTake(page: Page) {
-  return page.locator("#left-bar tbody .course-id");
-}
-
-/** The IDs listed in 取る授業. */
-function mightTake(page: Page) {
-  return page.locator("#right-bar tbody .course-id");
-}
 
 function timetableTerm(page: Page, name: string) {
   return page.locator(".term-tabs").getByRole("button", { name, exact: true });
@@ -50,30 +50,29 @@ test("clicking a cell selects it and lists its courses", async ({ page }) => {
   await expect(page.locator("#left-bar h2").first()).toContainText(
     "当てはまる授業",
   );
-  await expect(wontTake(page)).toHaveText(["GB13322", "GB27001", "GB31801"]);
+  await expect(wontTakeIds(page)).toHaveText(["GB13322", "GB27001", "GB31801"]);
 });
 
 test("clicking the table background deselects the cell", async ({ page }) => {
   await page.getByTestId("cell-b2").click();
-  // The table's left margin, which no cell covers
-  await page.getByAltText("Table").click({ position: { x: 10, y: 300 } });
+  await deselectCell(page);
   await expect(page.getByTestId("cell-b2")).not.toHaveClass(/selected/);
-  await expect(wontTake(page)).toHaveCount(0);
+  await expect(wontTakeIds(page)).toHaveCount(0);
 });
 
 test("全ての授業を見る lists every course", async ({ page }) => {
   await page
     .getByRole("button", { name: `全ての授業を見る（${ALL.length}件）` })
     .click();
-  await expect(wontTake(page)).toHaveText(ALL);
+  await expect(wontTakeIds(page)).toHaveText(ALL);
 });
 
 test("searching matches course IDs and names", async ({ page }) => {
   const search = page.getByPlaceholder("科目番号もしくは科目名");
   await search.fill("gb2");
-  await expect(wontTake(page)).toHaveText(["GB20401", "GB26403", "GB27001"]);
+  await expect(wontTakeIds(page)).toHaveText(["GB20401", "GB26403", "GB27001"]);
   await search.fill("データベース");
-  await expect(wontTake(page)).toHaveText(["GB31801"]);
+  await expect(wontTakeIds(page)).toHaveText(["GB31801"]);
 });
 
 test.describe("filters", () => {
@@ -83,17 +82,17 @@ test.describe("filters", () => {
 
   test("by credits", async ({ page }) => {
     await filterSelect(page, "全単位").selectOption({ label: "1単位" });
-    await expect(wontTake(page)).toHaveText(["GB27001"]);
+    await expect(wontTakeIds(page)).toHaveText(["GB27001"]);
   });
 
   test("by expected year", async ({ page }) => {
     await filterSelect(page, "全年次").selectOption({ label: "1年次" });
-    await expect(wontTake(page)).toHaveText(["GA15211", "GB13322"]);
+    await expect(wontTakeIds(page)).toHaveText(["GA15211", "GB13322"]);
   });
 
   test("by term", async ({ page }) => {
     await filterSelect(page, "全学期").selectOption({ label: "秋C" });
-    await expect(wontTake(page)).toHaveText(["GB27001"]);
+    await expect(wontTakeIds(page)).toHaveText(["GB27001"]);
   });
 
   test("by day of week", async ({ page }) => {
@@ -101,7 +100,7 @@ test.describe("filters", () => {
       .getByRole("group", { name: "曜日で絞り込む" })
       .getByText("火")
       .click();
-    await expect(wontTake(page)).toHaveText(["GA15211", "GB40111"]);
+    await expect(wontTakeIds(page)).toHaveText(["GA15211", "GB40111"]);
   });
 
   test("by free time slots", async ({ page }) => {
@@ -109,7 +108,7 @@ test.describe("filters", () => {
     await page.getByTestId("cell-b2").click();
     await page.getByLabel("空きコマのみ表示").check();
     // GB31801 is on 月1 in 春AB, like GB20401
-    await expect(wontTake(page)).toHaveText(["GB13322", "GB27001"]);
+    await expect(wontTakeIds(page)).toHaveText(["GB13322", "GB27001"]);
   });
 
   test("the badge counts the active filters", async ({ page }) => {
@@ -128,7 +127,7 @@ test("dragging a course adds it to 取る授業 and the timetable", async ({
 }) => {
   await timetableTerm(page, "秋A").click();
   await dragToMightTake(page, "b1", "GB20401");
-  await expect(mightTake(page)).toHaveText(["GB20401"]);
+  await expect(mightTakeIds(page)).toHaveText(["GB20401"]);
   // The timetable switches to the course's first term
   await expect(timetableTerm(page, "春A")).toHaveClass(/active/);
   await expect(timetableBar(page, "GB20401")).toBeVisible();
@@ -145,11 +144,8 @@ test("a course without a fixed time slot is under その他", async ({ page }) =
 
 test("dragging a course back removes it from 取る授業", async ({ page }) => {
   await dragToMightTake(page, "b1", "GB20401");
-  await page
-    .locator("#right-bar tr.course", { hasText: "GB20401" })
-    .dragTo(page.locator("#left-bar"));
-  await expect(mightTake(page)).toHaveCount(0);
-  await expect(wontTake(page)).toContainText(["GB20401"]);
+  await dragToWontTake(page, "GB20401");
+  await expect(wontTakeIds(page)).toContainText(["GB20401"]);
   await expect(timetableBar(page, "GB20401")).toBeHidden();
 });
 
@@ -188,5 +184,5 @@ test("courses moved by hand stay moved after a reload", async ({ page }) => {
   await dragToMightTake(page, "b1", "GB20401");
   await page.reload();
   await openTab(page, "履修を組む");
-  await expect(mightTake(page)).toHaveText(["GB20401"]);
+  await expect(mightTakeIds(page)).toHaveText(["GB20401"]);
 });

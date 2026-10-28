@@ -95,7 +95,7 @@ export const knownCourses: KnownCourse[] = [
     remark: "事前登録対象\n対面",
   }),
   course({
-    // b1 (GB40…), not offered this year
+    // b2 (GB4… but not GB40…), not offered this year
     id: "GB41001",
     name: "量子計算",
     credit: 2,

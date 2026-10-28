@@ -5,6 +5,7 @@ import {
   type Page,
 } from "@playwright/test";
 import { SEEN_KEYS } from "../../src/routes/[tableYear]/[major]/seen";
+import type { gradesFile } from "./fixtures/grades";
 
 export { expect, type Page } from "@playwright/test";
 
@@ -54,6 +55,42 @@ export async function openTab(page: Page, name: string): Promise<void> {
   );
 }
 
+/** Imports a grades file on the 単位チェック tab. */
+export async function importGrades(
+  page: Page,
+  file: ReturnType<typeof gradesFile>,
+): Promise<void> {
+  await openTab(page, "単位チェック");
+  await page.locator(".csv-input").setInputFiles(file);
+  await expect(page.locator("#csv-drop-zone")).toContainText("インポート済み");
+}
+
+/**
+ * The IDs listed in 当てはまる授業 (or 全ての授業). Like the other lists, it only
+ * shows the selected cell's courses, or every course when none is selected.
+ */
+export function wontTakeIds(page: Page): Locator {
+  return page.locator("#left-bar tbody .course-id");
+}
+
+/** The IDs listed in 取る授業. */
+export function mightTakeIds(page: Page): Locator {
+  return rightBarSection(page, "取る授業").locator("tbody .course-id");
+}
+
+/** The IDs listed in 単位取得済みの授業. */
+export function takenIds(page: Page): Locator {
+  return rightBarSection(page, "単位取得済みの授業").locator(
+    "tbody .course-id",
+  );
+}
+
+function rightBarSection(page: Page, heading: string): Locator {
+  return page.locator("#right-bar .section", {
+    has: page.getByRole("heading", { name: heading, exact: true }),
+  });
+}
+
 /** Adds a course to 取る授業 by dragging it out of its cell's 当てはまる授業. */
 export async function dragToMightTake(
   page: Page,
@@ -63,6 +100,23 @@ export async function dragToMightTake(
   await page.getByTestId(`cell-${cellId}`).click();
   const row = page.locator("#left-bar tr.course", { hasText: courseId });
   await row.dragTo(page.locator("#right-bar"));
+  await expect(row).toHaveCount(0);
+}
+
+/** Clicks the table's left margin, which no cell covers. */
+export async function deselectCell(page: Page): Promise<void> {
+  await page.getByAltText("Table").click({ position: { x: 10, y: 300 } });
+}
+
+/** Moves a course out of 取る授業 by dragging it to the left. */
+export async function dragToWontTake(
+  page: Page,
+  courseId: string,
+): Promise<void> {
+  const row = rightBarSection(page, "取る授業").locator("tr.course", {
+    hasText: courseId,
+  });
+  await row.dragTo(page.locator("#left-bar"));
   await expect(row).toHaveCount(0);
 }
 
