@@ -4,6 +4,7 @@
   import ChevronRight from "lucide-svelte/icons/chevron-right";
   import Funnel from "lucide-svelte/icons/funnel";
   import FileUp from "lucide-svelte/icons/file-up";
+  import Hand from "lucide-svelte/icons/hand";
   import Lock from "lucide-svelte/icons/lock";
   import CircleCheck from "lucide-svelte/icons/circle-check";
   import Download from "lucide-svelte/icons/download";
@@ -60,6 +61,7 @@
   import { assert } from "$lib/util.js";
   import { onMount, tick, untrack } from "svelte";
   import { markTutorialSeen, tutorialSeen } from "$lib/tutorial";
+  import { markPanHintSeen, panHintSeen } from "$lib/pan-hint";
   import TutorialSpotlight, {
     type TutorialStep,
   } from "$lib/TutorialSpotlight.svelte";
@@ -997,6 +999,68 @@
     }
   });
 
+  // クリックと区別するため、少し動くまではドラッグとみなさない
+  const PAN_THRESHOLD = 5;
+  let panStart:
+    | { x: number; y: number; scrollLeft: number; scrollTop: number }
+    | undefined;
+  let panning = $state(false);
+  let suppressClick = false;
+  // トラックパッドと区別できないので、マウスかトラックパッドがあれば出す
+  let panHintVisible = $state(false);
+
+  onMount(() => {
+    panHintVisible =
+      window.matchMedia("(any-pointer: fine)").matches && !panHintSeen();
+  });
+
+  function onRequirementsPointerDown(
+    e: PointerEvent & { currentTarget: HTMLDivElement },
+  ) {
+    if (e.button !== 0 || e.pointerType !== "mouse") return;
+    if (e.target instanceof Element && e.target.closest("#title")) return;
+    const el = e.currentTarget;
+    const rect = el.getBoundingClientRect();
+    // スクロールバーのドラッグはブラウザに任せる
+    if (
+      e.clientX - rect.left >= el.clientWidth ||
+      e.clientY - rect.top >= el.clientHeight
+    )
+      return;
+    panStart = {
+      x: e.clientX,
+      y: e.clientY,
+      scrollLeft: el.scrollLeft,
+      scrollTop: el.scrollTop,
+    };
+  }
+
+  function onRequirementsPointerMove(
+    e: PointerEvent & { currentTarget: HTMLDivElement },
+  ) {
+    if (panStart === undefined) return;
+    const dx = e.clientX - panStart.x;
+    const dy = e.clientY - panStart.y;
+    if (!panning) {
+      if (Math.hypot(dx, dy) < PAN_THRESHOLD) return;
+      panning = true;
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
+    e.currentTarget.scrollLeft = panStart.scrollLeft - dx;
+    e.currentTarget.scrollTop = panStart.scrollTop - dy;
+  }
+
+  function onRequirementsPointerUp() {
+    panStart = undefined;
+    if (!panning) return;
+    panning = false;
+    panHintVisible = false;
+    markPanHintSeen();
+    // ドラッグの直後に来るクリックで、マスの選択が外れたり変わったりしないようにする
+    suppressClick = true;
+    setTimeout(() => (suppressClick = false));
+  }
+
   async function handleWheel(e: WheelEvent) {
     if (!e.ctrlKey) return;
     const container = requirementsEl;
@@ -1335,8 +1399,16 @@
     <div
       id="requirements"
       data-tutorial="requirements"
+      class:panning
       bind:this={requirementsEl}
       onscroll={(e) => (scrollX = -e.currentTarget.scrollLeft)}
+      onpointerdown={onRequirementsPointerDown}
+      onpointermove={onRequirementsPointerMove}
+      onpointerup={onRequirementsPointerUp}
+      onpointercancel={onRequirementsPointerUp}
+      onclickcapture={(e) => {
+        if (suppressClick) e.stopPropagation();
+      }}
       onclick={() => {
         selectedCellId = undefined;
       }}
@@ -1394,6 +1466,9 @@
         {/if}
       {/each}
     </div>
+    {#if panHintVisible}
+      <div id="pan-hint"><Hand size={15} />ドラッグで表を動かせます</div>
+    {/if}
     <div id="credit-sums-container">
       <div id="zoom-control">
         <img src={asset("/icons/zoom-in.svg")} width="15" alt="zoom" />
@@ -2205,6 +2280,7 @@
 
   #table-view {
     grid-column: 1/2;
+    position: relative;
     display: grid;
     grid-template-rows: 1fr 85px;
   }
@@ -2213,6 +2289,28 @@
     grid-row: 1/2;
     position: relative;
     overflow: scroll;
+    cursor: grab;
+    user-select: none;
+
+    &.panning {
+      cursor: grabbing;
+    }
+  }
+
+  #pan-hint {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 15px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: var(--fs-sm);
+    pointer-events: none;
   }
 
   #title {
