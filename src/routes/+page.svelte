@@ -80,49 +80,32 @@
     pickedSection?.colleges.find((c) => c.college === pickedCollege)?.instances,
   );
 
-  type Rect = [x: number, y: number, w: number, h: number];
-  type Shot = { src: string; w: number; h: number };
-
-  const plan: Shot = { src: "/images/top/plan.jpg", w: 1600, h: 900 };
-  const timetable: Shot = { src: "/images/top/timetable.jpg", w: 960, h: 720 };
-
-  // title は改行してよい位置で区切る。crop は shot のピクセル座標
+  // title は改行してよい位置で区切る
   const features: {
     title: string[];
     body: string;
-    shot: Shot;
-    crop: Rect;
+    src: string;
+    alt: string;
   }[] = [
     {
       title: ["あと何単位", "必要かわかる"],
       body: "TWINSの成績ファイルを読み込むと、履修要覧の表に色が付く",
-      shot: plan,
-      crop: [85, 262, 360, 270],
+      src: "/images/top/credits.jpg",
+      alt: "取った単位で色が付いた履修要覧の表",
     },
     {
       title: ["取れる授業が", "すぐ見つかる"],
       body: "表のマスを押すと、そこに当てはまる授業が全部出てくる",
-      shot: plan,
-      crop: [870, 205, 348, 261],
+      src: "/images/top/courses.jpg",
+      alt: "選んだマスに当てはまる授業の一覧",
     },
     {
       title: ["TWINSに", "まとめて登録"],
       body: "組んだ時間割をファイルにして、TWINSで一度にアップロード",
-      shot: timetable,
-      crop: [0, 0, 960, 720],
+      src: "/images/top/timetable.jpg",
+      alt: "授業が入った時間割と「TWINSに出力」ボタン",
     },
   ];
-
-  function cropStyle(shot: Shot, [x, y, w, h]: Rect): string {
-    const percent = (offset: number, size: number, full: number) =>
-      size === full ? 0 : (offset / (full - size)) * 100;
-    return [
-      `background-image: url(${asset(shot.src)})`,
-      `background-size: ${(shot.w / w) * 100}% auto`,
-      `background-position: ${percent(x, w, shot.w)}% ${percent(y, h, shot.h)}%`,
-      `aspect-ratio: ${w} / ${h}`,
-    ].join(";");
-  }
 </script>
 
 <Meta title="あきこ" {description} />
@@ -155,7 +138,7 @@
         {#each f.title as part (part)}<span>{part}</span>{/each}
       </h3>
       <p>{f.body}</p>
-      <div class="crop" style={cropStyle(f.shot, f.crop)}></div>
+      <img src={asset(f.src)} alt={f.alt} />
     </li>
   {/each}
 </ol>
@@ -344,16 +327,17 @@
     font-weight: bold;
   }
 
-  .crop {
+  .features img {
     grid-column: 1/3;
     align-self: end;
     width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: left top;
     margin-top: 10px;
     border: 1px solid #ddd;
     border-radius: 10px;
     box-sizing: border-box;
-    background-color: white;
-    background-repeat: no-repeat;
   }
 
   h2 {
