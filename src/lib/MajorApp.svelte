@@ -1845,7 +1845,7 @@
             </div>
           {:else}
             <div class="course-list-hint">
-              <p>表のマスを押すか、授業を検索してね〜</p>
+              <p>表のマスを押すか、授業を検索してください</p>
               <button type="button" onclick={() => (showAllCourses = true)}
                 >全ての授業を見る（{courseLists.wontTake.length}件）</button
               >
@@ -1926,7 +1926,7 @@
               {/if}
             </div>
             {#if filteredCourseLists.mightTake.length === 0}
-              <p class="hint">左の一覧から授業をドラッグしてね</p>
+              <p class="hint">左の一覧から授業をドラッグしてください</p>
             {:else}
               {@render courseTable(
                 filteredCourseLists.mightTake,
