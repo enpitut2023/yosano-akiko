@@ -1514,10 +1514,12 @@
 
 {#if barsVisible}
   <div id="sidebar-resize-handle" {@attach resizeHandle(resizeSidebar)}></div>
-  <div
-    id="timetable-resize-handle"
-    {@attach resizeHandle(resizeTimetable)}
-  ></div>
+  {#if activeTab === "courses"}
+    <div
+      id="timetable-resize-handle"
+      {@attach resizeHandle(resizeTimetable)}
+    ></div>
+  {/if}
 {/if}
 
 <MobileUnsupportedNotice />
