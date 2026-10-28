@@ -20,13 +20,19 @@ and assets go through `resolve()` / `asset()` from `$app/paths`.
 - `npm t`: all tests. Each test is a plain module that asserts when imported, so
   run one with `npx tsx src/lib/tests/coins.ts`. New test files must be imported
   from `src/lib/tests/index.ts`.
+- `npm run e2e`: Playwright tests in `tests/e2e/`. They start their own dev
+  server on :42264 with `AKIKO_E2E=1`, which makes a plugin in `vite.config.ts`
+  swap the course catalog for `tests/e2e/fixtures/courses.ts`. Run one with
+  `npx playwright test -g "<name>"`. Import `test` from `tests/e2e/test.ts`,
+  which marks the tutorial and pan hint as seen.
 - `npm run build`: validates `grade-csvs/`, runs the tests, then prerenders every
   page into `build/`. Prerendering fails if a page's rects JSON or table SVG is
   missing.
 - `npm run format`: Prettier
 
 CI runs `npm run check && npm run lint && npm run build` on pull requests and on
-`main`, and pushes to `main` deploy to GitHub Pages.
+`main`, plus `npm run e2e` on pull requests. Pushes to `main` deploy to GitHub
+Pages.
 
 ## Architecture
 

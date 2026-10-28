@@ -21,7 +21,9 @@ export default defineConfig(
       globals: { ...globals.browser, ...globals.node },
       parserOptions: {
         // The config files at the repo root are outside tsconfig.json's include.
-        projectService: { allowDefaultProject: ["*.js"] },
+        projectService: {
+          allowDefaultProject: ["*.js", "playwright.config.ts"],
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },

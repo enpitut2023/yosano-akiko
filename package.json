@@ -12,10 +12,12 @@
     "lint": "eslint .",
     "lint-grade-csvs": "tsx scripts/lint-grade-csvs.ts",
     "test": "tsx src/lib/tests/index.ts",
+    "e2e": "playwright test",
     "format": "prettier -w ."
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.55.0",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",

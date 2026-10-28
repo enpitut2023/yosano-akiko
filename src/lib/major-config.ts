@@ -2,6 +2,7 @@ import { asset } from "$app/paths";
 import z from "zod";
 import { type MajorConfig } from "./app-setup";
 import { type Major } from "./constants";
+// The e2e tests swap this for a fixture (see vite.config.ts)
 import { knownCourses, knownCourseYear } from "./current-courses";
 import { assert, strictParseFloat } from "./util.js";
 

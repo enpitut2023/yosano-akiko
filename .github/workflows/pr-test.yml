@@ -9,3 +9,5 @@ jobs:
       # build also runs the grade CSV lint and tests, and prerendering catches
       # missing rects and table SVGs.
       - run: npm i && npm run check && npm run lint && npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
