@@ -91,8 +91,9 @@ saved (grades, the 移行 answer, courses moved by hand) is one `$state.raw` val
 effect writes `saved` to localStorage under `${major}_${tableYear}` in a
 versioned format (`local-data.ts` migrates older versions), and a `storage`
 listener takes in what another tab of the same page saved. Nothing else reads
-localStorage. `major-app-size.md` describes what makes `MajorApp` large and how
-to keep splitting it.
+localStorage. `MajorApp` holds that state and the tutorial's steps, and passes
+the rest to `RequirementsTable` (the table) and one component per tab
+(`ImportTab`, `CoursesTab`, `ExportTab`, `SettingsTab`).
 
 **Tests.** A unit test sits next to the module it tests, as `<module>.test.ts`.
 The per-major tests are the exception: they're in `src/lib/tests/`, one file
