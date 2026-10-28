@@ -54,7 +54,7 @@
   } from "$lib/local-data";
   import { browser, dev } from "$app/environment";
   import { assert } from "$lib/util.js";
-  import { onMount, tick, untrack } from "svelte";
+  import { onMount, untrack } from "svelte";
   import { markSeen, seen } from "./seen";
   import {
     cellCreditStatsDisplay,
@@ -69,6 +69,7 @@
   import MobileUnsupportedNotice from "./MobileUnsupportedNotice.svelte";
   import Dialog from "$lib/Dialog.svelte";
   import Tutorial from "./Tutorial.svelte";
+  import { panZoom, resizeHandle } from "./gestures";
   import type { TutorialStep } from "./tutorial";
 
   type UiOverlapCourse = {
@@ -212,7 +213,6 @@
   const SIDEBAR_WIDTH_MIN = 500;
 
   let sidebarWidth = $state(SIDEBAR_WIDTH_DEFAULT);
-  let sidebarWidthResizing = $state(false);
 
   $effect(() => {
     document.documentElement.style.setProperty(
@@ -221,16 +221,7 @@
     );
   });
 
-  function onSidebarResizePointerDown(
-    e: PointerEvent & { currentTarget: HTMLDivElement },
-  ) {
-    if (e.button !== 0) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    sidebarWidthResizing = true;
-  }
-
-  function onSidebarResizePointerMove(e: PointerEvent) {
-    if (!sidebarWidthResizing) return;
+  function resizeSidebar(e: PointerEvent) {
     const raw = window.innerWidth - e.clientX;
     const snapped = Math.round(raw / 5) * 5;
     sidebarWidth = Math.min(
@@ -239,15 +230,10 @@
     );
   }
 
-  function onSidebarResizePointerUp() {
-    sidebarWidthResizing = false;
-  }
-
   const TIMETABLE_HEIGHT_DEFAULT = 400;
   const TIMETABLE_HEIGHT_MIN = 100;
 
   let timetableHeight = $state(TIMETABLE_HEIGHT_DEFAULT);
-  let timetableHeightResizing = $state(false);
 
   $effect(() => {
     document.documentElement.style.setProperty(
@@ -269,16 +255,8 @@
     return () => window.removeEventListener("resize", update);
   });
 
-  function onTimetableResizePointerDown(
-    e: PointerEvent & { currentTarget: HTMLDivElement },
-  ) {
-    if (e.button !== 0) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    timetableHeightResizing = true;
-  }
-
-  function onTimetableResizePointerMove(e: PointerEvent) {
-    if (!timetableHeightResizing || rightBarEl === undefined) return;
+  function resizeTimetable(e: PointerEvent) {
+    if (rightBarEl === undefined) return;
     const top = rightBarEl.getBoundingClientRect().top;
     const raw = e.clientY - top;
     const snapped = Math.round(raw / 5) * 5;
@@ -286,10 +264,6 @@
       window.innerHeight - top - SIDEBAR_MARGIN,
       Math.max(TIMETABLE_HEIGHT_MIN, snapped),
     );
-  }
-
-  function onTimetableResizePointerUp() {
-    timetableHeightResizing = false;
   }
 
   let scrollX = $state(0);
@@ -888,14 +862,8 @@
     }
   });
 
-  // クリックと区別するため、少し動くまではドラッグとみなさない
-  const PAN_THRESHOLD = 5;
-  let panStart:
-    | { x: number; y: number; scrollLeft: number; scrollTop: number }
-    | undefined;
   let panning = $state(false);
-  let suppressClick = false;
-  // トラックパッドと区別できないので、マウスかトラックパッドがあれば出す
+  // A mouse can't be told apart from a trackpad, so show it for either
   let panHintVisible = $state(false);
 
   onMount(() => {
@@ -903,81 +871,11 @@
       window.matchMedia("(any-pointer: fine)").matches && !seen("panHint");
   });
 
-  function onRequirementsPointerDown(
-    e: PointerEvent & { currentTarget: HTMLDivElement },
-  ) {
-    if (e.button !== 0 || e.pointerType !== "mouse") return;
-    if (e.target instanceof Element && e.target.closest("#title")) return;
-    const el = e.currentTarget;
-    const rect = el.getBoundingClientRect();
-    // スクロールバーのドラッグはブラウザに任せる
-    if (
-      e.clientX - rect.left >= el.clientWidth ||
-      e.clientY - rect.top >= el.clientHeight
-    )
-      return;
-    panStart = {
-      x: e.clientX,
-      y: e.clientY,
-      scrollLeft: el.scrollLeft,
-      scrollTop: el.scrollTop,
-    };
-  }
-
-  function onRequirementsPointerMove(
-    e: PointerEvent & { currentTarget: HTMLDivElement },
-  ) {
-    if (panStart === undefined) return;
-    const dx = e.clientX - panStart.x;
-    const dy = e.clientY - panStart.y;
-    if (!panning) {
-      if (Math.hypot(dx, dy) < PAN_THRESHOLD) return;
-      panning = true;
-      e.currentTarget.setPointerCapture(e.pointerId);
-    }
-    e.currentTarget.scrollLeft = panStart.scrollLeft - dx;
-    e.currentTarget.scrollTop = panStart.scrollTop - dy;
-  }
-
-  function onRequirementsPointerUp() {
-    panStart = undefined;
-    if (!panning) return;
+  function endPan() {
     panning = false;
     panHintVisible = false;
     markSeen("panHint");
-    // ドラッグの直後に来るクリックで、マスの選択が外れたり変わったりしないようにする
-    suppressClick = true;
-    setTimeout(() => (suppressClick = false));
   }
-
-  async function handleWheel(e: WheelEvent) {
-    if (!e.ctrlKey) return;
-    const container = requirementsEl;
-    if (!container || !container.contains(e.target as Node)) return;
-    e.preventDefault();
-    const rect = container.getBoundingClientRect();
-    const cx = e.clientX - rect.left;
-    const cy = e.clientY - rect.top;
-    const oldZoom = zoomLevel;
-    const newZoom = Math.min(
-      ZOOM_MAX,
-      Math.max(ZOOM_MIN, oldZoom * Math.exp(-e.deltaY * 0.01)),
-    );
-    const f = newZoom / oldZoom;
-    const newScrollLeft = (container.scrollLeft + cx) * f - cx;
-    const newScrollTop = (container.scrollTop + cy) * f - cy;
-    sliderZoomLevel = zoomToSlider(newZoom);
-    await tick();
-    container.scrollLeft = newScrollLeft;
-    container.scrollTop = newScrollTop;
-  }
-
-  $effect(() => {
-    if (!browser) return;
-    const onWheel = (e: WheelEvent) => void handleWheel(e);
-    window.addEventListener("wheel", onWheel, { passive: false });
-    return () => window.removeEventListener("wheel", onWheel);
-  });
 
   let tutorialOpen = $state(false);
 
@@ -1230,14 +1128,17 @@
       data-tutorial="requirements"
       class:panning
       bind:this={requirementsEl}
+      {@attach panZoom({
+        zoom: () => zoomLevel,
+        setZoom: (z) =>
+          (sliderZoomLevel = zoomToSlider(
+            Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z)),
+          )),
+        ignore: "#title",
+        onpanstart: () => (panning = true),
+        onpanend: endPan,
+      })}
       onscroll={(e) => (scrollX = -e.currentTarget.scrollLeft)}
-      onpointerdown={onRequirementsPointerDown}
-      onpointermove={onRequirementsPointerMove}
-      onpointerup={onRequirementsPointerUp}
-      onpointercancel={onRequirementsPointerUp}
-      onclickcapture={(e) => {
-        if (suppressClick) e.stopPropagation();
-      }}
       onclick={() => {
         selectedCellId = undefined;
       }}
@@ -1962,17 +1863,10 @@
 </button>
 
 {#if barsVisible}
-  <div
-    id="sidebar-resize-handle"
-    onpointerdown={onSidebarResizePointerDown}
-    onpointermove={onSidebarResizePointerMove}
-    onpointerup={onSidebarResizePointerUp}
-  ></div>
+  <div id="sidebar-resize-handle" {@attach resizeHandle(resizeSidebar)}></div>
   <div
     id="timetable-resize-handle"
-    onpointerdown={onTimetableResizePointerDown}
-    onpointermove={onTimetableResizePointerMove}
-    onpointerup={onTimetableResizePointerUp}
+    {@attach resizeHandle(resizeTimetable)}
   ></div>
 {/if}
 
