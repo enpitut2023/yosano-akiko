@@ -304,17 +304,17 @@ How courses moved by hand interact with grades, rebuilds and what's saved.
 - [x] The tab steps wait for the user to click each tab.
 - [x] Closing it marks it seen, and the チュートリアル link reopens it.
 
-### Table
+### Table (`gestures.spec.ts`)
 
-- [ ] Dragging with the mouse pans the table, and the click that ends a pan
+- [x] Dragging with the mouse pans the table, and the click that ends a pan
       doesn't select a cell.
-- [ ] The pan hint shows for mouse users until the first pan, then never
+- [x] The pan hint shows for mouse users until the first pan, then never
       again.
-- [ ] Ctrl+wheel zooms around the pointer, within the min and max zoom.
-- [ ] The zoom slider zooms.
-- [ ] The column credit sums stay readable at different zoom levels.
-- [ ] The sidebar and timetable resize handles resize within their limits.
-- [ ] The bars toggle hides and shows the sidebar.
+- [x] Ctrl+wheel zooms around the pointer, within the min and max zoom.
+- [x] The zoom slider zooms.
+- [x] The column credit sums stay readable at different zoom levels.
+- [x] The sidebar and timetable resize handles resize within their limits.
+- [x] The bars toggle hides and shows the sidebar.
 
 ### 設定
 
@@ -329,7 +329,7 @@ How courses moved by hand interact with grades, rebuilds and what's saved.
 
 - [ ] localStorage from older format versions (v1, v2) loads and is migrated
       to v3.
-- [ ] Corrupt localStorage falls back to the defaults without crashing.
+- [x] Corrupt localStorage falls back to the defaults without crashing.
 
 ### Mobile
 
