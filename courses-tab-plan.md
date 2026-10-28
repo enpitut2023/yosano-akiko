@@ -126,19 +126,21 @@ they live beside it rather than in `$lib`.
 
 ## 4. Components
 
-- [ ] `CourseTable.svelte` replaces the `courseRow`, `courseTable` and
-      `fakeCourseTable` snippets. Props: the courses, which columns to show,
-      the drag source, whether to show remarks and 該当マスを表示, and
-      `onShowCell` / `onDragStart` / `onDragEnd`. Takes its CSS along.
-- [ ] `CourseFilters.svelte`: the filter bar. `bind:filters`,
-      `bind:showRemark`, and the choices as a prop. Takes about 130 lines of
-      CSS along.
+- [x] `CourseTable.svelte` replaces the `courseRow` and `courseTable`
+      snippets, and `FakeCourseTable.svelte` the `fakeCourseTable` one; the
+      table CSS they share is in `course-table.scss`. Rows are draggable when
+      given `onDragStart`, and the empty-list message stays with the caller.
+      `isUnavailable` became `mergedCourseIsUnavailable` in `akiko.ts`, and
+      the four places that showed a cell share `showCell`.
+- [x] `CourseFilters.svelte`: the filter bar, with the search box and whether
+      it's open. `bind:filters` (as chosen), `bind:showRemark`, and the
+      choices; it shows the filters in effect itself.
 - [ ] Decide whether to wrap both bars in a `CoursesTab.svelte`. The hard part
       is shared state: `selectedCellId`, the timetable's term and year (also
       set by `ExportTab`, `SettingsTab` and the tutorial), and the drop guide
       that spans both bars. **To decide after the two above**, once we see
       how `MajorApp` looks then.
-- [ ] Update `major-app-size.md`.
+- [x] Update `major-app-size.md` (1,665 lines now).
 
 ## Checks at each step
 

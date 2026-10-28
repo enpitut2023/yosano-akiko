@@ -1,0 +1,20 @@
+// The course lists' tables, shared by CourseTable and FakeCourseTable
+
+table,
+th,
+td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+
+table {
+  width: 100%;
+}
+
+th {
+  white-space: nowrap;
+}
+
+tbody > tr {
+  background-color: white;
+}

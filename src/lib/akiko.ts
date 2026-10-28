@@ -487,6 +487,11 @@ export type MergedCourse = {
   syllabusYear: number;
 };
 
+/** Not known to be offered this year. False for a course not in the catalog. */
+export function mergedCourseIsUnavailable(c: MergedCourse): boolean {
+  return c.known !== undefined && c.known.availability !== "available";
+}
+
 /** Undefined if neither the catalog nor the grades file has the course. */
 export function akikoGetMergedCourse(
   akiko: Akiko,

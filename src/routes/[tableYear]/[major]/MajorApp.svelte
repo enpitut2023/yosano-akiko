@@ -2,7 +2,6 @@
   import { resolve, asset } from "$app/paths";
   import BadgeJapaneseYen from "lucide-svelte/icons/badge-japanese-yen";
   import ChevronRight from "lucide-svelte/icons/chevron-right";
-  import Funnel from "lucide-svelte/icons/funnel";
   import Hand from "lucide-svelte/icons/hand";
   import Timetable from "./Timetable.svelte";
   import { timetableTabAfterPlanning, type TimetableTab } from "./timetable";
@@ -11,8 +10,6 @@
   import { parseImportedCsv } from "$lib/csv";
   import {
     columnIdIsElective,
-    DOWS,
-    dowToString,
     isCellId,
     isCourseId,
     akikoGetAllCourses,
@@ -25,13 +22,11 @@
     akikoMoveCourse,
     akikoNew,
     creditSum,
-    type MergedCourse,
-    termToString,
+    mergedCourseIsUnavailable,
     type CellId,
     type CourseId,
     type FakeCourse,
     type RealCourse,
-    type Term,
     cellIdToRow,
     cellIdToColumnId,
   } from "$lib/akiko";
@@ -57,13 +52,14 @@
     creditProgressToString,
     electiveCreditStatsDisplay,
     getPercentage,
-    gradeDisplay,
   } from "./credit-display";
   import { debugPrintCreditStats } from "./debug";
   import { mobileUnsupported } from "./mobile-unsupported";
   import MobileUnsupportedNotice from "./MobileUnsupportedNotice.svelte";
   import SettingsTab from "./SettingsTab.svelte";
-  import SyllabusLink from "./SyllabusLink.svelte";
+  import CourseFilters from "./CourseFilters.svelte";
+  import CourseTable from "./CourseTable.svelte";
+  import FakeCourseTable from "./FakeCourseTable.svelte";
   import Tutorial from "./Tutorial.svelte";
   import ImportTab from "./ImportTab.svelte";
   import ExportTab from "./ExportTab.svelte";
@@ -100,7 +96,6 @@
   const isNative = $derived(saved.native);
   let selectedCellId = $state<CellId | undefined>(undefined);
   let showCourseRemark = $state(false);
-  let filtersOpen = $state(false);
   let showAllCourses = $state(false);
   let showNonAvailable = $state(false);
   let wontTakeVisibleLimit = $state(100);
@@ -375,10 +370,6 @@
     }
   }
 
-  function isUnavailable(c: MergedCourse): boolean {
-    return c.known !== undefined && c.known.availability !== "available";
-  }
-
   // Does not depend on wontTakeFilters
   const courseLists = $derived.by(() => {
     const ids = selectedCellId
@@ -390,7 +381,7 @@
         .filter((c) => c !== undefined);
     return {
       wontTake: courses(ids.wontTake).filter(
-        (c) => showNonAvailable || !isUnavailable(c),
+        (c) => showNonAvailable || !mergedCourseIsUnavailable(c),
       ),
       mightTake: courses(ids.mightTake),
       taken: courses(ids.taken),
@@ -520,6 +511,13 @@
       rect.x + rect.width / 2 - requirementsEl.clientWidth / 2;
     requirementsEl.scrollTop =
       rect.y + rect.height / 2 - requirementsEl.clientHeight / 2;
+  }
+
+  /** Selects the cell, scrolls to it, and shows its courses. */
+  function showCell(cellId: CellId) {
+    selectedCellId = cellId;
+    scrollCellIntoView(cellId);
+    showTab("courses");
   }
 
   let dropGuide = $state<
@@ -724,103 +722,6 @@
 
 <svelte:window onstorage={onStorage} />
 
-{#snippet courseRow(
-  c: MergedCourse,
-  dragSource: "wont-take" | "might-take" | undefined,
-  colspan: number,
-)}
-  {@const draggable = dragSource !== undefined}
-  <tr
-    class="course"
-    {draggable}
-    ondragstart={(e) => {
-      if (dragSource === undefined) return;
-      handleDragStart(e, c.id, dragSource);
-    }}
-    ondragend={handleDragEnd}
-  >
-    <td class="id-name">
-      <span class="course-id">{c.id}</span>
-      {#if !selectedCellId && c.cellId !== undefined}
-        {@const cellId = c.cellId}
-        <button
-          class="goto-cell"
-          onclick={() => {
-            selectedCellId = cellId;
-            scrollCellIntoView(cellId);
-            barsVisible = true;
-            activeTab = "courses";
-          }}>該当マスを表示</button
-        >
-      {/if}
-      <br />
-      <SyllabusLink course={c} catalogYear={config.knownCourseYear} />
-      {#if c.real}<br /><span>{gradeDisplay(c.real.grade)}</span>{/if}
-      {#if isUnavailable(c)}<br /><span>（非開講）</span>{/if}
-    </td>
-    <td class="credit">{c.credit ?? "-"}</td>
-    <td class="slots">{c.known?.slotsString ?? "-"}</td>
-    <td class="expects">{c.known?.expectsString ?? "-"}</td>
-  </tr>
-  {#if showCourseRemark}
-    <tr class="course-remark">
-      {#if c.known?.remark}
-        <td {colspan}>{c.known.remark}</td>
-      {:else}
-        <td {colspan} class="no-remark">（備考なし）</td>
-      {/if}
-    </tr>
-  {/if}
-{/snippet}
-
-{#snippet courseTable(
-  courses: MergedCourse[],
-  state: "no-courses" | "contains-courses",
-  showSlots: boolean,
-  showExpects: boolean,
-  dragSource: "wont-take" | "might-take" | undefined,
-)}
-  {#if state === "no-courses"}
-    <p>該当する授業がありません</p>
-  {:else}
-    {@const colspan = 2 + +showSlots + +showExpects}
-    <table class:show-slots={showSlots} class:show-expects={showExpects}>
-      <thead>
-        <tr class="course">
-          <th class="id-name">科目</th>
-          <th class="credit">単位</th>
-          <th class="slots">時限</th>
-          <th class="expects">標準<br />履修<br />年次</th>
-        </tr>
-      </thead>
-      <tbody>
-        {#each courses as c (c.id)}
-          {@render courseRow(c, dragSource, colspan)}
-        {/each}
-      </tbody>
-    </table>
-  {/if}
-{/snippet}
-
-{#snippet fakeCourseTable(courses: FakeCourse[])}
-  <table>
-    <thead>
-      <tr class="course">
-        <th class="id-name">科目</th>
-        <th class="credit">単位</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each courses as c (c.id)}
-        <tr class="course">
-          <td class="id-name">{c.name} ({c.takenYear})</td>
-          <td class="credit">{c.credit ?? "-"}</td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-{/snippet}
-
 <main class:bars-hidden={!barsVisible}>
   <div id="table-view">
     <div
@@ -1001,10 +902,8 @@
         {akiko}
         {config}
         onShowCell={(cellId: CellId, term: TimetableTab) => {
-          selectedCellId = cellId;
-          scrollCellIntoView(cellId);
+          showCell(cellId);
           activeTimetableTerm = term;
-          showTab("courses");
         }}
         onPickCourses={() => showTab("courses")}
         onDownload={() => exportCount++}
@@ -1031,108 +930,11 @@
         }}
         ondrop={(e) => handleDrop(e, "wont-take")}
       >
-        <div id="filter-bar">
-          <div id="filter-bar-row">
-            <search>
-              <input
-                type="text"
-                placeholder="科目番号もしくは科目名"
-                bind:value={wontTakeFilters.courseIdOrName}
-              />
-            </search>
-            <button
-              type="button"
-              class="filter-toggle"
-              class:open={filtersOpen}
-              aria-expanded={filtersOpen}
-              aria-label="絞り込み条件"
-              title="絞り込み条件"
-              onclick={() => (filtersOpen = !filtersOpen)}
-            >
-              <Funnel size={20} strokeWidth={1.5} />
-              {#if activeFilterCount > 0}
-                <span class="filter-badge">{activeFilterCount}</span>
-              {/if}
-            </button>
-          </div>
-          {#if filtersOpen}
-            <div id="filter-bar-slot-row">
-              <select
-                value={filters.credit ?? ""}
-                class:placeholder={filters.credit === undefined}
-                onchange={(e) => {
-                  const v = e.currentTarget.value;
-                  wontTakeFilters.credit = v === "" ? undefined : Number(v);
-                }}
-              >
-                <option value="">全単位</option>
-                {#each filterChoices.credits as v (v)}
-                  <option value={v}>{v}単位</option>
-                {/each}
-              </select>
-              <select
-                value={filters.expects ?? ""}
-                class:placeholder={filters.expects === undefined}
-                onchange={(e) => {
-                  const v = e.currentTarget.value;
-                  wontTakeFilters.expects = v === "" ? undefined : Number(v);
-                }}
-              >
-                <option value="">全年次</option>
-                {#each filterChoices.expects as v (v)}
-                  <option value={v}>{v}年次</option>
-                {/each}
-              </select>
-              <select
-                value={filters.term ?? ""}
-                class:placeholder={filters.term === undefined}
-                onchange={(e) => {
-                  const v = e.currentTarget.value;
-                  wontTakeFilters.term = v === "" ? undefined : (v as Term);
-                }}
-              >
-                <option value="">全学期</option>
-                {#each filterChoices.termGroups as group (group.label)}
-                  <optgroup label={group.label}>
-                    {#each group.terms as t (t)}
-                      <option value={t}>{termToString(t)}</option>
-                    {/each}
-                  </optgroup>
-                {/each}
-              </select>
-              <div id="dow-chips" role="group" aria-label="曜日で絞り込む">
-                {#each DOWS as d (d)}
-                  {@const active = filters.dows.includes(d)}
-                  <button
-                    type="button"
-                    class="dow-chip"
-                    class:active
-                    aria-pressed={active}
-                    disabled={!filterChoices.dows.includes(d)}
-                    onclick={() => {
-                      wontTakeFilters.dows = active
-                        ? wontTakeFilters.dows.filter((x) => x !== d)
-                        : [...wontTakeFilters.dows, d];
-                    }}>{dowToString(d)}</button
-                  >
-                {/each}
-              </div>
-            </div>
-            <div id="filter-bar-checkboxes">
-              <label class="filter-checkbox">
-                <input
-                  type="checkbox"
-                  bind:checked={wontTakeFilters.onlyUnoccupied}
-                />
-                空きコマのみ表示
-              </label>
-              <label class="filter-checkbox">
-                <input type="checkbox" bind:checked={showCourseRemark} />
-                備考を表示
-              </label>
-            </div>
-          {/if}
-        </div>
+        <CourseFilters
+          bind:filters={wontTakeFilters}
+          choices={filterChoices}
+          bind:showRemark={showCourseRemark}
+        />
         <div id="left-bar-scroll" bind:this={leftBarScrollEl}>
           {#if courseListVisible}
             <div class="section">
@@ -1141,15 +943,22 @@
                 ({filteredCourseLists.wontTake.length}/{courseLists.wontTake
                   .length})
               </h2>
-              {@render courseTable(
-                wontTakeSliced,
-                courseLists.wontTake.length === 0
-                  ? "no-courses"
-                  : "contains-courses",
-                true,
-                true,
-                "wont-take",
-              )}
+              {#if courseLists.wontTake.length === 0}
+                <p>該当する授業がありません</p>
+              {:else}
+                <CourseTable
+                  courses={wontTakeSliced}
+                  catalogYear={config.knownCourseYear}
+                  showRemark={showCourseRemark}
+                  showGotoCell={selectedCellId === undefined}
+                  onShowCell={showCell}
+                  showSlots
+                  showExpects
+                  onDragStart={(e: DragEvent, courseId: CourseId) =>
+                    handleDragStart(e, courseId, "wont-take")}
+                  onDragEnd={handleDragEnd}
+                />
+              {/if}
               <div bind:this={wontTakeSentinelEl}></div>
             </div>
           {:else}
@@ -1186,12 +995,7 @@
           showTaken={timetableShowTaken}
           onBarClick={(courseId: CourseId) => {
             const cellId = akiko.courseIdToCellId.get(courseId);
-            if (cellId !== undefined) {
-              selectedCellId = cellId;
-              scrollCellIntoView(cellId);
-              barsVisible = true;
-              activeTab = "courses";
-            }
+            if (cellId !== undefined) showCell(cellId);
           }}
           onBarDragStart={(e: DragEvent, courseId: CourseId) =>
             handleDragStart(e, courseId, "might-take")}
@@ -1233,13 +1037,18 @@
             {#if filteredCourseLists.mightTake.length === 0}
               <p class="hint">左の一覧から授業をドラッグしてください</p>
             {:else}
-              {@render courseTable(
-                filteredCourseLists.mightTake,
-                "contains-courses",
-                true,
-                false,
-                "might-take",
-              )}
+              <CourseTable
+                courses={filteredCourseLists.mightTake}
+                catalogYear={config.knownCourseYear}
+                showRemark={showCourseRemark}
+                showGotoCell={selectedCellId === undefined}
+                onShowCell={showCell}
+                showSlots
+                showExpects={false}
+                onDragStart={(e: DragEvent, courseId: CourseId) =>
+                  handleDragStart(e, courseId, "might-take")}
+                onDragEnd={handleDragEnd}
+              />
             {/if}
           </div>
           {#if filteredCourseLists.taken.length > 0}
@@ -1252,13 +1061,15 @@
                   </span>
                 {/if}
               </div>
-              {@render courseTable(
-                filteredCourseLists.taken,
-                "contains-courses",
-                false,
-                false,
-                undefined,
-              )}
+              <CourseTable
+                courses={filteredCourseLists.taken}
+                catalogYear={config.knownCourseYear}
+                showRemark={showCourseRemark}
+                showGotoCell={selectedCellId === undefined}
+                onShowCell={showCell}
+                showSlots={false}
+                showExpects={false}
+              />
             </div>
           {/if}
           {#if filteredCourseLists.fake.length > 0}
@@ -1267,7 +1078,7 @@
                 <h2>認可された授業</h2>
                 <span class="credit-total">{fakeCreditTotal}単位</span>
               </div>
-              {@render fakeCourseTable(filteredCourseLists.fake)}
+              <FakeCourseTable courses={filteredCourseLists.fake} />
             </div>
           {/if}
         </div>
@@ -1576,53 +1387,6 @@
     }
   }
 
-  #filter-bar {
-    border-bottom: 1px dashed black;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 15px;
-  }
-
-  #filter-bar-row {
-    display: flex;
-    gap: 5px;
-
-    & > search {
-      flex: 1;
-      min-width: 0;
-    }
-  }
-
-  .filter-toggle {
-    position: relative;
-    display: grid;
-    place-items: center;
-    padding: 5px;
-    border: none;
-    border-radius: 10px;
-    background: none;
-    color: gray;
-    cursor: pointer;
-
-    &:hover,
-    &.open {
-      background-color: oklch(95% 0 0);
-    }
-  }
-
-  .filter-badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    min-width: 15px;
-    font-size: 10px;
-    line-height: 15px;
-    border-radius: 10px;
-    color: white;
-    background-color: oklch(60% 15% 250);
-  }
-
   .course-list-hint {
     display: flex;
     flex-direction: column;
@@ -1647,68 +1411,6 @@
 
   #right-bar-scroll .hint {
     color: #444;
-  }
-
-  #filter-bar-slot-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-  }
-
-  #filter-bar select {
-    font-size: var(--fs-sm);
-    border: 1px solid gray;
-    border-radius: 10px;
-    padding: 5px 0px 5px 5px;
-    background-color: white;
-    cursor: pointer;
-
-    &.placeholder {
-      color: oklch(0.6 0 0);
-    }
-  }
-
-  #dow-chips {
-    display: flex;
-    gap: 5px;
-  }
-
-  .dow-chip {
-    font-size: var(--fs-sm);
-    min-width: 30px;
-    padding: 5px 0;
-    border: 1px solid gray;
-    border-radius: 10px;
-    background-color: white;
-    cursor: pointer;
-
-    &:hover:not(:disabled) {
-      background-color: oklch(95% 0 0);
-    }
-
-    &.active {
-      border-color: oklch(60% 15% 250);
-      background-color: oklch(90% 8% 250);
-    }
-
-    &:disabled {
-      color: oklch(0.6 0 0);
-      border-color: oklch(0.8 0 0);
-      cursor: default;
-    }
-  }
-
-  #filter-bar-checkboxes {
-    display: flex;
-    gap: 15px;
-  }
-
-  .filter-checkbox {
-    font-size: var(--fs-sm);
-    display: flex;
-    align-items: center;
-    cursor: pointer;
   }
 
   #right-bar {
@@ -1820,65 +1522,6 @@
     }
   }
 
-  .goto-cell {
-    all: unset;
-    cursor: pointer;
-    font-size: var(--fs-xs);
-    color: oklch(0.4 0.15 250);
-    text-decoration: underline;
-  }
-
-  .course-remark td {
-    font-size: 0.85em;
-    padding: 3px 5px 8px;
-    background-color: hsl(0, 0%, 96%);
-    border-top: 1px solid #ccc;
-    overflow-wrap: anywhere;
-
-    &.no-remark {
-      color: #aaa;
-    }
-  }
-
-  table,
-  th,
-  td {
-    border: 1px solid black;
-    border-collapse: collapse;
-  }
-
-  table {
-    width: 100%;
-
-    .slots,
-    .expects {
-      display: none;
-    }
-    &.show-slots .slots,
-    &.show-expects .expects {
-      display: revert;
-    }
-
-    & .course-id {
-      vertical-align: middle;
-    }
-  }
-
-  th {
-    white-space: nowrap;
-  }
-
-  tbody > tr {
-    background-color: white;
-  }
-
-  tbody > tr[draggable="true"] {
-    cursor: grab;
-    &:active {
-      cursor: grabbing;
-    }
-  }
-
   #bars-toggle {
     position: absolute;
     margin: 0;
@@ -1918,14 +1561,6 @@
     transform: translateY(-5px);
     cursor: row-resize;
     z-index: 100;
-  }
-
-  #filter-bar-row > search > input {
-    box-sizing: border-box;
-    width: 100%;
-    border: 1px solid gray;
-    border-radius: 10px;
-    padding: 5px 10px;
   }
 
   #credit-sums-container {
