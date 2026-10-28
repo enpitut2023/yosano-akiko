@@ -1,6 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { gradesFile } from "./fixtures/grades";
-import { dragToMightTake, expect, openTab, test, type Page } from "./test";
+import {
+  dragToMightTake,
+  expect,
+  importGrades,
+  openTab,
+  test,
+  type Page,
+} from "./test";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("2023/coins");
@@ -58,8 +65,8 @@ test("ダウンロード downloads the IDs of 取る授業", async ({ page }) =>
 test("履修中 courses are left out, since they're registered already", async ({
   page,
 }) => {
-  await openTab(page, "単位チェック");
-  await page.locator(".csv-input").setInputFiles(
+  await importGrades(
+    page,
     gradesFile([
       {
         id: "GB13322",
@@ -70,7 +77,6 @@ test("履修中 courses are left out, since they're registered already", async (
       },
     ]),
   );
-  await expect(page.locator("#csv-drop-zone")).toContainText("インポート済み");
   await openTab(page, "履修を組む");
   await dragToMightTake(page, "b2", "GB27001");
   await openTab(page, "TWINSに出力");
@@ -115,6 +121,22 @@ test("事前登録 courses are warned about and left out", async ({ page }) => {
   const warning = exportTab(page).locator(".step-problem");
   await expect(warning).toContainText("事前登録");
   await expect(warning.locator("+ table")).toContainText("GB40111");
+  expect((await download(page)).ids).toEqual(["GB27001"]);
+});
+
+test("courses not offered this year are warned about and left out", async ({
+  page,
+}) => {
+  await openTab(page, "設定");
+  await page.getByLabel("今年度開講しない授業を表示する").check();
+  await openTab(page, "履修を組む");
+  await dragToMightTake(page, "b2", "GB41001");
+  await dragToMightTake(page, "b2", "GB27001");
+  await openTab(page, "TWINSに出力");
+
+  const warning = exportTab(page).locator(".step-problem");
+  await expect(warning).toContainText("今年度開講しない");
+  await expect(warning.locator("+ table")).toContainText("GB41001");
   expect((await download(page)).ids).toEqual(["GB27001"]);
 });
 

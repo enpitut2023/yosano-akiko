@@ -234,7 +234,7 @@ filter by file instead.
       「インポート済み（N単位）」.
 - [x] Imported cells are colored green (taken) or yellow (取る授業).
 - [x] Imported data survives a reload.
-- [x] Re-importing resets 取る授業.
+- [x] Re-importing keeps courses moved by hand.
 - [x] Dropping a file on the drop zone imports it, like the file picker does.
 - [x] A broken CSV shows the error alert and leaves the data unchanged.
 - [x] The 移行 toggle (いいえ / はい) is saved, and changes how courses are
@@ -275,7 +275,25 @@ filter by file instead.
         term.
 - [x] With a 事前登録 course, its warning shows, and the course isn't in the
       downloaded file.
+- [x] The same for a course not offered this year.
 - [x] The 手順を見る link opens `/twins-register`.
+
+### Saved plan (`saved-plan.spec.ts`)
+
+How courses moved by hand interact with grades, rebuilds and what's saved.
+
+- [x] A 履修中 course moved out of 取る授業 stays out; moved back in, it stays
+      in.
+- [x] A 落単済み course can be taken again, and is exported.
+- [x] A passed course can't be moved.
+- [x] Re-importing keeps moves, but forgets the ones the new grades settle
+      (now passed, or now in that list anyway).
+- [x] Changing the 移行 answer keeps moves.
+- [x] Each entry year and major has its own plan.
+- [x] リセット clears the grades and the plan.
+- [x] Tabs of the same page stay in sync.
+- [x] Broken saved data is replaced; moves of courses missing from the catalog
+      are ignored.
 
 ### Tutorial
 

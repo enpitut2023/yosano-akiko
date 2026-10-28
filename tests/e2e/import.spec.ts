@@ -1,7 +1,14 @@
-import { gradesFile } from "./fixtures/grades";
-import { dragToMightTake, expect, openTab, test, type Page } from "./test";
+import { gradesFile, type GradeRow } from "./fixtures/grades";
+import {
+  dragToMightTake,
+  expect,
+  importGrades,
+  openTab,
+  test,
+  type Page,
+} from "./test";
 
-const GRADES = gradesFile([
+const ROWS: GradeRow[] = [
   // a1, half of it
   {
     id: "GB26403",
@@ -24,7 +31,8 @@ const GRADES = gradesFile([
   { id: "FF18724", name: "線形代数A", credit: 2, grade: "B", year: 2023 },
   // Fits no cell
   { name: "編入前の単位", credit: 2, grade: "認", year: 2023 },
-]);
+];
+const GRADES = gradesFile(ROWS);
 const PASSED_CREDITS = 7;
 
 test.beforeEach(async ({ page }) => {
@@ -34,11 +42,6 @@ test.beforeEach(async ({ page }) => {
 
 function dropZone(page: Page) {
   return page.locator("#csv-drop-zone");
-}
-
-async function importGrades(page: Page): Promise<void> {
-  await page.locator(".csv-input").setInputFiles(GRADES);
-  await expectImported(page);
 }
 
 async function expectImported(page: Page): Promise<void> {
@@ -72,7 +75,8 @@ function unclassified(page: Page) {
 test("importing grades colors the cells and keeps failed courses", async ({
   page,
 }) => {
-  await importGrades(page);
+  await importGrades(page, GRADES);
+  await expectImported(page);
   await expectCell(page, "a1", 50, 50);
   await expectCell(page, "c1", 0, 100);
   const rows = await coursesOfCell(page, "b2");
@@ -80,22 +84,25 @@ test("importing grades colors the cells and keeps failed courses", async ({
 });
 
 test("imported grades survive a reload", async ({ page }) => {
-  await importGrades(page);
+  await importGrades(page, GRADES);
   await page.reload();
   await openTab(page, "単位チェック");
   await expectImported(page);
   await expectCell(page, "a1", 50, 50);
 });
 
-test("re-importing resets 取る授業", async ({ page }) => {
-  await importGrades(page);
+test("re-importing keeps courses moved by hand", async ({ page }) => {
+  await importGrades(page, GRADES);
   await dragToMightTake(page, "b1", "GB20401");
 
-  await openTab(page, "単位チェック");
-  await importGrades(page);
+  // Without the 認 row, to tell when the new file is in
+  await importGrades(page, gradesFile(ROWS.filter((r) => r.grade !== "認")));
+  await expect(dropZone(page)).toContainText(
+    `インポート済み（${PASSED_CREDITS - 2}単位）`,
+  );
   await expect(
     (await coursesOfCell(page, "b1")).filter({ hasText: "GB20401" }),
-  ).toHaveCount(1);
+  ).toHaveCount(0);
 });
 
 test("dropping a file on the drop zone imports it", async ({ page }) => {
@@ -118,7 +125,7 @@ test("dropping a file on the drop zone imports it", async ({ page }) => {
 test("a broken file shows an alert and keeps the imported grades", async ({
   page,
 }) => {
-  await importGrades(page);
+  await importGrades(page, GRADES);
   const dialog = new Promise<string>((resolve) => {
     page.once("dialog", (d) => {
       resolve(d.type());
@@ -134,7 +141,7 @@ test("a broken file shows an alert and keeps the imported grades", async ({
 });
 
 test("courses that fit no cell are listed", async ({ page }) => {
-  await importGrades(page);
+  await importGrades(page, GRADES);
   await unclassified(page).locator("summary").click();
   await expect(unclassified(page).locator("tbody tr")).toHaveCount(2);
   await expect(unclassified(page)).toContainText("FF18724");
@@ -144,7 +151,7 @@ test("courses that fit no cell are listed", async ({ page }) => {
 test("the 移行 answer is saved and changes the classification", async ({
   page,
 }) => {
-  await importGrades(page);
+  await importGrades(page, GRADES);
   // The radio itself is hidden behind its label
   await page
     .locator("#student-type")

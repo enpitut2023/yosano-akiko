@@ -3,19 +3,25 @@
   import CircleCheck from "lucide-svelte/icons/circle-check";
   import FileUp from "lucide-svelte/icons/file-up";
   import Lock from "lucide-svelte/icons/lock";
-  import { gradeIsPass, type FakeCourse, type RealCourse } from "$lib/akiko";
-  import type { SvelteAkiko } from "$lib/akiko.svelte";
+  import {
+    akikoGetUnclassifiedFakeCourses,
+    akikoGetUnclassifiedRealCourses,
+    gradeIsPass,
+    type Akiko,
+    type FakeCourse,
+    type RealCourse,
+  } from "$lib/akiko";
   import { gradeDisplay } from "./credit-display";
   import { syllabusUrl } from "./links";
 
   let {
-    svelteAkiko,
+    akiko,
     realCourses,
     fakeCourses,
     native = $bindable(),
     onImport,
   }: {
-    svelteAkiko: SvelteAkiko;
+    akiko: Akiko;
     realCourses: RealCourse[];
     fakeCourses: FakeCourse[];
     /** Whether the student entered this major directly, not through 総合学域群. */
@@ -32,7 +38,10 @@
       0,
     ),
   );
-  const unclassifiedCourses = $derived(svelteAkiko.getUnclassifiedCourses());
+  const unclassifiedCourses = $derived({
+    real: akikoGetUnclassifiedRealCourses(akiko),
+    fake: akikoGetUnclassifiedFakeCourses(akiko),
+  });
 
   function handleCsvUpload(event: Event) {
     const input = event.target;

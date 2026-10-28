@@ -97,14 +97,21 @@ function testRedundantOverridesDropped(): void {
 function testMoveRecordsOverride(): void {
   const akiko = akikoForTest(new Map());
 
-  assert(akikoMoveCourse(akiko, WIP, "wont-take") === undefined);
-  assert(akikoGetListKindOverrides(akiko).get(WIP) === "wont-take");
+  const out = akikoMoveCourse(akiko, WIP, "wont-take");
+  assert(out.kind === "moved");
+  assert(out.listKindOverrides.get(WIP) === "wont-take");
+  // The akiko it was given is left as is
+  assert(akikoGetListKind(akiko, WIP) === "might-take");
 
-  assert(akikoMoveCourse(akiko, WIP, "might-take") === undefined);
-  assert(!akikoGetListKindOverrides(akiko).has(WIP));
+  const back = akikoMoveCourse(
+    akikoForTest(out.listKindOverrides),
+    WIP,
+    "might-take",
+  );
+  assert(back.kind === "moved");
+  assert(!back.listKindOverrides.has(WIP));
 
-  assert(akikoMoveCourse(akiko, PASSED, "might-take") === "course-taken");
-  assert(!akikoGetListKindOverrides(akiko).has(PASSED));
+  assert(akikoMoveCourse(akiko, PASSED, "might-take").kind === "course-taken");
 }
 
 /**

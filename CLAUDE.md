@@ -61,10 +61,11 @@ functions derive everything else:
 - Credit stats per cell, per column (`a`–`h`), and for 必修/選択 totals. Each has
   `raw*` and `effective*` values: credits past a cell's or column's maximum
   overflow and don't count.
-- The TWINS export, which detects time overlaps and 事前登録 courses.
+- The TWINS export, which detects time overlaps and leaves out 事前登録 courses
+  and courses not offered this year.
 
-`akiko.svelte.ts` wraps it as `SvelteAkiko`, which makes reads reactive with
-`createSubscriber`.
+An `Akiko` is never changed in place. Moving a course (`akikoMoveCourse`)
+returns new overrides, and the caller builds a new `Akiko` from them.
 
 **Per-major rules** live in `src/lib/requirements/<major>-since-<year>.ts`.
 Each module exports:
@@ -88,10 +89,14 @@ that college's 支援室 has roughly verified the results. `majorIsClosed` repla
 college's pages with a notice.
 
 **UI.** The major page is `src/routes/[tableYear]/[major]/MajorApp.svelte`, with
-its private components and helpers beside it. It keeps the user's state in
-localStorage under `${major}_${tableYear}` in a versioned format
-(`local-data.ts` migrates older versions). `major-app-size.md` describes what
-makes `MajorApp` large and how to keep splitting it.
+its private components and helpers beside it. Everything the user enters that's
+saved (grades, the 移行 answer, courses moved by hand) is one `$state.raw` value,
+`saved`, replaced whole on every change. The `Akiko` is `$derived` from it. One
+effect writes `saved` to localStorage under `${major}_${tableYear}` in a
+versioned format (`local-data.ts` migrates older versions), and a `storage`
+listener takes in what another tab of the same page saved. Nothing else reads
+localStorage. `major-app-size.md` describes what makes `MajorApp` large and how
+to keep splitting it.
 
 **Tests.** Most tests call `runTest` (`src/lib/tests/util.ts`) with a real
 grades CSV from `grade-csvs/` and the expected credit stats per cell. In dev,

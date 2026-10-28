@@ -7,7 +7,6 @@
   import Timetable from "./Timetable.svelte";
   import { type TimetableTab } from "./timetable";
   import Meta from "$lib/Meta.svelte";
-  import { SvelteAkiko } from "$lib/akiko.svelte";
   import { FEEDBACK_FORM_URL, MAJOR_TO_JA } from "$lib/constants";
   import { parseImportedCsv } from "$lib/csv";
   import {
@@ -19,6 +18,15 @@
     gradeIsPass,
     isCellId,
     isCourseId,
+    akikoGetAllCourses,
+    akikoGetCoursesInCell,
+    akikoGetCreditStats,
+    akikoGetMightTakeCourseIds,
+    akikoGetOccupiedSlots,
+    akikoGetTakenCourseIds,
+    akikoGetUnclassifiedFakeCourses,
+    akikoIsOccupied,
+    akikoMoveCourse,
     akikoNew,
     termCompare,
     termToString,
@@ -106,10 +114,13 @@
     return localDataFromJson(json) ?? localDataDefault();
   }
 
-  const initialLocalData = localDataLoad();
-  let realCourses = $state<RealCourse[]>(initialLocalData.realCourses);
-  let fakeCourses = $state<FakeCourse[]>(initialLocalData.fakeCourses);
-  let isNative = $state<boolean>(initialLocalData.native);
+  // Everything the user enters that's saved: grades, the 移行 answer and the
+  // courses moved by hand. Each change replaces it whole, so saving and
+  // everything derived from it see every change.
+  let saved = $state.raw<LocalDataV3>(localDataLoad());
+  const realCourses = $derived(saved.realCourses);
+  const fakeCourses = $derived(saved.fakeCourses);
+  const isNative = $derived(saved.native);
   let selectedCellId = $state<CellId | undefined>(undefined);
   let showCourseRemark = $state(false);
   let filtersOpen = $state(false);
@@ -133,54 +144,67 @@
     ),
   );
 
-  const svelteAkiko = $derived.by(() => {
-    const localData = localDataLoad();
-    const { courseIdToCellId, realCoursePositions, fakeCoursePositions } =
-      classifyCoursesOrFail(
-        config.knownCourses,
-        realCourses,
-        fakeCourses,
-        isNative,
-        config.tableYear,
-        config.major,
-        config.classifyKnownCourses,
-        config.classifyRealCourses,
-        config.classifyFakeCourses,
-      );
-    const akiko = akikoNew(
+  // Apart from akiko, so moving a course doesn't classify every course again
+  const classification = $derived(
+    classifyCoursesOrFail(
       config.knownCourses,
       realCourses,
       fakeCourses,
-      localData.listKindOverrides,
+      isNative,
+      config.tableYear,
+      config.major,
+      config.classifyKnownCourses,
+      config.classifyRealCourses,
+      config.classifyFakeCourses,
+    ),
+  );
+  const akiko = $derived.by(() => {
+    const { courseIdToCellId, realCoursePositions, fakeCoursePositions } =
+      classification;
+    const a = akikoNew(
+      config.knownCourses,
+      realCourses,
+      fakeCourses,
+      saved.listKindOverrides,
       courseIdToCellId,
       realCoursePositions,
       fakeCoursePositions,
       creditRequirements,
     );
-    assert(akiko !== undefined);
-    return new SvelteAkiko(akiko);
+    assert(a !== undefined);
+    return a;
   });
 
-  const creditStats = $derived(svelteAkiko.getCreditStats());
+  const creditStats = $derived(akikoGetCreditStats(akiko));
   const knownCoursesMap = $derived(
     new Map(config.knownCourses.map((c) => [c.id, c])),
   );
-  const realCoursesMap = $derived(svelteAkiko.getRealCoursesMap());
-  const fakeCourseMap = $derived(svelteAkiko.getFakeCoursesMap());
+  const realCoursesMap = $derived(akiko.realCourses);
+  const fakeCourseMap = $derived(akiko.fakeCourses);
 
   $effect(() => {
     if (!browser) return;
-    const localData: LocalDataV3 = {
-      version: 3,
-      // Not through a $derived: moving a course mutates this map in place, so
-      // a $derived of it would never count as changed
-      listKindOverrides: svelteAkiko.getListKindOverrides(),
-      realCourses: Array.from(realCourses),
-      fakeCourses: Array.from(fakeCourses),
-      native: isNative,
-    };
-    localStorage.setItem(localDataKey, localDataToJson(localData));
+    // akiko's overrides, without the ones newer grades have settled
+    const json = localDataToJson({
+      ...saved,
+      listKindOverrides: akiko.listKindOverrides,
+    });
+    // Doesn't write back what another tab just saved
+    if (localStorage.getItem(localDataKey) !== json) {
+      localStorage.setItem(localDataKey, json);
+    }
   });
+
+  /**
+   * Takes what the same page saved in another tab, so this tab's next save
+   * doesn't drop it.
+   */
+  function onStorage(e: StorageEvent) {
+    if (e.key !== localDataKey) return;
+    saved =
+      (e.newValue === null ? undefined : localDataFromJson(e.newValue)) ??
+      localDataDefault();
+  }
 
   type Tab = "import" | "export" | "courses" | "settings";
 
@@ -302,32 +326,29 @@
     });
   }
 
-  /** 成績データを取り込み、同時に「取る授業」をリセットする */
+  /**
+   * Takes in a grades file. Courses moved by hand stay moved, except where the
+   * new grades settle them: passed, or now in that list anyway.
+   */
   function applyImport(
     newRealCourses: RealCourse[],
     newFakeCourses: FakeCourse[],
   ) {
-    if (browser) {
-      // svelteAkiko は上書きを localStorage から直接読むので、下の代入で再構築
-      // が走る前に消しておく
-      const localData: LocalDataV3 = {
-        version: 3,
-        listKindOverrides: new Map(),
-        realCourses: newRealCourses,
-        fakeCourses: newFakeCourses,
-        native: isNative,
-      };
-      localStorage.setItem(localDataKey, localDataToJson(localData));
-    }
-    realCourses = newRealCourses;
-    fakeCourses = newFakeCourses;
+    saved = {
+      ...saved,
+      // akiko's, so moves that the grades being replaced had settled don't
+      // come back if the new ones don't settle them
+      listKindOverrides: akiko.listKindOverrides,
+      realCourses: newRealCourses,
+      fakeCourses: newFakeCourses,
+    };
     trackEvent(
       "grades",
       "import-grades",
       `${config.tableYear}/${config.major}`,
     );
-    if (dev) debugPrintCreditStats(svelteAkiko.getCreditStats());
-    if (svelteAkiko.getUnclassifiedCourses().fake.length > 4) {
+    if (dev) debugPrintCreditStats(akikoGetCreditStats(akiko));
+    if (akikoGetUnclassifiedFakeCourses(akiko).length > 4) {
       alert(
         "申し訳ございませんが、TWINSの仕様のため編入生の認可された科目のみ単位チェック時に正しく単位を計算することができません。認可されていない通常の科目の成績は正しく計算されます。",
       );
@@ -363,9 +384,9 @@
     event.preventDefault();
     const courseId = event.dataTransfer?.getData("text/plain");
     if (courseId === undefined || !isCourseId(courseId)) return;
-    // undefined means the course actually moved (see akikoMoveCourse); only
-    // track real moves so no-op re-drops onto the same list don't count.
-    if (svelteAkiko.moveCourse(courseId, dst) === undefined) {
+    const moved = akikoMoveCourse(akiko, courseId, dst);
+    if (moved.kind === "moved") {
+      saved = { ...saved, listKindOverrides: moved.listKindOverrides };
       trackEvent(
         "plan",
         dst === "might-take" ? "add-course" : "remove-course",
@@ -392,9 +413,9 @@
   // Does not depend on wontTakeFilters
   const courseLists = $derived.by(() => {
     const cs = selectedCellId
-      ? svelteAkiko.getCoursesInCell(selectedCellId)
-      : svelteAkiko.getAllCourses();
-    const courseCellIds = svelteAkiko.getCourseIdToCellId();
+      ? akikoGetCoursesInCell(akiko, selectedCellId)
+      : akikoGetAllCourses(akiko);
+    const courseCellIds = akiko.courseIdToCellId;
 
     function toUi(id: CourseId): UiCourse {
       const kc = knownCoursesMap.get(id);
@@ -444,7 +465,7 @@
     };
   });
 
-  const occupiedSlots = $derived(svelteAkiko.getOccupiedSlots());
+  const occupiedSlots = $derived(akikoGetOccupiedSlots(akiko));
 
   /**
    * 学期と曜日のフィルタに当てはまるか。学期と曜日は同じ Slot が両方を満たす必要
@@ -483,7 +504,7 @@
         if (expects !== undefined && !c.expectsRaw.includes(expects))
           return false;
         if (!matchesSlotFilters(c.slotsRaw, term, dows)) return false;
-        if (onlyUnoccupied && svelteAkiko.isOccupied(occupiedSlots, c.id))
+        if (onlyUnoccupied && akikoIsOccupied(akiko, occupiedSlots, c.id))
           return false;
         return true;
       }),
@@ -495,7 +516,7 @@
 
   // Fake courses that landed in a cell, i.e. those that count toward graduation
   const classifiedFakeCourses = $derived(
-    Array.from(svelteAkiko.getFakeCoursePositions().keys())
+    Array.from(akiko.fakeCoursePositions.keys())
       .map((id) => fakeCourseMap.get(id))
       .filter((c) => c !== undefined),
   );
@@ -652,17 +673,14 @@
       ? config.getRemark?.(selectedCellId, config.tableYear, config.major)
       : undefined,
   );
-  const mightTakeCourseIds = $derived(svelteAkiko.getMightTakeCourseIds());
-  const takenCourseIds = $derived(svelteAkiko.getTakenCourseIds());
+  const mightTakeCourseIds = $derived(akikoGetMightTakeCourseIds(akiko));
+  const takenCourseIds = $derived(akikoGetTakenCourseIds(akiko));
   let exportCount = $state(0);
 
   function reset() {
     const msg =
       "インポートした成績データや「取る授業」に移動した授業などが全てリセットされます。本当にリセットしますか？";
-    if (window.confirm(msg)) {
-      localStorage.removeItem(localDataKey);
-      window.location.reload();
-    }
+    if (window.confirm(msg)) saved = localDataDefault();
   }
 
   type UiColumnCredit = {
@@ -922,6 +940,8 @@
 </script>
 
 <Meta title={metaTitle} description={metaDescription} />
+
+<svelte:window onstorage={onStorage} />
 
 {#snippet courseRow(
   c: UiCourse,
@@ -1190,17 +1210,19 @@
       class:active={activeTab === "import"}
     >
       <ImportTab
-        {svelteAkiko}
+        {akiko}
         {realCourses}
         {fakeCourses}
-        bind:native={isNative}
+        bind:native={
+          () => isNative, (native: boolean) => (saved = { ...saved, native })
+        }
         onImport={importCsvFile}
       />
     </div>
 
     <div id="export-tab" class:active={activeTab === "export"}>
       <ExportTab
-        {svelteAkiko}
+        {akiko}
         {config}
         onShowCell={(cellId: CellId, term: TimetableTab) => {
           selectedCellId = cellId;
@@ -1403,7 +1425,7 @@
           {knownCoursesMap}
           {realCoursesMap}
           onBarClick={(courseId: CourseId) => {
-            const cellId = svelteAkiko.getCellId(courseId);
+            const cellId = akiko.courseIdToCellId.get(courseId);
             if (cellId !== undefined) {
               selectedCellId = cellId;
               scrollCellIntoView(cellId);

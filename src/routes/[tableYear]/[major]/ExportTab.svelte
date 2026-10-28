@@ -2,8 +2,14 @@
   import { resolve } from "$app/paths";
   import Download from "lucide-svelte/icons/download";
   import TriangleAlert from "lucide-svelte/icons/triangle-alert";
-  import { slotToString, type CellId, type CourseId } from "$lib/akiko";
-  import type { SvelteAkiko } from "$lib/akiko.svelte";
+  import {
+    akikoExportForTwins,
+    slotToString,
+    type Akiko,
+    type CellId,
+    type CourseId,
+    type KnownCourse,
+  } from "$lib/akiko";
   import { trackEvent } from "$lib/analytics";
   import type { MajorConfig } from "$lib/app-setup";
   import Dialog from "$lib/Dialog.svelte";
@@ -11,13 +17,13 @@
   import type { TimetableTab } from "./timetable";
 
   let {
-    svelteAkiko,
+    akiko,
     config,
     onShowCell,
     onPickCourses,
     onDownload,
   }: {
-    svelteAkiko: SvelteAkiko;
+    akiko: Akiko;
     config: MajorConfig;
     /** Shows a course's cell, with the timetable on the term it's in. */
     onShowCell: (cellId: CellId, term: TimetableTab) => void;
@@ -37,12 +43,13 @@
     courses: UiOverlapCourse[];
   };
 
-  type UiJizentourokuCourse = UiOverlapCourse & { term: TimetableTab };
+  type UiLeftOutCourse = UiOverlapCourse & { term: TimetableTab };
 
-  const realCoursesMap = $derived(svelteAkiko.getRealCoursesMap());
-  const exportForTwinsResult = $derived(svelteAkiko.exportForTwins());
-  const uiJizentouroku = $derived.by((): UiJizentourokuCourse[] => {
-    return exportForTwinsResult.jizentouroku.map((kc) => {
+  const realCoursesMap = $derived(akiko.realCourses);
+  const exportForTwinsResult = $derived(akikoExportForTwins(akiko));
+
+  function toUiLeftOut(kcs: KnownCourse[]): UiLeftOutCourse[] {
+    return kcs.map((kc) => {
       const rc = realCoursesMap.get(kc.id);
       const firstSlot = kc.slots[0];
       const term: TimetableTab =
@@ -50,11 +57,16 @@
       return {
         id: kc.id,
         name: rc?.name ?? kc.name,
-        cellId: svelteAkiko.getCellId(kc.id),
+        cellId: akiko.courseIdToCellId.get(kc.id),
         term,
       };
     });
-  });
+  }
+
+  const uiJizentouroku = $derived(
+    toUiLeftOut(exportForTwinsResult.jizentouroku),
+  );
+  const uiUnavailable = $derived(toUiLeftOut(exportForTwinsResult.unavailable));
   const exportCourses = $derived(
     exportForTwinsResult.kind === "ok" ? exportForTwinsResult.toExport : [],
   );
@@ -71,7 +83,7 @@
         return {
           id: kc.id,
           name: rc?.name ?? kc.name,
-          cellId: svelteAkiko.getCellId(kc.id),
+          cellId: akiko.courseIdToCellId.get(kc.id),
         };
       }),
     }));
@@ -96,6 +108,35 @@
     a.click();
   }
 </script>
+
+{#snippet leftOut(message: string, courses: UiLeftOutCourse[])}
+  {#if courses.length > 0}
+    <p class="step-problem"><TriangleAlert size={15} />{message}</p>
+    <table>
+      <tbody>
+        {#each courses as course (course.id)}
+          <tr class="course">
+            <td class="id-name">
+              <span>{course.id}</span><br />
+              <a
+                href={syllabusUrl(course.id, config.knownCourseYear)}
+                target="_blank">{course.name}</a
+              >
+            </td>
+            <td>
+              {#if course.cellId !== undefined}
+                {@const cellId = course.cellId}
+                <button onclick={() => onShowCell(cellId, course.term)}
+                  >表示</button
+                >
+              {/if}
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  {/if}
+{/snippet}
 
 <div class="steps-panel">
   <ol class="steps">
@@ -159,7 +200,7 @@
             </tbody>
           </table>
         </details>
-      {:else if uiJizentouroku.length === 0}
+      {:else if uiJizentouroku.length + uiUnavailable.length === 0}
         <p class="step-note">
           TWINSに登録する授業がまだありません。<button
             class="link-button"
@@ -167,36 +208,14 @@
           >
         </p>
       {/if}
-      {#if uiJizentouroku.length > 0}
-        <p class="step-problem">
-          <TriangleAlert
-            size={15}
-          />事前登録の授業はファイルに含まれません。TWINSで別途事前登録してください
-        </p>
-        <table>
-          <tbody>
-            {#each uiJizentouroku as course (course.id)}
-              <tr class="course">
-                <td class="id-name">
-                  <span>{course.id}</span><br />
-                  <a
-                    href={syllabusUrl(course.id, config.knownCourseYear)}
-                    target="_blank">{course.name}</a
-                  >
-                </td>
-                <td>
-                  {#if course.cellId !== undefined}
-                    {@const cellId = course.cellId}
-                    <button onclick={() => onShowCell(cellId, course.term)}
-                      >表示</button
-                    >
-                  {/if}
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      {/if}
+      {@render leftOut(
+        "事前登録の授業はファイルに含まれません。TWINSで別途事前登録してください",
+        uiJizentouroku,
+      )}
+      {@render leftOut(
+        "今年度開講しない授業はTWINSで登録できないので、ファイルに含まれません",
+        uiUnavailable,
+      )}
     </li>
     <li>
       <p>ファイルをダウンロード</p>

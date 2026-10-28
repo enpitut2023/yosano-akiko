@@ -730,20 +730,34 @@ export function akikoFilterOutOccupiedByMightTake(
 
 export type Overlap = { slot: Slot; courses: KnownCourse[] };
 
-export type AkikoExportForTwinsResult =
-  | { kind: "ok"; toExport: KnownCourse[]; jizentouroku: KnownCourse[] }
-  | { kind: "err"; overlaps: Overlap[]; jizentouroku: KnownCourse[] };
+/**
+ * Courses in 取る授業 that can't be registered through the file: 事前登録
+ * courses and courses not offered this year. The UI lists them instead.
+ */
+export type AkikoExportLeftOut = {
+  jizentouroku: KnownCourse[];
+  unavailable: KnownCourse[];
+};
+
+export type AkikoExportForTwinsResult = AkikoExportLeftOut &
+  (
+    | { kind: "ok"; toExport: KnownCourse[] }
+    | { kind: "err"; overlaps: Overlap[] }
+  );
 
 export function akikoExportForTwins(akiko: Akiko): AkikoExportForTwinsResult {
   const candidates: KnownCourse[] = [];
+  const unavailable: KnownCourse[] = [];
   for (const [id, listKind] of akiko.courseIdToListKind) {
     const kc = akiko.knownCourses.get(id);
     if (
-      listKind === "might-take" &&
-      kc !== undefined &&
-      akiko.realCourses.get(id)?.grade !== "wip"
+      listKind !== "might-take" ||
+      kc === undefined ||
+      akiko.realCourses.get(id)?.grade === "wip"
     )
-      candidates.push(kc);
+      continue;
+    if (kc.availability === "unavailable") unavailable.push(kc);
+    else candidates.push(kc);
   }
 
   // Map from "term|dow|period" → CourseId[]
@@ -768,45 +782,51 @@ export function akikoExportForTwins(akiko: Akiko): AkikoExportForTwinsResult {
   overlaps.sort((a, b) => slotCompare(a.slot, b.slot));
 
   const jizentouroku = candidates.filter(knownCourseIsJizentouroku);
-  if (overlaps.length > 0) return { kind: "err", overlaps, jizentouroku };
+  if (overlaps.length > 0) {
+    return { kind: "err", overlaps, jizentouroku, unavailable };
+  }
   return {
     kind: "ok",
     toExport: candidates.filter((c) => !knownCourseIsJizentouroku(c)),
     jizentouroku,
+    unavailable,
   };
 }
 
 export type AkikoMoveCourseDst = "wont-take" | "might-take";
 
 export type AkikoMoveCourseResult =
-  | undefined
-  | "no-such-course"
-  | "course-taken"
-  | "course-does-not-move";
+  | { kind: "moved"; listKindOverrides: ListKindOverrides }
+  | { kind: "no-such-course" | "course-taken" | "course-does-not-move" };
 
+/**
+ * The overrides after moving a course. Leaves `akiko` as is; build the moved
+ * state with `akikoNew` from the returned overrides.
+ */
 export function akikoMoveCourse(
   akiko: Akiko,
   courseId: CourseId,
   dst: AkikoMoveCourseDst,
 ): AkikoMoveCourseResult {
   if (!akiko.knownCourses.has(courseId) && !akiko.realCourses.has(courseId)) {
-    return "no-such-course";
+    return { kind: "no-such-course" };
   }
   const current = akikoGetListKind(akiko, courseId);
-  if (current === "taken") return "course-taken";
-  if (current === dst) return "course-does-not-move";
-  akiko.courseIdToListKind.set(courseId, dst);
+  if (current === "taken") return { kind: "course-taken" };
+  if (current === dst) return { kind: "course-does-not-move" };
 
   // 成績から決まる配置とずれたときだけ記録する。成績どおりの配置に戻ったときは
   // 記録を消し、無意味な上書きが溜まらないようにする。
+  const listKindOverrides = new Map(akiko.listKindOverrides);
   const rc = akiko.realCourses.get(courseId);
   const fromGrade =
     rc === undefined ? "wont-take" : realCourseListKind(rc.grade);
   if (fromGrade === dst) {
-    akiko.listKindOverrides.delete(courseId);
+    listKindOverrides.delete(courseId);
   } else {
-    akiko.listKindOverrides.set(courseId, dst);
+    listKindOverrides.set(courseId, dst);
   }
+  return { kind: "moved", listKindOverrides };
 }
 
 export function akikoGetListKindOverrides(akiko: Akiko): ListKindOverrides {
