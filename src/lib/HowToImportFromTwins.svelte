@@ -3,7 +3,6 @@
 </script>
 
 <section>
-  <h2>TWINSの成績データをダウンロードする手順</h2>
   <ol>
     <li>TWINSにログインします。</li>
     <li>

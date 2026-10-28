@@ -3,9 +3,11 @@
   import BadgeJapaneseYen from "lucide-svelte/icons/badge-japanese-yen";
   import ChevronRight from "lucide-svelte/icons/chevron-right";
   import Funnel from "lucide-svelte/icons/funnel";
+  import FileUp from "lucide-svelte/icons/file-up";
+  import Lock from "lucide-svelte/icons/lock";
+  import CircleCheck from "lucide-svelte/icons/circle-check";
   import Timetable from "$lib/Timetable.svelte";
   import { type TimetableTab } from "$lib/timetable";
-  import HowToImportFromTwins from "$lib/HowToImportFromTwins.svelte";
   import HowToExportForTwins from "$lib/HowToExportForTwins.svelte";
   import Meta from "$lib/Meta.svelte";
   import { SvelteAkiko } from "$lib/akiko.svelte";
@@ -122,6 +124,7 @@
   let showCourseRemark = $state(false);
   let filtersOpen = $state(false);
   let showAllCourses = $state(false);
+  let csvDragOver = $state(false);
   let showNonAvailable = $state(false);
   let wontTakeVisibleLimit = $state(100);
   let leftBarScrollEl = $state<HTMLDivElement | undefined>();
@@ -327,12 +330,18 @@
     if (!(input instanceof HTMLInputElement)) return;
     const file = input.files?.[0];
     if (!file) return;
+    // 同じファイルをもう一度選んだときにも change が発火するようにする
+    input.value = "";
+    importCsvFile(file);
+  }
+
+  function importCsvFile(file: File) {
     void file.text().then((csv) => {
-      // 同じファイルをもう一度選んだときにも change が発火するようにする
-      input.value = "";
       const result = parseImportedCsv(csv);
       if (result.kind !== "ok") {
-        alert("CSVファイルを正しく読み込めませんでした。");
+        alert(
+          "CSVファイルを正しく読み込めませんでした。成績データのファイルをExcelやNumbersなどのアプリケーションで開いたり保存したりすると、データの形式が壊れて読み込めなくなる場合があります。TWINSからダウンロードしたファイルをそのままインポートしてください。",
+        );
         return;
       }
       applyImport(result.realCourses, result.fakeCourses);
@@ -700,6 +709,16 @@
       selectedCellId !== undefined ||
       wontTakeFilters.courseIdOrName !== "" ||
       activeFilterCount > 0,
+  );
+
+  const gradesImported = $derived(
+    realCourses.length + fakeCourses.length > 0,
+  );
+  const importedCredits = $derived(
+    [...realCourses.filter((c) => gradeIsPass(c.grade)), ...fakeCourses].reduce(
+      (sum, c) => sum + (c.credit ?? 0),
+      0,
+    ),
   );
 
   const wontTakeSliced = $derived(
@@ -1103,7 +1122,7 @@
       id: "import",
       target: ["import-tab"],
       title: "成績データをインポート",
-      body: "まずはTWINSの成績データをちょうだいね。下の手順でダウンロードして、「TWINSの成績データをインポート」からそのファイルを選んでくれたら、次に進むわよ〜",
+      body: "まずはTWINSの成績データをちょうだいね。「手順を見る」のとおりにダウンロードして、そのファイルを枠にドロップするか選んでくれたら、次に進むわよ〜",
       choices: [
         { label: "まだ成績ファイルを持っていない（新入生）", next: "cell" },
       ],
@@ -1442,80 +1461,121 @@
       data-tutorial="import-tab"
       class:active={activeTab === "import"}
     >
-      <div id="control">
-        <label id="import-grades-button" class="button">
-          <img src={asset("/icons/import.svg")} width="15px" alt="import" />
-          <span>TWINSの成績データをインポート</span>
-          <input
-            type="file"
-            id="csv"
-            accept=".csv"
-            onchange={handleCsvUpload}
-          />
-        </label>
-        <div id="student-type-container" style="margin-bottom: 50px;">
-          <label
-            ><input
-              type="radio"
-              name="student-type"
-              bind:group={isNative}
-              value={true}
-            /> <span>1年生からこの学類に所属している</span></label
-          ><br />
-          <label
-            ><input
-              type="radio"
-              name="student-type"
-              bind:group={isNative}
-              value={false}
-            /> <span>総合学域群からこの学類に移行した</span></label
-          >
-        </div>
+      <div id="import-panel">
+        <ol id="import-steps">
+          <li>
+            <p>
+              TWINSから成績ファイルをダウンロード
+              <a href={resolve("/twins-grades")} target="_blank">手順を見る</a>
+            </p>
+            <p class="import-note">
+              ※ ExcelやNumbersなどで開かずに、そのままインポートしてください
+            </p>
+          </li>
+          <li>
+            <p>ダウンロードしたファイルをインポート</p>
+            <label
+              id="csv-drop-zone"
+              class:dragover={csvDragOver}
+              class:imported={gradesImported}
+              ondragover={(e) => {
+                e.preventDefault();
+                csvDragOver = true;
+              }}
+              ondragleave={() => (csvDragOver = false)}
+              ondrop={(e) => {
+                e.preventDefault();
+                csvDragOver = false;
+                const file = e.dataTransfer?.files[0];
+                if (file) importCsvFile(file);
+              }}
+            >
+              {#if gradesImported}
+                <CircleCheck size={30} strokeWidth={1.5} />
+                <span>インポート済み（{importedCredits}単位）</span>
+                <span class="sub">ドロップまたはクリックで再インポート</span>
+              {:else}
+                <FileUp size={30} strokeWidth={1.5} />
+                <span>ここにドロップ</span>
+                <span class="sub">またはクリックして選択</span>
+              {/if}
+              <input
+                type="file"
+                class="csv-input"
+                accept=".csv"
+                onchange={handleCsvUpload}
+              />
+            </label>
+            <p class="import-note">
+              <Lock size={15} />成績データは、あきこの開発チームに閲覧されたり、外部に送信されたりすることはありません
+            </p>
+          </li>
+          <li>
+            <div id="student-type">
+              <span>総合学域群からこの学類に移行した？</span>
+              <div class="segmented">
+                <label
+                  ><input
+                    type="radio"
+                    name="student-type"
+                    bind:group={isNative}
+                    value={true}
+                  />いいえ</label
+                >
+                <label
+                  ><input
+                    type="radio"
+                    name="student-type"
+                    bind:group={isNative}
+                    value={false}
+                  />はい</label
+                >
+              </div>
+            </div>
+          </li>
+        </ol>
         {#if unclassifiedCourses.real.length + unclassifiedCourses.fake.length > 0}
-          <h2>卒業単位に含まれない授業</h2>
-          <table class="show-term">
-            <thead>
-              <tr class="course">
-                <th class="id-name">科目</th>
-                <th class="credit">単位</th>
-                <th class="term">評価</th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each unclassifiedCourses.real as c (c.id)}
+          <details>
+            <summary
+              >卒業単位に含まれない授業（{unclassifiedCourses.real.length +
+                unclassifiedCourses.fake.length}件）</summary
+            >
+            <table class="show-term">
+              <thead>
                 <tr class="course">
-                  <td class="id-name">
-                    <span>{c.id}</span><br />
-                    <a href={getSyllabusUrl(c.id, c.takenYear)} target="_blank"
-                      >{c.name}</a
-                    >
-                  </td>
-                  <td class="credit">{c.credit ?? "-"}</td>
-                  <td class="term">{gradeDisplay(c.grade)}</td>
+                  <th class="id-name">科目</th>
+                  <th class="credit">単位</th>
+                  <th class="term">評価</th>
                 </tr>
-              {/each}
-              {#each unclassifiedCourses.fake as c (c.id)}
-                <tr class="course">
-                  <td class="id-name">
-                    <span>（科目番号不明）</span><br />
-                    <span>{c.name}</span>
-                  </td>
-                  <td class="credit">{c.credit ?? "-"}</td>
-                  <td class="term">-</td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {#each unclassifiedCourses.real as c (c.id)}
+                  <tr class="course">
+                    <td class="id-name">
+                      <span>{c.id}</span><br />
+                      <a href={getSyllabusUrl(c.id, c.takenYear)} target="_blank"
+                        >{c.name}</a
+                      >
+                    </td>
+                    <td class="credit">{c.credit ?? "-"}</td>
+                    <td class="term">{gradeDisplay(c.grade)}</td>
+                  </tr>
+                {/each}
+                {#each unclassifiedCourses.fake as c (c.id)}
+                  <tr class="course">
+                    <td class="id-name">
+                      <span>（科目番号不明）</span><br />
+                      <span>{c.name}</span>
+                    </td>
+                    <td class="credit">{c.credit ?? "-"}</td>
+                    <td class="term">-</td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </details>
         {/if}
-        <Callout kind="info">
-          成績データは、あきこの開発チームに閲覧されたり、外部に送信されたりすることはありません。
-        </Callout>
-        <Callout kind="warning">
-          成績データのファイルは、あきこにインポートする前にExcelやNumbersなどのアプリケーションで開いたり保存しないでください。
-          データの形式が壊れ、あきこに正しくインポートできなくなる場合があります。
-        </Callout>
       </div>
-      <HowToImportFromTwins />
     </div>
 
     <div id="export-tab" class:active={activeTab === "export"}>
@@ -2616,10 +2676,6 @@
     z-index: 100;
   }
 
-  input[name="student-type"]:checked + span {
-    font-weight: bold;
-  }
-
   #control {
     margin-bottom: 50px;
     display: flex;
@@ -2660,23 +2716,175 @@
       }
     }
 
-    & label.button {
-      box-sizing: border-box;
-    }
-
     & #reset {
       --h: 10;
     }
   }
 
-  #csv {
+  .csv-input {
     display: none;
   }
 
-  #student-type-container {
-    padding: 10px;
-    background-color: hsl(0, 0%, 97%);
+  #import-tab #import-panel {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 500px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  #import-tab {
+    padding-bottom: 15px;
+  }
+
+  #import-steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+    display: flex;
+    flex-direction: column;
+    gap: 70px;
+
+    & > li {
+      position: relative;
+      counter-increment: step;
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      column-gap: 15px;
+      row-gap: 10px;
+
+      &::before {
+        content: counter(step);
+        grid-row: 1;
+        align-self: center;
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: oklch(70% 50% 270);
+        color: white;
+        font-weight: bold;
+      }
+
+      & > * {
+        grid-column: 2;
+        margin: 0;
+      }
+
+      & > :first-child {
+        align-self: center;
+      }
+
+      &:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: -50px;
+        width: 30px;
+        height: 30px;
+        transform: translateX(-50%);
+        background-color: oklch(85% 0 0);
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14'/%3E%3Cpath d='m19 12-7 7-7-7'/%3E%3C/svg%3E")
+          center / contain no-repeat;
+      }
+    }
+  }
+
+  #csv-drop-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 30px;
+    border: 2px dashed oklch(70% 0.1 270);
     border-radius: 10px;
+    background-color: oklch(97% 0.02 270);
+    color: oklch(40% 0.1 270);
+    cursor: pointer;
+
+    &:hover,
+    &.dragover {
+      background-color: oklch(92% 0.05 270);
+    }
+
+    &.imported {
+      border-color: oklch(70% 0.1 150);
+      background-color: oklch(97% 0.03 150);
+      color: oklch(40% 0.1 150);
+
+      &:hover,
+      &.dragover {
+        background-color: oklch(92% 0.06 150);
+      }
+    }
+
+    & > .sub {
+      font-size: var(--fs-sm);
+    }
+  }
+
+  .import-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    margin: 0;
+    font-size: var(--fs-sm);
+    color: #444;
+
+    & > :global(svg) {
+      flex-shrink: 0;
+      height: 1lh;
+    }
+  }
+
+  #student-type {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .segmented {
+    display: flex;
+    border: 1px solid gray;
+    border-radius: 10px;
+    overflow: hidden;
+
+    & > label {
+      padding: 5px 15px;
+      cursor: pointer;
+
+      & + label {
+        border-left: 1px solid gray;
+      }
+
+      &:has(input:checked) {
+        background-color: oklch(70% 50% 270);
+        color: white;
+      }
+
+      &:has(input:focus-visible) {
+        outline: 2px solid oklch(60% 15% 250);
+        outline-offset: -2px;
+      }
+    }
+
+    & input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+
+  #import-tab details {
+    & > summary {
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
   }
 
   #filter-bar-row > search > input {
