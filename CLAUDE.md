@@ -74,9 +74,11 @@ drives prerendering. `checked: true` there shows a ✅ on the top page, meaning
 that college's 支援室 has roughly verified the results. `majorIsClosed` replaces a
 college's pages with a notice.
 
-**UI.** The major page is `src/lib/MajorApp.svelte`. It keeps the user's state in
+**UI.** The major page is `src/routes/[tableYear]/[major]/MajorApp.svelte`, with
+its private components and helpers beside it. It keeps the user's state in
 localStorage under `${major}_${tableYear}` in a versioned format
-(`local-data.ts` migrates older versions).
+(`local-data.ts` migrates older versions). `major-app-size.md` describes what
+makes `MajorApp` large and how to keep splitting it.
 
 **Tests.** Most tests call `runTest` (`src/lib/tests/util.ts`) with a real
 grades CSV from `grade-csvs/` and the expected credit stats per cell. In dev,
@@ -84,5 +86,10 @@ importing a grades file logs the current stats in that same shape.
 
 ## Conventions
 
+- Code used by only one page lives next to it in `src/routes/…`; `src/lib` is
+  for code shared across pages (the core model, requirements, shared components).
+- Keep types and functions that other files import in `.ts` files, not in a
+  component's `<script module>`: type-aware ESLint can't see those exports and
+  reports every use as unsafe.
 - Write comments in English, except in `src/lib/requirements/`, where Japanese
   fits the domain (履修要覧, 科目区分, …). UI text is Japanese.
