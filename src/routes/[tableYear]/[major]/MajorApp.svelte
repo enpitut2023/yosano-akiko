@@ -69,6 +69,7 @@
   import { debugPrintCreditStats } from "./debug";
   import { mobileUnsupported } from "./mobile-unsupported";
   import MobileUnsupportedNotice from "./MobileUnsupportedNotice.svelte";
+  import SettingsTab from "./SettingsTab.svelte";
   import Tutorial from "./Tutorial.svelte";
   import ImportTab from "./ImportTab.svelte";
   import ExportTab from "./ExportTab.svelte";
@@ -683,12 +684,6 @@
   const takenCourseIds = $derived(akikoGetTakenCourseIds(akiko));
   let exportCount = $state(0);
 
-  function reset() {
-    const msg =
-      "インポートした成績データや「取る授業」に移動した授業などが全てリセットされます。本当にリセットしますか？";
-    if (window.confirm(msg)) saved = localDataDefault();
-  }
-
   type UiColumnCredit = {
     colId: string;
     rect: { x: number; width: number };
@@ -1242,24 +1237,12 @@
     </div>
 
     <div id="settings-tab" class:active={activeTab === "settings"}>
-      <label class="settings-row">
-        <input type="checkbox" bind:checked={showNonAvailable} />
-        <span>今年度開講しない授業を表示する</span>
-      </label>
-      <label class="settings-row">
-        <input type="checkbox" bind:checked={timetableShowTaken} />
-        <span>時間割に単位取得済みの授業を表示する</span>
-      </label>
-      <label class="settings-row">
-        <span>時間割の年度</span>
-        <input type="number" bind:value={timetableYear} />
-      </label>
-      <div id="control">
-        <button id="reset" class="button" onclick={() => reset()}>
-          <img src={asset("/icons/trash.svg")} width="15px" alt="reset" />
-          <span>リセット</span>
-        </button>
-      </div>
+      <SettingsTab
+        bind:showNonAvailable
+        bind:timetableShowTaken
+        bind:timetableYear
+        onReset={() => (saved = localDataDefault())}
+      />
     </div>
 
     <div id="courses-tab" class:active={activeTab === "courses"}>
@@ -2166,51 +2149,6 @@
     z-index: 100;
   }
 
-  #control {
-    margin-bottom: 50px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-
-    & .button {
-      --bg-l: 0.92;
-      --bg-c: 0.05;
-      --border-l: 0.85;
-      --border-c: 0.1;
-      --h: 270;
-      display: grid;
-      place-content: center;
-      place-items: center;
-      gap: 10px;
-      grid-template-columns: auto auto;
-      width: 100%;
-      height: 40px;
-      background-color: oklch(var(--bg-l) var(--bg-c) var(--h));
-      border: 1px solid oklch(var(--border-l) var(--border-c) var(--h));
-      border-radius: 10px;
-
-      &:hover {
-        background-color: oklch(var(--border-l) var(--border-c) var(--h));
-      }
-
-      &:disabled {
-        --bg-l: 0.92;
-        --bg-c: 0;
-        --border-l: 0.85;
-        --border-c: 0;
-        color: oklch(0.6 0 0);
-
-        &:hover {
-          background-color: oklch(var(--bg-l) var(--bg-c) var(--h));
-        }
-      }
-    }
-
-    & #reset {
-      --h: 10;
-    }
-  }
-
   #filter-bar-row > search > input {
     box-sizing: border-box;
     width: 100%;
@@ -2289,25 +2227,6 @@
     right: 5px;
     bottom: 5px;
     width: 300px;
-  }
-
-  .settings-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-    background-color: hsl(0, 0%, 97%);
-    border-radius: 10px;
-    margin-bottom: 5px;
-
-    & input[type="number"] {
-      width: 70px;
-      font-family: inherit;
-      font-size: inherit;
-      padding: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
   }
 
   #drop-guide {

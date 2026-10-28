@@ -1,7 +1,7 @@
 # MajorApp.svelte のサイズ
 
-`src/routes/[tableYear]/[major]/MajorApp.svelte` は 2,340 行（2026-10-28 時点）。script 約 945 行、
-markup 約 615 行、style 約 780 行。単位チェック・出力タブ、ポインタ処理、
+`src/routes/[tableYear]/[major]/MajorApp.svelte` は 2,259 行（2026-10-28 時点）。script 約 940 行、
+markup 約 600 行、style 約 715 行。単位チェック・出力・設定タブ、ポインタ処理、
 スマホ非対応の表示などはすでに別ファイルに切り出してあり、残りの大半は
 履修を組むタブと要件の表。
 
@@ -13,11 +13,10 @@ markup 約 615 行、style 約 780 行。単位チェック・出力タブ、ポ
 | 要件の表（マス、タイトル、単位の合計、ズーム、文字の横幅調整）    | ~180   | ~120   | ~230               | **~530** |
 | チュートリアルのステップ                                          | ~105   |        |                    | ~105     |
 | サイドバー・時間割のリサイズ                                      | ~55    | ~15    | ~40                | ~110     |
-| 設定タブ                                                          | ~10    | ~20    | ~40                | ~70      |
 | import、型、保存する状態（`saved`）、タブ間のつなぎ               | ~295   | ~95    | ~150（レイアウト） | ~540     |
 
 切り出し済み：`ImportTab.svelte`、`ExportTab.svelte`（共有の CSS は
-`steps-panel.scss`）、`Timetable.svelte`、`Tutorial.svelte`、
+`steps-panel.scss`）、`SettingsTab.svelte`、`Timetable.svelte`、`Tutorial.svelte`、
 `MobileUnsupportedNotice.svelte`、`credit-display.ts`、`debug.ts`、
 `gestures.ts`（`panZoom`、`resizeHandle`）、`$lib/Dialog.svelte`。
 
@@ -25,15 +24,13 @@ markup 約 615 行、style 約 780 行。単位チェック・出力タブ、ポ
 
 1. **チュートリアルのステップ**を `tutorial-steps.ts` に移し、必要な状態を
    引数で受け取る関数にする（`MajorApp` の状態と密接なので任意）
-2. **設定タブ**を `SettingsTab.svelte` にする。表示の設定は bind、リセットは
-   コールバックで足りる
-3. **履修を組むタブを分ける**（一番大きい）
+2. **履修を組むタブを分ける**（一番大きい）
    - `CourseFilters.svelte`（フィルタバー、~170 行の derived とフィルタ処理、
      ~130 行の CSS）
    - `CourseTable.svelte`（`courseRow`、`courseTable`、`fakeCourseTable` の
      snippet を置き換える）
 
-3 まで終えると、`MajorApp` はレイアウト、共有の状態（`saved` と、そこから
+2 まで終えると、`MajorApp` はレイアウト、共有の状態（`saved` と、そこから
 derive する `akiko`、選択中のマス、開いているタブ、ズーム）、コンポーネント間の
 つなぎだけになり、1,200〜1,400 行程度になる見込み。
 
