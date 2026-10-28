@@ -6,9 +6,10 @@
   import FileUp from "lucide-svelte/icons/file-up";
   import Lock from "lucide-svelte/icons/lock";
   import CircleCheck from "lucide-svelte/icons/circle-check";
+  import Download from "lucide-svelte/icons/download";
+  import TriangleAlert from "lucide-svelte/icons/triangle-alert";
   import Timetable from "$lib/Timetable.svelte";
   import { type TimetableTab } from "$lib/timetable";
-  import HowToExportForTwins from "$lib/HowToExportForTwins.svelte";
   import Meta from "$lib/Meta.svelte";
   import { SvelteAkiko } from "$lib/akiko.svelte";
   import { MAJOR_TO_JA } from "$lib/constants";
@@ -57,7 +58,6 @@
   } from "$lib/local-data";
   import { browser, dev } from "$app/environment";
   import { assert } from "$lib/util.js";
-  import Callout from "$lib/Callout.svelte";
   import { onMount, tick, untrack } from "svelte";
   import { markTutorialSeen, tutorialSeen } from "$lib/tutorial";
   import TutorialSpotlight, {
@@ -765,6 +765,12 @@
       };
     });
   });
+  const exportCourses = $derived(
+    exportForTwinsResult.kind === "ok" ? exportForTwinsResult.toExport : [],
+  );
+  const exportCredits = $derived(
+    exportCourses.reduce((sum, c) => sum + (c.credit ?? 0), 0),
+  );
   const uiOverlaps = $derived.by((): UiOverlapGroup[] => {
     if (exportForTwinsResult.kind === "ok") return [];
     return exportForTwinsResult.overlaps.map((overlap) => ({
@@ -1180,7 +1186,7 @@
       id: "export",
       target: ["export-button"],
       title: "TWINSに出力",
-      body: "「取る授業一覧を出力」を押してみて〜。取る授業の科目番号を並べたCSVファイルをダウンロードするわ。時間が被ってる授業があると押せないから、そのときは次へを押して、あとで「履修を組む」タブで直してね",
+      body: "「ダウンロード」を押してみて〜。取る授業の科目番号を並べたCSVファイルをダウンロードするわ。時間が被ってる授業があると押せないから、そのときは次へを押して、あとで「履修を組む」タブで直してね",
       nextLabel: "次へ",
       onEnter: () => {
         showTab("export");
@@ -1190,9 +1196,9 @@
     },
     {
       id: "register",
-      target: ["export-howto"],
+      target: ["export-upload"],
       title: "TWINSでまとめて履修登録",
-      body: "ダウンロードしたファイルは、ここに書いてある手順でTWINSにアップロードしてね。それだけで、まとめて履修登録できちゃうわよ〜",
+      body: "ダウンロードしたファイルは、「手順を見る」に書いてある方法でTWINSにアップロードしてね。それだけで、まとめて履修登録できちゃうわよ〜",
       nextLabel: "次へ",
       onEnter: () => showTab("export"),
     },
@@ -1338,7 +1344,7 @@
         >
         <nav>
           <a href="{resolve('/')}#app-page-links">学類一覧に戻る</a>
-          <button class="tutorial-button" onclick={() => (tutorialOpen = true)}
+          <button class="link-button" onclick={() => (tutorialOpen = true)}
             >チュートリアル</button
           >
           <a
@@ -1459,14 +1465,14 @@
       data-tutorial="import-tab"
       class:active={activeTab === "import"}
     >
-      <div id="import-panel">
-        <ol id="import-steps">
+      <div class="steps-panel">
+        <ol class="steps">
           <li>
             <p>
               TWINSから成績ファイルをダウンロード
               <a href={resolve("/twins-grades")} target="_blank">手順を見る</a>
             </p>
-            <p class="import-note">
+            <p class="step-note">
               ※ ExcelやNumbersなどで開かずに、そのままインポートしてください
             </p>
           </li>
@@ -1504,7 +1510,7 @@
                 onchange={handleCsvUpload}
               />
             </label>
-            <p class="import-note">
+            <p class="step-note">
               <Lock
                 size={15}
               />成績データは、あきこの開発チームに閲覧されたり、外部に送信されたりすることはありません
@@ -1580,115 +1586,150 @@
     </div>
 
     <div id="export-tab" class:active={activeTab === "export"}>
-      <div id="control">
-        <button
-          class="button"
-          data-tutorial="export-button"
-          onclick={exportMightTake}
-          disabled={exportForTwinsResult.kind !== "ok"}
-          style="margin-bottom: 20px"
-        >
-          <img src={asset("/icons/export.svg")} width="15px" alt="export" />
-          <span>取る授業一覧を出力</span>
-        </button>
-        {#if uiJizentouroku.length > 0}
-          <Callout kind="warning">
-            「取る授業」に事前登録対象の授業が存在します。
-            事前登録対象の授業はTWINSへのアップロードではなく、別途事前登録が必要です。
-          </Callout>
-          <h2 style="margin-top: 10px; margin-bottom: 0">事前登録対象の授業</h2>
-          <table>
-            <thead>
-              <tr class="course">
-                <th class="id-name">科目</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each uiJizentouroku as course (course.id)}
-                <tr class="course">
-                  <td class="id-name">
-                    <span>{course.id}</span><br />
-                    <a
-                      href={getSyllabusUrl(course.id, config.knownCourseYear)}
-                      target="_blank">{course.name}</a
-                    >
-                  </td>
-                  <td>
-                    {#if course.cellId !== undefined}
-                      {@const cellId = course.cellId}
-                      <button
-                        onclick={() => {
-                          selectedCellId = cellId;
-                          scrollCellIntoView(cellId);
-                          activeTimetableTerm = course.term;
-                          barsVisible = true;
-                          activeTab = "courses";
-                        }}>表示</button
-                      >
-                    {/if}
-                  </td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        {/if}
-        {#if uiOverlaps.length > 0}
-          <Callout kind="warning">
-            「取る授業」に時間が被っている授業が存在します。
-            時間が被っている授業をTWINSに登録するすることはできないため、取る授業一覧をTWINSにアップロードするとエラーになります。
-          </Callout>
-          <h2 style="margin-top: 10px; margin-bottom: 0">
-            時間が被っている授業
-          </h2>
-          <table class="show-term">
-            <thead>
-              <tr class="course">
-                <th class="term">時限</th>
-                <th class="id-name">科目</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each uiOverlaps as group (group.slot)}
-                {#each group.courses as course, i (course.id)}
-                  <tr class="course">
-                    {#if i === 0}
-                      <td
-                        class="term"
-                        rowspan={group.courses.length}
-                        style="white-space: nowrap">{group.slot}</td
-                      >
-                    {/if}
-                    <td class="id-name">
-                      <span>{course.id}</span><br />
-                      <a
-                        href={getSyllabusUrl(course.id, config.knownCourseYear)}
-                        target="_blank">{course.name}</a
-                      >
-                    </td>
-                    <td>
-                      {#if course.cellId !== undefined}
-                        {@const cellId = course.cellId}
-                        <button
-                          onclick={() => {
-                            selectedCellId = cellId;
-                            scrollCellIntoView(cellId);
-                            activeTimetableTerm = group.term;
-                            barsVisible = true;
-                            activeTab = "courses";
-                          }}>表示</button
+      <div class="steps-panel">
+        <ol class="steps">
+          <li>
+            <p>出力する授業を確認</p>
+            {#if exportForTwinsResult.kind === "err"}
+              <p class="step-problem">
+                <TriangleAlert
+                  size={15}
+                />時間が被っている授業はTWINSに登録できません。1つを残して、他は「当てはまる授業」に戻してください
+              </p>
+              <table class="show-term">
+                <tbody>
+                  {#each uiOverlaps as group (group.slot)}
+                    {#each group.courses as course, i (course.id)}
+                      <tr class="course">
+                        {#if i === 0}
+                          <td
+                            class="term"
+                            rowspan={group.courses.length}
+                            style="white-space: nowrap">{group.slot}</td
+                          >
+                        {/if}
+                        <td class="id-name">
+                          <span>{course.id}</span><br />
+                          <a
+                            href={getSyllabusUrl(
+                              course.id,
+                              config.knownCourseYear,
+                            )}
+                            target="_blank">{course.name}</a
+                          >
+                        </td>
+                        <td>
+                          {#if course.cellId !== undefined}
+                            {@const cellId = course.cellId}
+                            <button
+                              onclick={() => {
+                                selectedCellId = cellId;
+                                scrollCellIntoView(cellId);
+                                activeTimetableTerm = group.term;
+                                showTab("courses");
+                              }}>表示</button
+                            >
+                          {/if}
+                        </td>
+                      </tr>
+                    {/each}
+                  {/each}
+                </tbody>
+              </table>
+            {:else if exportCourses.length > 0}
+              <details>
+                <summary>{exportCourses.length}件・{exportCredits}単位</summary>
+                <table>
+                  <tbody>
+                    {#each exportCourses as course (course.id)}
+                      <tr class="course">
+                        <td class="id-name">
+                          <span>{course.id}</span><br />
+                          <a
+                            href={getSyllabusUrl(
+                              course.id,
+                              config.knownCourseYear,
+                            )}
+                            target="_blank">{course.name}</a
+                          >
+                        </td>
+                        <td class="credit">{course.credit ?? "-"}</td>
+                      </tr>
+                    {/each}
+                  </tbody>
+                </table>
+              </details>
+            {:else if uiJizentouroku.length === 0}
+              <p class="step-note">
+                TWINSに登録する授業がまだありません。<button
+                  class="link-button"
+                  onclick={() => showTab("courses")}
+                  >「履修を組む」で選ぶ</button
+                >
+              </p>
+            {/if}
+            {#if uiJizentouroku.length > 0}
+              <p class="step-problem">
+                <TriangleAlert
+                  size={15}
+                />事前登録の授業はファイルに含まれません。TWINSで別途事前登録してください
+              </p>
+              <table>
+                <tbody>
+                  {#each uiJizentouroku as course (course.id)}
+                    <tr class="course">
+                      <td class="id-name">
+                        <span>{course.id}</span><br />
+                        <a
+                          href={getSyllabusUrl(
+                            course.id,
+                            config.knownCourseYear,
+                          )}
+                          target="_blank">{course.name}</a
                         >
-                      {/if}
-                    </td>
-                  </tr>
-                {/each}
-              {/each}
-            </tbody>
-          </table>
-        {/if}
+                      </td>
+                      <td>
+                        {#if course.cellId !== undefined}
+                          {@const cellId = course.cellId}
+                          <button
+                            onclick={() => {
+                              selectedCellId = cellId;
+                              scrollCellIntoView(cellId);
+                              activeTimetableTerm = course.term;
+                              showTab("courses");
+                            }}>表示</button
+                          >
+                        {/if}
+                      </td>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            {/if}
+          </li>
+          <li>
+            <p>ファイルをダウンロード</p>
+            <button
+              id="export-button"
+              data-tutorial="export-button"
+              onclick={exportMightTake}
+              disabled={exportCourses.length === 0}
+            >
+              <Download size={20} />ダウンロード
+            </button>
+          </li>
+          <li data-tutorial="export-upload">
+            <p>
+              TWINSでアップロード
+              <a href={resolve("/twins-register")} target="_blank">手順を見る</a
+              >
+            </p>
+            <p class="step-note">
+              ※ アップロードしても、登録済みの授業は取り消されません
+            </p>
+          </li>
+        </ol>
       </div>
-      <div data-tutorial="export-howto"><HowToExportForTwins /></div>
     </div>
 
     <div id="settings-tab" class:active={activeTab === "settings"}>
@@ -2191,7 +2232,7 @@
     }
   }
 
-  .tutorial-button {
+  .link-button {
     all: unset;
     cursor: pointer;
     color: LinkText;
@@ -2281,7 +2322,6 @@
     grid-template-rows: 1fr;
     overflow-y: scroll;
     padding: 15px;
-    padding-bottom: 50vh;
 
     &.active {
       display: grid;
@@ -2726,7 +2766,7 @@
     display: none;
   }
 
-  #import-tab #import-panel {
+  .steps-panel {
     box-sizing: border-box;
     width: 100%;
     max-width: 500px;
@@ -2736,11 +2776,7 @@
     gap: 15px;
   }
 
-  #import-tab {
-    padding-bottom: 15px;
-  }
-
-  #import-steps {
+  .steps {
     margin: 0;
     padding: 0;
     list-style: none;
@@ -2828,7 +2864,7 @@
     }
   }
 
-  .import-note {
+  .step-note {
     display: flex;
     align-items: flex-start;
     gap: 5px;
@@ -2839,6 +2875,43 @@
     & > :global(svg) {
       flex-shrink: 0;
       height: 1lh;
+    }
+  }
+
+  .step-problem {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    margin: 0;
+    font-size: var(--fs-sm);
+    color: oklch(50% 0.15 50);
+
+    & > :global(svg) {
+      flex-shrink: 0;
+      height: 1lh;
+    }
+  }
+
+  #export-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background-color: oklch(60% 50% 270);
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+
+    &:hover {
+      background-color: oklch(50% 50% 270);
+    }
+
+    &:disabled {
+      background-color: oklch(90% 0 0);
+      color: oklch(60% 0 0);
     }
   }
 
