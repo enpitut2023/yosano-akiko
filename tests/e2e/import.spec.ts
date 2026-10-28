@@ -1,5 +1,5 @@
 import { gradesFile } from "./fixtures/grades";
-import { expect, openTab, test, type Page } from "./test";
+import { dragToMightTake, expect, openTab, test, type Page } from "./test";
 
 const GRADES = gradesFile([
   // a1, half of it
@@ -89,9 +89,7 @@ test("imported grades survive a reload", async ({ page }) => {
 
 test("re-importing resets 取る授業", async ({ page }) => {
   await importGrades(page);
-  const rows = await coursesOfCell(page, "b1");
-  await rows.filter({ hasText: "GB20401" }).dragTo(page.locator("#right-bar"));
-  await expect(rows.filter({ hasText: "GB20401" })).toHaveCount(0);
+  await dragToMightTake(page, "b1", "GB20401");
 
   await openTab(page, "単位チェック");
   await importGrades(page);

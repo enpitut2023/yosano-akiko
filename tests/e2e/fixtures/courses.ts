@@ -50,7 +50,7 @@ export const knownCourses: KnownCourse[] = [
     remark: "",
   }),
   course({
-    // b1 (GB20…), overlaps GB31801
+    // b1 (GB20…), overlaps GB31801 (b2)
     id: "GB20401",
     name: "オートマトンと形式言語",
     credit: 2,
@@ -65,7 +65,7 @@ export const knownCourses: KnownCourse[] = [
     remark: "",
   }),
   course({
-    // b1 (GB30…), overlaps GB20401
+    // b2 (GB3… but not GB30…), overlaps GB20401
     id: "GB31801",
     name: "データベース概論",
     credit: 2,

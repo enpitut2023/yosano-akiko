@@ -261,20 +261,20 @@ filter by file instead.
 
 ### TWINSに出力 (export)
 
-- [ ] With no 取る授業, step 1 says there is nothing to register, ダウンロード
+- [x] With no 取る授業, step 1 says there is nothing to register, ダウンロード
       is disabled, and the link switches to 履修を組む.
-- [ ] The summary shows 「N件・M単位」, and expanding it lists the courses.
-- [ ] ダウンロード downloads 科目番号一覧.csv containing exactly the 取る授業
-      course IDs.
-- [ ] After a download, the support dialog appears.
-- [ ] With overlapping courses:
-  - [ ] the warning and the overlap table show;
-  - [ ] ダウンロード is disabled;
-  - [ ] 表示 selects the cell, switches to 履修を組む and sets the timetable
+- [x] The summary shows 「N件・M単位」, and expanding it lists the courses.
+- [x] ダウンロード downloads 科目番号一覧.csv containing exactly the 取る授業
+      course IDs, except 履修中 ones, which are registered already.
+- [x] After a download, the support dialog appears.
+- [x] With overlapping courses:
+  - [x] the warning and the overlap table show;
+  - [x] ダウンロード is disabled;
+  - [x] 表示 selects the cell, switches to 履修を組む and sets the timetable
         term.
-- [ ] With a 事前登録 course, its warning shows, and the course isn't in the
+- [x] With a 事前登録 course, its warning shows, and the course isn't in the
       downloaded file.
-- [ ] The 手順を見る link opens `/twins-register`.
+- [x] The 手順を見る link opens `/twins-register`.
 
 ### Tutorial
 

@@ -54,6 +54,18 @@ export async function openTab(page: Page, name: string): Promise<void> {
   );
 }
 
+/** Adds a course to 取る授業 by dragging it out of its cell's 当てはまる授業. */
+export async function dragToMightTake(
+  page: Page,
+  cellId: string,
+  courseId: string,
+): Promise<void> {
+  await page.getByTestId(`cell-${cellId}`).click();
+  const row = page.locator("#left-bar tr.course", { hasText: courseId });
+  await row.dragTo(page.locator("#right-bar"));
+  await expect(row).toHaveCount(0);
+}
+
 /**
  * Waits until the page has likely hydrated, for checks that would pass
  * vacuously on the prerendered HTML: that something doesn't appear, or that
