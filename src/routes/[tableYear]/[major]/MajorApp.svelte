@@ -3,29 +3,21 @@
   import BadgeJapaneseYen from "lucide-svelte/icons/badge-japanese-yen";
   import ChevronRight from "lucide-svelte/icons/chevron-right";
   import Hand from "lucide-svelte/icons/hand";
-  import Timetable from "./Timetable.svelte";
-  import { timetableTabAfterPlanning, type TimetableTab } from "./timetable";
+  import { type TimetableTab } from "./timetable";
   import Meta from "$lib/Meta.svelte";
   import { FEEDBACK_FORM_URL, MAJOR_TO_JA } from "$lib/constants";
   import { parseImportedCsv } from "$lib/csv";
   import {
     columnIdIsElective,
     isCellId,
-    isCourseId,
-    akikoGetAllCourses,
-    akikoGetMergedCourse,
-    akikoGetCoursesInCell,
+    akikoGetCourseLists,
     akikoGetCreditStats,
     akikoGetMightTakeCourseIds,
-    akikoGetOccupiedSlots,
     akikoGetUnclassifiedFakeCourses,
-    akikoMoveCourse,
     akikoNew,
-    creditSum,
-    mergedCourseIsUnavailable,
     type CellId,
-    type CourseId,
     type FakeCourse,
+    type ListKindOverrides,
     type RealCourse,
     cellIdToRow,
     cellIdToColumnId,
@@ -47,9 +39,7 @@
   import { onMount, untrack } from "svelte";
   import { markSeen, seen } from "./seen";
   import {
-    cellCreditStatsDisplay,
     columnCreditStatsDisplay,
-    creditProgressToString,
     electiveCreditStatsDisplay,
     getPercentage,
   } from "./credit-display";
@@ -57,22 +47,13 @@
   import { mobileUnsupported } from "./mobile-unsupported";
   import MobileUnsupportedNotice from "./MobileUnsupportedNotice.svelte";
   import SettingsTab from "./SettingsTab.svelte";
-  import CourseFilters from "./CourseFilters.svelte";
-  import CourseTable from "./CourseTable.svelte";
-  import FakeCourseTable from "./FakeCourseTable.svelte";
+  import CoursesTab from "./CoursesTab.svelte";
   import Tutorial from "./Tutorial.svelte";
   import ImportTab from "./ImportTab.svelte";
   import ExportTab from "./ExportTab.svelte";
   import { SUPPORT_URL } from "./links";
   import { panZoom, resizeHandle } from "./gestures";
   import type { TutorialStep } from "./tutorial";
-  import {
-    courseMatchesFilters,
-    filterChoicesOf,
-    filtersActiveCount,
-    filtersInEffect,
-    wontTakeFiltersDefault,
-  } from "./course-filters";
 
   let { config }: { config: MajorConfig } = $props();
 
@@ -95,14 +76,7 @@
   const fakeCourses = $derived(saved.fakeCourses);
   const isNative = $derived(saved.native);
   let selectedCellId = $state<CellId | undefined>(undefined);
-  let showCourseRemark = $state(false);
-  let showAllCourses = $state(false);
   let showNonAvailable = $state(false);
-  let wontTakeVisibleLimit = $state(100);
-  let leftBarScrollEl = $state<HTMLDivElement | undefined>();
-  let wontTakeSentinelEl = $state<HTMLDivElement | undefined>();
-  // As chosen; `filters` leaves out the values no longer on offer
-  let wontTakeFilters = $state(wontTakeFiltersDefault());
 
   const creditRequirements = $derived(
     createCreditRequirementsOrFail(
@@ -205,42 +179,6 @@
     );
   }
 
-  const TIMETABLE_HEIGHT_DEFAULT = 400;
-  const TIMETABLE_HEIGHT_MIN = 100;
-
-  let timetableHeight = $state(TIMETABLE_HEIGHT_DEFAULT);
-
-  $effect(() => {
-    document.documentElement.style.setProperty(
-      "--timetable-height",
-      `${timetableHeight}px`,
-    );
-  });
-
-  $effect(() => {
-    const update = () => {
-      if (rightBarEl === undefined) return;
-      document.documentElement.style.setProperty(
-        "--right-bar-top",
-        `${rightBarEl.getBoundingClientRect().top}px`,
-      );
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  });
-
-  function resizeTimetable(e: PointerEvent) {
-    if (rightBarEl === undefined) return;
-    const top = rightBarEl.getBoundingClientRect().top;
-    const raw = e.clientY - top;
-    const snapped = Math.round(raw / 5) * 5;
-    timetableHeight = Math.min(
-      window.innerHeight - top - SIDEBAR_MARGIN,
-      Math.max(TIMETABLE_HEIGHT_MIN, snapped),
-    );
-  }
-
   let scrollX = $state(0);
 
   // Zoom uses two representations:
@@ -323,130 +261,6 @@
     }
   }
 
-  function handleDragStart(
-    event: DragEvent,
-    courseId: string,
-    listKind: "wont-take" | "might-take",
-  ) {
-    if (event.dataTransfer) {
-      event.dataTransfer.setData("text/plain", courseId);
-      event.dataTransfer.dropEffect = "move";
-    }
-    const target = listKind === "wont-take" ? rightBarEl : leftBarEl;
-    if (target) {
-      const r = target.getBoundingClientRect();
-      dropGuide = {
-        left: r.left,
-        top: r.top,
-        width: r.width,
-        height: r.height,
-      };
-    }
-  }
-
-  function handleDragEnd() {
-    dropGuide = undefined;
-  }
-
-  function handleDrop(event: DragEvent, dst: "wont-take" | "might-take") {
-    event.preventDefault();
-    const courseId = event.dataTransfer?.getData("text/plain");
-    if (courseId === undefined || !isCourseId(courseId)) return;
-    const moved = akikoMoveCourse(akiko, courseId, dst);
-    if (moved.kind === "moved") {
-      saved = { ...saved, listKindOverrides: moved.listKindOverrides };
-      trackEvent(
-        "plan",
-        dst === "might-take" ? "add-course" : "remove-course",
-        courseId,
-      );
-    }
-    if (dst === "might-take") {
-      timetableYear = config.knownCourseYear;
-      activeTimetableTerm = timetableTabAfterPlanning(
-        akiko.knownCourses.get(courseId)?.slots ?? [],
-        activeTimetableTerm,
-      );
-    }
-  }
-
-  // Does not depend on wontTakeFilters
-  const courseLists = $derived.by(() => {
-    const ids = selectedCellId
-      ? akikoGetCoursesInCell(akiko, selectedCellId)
-      : akikoGetAllCourses(akiko);
-    const courses = (ids: CourseId[]) =>
-      ids
-        .map((id) => akikoGetMergedCourse(akiko, id))
-        .filter((c) => c !== undefined);
-    return {
-      wontTake: courses(ids.wontTake).filter(
-        (c) => showNonAvailable || !mergedCourseIsUnavailable(c),
-      ),
-      mightTake: courses(ids.mightTake),
-      taken: courses(ids.taken),
-      fake: ids.fake
-        .map((id) => akiko.fakeCourses.get(id))
-        .filter((fc) => fc !== undefined),
-    };
-  });
-
-  const occupiedSlots = $derived(akikoGetOccupiedSlots(akiko));
-  const filterChoices = $derived(filterChoicesOf(courseLists.wontTake));
-  const filters = $derived(filtersInEffect(wontTakeFilters, filterChoices));
-
-  const filteredCourseLists = $derived({
-    wontTake: courseLists.wontTake.filter((c) =>
-      courseMatchesFilters(c, filters, occupiedSlots),
-    ),
-    mightTake: courseLists.mightTake,
-    taken: courseLists.taken,
-    fake: courseLists.fake,
-  });
-
-  const fakeCreditTotal = $derived(creditSum(filteredCourseLists.fake));
-
-  $effect(() => {
-    void selectedCellId;
-    wontTakeVisibleLimit = 100;
-  });
-  $effect(() => {
-    if (!wontTakeSentinelEl || !leftBarScrollEl) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (
-          entry.isIntersecting &&
-          wontTakeVisibleLimit < filteredCourseLists.wontTake.length
-        )
-          wontTakeVisibleLimit += 100;
-      },
-      { root: leftBarScrollEl, rootMargin: "0px 0px 200px 0px" },
-    );
-    observer.observe(wontTakeSentinelEl);
-    return () => observer.disconnect();
-  });
-
-  const activeFilterCount = $derived(filtersActiveCount(filters));
-  const courseListVisible = $derived(
-    showAllCourses ||
-      selectedCellId !== undefined ||
-      filters.courseIdOrName !== "" ||
-      activeFilterCount > 0,
-  );
-
-  const wontTakeSliced = $derived(
-    filteredCourseLists.wontTake.slice(0, wontTakeVisibleLimit),
-  );
-
-  const selectedCellStats = $derived(
-    selectedCellId !== undefined
-      ? creditStats.cells.get(selectedCellId)
-      : undefined,
-  );
-  const listCreditTotals = $derived({
-    mightTake: creditSum(courseLists.mightTake),
-    taken: creditSum(courseLists.taken),
-  });
   const selectedCellRemark = $derived(
     selectedCellId !== undefined
       ? config.getRemark?.(selectedCellId, config.tableYear, config.major)
@@ -501,8 +315,6 @@
   );
 
   let requirementsEl = $state<HTMLDivElement | undefined>();
-  let leftBarEl = $state<HTMLDivElement | undefined>();
-  let rightBarEl = $state<HTMLDivElement | undefined>();
 
   function scrollCellIntoView(cellId: CellId) {
     const rect = cellRects.find((r) => r.id === cellId);
@@ -519,10 +331,6 @@
     scrollCellIntoView(cellId);
     showTab("courses");
   }
-
-  let dropGuide = $state<
-    { left: number; top: number; width: number; height: number } | undefined
-  >();
 
   let columnSpanEls = $state<Record<string, HTMLSpanElement | undefined>>({});
   let overallSpanEl = $state<HTMLSpanElement | undefined>();
@@ -661,7 +469,9 @@
       body: "表のマスをどれか押してみて〜。そのマスに当てはまる授業を右側に出すわね。授業が出てこなかったら、別のマスを試してみてちょうだい",
       onEnter: () => (selectedCellId = undefined),
       waitFor: () =>
-        selectedCellId !== undefined && courseLists.wontTake.length > 0,
+        selectedCellId !== undefined &&
+        akikoGetCourseLists(akiko, selectedCellId, showNonAvailable).wontTake
+          .length > 0,
     },
     {
       id: "syllabus",
@@ -920,181 +730,22 @@
     </div>
 
     <div id="courses-tab" class:active={activeTab === "courses"}>
-      <div
-        bind:this={leftBarEl}
-        id="left-bar"
-        data-tutorial="left-bar"
-        ondragover={(e) => {
-          e.preventDefault();
-          if (e.dataTransfer !== null) e.dataTransfer.dropEffect = "move";
-        }}
-        ondrop={(e) => handleDrop(e, "wont-take")}
-      >
-        <CourseFilters
-          bind:filters={wontTakeFilters}
-          choices={filterChoices}
-          bind:showRemark={showCourseRemark}
-        />
-        <div id="left-bar-scroll" bind:this={leftBarScrollEl}>
-          {#if courseListVisible}
-            <div class="section">
-              <h2>
-                {selectedCellId ? "当てはまる授業" : "全ての授業"}
-                ({filteredCourseLists.wontTake.length}/{courseLists.wontTake
-                  .length})
-              </h2>
-              {#if courseLists.wontTake.length === 0}
-                <p>該当する授業がありません</p>
-              {:else}
-                <CourseTable
-                  courses={wontTakeSliced}
-                  catalogYear={config.knownCourseYear}
-                  showRemark={showCourseRemark}
-                  showGotoCell={selectedCellId === undefined}
-                  onShowCell={showCell}
-                  showSlots
-                  showExpects
-                  onDragStart={(e: DragEvent, courseId: CourseId) =>
-                    handleDragStart(e, courseId, "wont-take")}
-                  onDragEnd={handleDragEnd}
-                />
-              {/if}
-              <div bind:this={wontTakeSentinelEl}></div>
-            </div>
-          {:else}
-            <div class="course-list-hint">
-              <p>表のマスを押すか、授業を検索してください</p>
-              <button type="button" onclick={() => (showAllCourses = true)}
-                >全ての授業を見る（{courseLists.wontTake.length}件）</button
-              >
-            </div>
-          {/if}
-        </div>
-        {#if selectedCellRemark}
-          <div id="cell-remark">
-            <h2>備考</h2>
-            <p style="white-space: pre-line">{selectedCellRemark}</p>
-          </div>
-        {/if}
-      </div>
-
-      <div
-        bind:this={rightBarEl}
-        id="right-bar"
-        data-tutorial="right-bar"
-        ondragover={(e) => {
-          e.preventDefault();
-          if (e.dataTransfer !== null) e.dataTransfer.dropEffect = "move";
-        }}
-        ondrop={(e) => handleDrop(e, "might-take")}
-      >
-        <Timetable
-          year={timetableYear}
-          bind:activeTerm={activeTimetableTerm}
-          {akiko}
-          showTaken={timetableShowTaken}
-          onBarClick={(courseId: CourseId) => {
-            const cellId = akiko.courseIdToCellId.get(courseId);
-            if (cellId !== undefined) showCell(cellId);
-          }}
-          onBarDragStart={(e: DragEvent, courseId: CourseId) =>
-            handleDragStart(e, courseId, "might-take")}
-          onBarDragEnd={handleDragEnd}
-        />
-        <div id="right-bar-scroll">
-          {#if selectedCellStats}
-            {@const display = cellCreditStatsDisplay(selectedCellStats)}
-            <div class="section">
-              <h2>単位数</h2>
-              <p>
-                選択されたマスの単位：{display.brief}
-                {#if display.warning}<br />⚠️ {display.warning}{/if}
-              </p>
-            </div>
-          {:else if selectedCellId === undefined}
-            {@const electiveWarning = electiveCreditStatsDisplay(
-              creditStats.elective,
-            ).warning}
-            <div class="section">
-              <h2>単位数</h2>
-              <p>
-                必修科目：{creditProgressToString(creditStats.compulsory)}<br />
-                選択科目：{creditProgressToString(creditStats.elective)}<br />
-                合計：{creditProgressToString(creditStats.total)}
-                {#if electiveWarning}<br />⚠️ {electiveWarning}{/if}
-              </p>
-            </div>
-          {/if}
-          <div class="section">
-            <div class="list-heading">
-              <h2>取る授業</h2>
-              {#if listCreditTotals.mightTake > 0}
-                <span class="credit-total">
-                  {listCreditTotals.mightTake}単位
-                </span>
-              {/if}
-            </div>
-            {#if filteredCourseLists.mightTake.length === 0}
-              <p class="hint">左の一覧から授業をドラッグしてください</p>
-            {:else}
-              <CourseTable
-                courses={filteredCourseLists.mightTake}
-                catalogYear={config.knownCourseYear}
-                showRemark={showCourseRemark}
-                showGotoCell={selectedCellId === undefined}
-                onShowCell={showCell}
-                showSlots
-                showExpects={false}
-                onDragStart={(e: DragEvent, courseId: CourseId) =>
-                  handleDragStart(e, courseId, "might-take")}
-                onDragEnd={handleDragEnd}
-              />
-            {/if}
-          </div>
-          {#if filteredCourseLists.taken.length > 0}
-            <div class="section">
-              <div class="list-heading">
-                <h2>単位取得済みの授業</h2>
-                {#if listCreditTotals.taken > 0}
-                  <span class="credit-total">
-                    {listCreditTotals.taken}単位
-                  </span>
-                {/if}
-              </div>
-              <CourseTable
-                courses={filteredCourseLists.taken}
-                catalogYear={config.knownCourseYear}
-                showRemark={showCourseRemark}
-                showGotoCell={selectedCellId === undefined}
-                onShowCell={showCell}
-                showSlots={false}
-                showExpects={false}
-              />
-            </div>
-          {/if}
-          {#if filteredCourseLists.fake.length > 0}
-            <div class="section">
-              <div class="list-heading">
-                <h2>認可された授業</h2>
-                <span class="credit-total">{fakeCreditTotal}単位</span>
-              </div>
-              <FakeCourseTable courses={filteredCourseLists.fake} />
-            </div>
-          {/if}
-        </div>
-      </div>
+      <CoursesTab
+        {akiko}
+        {creditStats}
+        {selectedCellId}
+        cellRemark={selectedCellRemark}
+        {showNonAvailable}
+        {timetableShowTaken}
+        bind:timetableYear
+        bind:timetableTerm={activeTimetableTerm}
+        onShowCell={showCell}
+        onMove={(listKindOverrides: ListKindOverrides) =>
+          (saved = { ...saved, listKindOverrides })}
+      />
     </div>
   </div>
 </main>
-
-{#if dropGuide}
-  <div
-    id="drop-guide"
-    style="left:{dropGuide.left}px; top:{dropGuide.top}px; width:{dropGuide.width}px; height:{dropGuide.height}px"
-  >
-    ここに授業をドロップ
-  </div>
-{/if}
 
 <button
   id="bars-toggle"
@@ -1108,12 +759,6 @@
 
 {#if barsVisible}
   <div id="sidebar-resize-handle" {@attach resizeHandle(resizeSidebar)}></div>
-  {#if activeTab === "courses"}
-    <div
-      id="timetable-resize-handle"
-      {@attach resizeHandle(resizeTimetable)}
-    ></div>
-  {/if}
 {/if}
 
 <MobileUnsupportedNotice />
@@ -1130,8 +775,6 @@
   :global(:root) {
     --sidebar-width: 740px;
     --toggle-width: 30px;
-    --timetable-height: 400px;
-    --right-bar-top: 0px;
   }
 
   main {
@@ -1268,13 +911,6 @@
     grid-template-rows: auto 1fr;
     border-left: 1px solid black;
     overflow: hidden;
-
-    & h2 {
-      margin-top: 0;
-      &:not(:first-of-type) {
-        margin-top: 50px;
-      }
-    }
   }
 
   #tab-header {
@@ -1364,127 +1000,6 @@
     }
   }
 
-  #left-bar {
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    border-right: 1px dashed black;
-    overflow: hidden;
-  }
-
-  #left-bar-scroll {
-    overflow-y: scroll;
-    padding: 0 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-
-    & h2 {
-      position: sticky;
-      top: 0;
-      background-color: white;
-      padding: 5px 0;
-      margin: 0;
-    }
-  }
-
-  .course-list-hint {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    padding: 30px 0;
-    color: #444;
-
-    & > button {
-      font-size: var(--fs-sm);
-      padding: 5px 15px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      background-color: white;
-      cursor: pointer;
-
-      &:hover {
-        background-color: oklch(95% 0 0);
-      }
-    }
-  }
-
-  #right-bar-scroll .hint {
-    color: #444;
-  }
-
-  #right-bar {
-    display: grid;
-    grid-template-rows: var(--timetable-height) 1fr;
-    overflow: hidden;
-  }
-
-  #right-bar-scroll {
-    overflow-y: scroll;
-    padding: 0 15px;
-    border-top: 1px dashed black;
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-
-    & h2 {
-      margin: 0;
-    }
-
-    & h2,
-    & .list-heading {
-      position: sticky;
-      top: 0;
-      background-color: white;
-      padding: 5px 0;
-    }
-
-    & .list-heading h2 {
-      position: static;
-      padding: 0;
-    }
-  }
-
-  #left-bar-scroll,
-  #right-bar-scroll {
-    & p {
-      margin: 0;
-      margin-top: 0;
-    }
-
-    & > .section:first-child {
-      margin-top: 15px;
-    }
-
-    & > .section:last-child {
-      margin-bottom: 15px;
-    }
-  }
-
-  #cell-remark {
-    border-top: 1px dashed black;
-    padding: 15px;
-
-    & > h2 {
-      margin: 0;
-    }
-
-    & > p {
-      margin: 0;
-      margin-top: 10px;
-    }
-  }
-
-  .list-heading {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .credit-total {
-    font-size: 1em;
-  }
-
   .cell {
     --border-width: 3px;
     --green-percentage: 0%;
@@ -1549,17 +1064,6 @@
     width: 10px;
     transform: translateX(-5px);
     cursor: col-resize;
-    z-index: 100;
-  }
-
-  #timetable-resize-handle {
-    position: fixed;
-    top: calc(var(--right-bar-top) + var(--timetable-height));
-    left: calc(100vw - var(--sidebar-width) / 2);
-    right: 0;
-    height: 10px;
-    transform: translateY(-5px);
-    cursor: row-resize;
     z-index: 100;
   }
 
@@ -1633,16 +1137,6 @@
     right: 5px;
     bottom: 5px;
     width: 300px;
-  }
-
-  #drop-guide {
-    display: grid;
-    position: fixed;
-    background-color: rgba(255, 255, 255, 0.9);
-    outline: 8px dashed hsla(0, 0%, 70%, 0.8);
-    outline-offset: -20px;
-    place-items: center;
-    pointer-events: none;
   }
 
   #zoom-control {

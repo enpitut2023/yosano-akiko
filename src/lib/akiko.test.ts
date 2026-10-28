@@ -9,6 +9,7 @@ import {
   type RealCourse,
   akikoGetAllCourses,
   akikoGetClassifiedFakeCourses,
+  akikoGetCourseLists,
   akikoGetMergedCourse,
   akikoGetCreditStats,
   akikoGetListKind,
@@ -253,6 +254,39 @@ test("lists put 履修中 courses first, then failed ones, each by ID", () => {
   const lists = akikoGetAllCourses(akiko);
   expect(lists.wontTake).toEqual([FAILED, first, PLANNED]);
   expect(lists.mightTake).toEqual([WIP, otherWip]);
+});
+
+describe("akikoGetCourseLists", () => {
+  const unavailable = courseId("GB50000");
+  const other = courseId("GB60000");
+  const akiko = akikoWith({
+    known: [
+      knownCourse(PLANNED),
+      { ...knownCourse(unavailable), availability: "unavailable" },
+      { ...knownCourse(WIP), availability: "unavailable" },
+      knownCourse(other),
+    ],
+    real: [realCourse(WIP, "wip")],
+    cells: { b1: [PLANNED, unavailable, WIP], b2: [other] },
+  });
+  const ids = (courses: { id: CourseId }[]) => courses.map((c) => c.id);
+
+  test("a cell's courses", () => {
+    const lists = akikoGetCourseLists(akiko, cellId("b1"), true);
+    expect(ids(lists.wontTake)).toEqual([PLANNED, unavailable]);
+    expect(ids(lists.mightTake)).toEqual([WIP]);
+  });
+
+  test("every course without a cell", () => {
+    const lists = akikoGetCourseLists(akiko, undefined, true);
+    expect(ids(lists.wontTake)).toEqual([PLANNED, unavailable, other]);
+  });
+
+  test("leaves out unavailable courses from 当てはまる授業 only", () => {
+    const lists = akikoGetCourseLists(akiko, cellId("b1"), false);
+    expect(ids(lists.wontTake)).toEqual([PLANNED]);
+    expect(ids(lists.mightTake)).toEqual([WIP]);
+  });
 });
 
 test("akikoGetClassifiedFakeCourses has only the ones in a cell", () => {

@@ -631,6 +631,43 @@ export function akikoGetAllCourses(akiko: Akiko): CourseIdLists {
   });
 }
 
+export type CourseLists = {
+  wontTake: MergedCourse[];
+  mightTake: MergedCourse[];
+  taken: MergedCourse[];
+  fake: FakeCourse[];
+};
+
+/**
+ * The courses of a cell, or every course if `cellId` is undefined, in each
+ * list. `includeUnavailable` applies to 当てはまる授業 only, since a course
+ * already planned or passed is shown whatever this year's catalog says.
+ */
+export function akikoGetCourseLists(
+  akiko: Akiko,
+  cellId: CellId | undefined,
+  includeUnavailable: boolean,
+): CourseLists {
+  const ids =
+    cellId !== undefined
+      ? akikoGetCoursesInCell(akiko, cellId)
+      : akikoGetAllCourses(akiko);
+  const courses = (ids: CourseId[]) =>
+    ids
+      .map((id) => akikoGetMergedCourse(akiko, id))
+      .filter((c) => c !== undefined);
+  return {
+    wontTake: courses(ids.wontTake).filter(
+      (c) => includeUnavailable || !mergedCourseIsUnavailable(c),
+    ),
+    mightTake: courses(ids.mightTake),
+    taken: courses(ids.taken),
+    fake: ids.fake
+      .map((id) => akiko.fakeCourses.get(id))
+      .filter((fc) => fc !== undefined),
+  };
+}
+
 export function akikoGetCreditStats(akiko: Akiko): CreditStats {
   const cellIdToMightTakeIds = new Map<CellId, CourseId[]>();
   const cellIdToTakenIds = new Map<CellId, CourseId[]>();
