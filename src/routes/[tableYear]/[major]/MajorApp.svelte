@@ -201,9 +201,15 @@
    */
   function onStorage(e: StorageEvent) {
     if (e.key !== localDataKey) return;
-    saved =
-      (e.newValue === null ? undefined : localDataFromJson(e.newValue)) ??
-      localDataDefault();
+    if (e.newValue === null) {
+      saved = localDataDefault();
+      return;
+    }
+    // Ignored when it can't be read, such as a newer version's format saved
+    // by a tab opened after a deploy: falling back to empty data would save
+    // that right away and erase it
+    const data = localDataFromJson(e.newValue);
+    if (data !== undefined) saved = data;
   }
 
   type Tab = "import" | "export" | "courses" | "settings";

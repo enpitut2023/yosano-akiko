@@ -214,6 +214,30 @@ test.describe("without grades", () => {
     await reload(page);
     await expectPlan(page, ["GB20401", FAILED.id]);
   });
+
+  test("data another tab saved that can't be read is ignored", async ({
+    page,
+    context,
+  }) => {
+    await dragToMightTake(page, "b1", "GB20401");
+    const received = page.evaluate(
+      () =>
+        new Promise((resolve) =>
+          addEventListener("storage", resolve, { once: true }),
+        ),
+    );
+    const other = await context.newPage();
+    await other.goto("");
+    // Like a newer version of the page would save
+    await other.evaluate(() =>
+      localStorage.setItem(
+        "coins_2023",
+        JSON.stringify({ version: Number.MAX_SAFE_INTEGER }),
+      ),
+    );
+    await received;
+    await expectPlan(page, ["GB20401"]);
+  });
 });
 
 test.describe("with saved data", () => {
