@@ -254,9 +254,12 @@ filter by file instead.
 - [x] Dragging a course to the right adds it to 取る授業 and shows it in the
       timetable on its term.
 - [x] Dragging it back removes it.
+- [x] Dragging its timetable bar or its その他 row out removes it too. A passed
+      course's bar and row can't be dragged.
 - [x] The timetable term tabs switch terms. A course without a fixed time
       slot shows under その他.
-- [x] 該当マスを表示 selects the course's cell and scrolls it into view.
+- [x] 該当マスを表示 selects the course's cell and scrolls it into view. So
+      does clicking its timetable bar.
 - [x] A course name links to its KdB syllabus page.
 - [x] Courses moved by hand stay moved after a reload.
 

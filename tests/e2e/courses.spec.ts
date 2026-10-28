@@ -1,10 +1,14 @@
+import { knownCourseYear } from "./fixtures/courses";
+import { gradesFile } from "./fixtures/grades";
 import {
   deselectCell,
   dragToMightTake,
   dragToWontTake,
   expect,
+  importGrades,
   mightTakeIds,
   openTab,
+  takenIds,
   test,
   timetableBar,
   timetableTerm,
@@ -141,6 +145,77 @@ test("dragging a course back removes it from 取る授業", async ({ page }) => 
   await dragToWontTake(page, "GB20401");
   await expect(wontTakeIds(page)).toContainText(["GB20401"]);
   await expect(timetableBar(page, "GB20401")).toBeHidden();
+});
+
+test("dragging a course's bar out of the timetable removes it", async ({
+  page,
+}) => {
+  await dragToMightTake(page, "b1", "GB20401");
+  await timetableBar(page, "GB20401").dragTo(page.locator("#left-bar"));
+  await expect(timetableBar(page, "GB20401")).toHaveCount(0);
+  await deselectCell(page);
+  await expect(mightTakeIds(page)).toHaveText([]);
+});
+
+test("clicking a course's bar selects its cell and scrolls to it", async ({
+  page,
+}) => {
+  await dragToMightTake(page, "b1", "GB20401");
+  await page.getByTestId("cell-a1").click();
+  const cell = page.getByTestId("cell-b1");
+  await page.locator("#requirements").evaluate((el) => {
+    el.scrollLeft = el.scrollWidth;
+    el.scrollTop = el.scrollHeight;
+  });
+  await expect(cell).not.toBeInViewport();
+
+  await timetableBar(page, "GB20401").click();
+  await expect(cell).toHaveClass(/selected/);
+  await expect(cell).toBeInViewport();
+});
+
+test("dragging a course out of その他 removes it", async ({ page }) => {
+  await dragToMightTake(page, "b2", "GB13322");
+  const row = page.locator(".other-tab tr", { hasText: "GB13322" });
+  await row.dragTo(page.locator("#left-bar"));
+  await expect(row).toHaveCount(0);
+  await deselectCell(page);
+  await expect(mightTakeIds(page)).toHaveText([]);
+});
+
+test("a passed course can't be dragged out of the timetable", async ({
+  page,
+}) => {
+  await importGrades(
+    page,
+    gradesFile([
+      {
+        id: "GB20401",
+        name: "オートマトンと形式言語",
+        credit: 2,
+        grade: "A",
+        year: knownCourseYear,
+      },
+      {
+        id: "GB13322",
+        name: "情報特別演習II",
+        credit: 2,
+        grade: "A",
+        year: knownCourseYear,
+      },
+    ]),
+  );
+  await openTab(page, "履修を組む");
+  await expect(timetableBar(page, "GB20401")).toHaveAttribute(
+    "draggable",
+    "false",
+  );
+  await timetableTerm(page, "その他").click();
+  await expect(
+    page.locator(".other-tab tr", { hasText: "GB13322" }),
+  ).toHaveAttribute("draggable", "false");
+  await deselectCell(page);
+  await expect(takenIds(page)).toHaveText(["GB13322", "GB20401"]);
 });
 
 test("該当マスを表示 selects the course's cell and scrolls to it", async ({
