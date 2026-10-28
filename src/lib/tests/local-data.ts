@@ -3,7 +3,6 @@ import {
   type ListKindOverrides,
   type RealCourse,
   akikoGetListKind,
-  akikoGetListKindOverrides,
   akikoMoveCourse,
   akikoNew,
   isCourseId,
@@ -79,7 +78,7 @@ function testOverridesBeatGrades(): void {
   assert(akikoGetListKind(akiko, PASSED) === "taken");
 
   // 成績が勝った上書きは記録から消える
-  assert(!akikoGetListKindOverrides(akiko).has(PASSED));
+  assert(!akiko.listKindOverrides.has(PASSED));
 }
 
 /** 成績どおりの配置を指す上書きは、意味がないので捨てられる。 */
@@ -90,7 +89,7 @@ function testRedundantOverridesDropped(): void {
       [FAILED, "wont-take"],
     ] as const),
   );
-  assert(akikoGetListKindOverrides(akiko).size === 0);
+  assert(akiko.listKindOverrides.size === 0);
 }
 
 /** 授業を動かすと上書きが記録され、成績どおりの配置に戻すと消える。 */

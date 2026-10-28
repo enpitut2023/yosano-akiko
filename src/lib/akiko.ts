@@ -720,14 +720,6 @@ export function akikoIsOccupied(
   return false;
 }
 
-export function akikoFilterOutOccupiedByMightTake(
-  akiko: Akiko,
-  courseIds: CourseId[],
-): CourseId[] {
-  const occupied = akikoGetOccupiedSlots(akiko);
-  return courseIds.filter((id) => !akikoIsOccupied(akiko, occupied, id));
-}
-
 export type Overlap = { slot: Slot; courses: KnownCourse[] };
 
 /**
@@ -827,8 +819,4 @@ export function akikoMoveCourse(
     listKindOverrides.set(courseId, dst);
   }
   return { kind: "moved", listKindOverrides };
-}
-
-export function akikoGetListKindOverrides(akiko: Akiko): ListKindOverrides {
-  return akiko.listKindOverrides;
 }
