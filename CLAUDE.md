@@ -27,14 +27,10 @@ and assets go through `resolve()` / `asset()` from `$app/paths`.
 - `npm run test:unit`: each unit test is a plain module that asserts when
   imported, so run one with `npx tsx src/lib/tests/coins.ts`. New test files
   must be imported from `src/lib/tests/index.ts`.
-- `npm run test:e2e`: Playwright tests in `tests/e2e/`, run against a production
-  build served on :42264. The build runs with `AKIKO_E2E=1`, which makes a
-  plugin in `vite.config.ts` swap the course catalog for
-  `tests/e2e/fixtures/courses.ts` and sends the output to `build-e2e/` and
-  `.svelte-kit-e2e/`. Run one with `npx playwright test -g "<name>"`. Import
-  `test` from `tests/e2e/test.ts`: it marks the tutorial and pan hint as seen,
-  stubs requests to other origins (Matomo), and fails the test if the page logs
-  an error.
+- `npm run test:e2e`: Playwright tests in `tests/e2e/`, against a production
+  build with a test-only course catalog. Run one with
+  `npx playwright test -g "<name>"`. Read `tests/e2e/README.md` before writing
+  one: it explains the setup and the pitfalls, and lists what's still to do.
 - `npm run verify`: everything CI runs: `check`, `lint`, `test:unit`, `build`,
   then `test:e2e`.
 
