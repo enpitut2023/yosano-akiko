@@ -1085,6 +1085,7 @@
           )}
           <div
             class="cell"
+            data-testid="cell-{r.id}"
             class:selected={selectedCellId === r.id}
             style="left:{r.x}px; top:{r.y}px; width:{r.width}px; height:{r.height}px; --green-percentage:{green}%; --yellow-percentage:{yellow}%"
             onclick={(e) => {

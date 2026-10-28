@@ -5,7 +5,7 @@ import {
   MAJOR_TO_JA,
   majorIsClosed,
 } from "$lib/constants";
-import { clickUntil, expect, test } from "./test";
+import { clickUntil, expect, test, waitForHydration } from "./test";
 
 for (const { tableYear, major } of instances) {
   test(`${tableYear}/${major} loads`, async ({ page }) => {
@@ -39,8 +39,6 @@ for (const path of [
 ]) {
   test(`/${path} loads`, async ({ page }) => {
     await page.goto(path);
-    // These pages have nothing to click, so wait out hydration this way for
-    // the fixture to see any errors it logs
-    await page.waitForLoadState("networkidle");
+    await waitForHydration(page);
   });
 }

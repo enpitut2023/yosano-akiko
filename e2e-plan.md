@@ -138,8 +138,10 @@ in prerendering. Not worth it.
 
 ### Grades CSVs (`tests/e2e/fixtures/*.csv`, to do)
 
-Same columns as a TWINS export (see `grade-csvs/` and `src/lib/csv.ts`),
-written to match the fixture catalog so expected results are obvious:
+`grades.csv` (one passed `GB26403`) exists for the tutorial, which only needs
+some valid file. The import tests need more, in the same columns as a TWINS
+export (see `grade-csvs/` and `src/lib/csv.ts`), written to match the fixture
+catalog so expected results are obvious:
 
 - A passed required course (e.g. `GB26403`, grade A).
 - A 履修中 course (starts in 取る授業).
@@ -191,6 +193,9 @@ written to match the fixture catalog so expected results are obvious:
 - **Selectors:**
   - Prefer role plus accessible name for buttons and tabs.
   - Use the existing `data-tutorial` attributes for regions.
+  - When nothing else identifies an element (a cell, the tutorial's current
+    step), add `data-testid` and use `getByTestId`, so it's clear the
+    attribute is there for tests.
   - Japanese text in selectors breaks when wording changes, so keep text
     matching to what the test is actually about.
 - **Visual snapshots:** skip them for now. Fonts differ between macOS and
@@ -269,12 +274,12 @@ filter by file instead.
 
 ### Tutorial
 
-- [ ] It opens on the first visit and not after it has been seen.
-- [ ] The branch for students with grades walks through import, cell, drag
+- [x] It opens on the first visit and not after it has been seen.
+- [x] The branch for students with grades walks through import, cell, drag
       and export. Each waiting step advances only after the real action.
-- [ ] The まだない branch skips the import steps.
-- [ ] The tab steps wait for the user to click each tab.
-- [ ] Closing it marks it seen, and the チュートリアル link reopens it.
+- [x] The まだない branch skips the import steps.
+- [x] The tab steps wait for the user to click each tab.
+- [x] Closing it marks it seen, and the チュートリアル link reopens it.
 
 ### Table
 

@@ -1,4 +1,9 @@
-import { test as base, expect, type Locator } from "@playwright/test";
+import {
+  test as base,
+  expect,
+  type Locator,
+  type Page,
+} from "@playwright/test";
 import { SEEN_KEYS } from "../../src/routes/[tableYear]/[major]/seen";
 
 export { expect, type Page } from "@playwright/test";
@@ -40,6 +45,15 @@ export const test = base.extend<{ seen: boolean }>({
     expect(errors, "errors logged by the page").toEqual([]);
   },
 });
+
+/**
+ * Waits until the page has likely hydrated, for checks that would pass
+ * vacuously on the prerendered HTML: that something doesn't appear, or that
+ * the page logs no errors. Pages with a button can use `clickUntil` instead.
+ */
+export async function waitForHydration(page: Page): Promise<void> {
+  await page.waitForLoadState("networkidle");
+}
 
 /**
  * Clicks `target` until `check` passes. Pages are prerendered, so a click

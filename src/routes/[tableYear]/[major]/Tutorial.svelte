@@ -175,6 +175,7 @@
     class="popover"
     role="dialog"
     aria-labelledby="tutorial-title"
+    data-testid="tutorial-{step.id}"
     tabindex="-1"
     bind:this={popoverEl}
     bind:offsetWidth={popoverWidth}
