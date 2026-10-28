@@ -328,9 +328,9 @@ How courses moved by hand interact with grades, rebuilds and what's saved.
 - [x] リセット asks for confirmation. Cancelling keeps the data; confirming
       clears it.
 
-### Saved data
+### Saved data (`saved-plan.spec.ts`)
 
-- [ ] localStorage from older format versions (v1, v2) loads and is migrated
+- [x] localStorage from older format versions (v1, v2) loads and is migrated
       to v3.
 - [x] Corrupt localStorage falls back to the defaults without crashing.
 

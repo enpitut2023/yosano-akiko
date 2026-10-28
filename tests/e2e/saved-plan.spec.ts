@@ -250,6 +250,84 @@ test.describe("with saved data", () => {
     }, data);
   }
 
+  /** Waits for the page to save its data in the current format. */
+  async function expectSavedAsV3(page: Page) {
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            (
+              JSON.parse(localStorage.getItem("coins_2023") ?? "{}") as {
+                version?: number;
+              }
+            ).version,
+        ),
+      )
+      .toBe(3);
+  }
+
+  test("data saved in the v1 format loads", async ({ page }) => {
+    await seed(
+      page,
+      JSON.stringify({
+        version: 1,
+        courseYearToMightTakeCourseIds: { "2025": ["GB20401"] },
+        importedCourses: [
+          {
+            id: PASSED.id,
+            name: PASSED.name,
+            grade: "a",
+            credit: PASSED.credit,
+            takenYear: PASSED.year,
+          },
+          {
+            id: "__free1",
+            name: "編入前の単位",
+            grade: "free",
+            credit: 2,
+            takenYear: 2023,
+          },
+        ],
+        native: false,
+      }),
+    );
+    await page.goto("2023/coins");
+    await openTab(page, "単位チェック");
+    await expect(page.locator("#csv-drop-zone")).toContainText(
+      `インポート済み（${PASSED.credit + 2}単位）`,
+    );
+    await expect(page.getByRole("radio", { name: "はい" })).toBeChecked();
+    await openTab(page, "履修を組む");
+    await expectPlan(page, ["GB20401"]);
+    await expectSavedAsV3(page);
+  });
+
+  test("data saved in the v2 format loads", async ({ page }) => {
+    await seed(
+      page,
+      JSON.stringify({
+        version: 2,
+        // v2 saved 履修中 courses here too, not only the ones moved by hand
+        mightTakeCourseIds: [WIP.id, "GB20401"],
+        realCourses: [
+          {
+            id: WIP.id,
+            name: WIP.name,
+            credit: WIP.credit,
+            takenYear: WIP.year,
+            grade: "wip",
+          },
+        ],
+        fakeCourses: [],
+        native: true,
+      }),
+    );
+    await page.goto("2023/coins");
+    await openTab(page, "履修を組む");
+    await expectPlan(page, [WIP.id, "GB20401"]);
+    await expectSavedAsV3(page);
+  });
+
   test("broken saved data is replaced", async ({ page }) => {
     await seed(page, "{");
     await page.goto("2023/coins");

@@ -114,8 +114,6 @@ them, so adding a row for one test can't break another.
 
 ### Tests
 
-- [ ] Saved data from the v1 and v2 formats loads (the migration itself has
-      unit tests).
 - [ ] Mobile: with touch emulation and a small viewport, the unsupported
       overlay shows, このまま使う dismisses it, and the tutorial doesn't open on
       its own.
