@@ -76,8 +76,7 @@
     sections.find((s) => s.tableYear === pickedYear),
   );
   const pickedCollegeInstances = $derived(
-    pickedSection?.colleges.find((c) => c.college === pickedCollege)
-      ?.instances,
+    pickedSection?.colleges.find((c) => c.college === pickedCollege)?.instances,
   );
 </script>
 

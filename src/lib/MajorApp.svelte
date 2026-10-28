@@ -711,9 +711,7 @@
       activeFilterCount > 0,
   );
 
-  const gradesImported = $derived(
-    realCourses.length + fakeCourses.length > 0,
-  );
+  const gradesImported = $derived(realCourses.length + fakeCourses.length > 0);
   const importedCredits = $derived(
     [...realCourses.filter((c) => gradeIsPass(c.grade)), ...fakeCourses].reduce(
       (sum, c) => sum + (c.credit ?? 0),
@@ -1507,7 +1505,9 @@
               />
             </label>
             <p class="import-note">
-              <Lock size={15} />成績データは、あきこの開発チームに閲覧されたり、外部に送信されたりすることはありません
+              <Lock
+                size={15}
+              />成績データは、あきこの開発チームに閲覧されたり、外部に送信されたりすることはありません
             </p>
           </li>
           <li>
@@ -1553,8 +1553,9 @@
                   <tr class="course">
                     <td class="id-name">
                       <span>{c.id}</span><br />
-                      <a href={getSyllabusUrl(c.id, c.takenYear)} target="_blank"
-                        >{c.name}</a
+                      <a
+                        href={getSyllabusUrl(c.id, c.takenYear)}
+                        target="_blank">{c.name}</a
                       >
                     </td>
                     <td class="credit">{c.credit ?? "-"}</td>
