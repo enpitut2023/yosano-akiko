@@ -164,15 +164,16 @@ written to match the fixture catalog so expected results are obvious:
   - Use `addInitScript` to set `akiko_tutorial_seen` and
     `akiko_pan_hint_seen`, except in tests of those features.
   - Each test gets a fresh context, so localStorage is isolated.
-- [x] Add the `npm run e2e` script, and add `playwright.config.ts` to ESLint's
+- [x] Add the `npm run test:e2e` script, and add `playwright.config.ts` to ESLint's
       `allowDefaultProject`.
 - [x] Ignore Playwright's output folders (`test-results/`,
       `playwright-report/`) and the e2e build outputs in `.gitignore`.
 - [x] Stub every request to another origin, which also silences Matomo.
-- [x] CI: install Chromium with dependencies and run `npm run e2e` in
-      `pr-test.yml`.
+- [x] CI: both workflows install Chromium with dependencies and run
+      `npm run verify`, which ends with `npm run test:e2e`. The deploy waits for
+      it.
 - [ ] CI: cache the Playwright browser if installing it gets slow.
-- [x] Document `npm run e2e`, the fixture catalog and `AKIKO_E2E` in
+- [x] Document `npm run test:e2e`, the fixture catalog and `AKIKO_E2E` in
       CLAUDE.md.
 
 ## Things tests must handle

@@ -4,16 +4,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "npm run lint-grade-csvs && npm t && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
+    "format": "prettier -w .",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "lint": "eslint .",
-    "lint-grade-csvs": "tsx scripts/lint-grade-csvs.ts",
-    "test": "tsx src/lib/tests/index.ts",
-    "e2e": "playwright test",
-    "format": "prettier -w ."
+    "lint": "npm run lint:eslint && npm run lint:format && npm run lint:grade-csvs",
+    "lint:eslint": "eslint .",
+    "lint:format": "prettier --check .",
+    "lint:grade-csvs": "tsx scripts/lint-grade-csvs.ts",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "tsx src/lib/tests/index.ts",
+    "test:e2e": "playwright test",
+    "verify": "npm run check && npm run lint && npm run test:unit && npm run build && npm run test:e2e"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -15,12 +15,19 @@ and assets go through `resolve()` / `asset()` from `$app/paths`.
 ## Commands
 
 - `npm run dev`: dev server at http://localhost:42263/yosano-akiko/
+- `npm run build`: prerenders every page into `build/`. Prerendering fails if a
+  page's rects JSON or table SVG is missing, or a link points at a missing page.
+- `npm run format`: Prettier
 - `npm run check`: `svelte-kit sync` and `svelte-check`
-- `npm run lint`: ESLint with type-aware rules
-- `npm t`: all tests. Each test is a plain module that asserts when imported, so
-  run one with `npx tsx src/lib/tests/coins.ts`. New test files must be imported
-  from `src/lib/tests/index.ts`.
-- `npm run e2e`: Playwright tests in `tests/e2e/`, run against a production
+- `npm run lint`: runs each of these, which also run on their own:
+  - `lint:eslint`: ESLint with type-aware rules
+  - `lint:format`: Prettier in check mode
+  - `lint:grade-csvs`: validates `grade-csvs/`
+- `npm test`: unit and e2e tests.
+- `npm run test:unit`: each unit test is a plain module that asserts when
+  imported, so run one with `npx tsx src/lib/tests/coins.ts`. New test files
+  must be imported from `src/lib/tests/index.ts`.
+- `npm run test:e2e`: Playwright tests in `tests/e2e/`, run against a production
   build served on :42264. The build runs with `AKIKO_E2E=1`, which makes a
   plugin in `vite.config.ts` swap the course catalog for
   `tests/e2e/fixtures/courses.ts` and sends the output to `build-e2e/` and
@@ -28,14 +35,11 @@ and assets go through `resolve()` / `asset()` from `$app/paths`.
   `test` from `tests/e2e/test.ts`: it marks the tutorial and pan hint as seen,
   stubs requests to other origins (Matomo), and fails the test if the page logs
   an error.
-- `npm run build`: validates `grade-csvs/`, runs the tests, then prerenders every
-  page into `build/`. Prerendering fails if a page's rects JSON or table SVG is
-  missing.
-- `npm run format`: Prettier
+- `npm run verify`: everything CI runs: `check`, `lint`, `test:unit`, `build`,
+  then `test:e2e`.
 
-CI runs `npm run check && npm run lint && npm run build` on pull requests and on
-`main`, followed by `npm run e2e`. Pushes to `main` deploy to GitHub Pages once
-those pass.
+CI runs `npm run verify` on pull requests and on `main`. Pushes to `main` deploy
+to GitHub Pages once it passes.
 
 ## Architecture
 

@@ -14,11 +14,11 @@ jobs:
       url: ${{ steps.deploy-pages-step.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
       - env:
           BASE_PATH: "/${{ github.event.repository.name }}"
-        run: npm i && npm run check && npm run lint && npm run build
-      - run: npx playwright install --with-deps chromium
-      - run: npm run e2e
+        run: npm run verify
       - uses: actions/upload-pages-artifact@v3
         with:
           path: "build"
