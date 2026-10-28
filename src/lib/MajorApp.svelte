@@ -2,6 +2,7 @@
   import { resolve, asset } from "$app/paths";
   import BadgeJapaneseYen from "lucide-svelte/icons/badge-japanese-yen";
   import ChevronRight from "lucide-svelte/icons/chevron-right";
+  import Funnel from "lucide-svelte/icons/funnel";
   import Timetable from "$lib/Timetable.svelte";
   import { type TimetableTab } from "$lib/timetable";
   import HowToImportFromTwins from "$lib/HowToImportFromTwins.svelte";
@@ -119,6 +120,8 @@
   let isNative = $state<boolean>(initialLocalData.native);
   let selectedCellId = $state<CellId | undefined>(undefined);
   let showCourseRemark = $state(false);
+  let filtersOpen = $state(false);
+  let showAllCourses = $state(false);
   let showNonAvailable = $state(false);
   let wontTakeVisibleLimit = $state(100);
   let leftBarScrollEl = $state<HTMLDivElement | undefined>();
@@ -683,6 +686,21 @@
     observer.observe(wontTakeSentinelEl);
     return () => observer.disconnect();
   });
+
+  const activeFilterCount = $derived(
+    [
+      wontTakeFilters.credit !== undefined,
+      wontTakeFilters.expects !== undefined,
+      wontTakeFilters.term !== undefined,
+      wontTakeFilters.onlyUnoccupied,
+    ].filter(Boolean).length + wontTakeFilters.dows.length,
+  );
+  const courseListVisible = $derived(
+    showAllCourses ||
+      selectedCellId !== undefined ||
+      wontTakeFilters.courseIdOrName !== "" ||
+      activeFilterCount > 0,
+  );
 
   const wontTakeSliced = $derived(
     filteredCourseLists.wontTake.slice(0, wontTakeVisibleLimit),
@@ -1653,101 +1671,126 @@
                 bind:value={wontTakeFilters.courseIdOrName}
               />
             </search>
-            <select
-              value={wontTakeFilters.credit ?? ""}
-              class:placeholder={wontTakeFilters.credit === undefined}
-              onchange={(e) => {
-                const v = e.currentTarget.value;
-                wontTakeFilters.credit = v === "" ? undefined : Number(v);
-              }}
+            <button
+              type="button"
+              class="filter-toggle"
+              class:open={filtersOpen}
+              aria-expanded={filtersOpen}
+              aria-label="絞り込み条件"
+              title="絞り込み条件"
+              onclick={() => (filtersOpen = !filtersOpen)}
             >
-              <option value="">全単位</option>
-              {#each availableCredits as v (v)}
-                <option value={v}>{v}単位</option>
-              {/each}
-            </select>
-            <select
-              value={wontTakeFilters.expects ?? ""}
-              class:placeholder={wontTakeFilters.expects === undefined}
-              onchange={(e) => {
-                const v = e.currentTarget.value;
-                wontTakeFilters.expects = v === "" ? undefined : Number(v);
-              }}
-            >
-              <option value="">全年次</option>
-              {#each availableExpects as v (v)}
-                <option value={v}>{v}年次</option>
-              {/each}
-            </select>
+              <Funnel size={20} strokeWidth={1.5} />
+              {#if activeFilterCount > 0}
+                <span class="filter-badge">{activeFilterCount}</span>
+              {/if}
+            </button>
           </div>
-          <div id="filter-bar-slot-row">
-            <select
-              value={wontTakeFilters.term ?? ""}
-              class:placeholder={wontTakeFilters.term === undefined}
-              onchange={(e) => {
-                const v = e.currentTarget.value;
-                wontTakeFilters.term = v === "" ? undefined : (v as Term);
-              }}
-            >
-              <option value="">全学期</option>
-              {#each availableTermGroups as group (group.label)}
-                <optgroup label={group.label}>
-                  {#each group.terms as t (t)}
-                    <option value={t}>{termToString(t)}</option>
-                  {/each}
-                </optgroup>
-              {/each}
-            </select>
-            <div id="dow-chips" role="group" aria-label="曜日で絞り込む">
-              {#each DOWS as d (d)}
-                {@const active = wontTakeFilters.dows.includes(d)}
-                <button
-                  type="button"
-                  class="dow-chip"
-                  class:active
-                  aria-pressed={active}
-                  disabled={!availableDows.includes(d)}
-                  onclick={() => {
-                    wontTakeFilters.dows = active
-                      ? wontTakeFilters.dows.filter((x) => x !== d)
-                      : [...wontTakeFilters.dows, d];
-                  }}>{dowToString(d)}</button
-                >
-              {/each}
+          {#if filtersOpen}
+            <div id="filter-bar-slot-row">
+              <select
+                value={wontTakeFilters.credit ?? ""}
+                class:placeholder={wontTakeFilters.credit === undefined}
+                onchange={(e) => {
+                  const v = e.currentTarget.value;
+                  wontTakeFilters.credit = v === "" ? undefined : Number(v);
+                }}
+              >
+                <option value="">全単位</option>
+                {#each availableCredits as v (v)}
+                  <option value={v}>{v}単位</option>
+                {/each}
+              </select>
+              <select
+                value={wontTakeFilters.expects ?? ""}
+                class:placeholder={wontTakeFilters.expects === undefined}
+                onchange={(e) => {
+                  const v = e.currentTarget.value;
+                  wontTakeFilters.expects = v === "" ? undefined : Number(v);
+                }}
+              >
+                <option value="">全年次</option>
+                {#each availableExpects as v (v)}
+                  <option value={v}>{v}年次</option>
+                {/each}
+              </select>
+              <select
+                value={wontTakeFilters.term ?? ""}
+                class:placeholder={wontTakeFilters.term === undefined}
+                onchange={(e) => {
+                  const v = e.currentTarget.value;
+                  wontTakeFilters.term = v === "" ? undefined : (v as Term);
+                }}
+              >
+                <option value="">全学期</option>
+                {#each availableTermGroups as group (group.label)}
+                  <optgroup label={group.label}>
+                    {#each group.terms as t (t)}
+                      <option value={t}>{termToString(t)}</option>
+                    {/each}
+                  </optgroup>
+                {/each}
+              </select>
+              <div id="dow-chips" role="group" aria-label="曜日で絞り込む">
+                {#each DOWS as d (d)}
+                  {@const active = wontTakeFilters.dows.includes(d)}
+                  <button
+                    type="button"
+                    class="dow-chip"
+                    class:active
+                    aria-pressed={active}
+                    disabled={!availableDows.includes(d)}
+                    onclick={() => {
+                      wontTakeFilters.dows = active
+                        ? wontTakeFilters.dows.filter((x) => x !== d)
+                        : [...wontTakeFilters.dows, d];
+                    }}>{dowToString(d)}</button
+                  >
+                {/each}
+              </div>
             </div>
-          </div>
-          <div id="filter-bar-checkboxes">
-            <label class="filter-checkbox">
-              <input
-                type="checkbox"
-                bind:checked={wontTakeFilters.onlyUnoccupied}
-              />
-              空きコマのみ表示
-            </label>
-            <label class="filter-checkbox">
-              <input type="checkbox" bind:checked={showCourseRemark} />
-              備考を表示
-            </label>
-          </div>
+            <div id="filter-bar-checkboxes">
+              <label class="filter-checkbox">
+                <input
+                  type="checkbox"
+                  bind:checked={wontTakeFilters.onlyUnoccupied}
+                />
+                空きコマのみ表示
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" bind:checked={showCourseRemark} />
+                備考を表示
+              </label>
+            </div>
+          {/if}
         </div>
         <div id="left-bar-scroll" bind:this={leftBarScrollEl}>
-          <div class="section">
-            <h2>
-              {selectedCellId ? "当てはまる授業" : "全ての授業"}
-              ({filteredCourseLists.wontTake.length}/{courseLists.wontTake
-                .length})
-            </h2>
-            {@render courseTable(
-              wontTakeSliced,
-              courseLists.wontTake.length === 0
-                ? "no-courses"
-                : "contains-courses",
-              true,
-              true,
-              "wont-take",
-            )}
-            <div bind:this={wontTakeSentinelEl}></div>
-          </div>
+          {#if courseListVisible}
+            <div class="section">
+              <h2>
+                {selectedCellId ? "当てはまる授業" : "全ての授業"}
+                ({filteredCourseLists.wontTake.length}/{courseLists.wontTake
+                  .length})
+              </h2>
+              {@render courseTable(
+                wontTakeSliced,
+                courseLists.wontTake.length === 0
+                  ? "no-courses"
+                  : "contains-courses",
+                true,
+                true,
+                "wont-take",
+              )}
+              <div bind:this={wontTakeSentinelEl}></div>
+            </div>
+          {:else}
+            <div class="course-list-hint">
+              <p>表のマスを押すか、授業を検索してね〜</p>
+              <button type="button" onclick={() => (showAllCourses = true)}
+                >全ての授業を見る（{courseLists.wontTake.length}件）</button
+              >
+            </div>
+          {/if}
         </div>
         {#if selectedCellRemark}
           <div id="cell-remark">
@@ -1822,35 +1865,37 @@
                 </span>
               {/if}
             </div>
-            {@render courseTable(
-              filteredCourseLists.mightTake,
-              filteredCourseLists.mightTake.length === 0
-                ? "no-courses"
-                : "contains-courses",
-              true,
-              false,
-              "might-take",
-            )}
+            {#if filteredCourseLists.mightTake.length === 0}
+              <p class="hint">左の一覧から授業をドラッグしてね</p>
+            {:else}
+              {@render courseTable(
+                filteredCourseLists.mightTake,
+                "contains-courses",
+                true,
+                false,
+                "might-take",
+              )}
+            {/if}
           </div>
-          <div class="section">
-            <div class="list-heading">
-              <h2>単位取得済みの授業</h2>
-              {#if listCreditTotals.taken > 0}
-                <span class="credit-total">
-                  {listCreditTotals.taken}単位
-                </span>
-              {/if}
+          {#if filteredCourseLists.taken.length > 0}
+            <div class="section">
+              <div class="list-heading">
+                <h2>単位取得済みの授業</h2>
+                {#if listCreditTotals.taken > 0}
+                  <span class="credit-total">
+                    {listCreditTotals.taken}単位
+                  </span>
+                {/if}
+              </div>
+              {@render courseTable(
+                filteredCourseLists.taken,
+                "contains-courses",
+                false,
+                false,
+                undefined,
+              )}
             </div>
-            {@render courseTable(
-              filteredCourseLists.taken,
-              filteredCourseLists.taken.length === 0
-                ? "no-courses"
-                : "contains-courses",
-              false,
-              false,
-              undefined,
-            )}
-          </div>
+          {/if}
           {#if filteredCourseLists.fake.length > 0}
             <div class="section">
               <div class="list-heading">
@@ -2243,6 +2288,61 @@
       flex: 1;
       min-width: 0;
     }
+  }
+
+  .filter-toggle {
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: 5px;
+    border: none;
+    border-radius: 10px;
+    background: none;
+    color: gray;
+    cursor: pointer;
+
+    &:hover,
+    &.open {
+      background-color: oklch(95% 0 0);
+    }
+  }
+
+  .filter-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 15px;
+    font-size: 10px;
+    line-height: 15px;
+    border-radius: 10px;
+    color: white;
+    background-color: oklch(60% 15% 250);
+  }
+
+  .course-list-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 30px 0;
+    color: #444;
+
+    & > button {
+      font-size: var(--fs-sm);
+      padding: 5px 15px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background-color: white;
+      cursor: pointer;
+
+      &:hover {
+        background-color: oklch(95% 0 0);
+      }
+    }
+  }
+
+  #right-bar-scroll .hint {
+    color: #444;
   }
 
   #filter-bar-slot-row {
