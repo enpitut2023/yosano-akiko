@@ -13,6 +13,7 @@
   import Callout from "$lib/Callout.svelte";
   import Meta from "$lib/Meta.svelte";
   import Nav from "$lib/Nav.svelte";
+  import ArrowDown from "lucide-svelte/icons/arrow-down";
 
   const description =
     "筑波大生向けの履修サポートWebツールです。単位の計算・授業探し・Twinsへの登録を楽に終わらせましょう！";
@@ -78,45 +79,103 @@
   const pickedCollegeInstances = $derived(
     pickedSection?.colleges.find((c) => c.college === pickedCollege)?.instances,
   );
+
+  type Rect = [x: number, y: number, w: number, h: number];
+  type Shot = { src: string; w: number; h: number };
+
+  const plan: Shot = { src: "/images/top/plan.jpg", w: 1600, h: 900 };
+  const timetable: Shot = { src: "/images/top/timetable.jpg", w: 960, h: 720 };
+
+  // title は改行してよい位置で区切る。crop は shot のピクセル座標
+  const features: {
+    title: string[];
+    body: string;
+    shot: Shot;
+    crop: Rect;
+  }[] = [
+    {
+      title: ["あと何単位", "必要かわかる"],
+      body: "TWINSの成績ファイルを読み込むと、履修要覧の表に色が付く",
+      shot: plan,
+      crop: [85, 262, 360, 270],
+    },
+    {
+      title: ["取れる授業が", "すぐ見つかる"],
+      body: "表のマスを押すと、そこに当てはまる授業が全部出てくる",
+      shot: plan,
+      crop: [870, 205, 348, 261],
+    },
+    {
+      title: ["TWINSに", "まとめて登録"],
+      body: "組んだ時間割をファイルにして、TWINSで一度にアップロード",
+      shot: timetable,
+      crop: [0, 0, 960, 720],
+    },
+  ];
+
+  function cropStyle(shot: Shot, [x, y, w, h]: Rect): string {
+    const percent = (offset: number, size: number, full: number) =>
+      size === full ? 0 : (offset / (full - size)) * 100;
+    return [
+      `background-image: url(${asset(shot.src)})`,
+      `background-size: ${(shot.w / w) * 100}% auto`,
+      `background-position: ${percent(x, w, shot.w)}% ${percent(y, h, shot.h)}%`,
+      `aspect-ratio: ${w} / ${h}`,
+    ].join(";");
+  }
 </script>
 
 <Meta title="あきこ" {description} />
 
 <Nav />
 
-<h1>あきこ</h1>
+<header class="hero">
+  <h1>あきこ</h1>
+  <p>筑波大生のための履修サポートWebツール</p>
+</header>
 
 <div class="dialog student">
-  <img src={asset("/images/student-stressed-1.png")} alt="困っている学生" />
+  <img src={asset("/images/student-stressed-2.png")} alt="困っている学生" />
   <span>学生</span>
-  <span>筑波大は履修しないといけない授業を探すのが難しいな...</span>
-</div>
-<div class="dialog student">
-  <img
-    src={asset("/images/student-stressed-2.png")}
-    alt="もっと困っている学生"
-  />
-  <span>学生</span>
-  <span>どれぐらい単位が取れているかも自分で計算しないといけない...</span>
+  <span
+    >筑波大は履修する授業を探すのも、取れた単位を計算するのも大変だな...</span
+  >
 </div>
 <div class="dialog akiko">
   <img src={asset("/images/akiko.png")} alt="あきこ" />
   <span>あきこ</span>
-  <span>履修を手伝ってほしいのね〜</span>
+  <span>履修はあきこと一緒に3ステップで終わらせましょ〜</span>
 </div>
+
+<ol class="features">
+  {#each features as f, i (f.body)}
+    <li>
+      <span class="num">{i + 1}</span>
+      <h3>
+        {#each f.title as part (part)}<span>{part}</span>{/each}
+      </h3>
+      <p>{f.body}</p>
+      <div class="crop" style={cropStyle(f.shot, f.crop)}></div>
+    </li>
+  {/each}
+</ol>
+
 <div class="dialog student">
   <img src={asset("/images/student-relieved.png")} alt="嬉しい学生" />
   <span>学生</span>
   <span>あきこさん！ありがとう！！！</span>
 </div>
 
-<h2 id="app-page-links">年度・学類一覧</h2>
-<div class="dialog akiko">
+<div class="flow-arrow" aria-hidden="true">
+  <ArrowDown size={40} />
+</div>
+
+<div id="app-page-links" class="dialog akiko">
   <img src={asset("/images/akiko.png")} alt="あきこ" />
   <span>あきこ</span>
-  <span>まずは入学年度を教えてね〜</span>
+  <span>さっそく始めましょ〜<br />まずは入学年度を教えてね</span>
 </div>
-<div class="choices">
+<div class="choices years">
   {#each sections as s (s.tableYear)}
     <button
       class="choice"
@@ -211,8 +270,90 @@
     padding-right: 10px;
   }
 
-  h1 {
-    margin-bottom: 30px;
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin: 30px 0 50px;
+
+    & > h1 {
+      margin: 0;
+      font-size: 60px;
+      letter-spacing: 0.1em;
+      // letter-spacing は最後の文字の後ろにも付くので、左に同じだけ足して下線を中央に揃える
+      padding: 0 10px 0 calc(10px + 0.1em);
+      line-height: 1.2;
+      background: linear-gradient(transparent 65%, oklch(90% 10% 350) 65%);
+    }
+
+    & > p {
+      margin: 0;
+      color: #555;
+    }
+  }
+
+  .features {
+    list-style: none;
+    margin: 20px 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+
+    & > li {
+      display: grid;
+      grid-template-columns: 35px 1fr;
+      grid-template-rows: auto auto 1fr;
+      column-gap: 10px;
+      row-gap: 5px;
+      padding: 15px 20px;
+      background-color: hsl(0, 0%, 98%);
+      border: 1px solid hsl(0, 0%, 92%);
+      border-radius: 15px;
+    }
+
+    & h3 {
+      margin: 0;
+      align-self: center;
+      font-size: 18px;
+
+      & > span {
+        display: inline-block;
+      }
+    }
+
+    & p {
+      grid-column: 1/3;
+      margin: 0;
+      color: #555;
+      line-height: 1.6;
+      word-break: auto-phrase;
+    }
+  }
+
+  .num {
+    align-self: center;
+    display: grid;
+    place-items: center;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background-color: oklch(70% 50% 270);
+    color: white;
+    font-weight: bold;
+  }
+
+  .crop {
+    grid-column: 1/3;
+    align-self: end;
+    width: 100%;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-sizing: border-box;
+    background-color: white;
+    background-repeat: no-repeat;
   }
 
   h2 {
@@ -228,6 +369,13 @@
       border-left: 5px solid #aaa;
       padding-left: 10px;
     }
+  }
+
+  .flow-arrow {
+    display: flex;
+    justify-content: center;
+    margin: 25px 0;
+    color: oklch(85% 0 0);
   }
 
   .choices {
@@ -260,12 +408,36 @@
     }
   }
 
+  // 入り口なので、学類や主専攻より目立たせる
+  .years > .choice {
+    padding: 10px 20px;
+    border: 2px solid oklch(70% 50% 270);
+    color: oklch(45% 30% 270);
+    font-size: 18px;
+    font-weight: bold;
+
+    &::after {
+      content: " ›";
+    }
+
+    &:hover {
+      background-color: oklch(97% 3% 270);
+    }
+
+    &.picked {
+      background-color: oklch(70% 50% 270);
+      color: white;
+    }
+  }
+
   details {
     margin: 30px 0;
 
     & > summary {
       cursor: pointer;
       margin-bottom: 20px;
+      color: #888;
+      font-size: 15px;
     }
   }
 
@@ -307,16 +479,16 @@
     border: 1px solid oklch(var(--outline-l) var(--outline-c) var(--h));
     border-radius: 20px;
 
-    & + .dialog {
-      margin-top: 10px;
+    &.akiko {
+      --h: 350;
     }
 
     &.student {
       --h: 270;
     }
 
-    &.akiko {
-      --h: 350;
+    & + .dialog {
+      margin-top: 10px;
     }
 
     & > img {
