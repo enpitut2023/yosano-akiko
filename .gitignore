@@ -7,6 +7,8 @@ node_modules
 .wrangler
 /.svelte-kit
 /build
+/build-e2e
+/.svelte-kit-e2e
 /test-results
 /playwright-report
 

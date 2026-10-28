@@ -10,6 +10,17 @@ export { expect } from "@playwright/test";
  */
 export const test = base.extend<{ seen: boolean }>({
   seen: [true, { option: true }],
+  context: async ({ context, baseURL }, use) => {
+    // Keeps tests off the network, which also stops the production build's
+    // Matomo tracker from reporting. An empty response rather than an aborted
+    // request, because aborting logs a console error.
+    const origin = new URL(baseURL ?? "").origin;
+    await context.route(
+      (url) => url.origin !== origin,
+      (route) => route.fulfill({ body: "" }),
+    );
+    await use(context);
+  },
   page: async ({ page, seen }, use) => {
     if (seen) {
       await page.addInitScript((keys) => {

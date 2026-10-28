@@ -28,9 +28,6 @@ function useE2eCatalog(): Plugin {
 
 export default defineConfig({
   plugins: [e2e && useE2eCatalog(), sveltekit()],
-  // With the extra plugin the dependency cache would look stale to the regular
-  // dev server, so the two would keep rebuilding each other's cache
-  cacheDir: e2e ? "node_modules/.vite-e2e" : undefined,
   server: { port: 42263 },
   build: { chunkSizeWarningLimit: 1000 },
 });

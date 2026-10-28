@@ -49,7 +49,6 @@ function useE2eCatalog(): Plugin {
 
 export default defineConfig({
   plugins: [process.env.AKIKO_E2E && useE2eCatalog(), sveltekit()],
-  cacheDir: process.env.AKIKO_E2E ? "node_modules/.vite-e2e" : undefined,
   // ...
 });
 ```
@@ -63,26 +62,29 @@ export default defineConfig({
 - The env var is read in Node, not in the browser, so it needs no `VITE_`
   prefix.
 
-### Separate Vite cache
+### Production build
 
-`cacheDir` is set to `node_modules/.vite-e2e` for the e2e server. Vite's
-dependency cache is keyed by a config hash that (as far as I know) includes
-plugin names. If the e2e server and the regular dev server shared
-`node_modules/.vite`, each would see the other's cache as stale and
-re-optimize it, which can force reloads in the regular dev server. In CI only
-one server runs, so this only matters locally. Not verified; the separate
-cache rules it out either way.
+Playwright runs `AKIKO_E2E=1 vite build && vite preview --port 42264
+--strictPort`, so tests exercise the code that ships. It builds fresh on
+every run and never reuses a running server, so a leftover server can't serve
+stale code.
 
-### Dev server now, production build later
-
-Playwright starts its own dev server: `AKIKO_E2E=1 vite dev --port 42264
---strictPort`. It never touches the regular dev server on :42263, and dev
-mode doesn't inject Matomo, so no analytics need blocking.
-
-A dev server doesn't test the production build. Hydration errors still show
-up, but minification-only bugs don't. Later, CI could build with the flag and
-run against `vite preview`. That is slower, and the production build injects
-Matomo, so tests would have to block the tracker with `page.route`.
+- **Speed:** with the fixture catalog the build takes about 5 seconds, and
+  prerendered pages load faster than dev-server pages. All 223 smoke tests
+  take about 1 minute including the build, against about 1.6 minutes on a dev
+  server.
+- **Separate outputs:** with `AKIKO_E2E` set, `svelte.config.js` writes to
+  `build-e2e/` and `.svelte-kit-e2e/` instead of `build/` and `.svelte-kit/`.
+  So running the tests never replaces the real build, or what
+  `npm run preview` serves.
+- **Network:** the production build injects Matomo. The `context` fixture in
+  `tests/e2e/test.ts` answers every request to another origin with an empty
+  response, which keeps tests off the network. Aborting the requests instead
+  would log "Failed to load resource" console errors, which fail the smoke
+  test.
+- **Ports:** the regular dev server stays on :42263, so both can run at once.
+- **No separate Vite cache needed:** only the dev server uses Vite's
+  dependency cache, so sharing `node_modules/.vite` is fine.
 
 ### Where the tests live
 
@@ -144,12 +146,12 @@ written to match the fixture catalog so expected results are obvious:
 ## Setup
 
 - [x] `npm i -D @playwright/test` and `npx playwright install chromium`.
-- [x] Add the plugin and `cacheDir` to `vite.config.ts`, and add the comment
-      on the catalog import in `src/lib/major-config.ts`.
+- [x] Add the plugin to `vite.config.ts`, and add the comment on the catalog
+      import in `src/lib/major-config.ts`.
 - [x] Write the fixture catalog. The CSVs come with the import tests that use
       them.
 - [x] Write `playwright.config.ts`:
-  - `webServer` runs the e2e dev server on :42264.
+  - `webServer` builds with `AKIKO_E2E=1` and previews on :42264.
   - `baseURL` is `http://localhost:42264/yosano-akiko/`.
   - Chromium only, for now.
 - [x] Add a starting-state helper:
@@ -159,7 +161,8 @@ written to match the fixture catalog so expected results are obvious:
 - [x] Add the `npm run e2e` script, and add `playwright.config.ts` to ESLint's
       `allowDefaultProject`.
 - [x] Ignore Playwright's output folders (`test-results/`,
-      `playwright-report/`) in `.gitignore`.
+      `playwright-report/`) and the e2e build outputs in `.gitignore`.
+- [x] Stub every request to another origin, which also silences Matomo.
 - [x] CI: install Chromium with dependencies and run `npm run e2e` in
       `pr-test.yml`.
 - [ ] CI: cache the Playwright browser if installing it gets slow.
@@ -192,7 +195,7 @@ written to match the fixture catalog so expected results are obvious:
 
 - [x] Every `instances` page loads with no console errors or hydration
       errors, and reacts to a tab click. Closed colleges show the closed notice.
-      All 223 pages take about 1.5 minutes.
+      All 223 pages take about 1 minute, including the build.
 - [ ] Closed colleges' notice has the right title.
 - [ ] The top page links to every major page.
 
@@ -288,7 +291,5 @@ written to match the fixture catalog so expected results are obvious:
 
 ## Later
 
-- [ ] Run against the production build (`vite build` + `vite preview` with
-      `AKIKO_E2E`), blocking Matomo with `page.route`.
 - [ ] Other browsers (Firefox, WebKit) if needed.
 - [ ] Visual regression snapshots, generated and compared only in CI.
