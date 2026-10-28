@@ -34,8 +34,8 @@ and assets go through `resolve()` / `asset()` from `$app/paths`.
 - `npm run format`: Prettier
 
 CI runs `npm run check && npm run lint && npm run build` on pull requests and on
-`main`, plus `npm run e2e` on pull requests. Pushes to `main` deploy to GitHub
-Pages.
+`main`, followed by `npm run e2e`. Pushes to `main` deploy to GitHub Pages once
+those pass.
 
 ## Architecture
 
