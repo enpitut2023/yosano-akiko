@@ -20,20 +20,20 @@
     <li>
       「履修」の中にある「履修登録・登録状況照会」タブを開きます。
       <img
-        src={asset("/docs/images/register-tab.png")}
+        src={asset("/images/twins/register-tab.png")}
         alt="履修登録・登録状況照会タブ"
       />
     </li>
     <li>
       履修登録期間中の学期を選択すると現れる「アップロード」ボタンを押します。
       <img
-        src={asset("/docs/images/upload-button.png")}
+        src={asset("/images/twins/upload-button.png")}
         alt="アップロードボタン"
       />
     </li>
     <li>
       あきこで出力したCSVファイルを選択して「登録」ボタンを押します。
-      <img src={asset("/docs/images/register-button.png")} alt="登録ボタン" />
+      <img src={asset("/images/twins/register-button.png")} alt="登録ボタン" />
     </li>
   </ol>
   <p>これで「取る授業」の授業がTWINSにまとめて履修登録されます。</p>

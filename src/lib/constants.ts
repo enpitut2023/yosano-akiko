@@ -225,7 +225,7 @@ export const MAJOR_TO_COLLEGE = {
   "art-jad": "art",
 } as const satisfies { [K in Major]: College };
 
-// Docs page names whose major pages are temporarily closed. The links stay in
+// Colleges whose major pages are temporarily closed. The links stay in
 // place but the app pages render a closure notice instead of the tool. Empty
 // this set to reopen.
 const CLOSED_COLLEGES = new Set<College>(["help"]);

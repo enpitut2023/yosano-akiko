@@ -8,7 +8,7 @@
   import { type TimetableTab } from "./timetable";
   import Meta from "$lib/Meta.svelte";
   import { SvelteAkiko } from "$lib/akiko.svelte";
-  import { MAJOR_TO_JA } from "$lib/constants";
+  import { FEEDBACK_FORM_URL, MAJOR_TO_JA } from "$lib/constants";
   import { parseImportedCsv } from "$lib/csv";
   import {
     columnIdIsElective,
@@ -1067,10 +1067,8 @@
           <button class="link-button" onclick={() => (tutorialOpen = true)}
             >チュートリアル</button
           >
-          <a
-            href="https://docs.google.com/forms/d/e/1FAIpQLSfUbueFsF6fbyJxCohNTqh5S8bYdxNgqx_HQ76RCR5TJQkpyQ/viewform?usp=dialog"
-            target="_blank"
-            rel="noreferrer">ご意見はこちらから</a
+          <a href={FEEDBACK_FORM_URL} target="_blank" rel="noreferrer"
+            >ご意見はこちらから</a
           >
           <a class="support" href={SUPPORT_URL} target="_blank" rel="noreferrer"
             ><BadgeJapaneseYen size={15} />開発を支援</a

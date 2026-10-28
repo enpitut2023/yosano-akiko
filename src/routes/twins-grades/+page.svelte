@@ -19,18 +19,18 @@
     <li>TWINSにログインします。</li>
     <li>
       「成績」の中にある「成績照会」タブを開きます。
-      <img src={asset("/docs/images/grades-tab.png")} alt="成績照会タブ" />
+      <img src={asset("/images/twins/grades-tab.png")} alt="成績照会タブ" />
     </li>
     <li>
       ページの一番下にある「ダウンロード」ボタンを押します。
       <img
-        src={asset("/docs/images/download-button.png")}
+        src={asset("/images/twins/download-button.png")}
         alt="ダウンロードボタン"
       />
     </li>
     <li>
       ファイル形式を「CSV」、文字コードを「Unicode」、BOM有無を「BOMなし」にして「出力」ボタンを押します。
-      <img src={asset("/docs/images/export-button.png")} alt="出力ボタン" />
+      <img src={asset("/images/twins/export-button.png")} alt="出力ボタン" />
     </li>
   </ol>
   <p>
