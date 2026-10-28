@@ -172,7 +172,9 @@
     if (!browser) return;
     const localData: LocalDataV3 = {
       version: 3,
-      listKindOverrides,
+      // Not through a $derived: moving a course mutates this map in place, so
+      // a $derived of it would never count as changed
+      listKindOverrides: svelteAkiko.getListKindOverrides(),
       realCourses: Array.from(realCourses),
       fakeCourses: Array.from(fakeCourses),
       native: isNative,
@@ -651,7 +653,6 @@
       : undefined,
   );
   const mightTakeCourseIds = $derived(svelteAkiko.getMightTakeCourseIds());
-  const listKindOverrides = $derived(svelteAkiko.getListKindOverrides());
   const takenCourseIds = $derived(svelteAkiko.getTakenCourseIds());
   let exportCount = $state(0);
 
