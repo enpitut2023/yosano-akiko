@@ -5,7 +5,7 @@ import {
   MAJOR_TO_JA,
   majorIsClosed,
 } from "$lib/constants";
-import { clickUntil, expect, test, waitForHydration } from "./test";
+import { expect, openTab, test, waitForHydration } from "./test";
 
 for (const { tableYear, major } of instances) {
   test(`${tableYear}/${major} loads`, async ({ page }) => {
@@ -22,10 +22,7 @@ for (const { tableYear, major } of instances) {
       `あきこ - ${tableYear}年度 ${MAJOR_TO_JA[major]}`,
     );
     await expect(page.locator(".cell").first()).toBeVisible();
-    const tab = page.getByRole("button", { name: "単位チェック" });
-    await clickUntil(tab, () =>
-      expect(tab).toHaveClass(/active/, { timeout: 100 }),
-    );
+    await openTab(page, "単位チェック");
   });
 }
 

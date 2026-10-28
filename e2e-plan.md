@@ -136,19 +136,24 @@ A test-only major (its own requirements module, table, rects and `instances`
 entry) would remove this coupling, but it would show up on the top page and
 in prerendering. Not worth it.
 
-### Grades CSVs (`tests/e2e/fixtures/*.csv`, to do)
+### Grades files (`tests/e2e/fixtures/grades.ts`)
 
-`grades.csv` (one passed `GB26403`) exists for the tutorial, which only needs
-some valid file. The import tests need more, in the same columns as a TWINS
-export (see `grade-csvs/` and `src/lib/csv.ts`), written to match the fixture
-catalog so expected results are obvious:
+Grades files are built in each test from rows, with `gradesFile`, which lays
+them out in the columns of a TWINS export (see `grade-csvs/` and
+`src/lib/csv.ts`). The rows sit next to the assertions that depend on them,
+and each test gets only the rows it needs, so adding a row for one test can't
+break another. The rows are written to match the fixture catalog.
 
-- A passed required course (e.g. `GB26403`, grade A).
-- A 履修中 course (starts in 取る授業).
-- A failed course (D or F, so it stays in 当てはまる授業).
-- A credit-transfer row (認, no course ID), which becomes a `FakeCourse`.
-- A course that fits no cell, so 卒業単位に含まれない授業 finally shows. None
-  of the real CSVs trigger it on coins.
+The import tests use:
+
+- A passed required course: `GB26403` (a1), grade A.
+- A 履修中 course, which starts in 取る授業: `GA15211` (c1).
+- A failed course, which stays in 当てはまる授業: `GB27001` (b2), grade D.
+- A credit-transfer row (認, no course ID), which becomes a `FakeCourse` and
+  fits no cell.
+- `FF18724` 線形代数A, which counts toward c1 only for 移行 students and
+  otherwise fits no cell. None of the real CSVs show 卒業単位に含まれない授業 on
+  coins.
 - A broken file, for the import error alert.
 
 ## Setup
@@ -156,8 +161,7 @@ catalog so expected results are obvious:
 - [x] `npm i -D @playwright/test` and `npx playwright install chromium`.
 - [x] Add the plugin to `vite.config.ts`, and add the comment on the catalog
       import in `src/lib/major-config.ts`.
-- [x] Write the fixture catalog. The CSVs come with the import tests that use
-      them.
+- [x] Write the fixture catalog and the grades file helper.
 - [x] Write `playwright.config.ts`:
   - `webServer` builds with `AKIKO_E2E=1` and previews on :42264.
   - `baseURL` is `http://localhost:42264/yosano-akiko/`.
@@ -226,17 +230,17 @@ filter by file instead.
 
 ### 単位チェック (import)
 
-- [ ] Importing the fixture CSV makes the drop zone show
+- [x] Importing the fixture CSV makes the drop zone show
       「インポート済み（N単位）」.
-- [ ] Imported cells are colored green (taken) or yellow (取る授業).
-- [ ] Imported data survives a reload.
-- [ ] Re-importing resets 取る授業.
-- [ ] Dropping a file on the drop zone imports it, like the file picker does.
-- [ ] A broken CSV shows the error alert and leaves the data unchanged.
-- [ ] The 移行 toggle (いいえ / はい) is saved, and changes how courses are
+- [x] Imported cells are colored green (taken) or yellow (取る授業).
+- [x] Imported data survives a reload.
+- [x] Re-importing resets 取る授業.
+- [x] Dropping a file on the drop zone imports it, like the file picker does.
+- [x] A broken CSV shows the error alert and leaves the data unchanged.
+- [x] The 移行 toggle (いいえ / はい) is saved, and changes how courses are
       classified.
-- [ ] 卒業単位に含まれない授業 lists the unclassified real and fake courses.
-- [ ] The 手順を見る link opens `/twins-grades`.
+- [x] 卒業単位に含まれない授業 lists the unclassified real and fake courses.
+- [x] The 手順を見る link opens `/twins-grades`.
 
 ### 履修を組む (courses)
 

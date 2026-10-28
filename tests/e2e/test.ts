@@ -46,6 +46,14 @@ export const test = base.extend<{ seen: boolean }>({
   },
 });
 
+/** Opens a sidebar tab of a major page, waiting for the page to hydrate. */
+export async function openTab(page: Page, name: string): Promise<void> {
+  const tab = page.getByRole("button", { name, exact: true });
+  await clickUntil(tab, () =>
+    expect(tab).toHaveClass(/active/, { timeout: 100 }),
+  );
+}
+
 /**
  * Waits until the page has likely hydrated, for checks that would pass
  * vacuously on the prerendered HTML: that something doesn't appear, or that

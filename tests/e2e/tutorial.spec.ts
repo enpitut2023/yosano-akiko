@@ -1,7 +1,16 @@
-import { fileURLToPath } from "node:url";
+import { gradesFile } from "./fixtures/grades";
 import { expect, test, waitForHydration, type Page } from "./test";
 
-const GRADES = fileURLToPath(new URL("fixtures/grades.csv", import.meta.url));
+// The tutorial only needs some valid file
+const GRADES = gradesFile([
+  {
+    id: "GB26403",
+    name: "ソフトウェアサイエンス実験A",
+    credit: 3,
+    grade: "A",
+    year: 2023,
+  },
+]);
 
 function tutorial(page: Page) {
   return page
