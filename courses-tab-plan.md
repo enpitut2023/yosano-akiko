@@ -103,18 +103,19 @@ Facts about courses that don't depend on this page.
 Pure, but filters are a UI idea used by one page, so by the repo's convention
 they live beside it rather than in `$lib`.
 
-- [ ] The `WontTakeFilters` type and `courseMatchesFilters` (search, credit,
-      year, term and day via `matchesSlotFilters`, free slots). Free slots
-      take the occupied slots as an argument.
-- [ ] `filterChoices(courses)`: the credits, years, days and terms on offer,
+- [x] The `WontTakeFilters` type and `courseMatchesFilters` (search, credit,
+      year, term and day via `slotsMatchFilters`, free slots). Free slots
+      take the occupied slots as an argument: `akikoIsOccupied(akiko, …, id)`
+      became `occupiedSlotsOverlap(occupied, slots)` in `akiko.ts`.
+- [x] `filterChoicesOf(courses)`: the credits, years, days and terms on offer,
       and the term groups (`TERM_TO_GROUP`).
-- [ ] `activeFilterCount(filters)`.
-- [ ] Replace the four `$effect`s that write `undefined` back into the filters
-      when a choice disappears with a `$derived` "filters in effect" (the
-      chosen values that are still on offer). No effect writes state, and a
-      choice comes back if its option does. Check the selects still show the
-      right value.
-- [ ] Tests for each.
+- [x] `filtersActiveCount(filters)`.
+- [x] Replace the four `$effect`s that write `undefined` back into the filters
+      when a choice disappears with a `$derived` "filters in effect"
+      (`filtersInEffect(chosen, choices)`). No effect writes state, and a
+      choice comes back if its option does. The selects, chips and badge show
+      the values in effect; an e2e test covers a choice going and coming back.
+- [x] Tests for each (`course-filters.test.ts`).
 
 ## 3. Into `timetable.ts`
 

@@ -800,15 +800,12 @@ export function akikoGetOccupiedSlots(akiko: Akiko): OccupiedSlots {
   return occupied as OccupiedSlots;
 }
 
-export function akikoIsOccupied(
-  akiko: Akiko,
+/** Whether any of the slots is taken by a course in 取る授業. */
+export function occupiedSlotsOverlap(
   occupied: OccupiedSlots,
-  courseId: CourseId,
+  slots: Slot[],
 ): boolean {
-  const kc = akiko.knownCourses.get(courseId);
-  if (kc === undefined) return false;
-  for (const s of kc.slots) if (occupied.has(slotHash(s))) return true;
-  return false;
+  return slots.some((s) => occupied.has(slotHash(s)));
 }
 
 export type Overlap = { slot: Slot; courses: KnownCourse[] };

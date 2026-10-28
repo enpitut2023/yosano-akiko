@@ -109,6 +109,27 @@ test.describe("filters", () => {
     await expect(wontTakeIds(page)).toHaveText(["GB13322", "GB27001"]);
   });
 
+  test("a choice no longer on offer stops applying until it is again", async ({
+    page,
+  }) => {
+    const credit = filterSelect(page, "全単位");
+    const badge = page.locator(".filter-badge");
+    await page.getByTestId("cell-b2").click();
+    await credit.selectOption({ label: "1単位" });
+    await expect(wontTakeIds(page)).toHaveText(["GB27001"]);
+
+    // b1 has no 1単位 course
+    await page.getByTestId("cell-b1").click();
+    await expect(credit).toHaveValue("");
+    await expect(badge).toBeHidden();
+    await expect(wontTakeIds(page)).toContainText(["GB20401"]);
+
+    await page.getByTestId("cell-b2").click();
+    await expect(credit).toHaveValue("1");
+    await expect(badge).toHaveText("1");
+    await expect(wontTakeIds(page)).toHaveText(["GB27001"]);
+  });
+
   test("the badge counts the active filters", async ({ page }) => {
     const badge = page.locator(".filter-badge");
     await expect(badge).toBeHidden();

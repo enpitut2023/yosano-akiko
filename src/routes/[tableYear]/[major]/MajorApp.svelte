@@ -12,7 +12,6 @@
   import {
     columnIdIsElective,
     DOWS,
-    dowCompare,
     dowToString,
     isCellId,
     isCourseId,
@@ -23,19 +22,15 @@
     akikoGetMightTakeCourseIds,
     akikoGetOccupiedSlots,
     akikoGetUnclassifiedFakeCourses,
-    akikoIsOccupied,
     akikoMoveCourse,
     akikoNew,
     creditSum,
     type MergedCourse,
-    termCompare,
     termToString,
     type CellId,
     type CourseId,
-    type Dow,
     type FakeCourse,
     type RealCourse,
-    type Slot,
     type Term,
     cellIdToRow,
     cellIdToColumnId,
@@ -75,15 +70,13 @@
   import { SUPPORT_URL } from "./links";
   import { panZoom, resizeHandle } from "./gestures";
   import type { TutorialStep } from "./tutorial";
-
-  type WontTakeFilters = {
-    courseIdOrName: string;
-    credit: number | undefined;
-    expects: number | undefined;
-    term: Term | undefined;
-    dows: Dow[];
-    onlyUnoccupied: boolean;
-  };
+  import {
+    courseMatchesFilters,
+    filterChoicesOf,
+    filtersActiveCount,
+    filtersInEffect,
+    wontTakeFiltersDefault,
+  } from "./course-filters";
 
   let { config }: { config: MajorConfig } = $props();
 
@@ -113,14 +106,8 @@
   let wontTakeVisibleLimit = $state(100);
   let leftBarScrollEl = $state<HTMLDivElement | undefined>();
   let wontTakeSentinelEl = $state<HTMLDivElement | undefined>();
-  let wontTakeFilters = $state<WontTakeFilters>({
-    courseIdOrName: "",
-    credit: undefined,
-    expects: undefined,
-    term: undefined,
-    dows: [],
-    onlyUnoccupied: false,
-  });
+  // As chosen; `filters` leaves out the values no longer on offer
+  let wontTakeFilters = $state(wontTakeFiltersDefault());
 
   const creditRequirements = $derived(
     createCreditRequirementsOrFail(
@@ -422,137 +409,19 @@
   });
 
   const occupiedSlots = $derived(akikoGetOccupiedSlots(akiko));
+  const filterChoices = $derived(filterChoicesOf(courseLists.wontTake));
+  const filters = $derived(filtersInEffect(wontTakeFilters, filterChoices));
 
-  /**
-   * 学期と曜日のフィルタに当てはまるか。学期と曜日は同じ Slot が両方を満たす必要
-   * があり、曜日を選ぶと曜時限のない授業（集中・応談など）は除外される。
-   */
-  function matchesSlotFilters(
-    slots: Slot[],
-    term: Term | undefined,
-    dows: Dow[],
-  ): boolean {
-    if (term === undefined && dows.length === 0) return true;
-    return slots.some((s) => {
-      if (term !== undefined && s.term !== term) return false;
-      if (dows.length === 0) return true;
-      return s.when.kind === "regular" && dows.includes(s.when.dow);
-    });
-  }
-
-  const filteredCourseLists = $derived.by(() => {
-    let { courseIdOrName, credit, expects, term, dows, onlyUnoccupied } =
-      wontTakeFilters;
-    courseIdOrName = courseIdOrName.toLowerCase();
-    return {
-      wontTake: courseLists.wontTake.filter((c) => {
-        if (
-          courseIdOrName &&
-          !c.id.toLowerCase().includes(courseIdOrName) &&
-          !c.name.toLowerCase().includes(courseIdOrName)
-        )
-          return false;
-        if (credit !== undefined && c.credit !== credit) return false;
-        if (expects !== undefined && !c.known?.expects.includes(expects))
-          return false;
-        if (!matchesSlotFilters(c.known?.slots ?? [], term, dows)) return false;
-        if (onlyUnoccupied && akikoIsOccupied(akiko, occupiedSlots, c.id))
-          return false;
-        return true;
-      }),
-      mightTake: courseLists.mightTake,
-      taken: courseLists.taken,
-      fake: courseLists.fake,
-    };
+  const filteredCourseLists = $derived({
+    wontTake: courseLists.wontTake.filter((c) =>
+      courseMatchesFilters(c, filters, occupiedSlots),
+    ),
+    mightTake: courseLists.mightTake,
+    taken: courseLists.taken,
+    fake: courseLists.fake,
   });
 
   const fakeCreditTotal = $derived(creditSum(filteredCourseLists.fake));
-
-  const availableCredits = $derived.by(() => {
-    const credits = new Set<number>();
-    for (const c of courseLists.wontTake) {
-      if (c.credit !== undefined) credits.add(c.credit);
-    }
-    return Array.from(credits).sort((a, b) => a - b);
-  });
-  const availableExpects = $derived.by(() => {
-    const expects = new Set<number>();
-    for (const c of courseLists.wontTake) {
-      for (const e of c.known?.expects ?? []) expects.add(e);
-    }
-    return Array.from(expects).sort((a, b) => a - b);
-  });
-  const availableDows = $derived.by(() => {
-    const dows = new Set<Dow>();
-    for (const c of courseLists.wontTake) {
-      for (const s of c.known?.slots ?? []) {
-        if (s.when.kind === "regular") dows.add(s.when.dow);
-      }
-    }
-    return Array.from(dows).sort(dowCompare);
-  });
-
-  const TERM_GROUP_LABELS = ["モジュール", "学期", "その他"] as const;
-  type TermGroupLabel = (typeof TERM_GROUP_LABELS)[number];
-  // 春Aと春学期のように紛らわしい学期があるので、選択肢を分類して並べる
-  const TERM_TO_GROUP: Record<Term, TermGroupLabel> = {
-    "spring-a": "モジュール",
-    "spring-b": "モジュール",
-    "spring-c": "モジュール",
-    "autumn-a": "モジュール",
-    "autumn-b": "モジュール",
-    "autumn-c": "モジュール",
-    spring: "学期",
-    autumn: "学期",
-    "all-year": "学期",
-    "spring-break": "その他",
-    "summer-break": "その他",
-  };
-
-  const availableTerms = $derived.by(() => {
-    const terms = new Set<Term>();
-    for (const c of courseLists.wontTake) {
-      for (const s of c.known?.slots ?? []) terms.add(s.term);
-    }
-    return Array.from(terms).sort(termCompare);
-  });
-  const availableTermGroups = $derived(
-    TERM_GROUP_LABELS.map((label) => ({
-      label,
-      terms: availableTerms.filter((t) => TERM_TO_GROUP[t] === label),
-    })).filter((g) => g.terms.length > 0),
-  );
-
-  $effect(() => {
-    if (
-      wontTakeFilters.credit !== undefined &&
-      !availableCredits.includes(wontTakeFilters.credit)
-    ) {
-      wontTakeFilters.credit = undefined;
-    }
-  });
-  $effect(() => {
-    if (
-      wontTakeFilters.expects !== undefined &&
-      !availableExpects.includes(wontTakeFilters.expects)
-    ) {
-      wontTakeFilters.expects = undefined;
-    }
-  });
-  $effect(() => {
-    if (
-      wontTakeFilters.term !== undefined &&
-      !availableTerms.includes(wontTakeFilters.term)
-    ) {
-      wontTakeFilters.term = undefined;
-    }
-  });
-  $effect(() => {
-    const kept = wontTakeFilters.dows.filter((d) => availableDows.includes(d));
-    if (kept.length !== wontTakeFilters.dows.length) {
-      wontTakeFilters.dows = kept;
-    }
-  });
 
   $effect(() => {
     void selectedCellId;
@@ -574,18 +443,11 @@
     return () => observer.disconnect();
   });
 
-  const activeFilterCount = $derived(
-    [
-      wontTakeFilters.credit !== undefined,
-      wontTakeFilters.expects !== undefined,
-      wontTakeFilters.term !== undefined,
-      wontTakeFilters.onlyUnoccupied,
-    ].filter(Boolean).length + wontTakeFilters.dows.length,
-  );
+  const activeFilterCount = $derived(filtersActiveCount(filters));
   const courseListVisible = $derived(
     showAllCourses ||
       selectedCellId !== undefined ||
-      wontTakeFilters.courseIdOrName !== "" ||
+      filters.courseIdOrName !== "" ||
       activeFilterCount > 0,
   );
 
@@ -1204,41 +1066,41 @@
           {#if filtersOpen}
             <div id="filter-bar-slot-row">
               <select
-                value={wontTakeFilters.credit ?? ""}
-                class:placeholder={wontTakeFilters.credit === undefined}
+                value={filters.credit ?? ""}
+                class:placeholder={filters.credit === undefined}
                 onchange={(e) => {
                   const v = e.currentTarget.value;
                   wontTakeFilters.credit = v === "" ? undefined : Number(v);
                 }}
               >
                 <option value="">全単位</option>
-                {#each availableCredits as v (v)}
+                {#each filterChoices.credits as v (v)}
                   <option value={v}>{v}単位</option>
                 {/each}
               </select>
               <select
-                value={wontTakeFilters.expects ?? ""}
-                class:placeholder={wontTakeFilters.expects === undefined}
+                value={filters.expects ?? ""}
+                class:placeholder={filters.expects === undefined}
                 onchange={(e) => {
                   const v = e.currentTarget.value;
                   wontTakeFilters.expects = v === "" ? undefined : Number(v);
                 }}
               >
                 <option value="">全年次</option>
-                {#each availableExpects as v (v)}
+                {#each filterChoices.expects as v (v)}
                   <option value={v}>{v}年次</option>
                 {/each}
               </select>
               <select
-                value={wontTakeFilters.term ?? ""}
-                class:placeholder={wontTakeFilters.term === undefined}
+                value={filters.term ?? ""}
+                class:placeholder={filters.term === undefined}
                 onchange={(e) => {
                   const v = e.currentTarget.value;
                   wontTakeFilters.term = v === "" ? undefined : (v as Term);
                 }}
               >
                 <option value="">全学期</option>
-                {#each availableTermGroups as group (group.label)}
+                {#each filterChoices.termGroups as group (group.label)}
                   <optgroup label={group.label}>
                     {#each group.terms as t (t)}
                       <option value={t}>{termToString(t)}</option>
@@ -1248,13 +1110,13 @@
               </select>
               <div id="dow-chips" role="group" aria-label="曜日で絞り込む">
                 {#each DOWS as d (d)}
-                  {@const active = wontTakeFilters.dows.includes(d)}
+                  {@const active = filters.dows.includes(d)}
                   <button
                     type="button"
                     class="dow-chip"
                     class:active
                     aria-pressed={active}
-                    disabled={!availableDows.includes(d)}
+                    disabled={!filterChoices.dows.includes(d)}
                     onclick={() => {
                       wontTakeFilters.dows = active
                         ? wontTakeFilters.dows.filter((x) => x !== d)
