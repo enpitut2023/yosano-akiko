@@ -1,0 +1,80 @@
+// Numbered steps shared by the 単位チェック and TWINSに出力 tabs
+
+.steps-panel {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 500px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+  display: flex;
+  flex-direction: column;
+  gap: 70px;
+
+  & > li {
+    position: relative;
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    column-gap: 15px;
+    row-gap: 10px;
+
+    &::before {
+      content: counter(step);
+      grid-row: 1;
+      align-self: center;
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: oklch(70% 50% 270);
+      color: white;
+      font-weight: bold;
+    }
+
+    & > * {
+      grid-column: 2;
+      margin: 0;
+    }
+
+    & > :first-child {
+      align-self: center;
+    }
+
+    &:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -50px;
+      width: 30px;
+      height: 30px;
+      transform: translateX(-50%);
+      background-color: oklch(85% 0 0);
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14'/%3E%3Cpath d='m19 12-7 7-7-7'/%3E%3C/svg%3E")
+        center / contain no-repeat;
+    }
+  }
+}
+
+.step-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: #444;
+
+  & > :global(svg) {
+    flex-shrink: 0;
+    height: 1lh;
+  }
+}

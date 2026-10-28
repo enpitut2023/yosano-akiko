@@ -88,8 +88,11 @@ importing a grades file logs the current stats in that same shape.
 
 - Code used by only one page lives next to it in `src/routes/…`; `src/lib` is
   for code shared across pages (the core model, requirements, shared components).
-- Keep types and functions that other files import in `.ts` files, not in a
-  component's `<script module>`: type-aware ESLint can't see those exports and
-  reports every use as unsafe.
+- Type-aware ESLint can't see types declared in `.svelte` files. So keep types
+  and functions that other files import in `.ts` files, not in a component's
+  `<script module>`, and annotate the parameters of inline callbacks passed as
+  props (`onShowCell={(cellId: CellId, term: TimetableTab) => …}`); otherwise
+  every use is reported as unsafe.
+- Name callback props in camelCase (`onShowCell`, `onClose`).
 - Write comments in English, except in `src/lib/requirements/`, where Japanese
   fits the domain (履修要覧, 科目区分, …). UI text is Japanese.

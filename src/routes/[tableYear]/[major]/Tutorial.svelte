@@ -6,7 +6,7 @@
 
   type Rect = { left: number; top: number; right: number; bottom: number };
 
-  let { steps, onclose }: { steps: TutorialStep[]; onclose: () => void } =
+  let { steps, onClose }: { steps: TutorialStep[]; onClose: () => void } =
     $props();
 
   const HOLE_PADDING = 5;
@@ -36,7 +36,7 @@
   }
 
   function next() {
-    if (index === steps.length - 1) onclose();
+    if (index === steps.length - 1) onClose();
     else void goto(index + 1);
   }
 
@@ -188,7 +188,7 @@
       <button
         class="close"
         aria-label="チュートリアルを閉じる"
-        onclick={onclose}><X size={20} /></button
+        onclick={onClose}><X size={20} /></button
       >
     </header>
     <p>{step.body}</p>

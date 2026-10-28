@@ -3,12 +3,7 @@
   import BadgeJapaneseYen from "lucide-svelte/icons/badge-japanese-yen";
   import ChevronRight from "lucide-svelte/icons/chevron-right";
   import Funnel from "lucide-svelte/icons/funnel";
-  import FileUp from "lucide-svelte/icons/file-up";
   import Hand from "lucide-svelte/icons/hand";
-  import Lock from "lucide-svelte/icons/lock";
-  import CircleCheck from "lucide-svelte/icons/circle-check";
-  import Download from "lucide-svelte/icons/download";
-  import TriangleAlert from "lucide-svelte/icons/triangle-alert";
   import Timetable from "./Timetable.svelte";
   import { type TimetableTab } from "./timetable";
   import Meta from "$lib/Meta.svelte";
@@ -25,7 +20,6 @@
     isCellId,
     isCourseId,
     akikoNew,
-    slotToString,
     termCompare,
     termToString,
     type Availability,
@@ -67,24 +61,12 @@
   import { debugPrintCreditStats } from "./debug";
   import { mobileUnsupported } from "./mobile-unsupported";
   import MobileUnsupportedNotice from "./MobileUnsupportedNotice.svelte";
-  import Dialog from "$lib/Dialog.svelte";
   import Tutorial from "./Tutorial.svelte";
+  import ImportTab from "./ImportTab.svelte";
+  import ExportTab from "./ExportTab.svelte";
+  import { SUPPORT_URL, syllabusUrl } from "./links";
   import { panZoom, resizeHandle } from "./gestures";
   import type { TutorialStep } from "./tutorial";
-
-  type UiOverlapCourse = {
-    id: CourseId;
-    name: string;
-    cellId: CellId | undefined;
-  };
-
-  type UiOverlapGroup = {
-    slot: string;
-    term: TimetableTab;
-    courses: UiOverlapCourse[];
-  };
-
-  type UiJizentourokuCourse = UiOverlapCourse & { term: TimetableTab };
 
   type WontTakeFilters = {
     courseIdOrName: string;
@@ -132,7 +114,6 @@
   let showCourseRemark = $state(false);
   let filtersOpen = $state(false);
   let showAllCourses = $state(false);
-  let csvDragOver = $state(false);
   let showNonAvailable = $state(false);
   let wontTakeVisibleLimit = $state(100);
   let leftBarScrollEl = $state<HTMLDivElement | undefined>();
@@ -306,16 +287,6 @@
     }),
   );
 
-  function handleCsvUpload(event: Event) {
-    const input = event.target;
-    if (!(input instanceof HTMLInputElement)) return;
-    const file = input.files?.[0];
-    if (!file) return;
-    // 同じファイルをもう一度選んだときにも change が発火するようにする
-    input.value = "";
-    importCsvFile(file);
-  }
-
   function importCsvFile(file: File) {
     void file.text().then((csv) => {
       const result = parseImportedCsv(csv);
@@ -359,10 +330,6 @@
         "申し訳ございませんが、TWINSの仕様のため編入生の認可された科目のみ単位チェック時に正しく単位を計算することができません。認可されていない通常の科目の成績は正しく計算されます。",
       );
     }
-  }
-
-  function getSyllabusUrl(courseId: string, year: number) {
-    return `https://kdb.tsukuba.ac.jp/syllabi/${year}/${courseId}/jpn`;
   }
 
   function handleDragStart(
@@ -656,14 +623,6 @@
       activeFilterCount > 0,
   );
 
-  const gradesImported = $derived(realCourses.length + fakeCourses.length > 0);
-  const importedCredits = $derived(
-    [...realCourses.filter((c) => gradeIsPass(c.grade)), ...fakeCourses].reduce(
-      (sum, c) => sum + (c.credit ?? 0),
-      0,
-    ),
-  );
-
   const wontTakeSliced = $derived(
     filteredCourseLists.wontTake.slice(0, wontTakeVisibleLimit),
   );
@@ -694,63 +653,7 @@
   const mightTakeCourseIds = $derived(svelteAkiko.getMightTakeCourseIds());
   const listKindOverrides = $derived(svelteAkiko.getListKindOverrides());
   const takenCourseIds = $derived(svelteAkiko.getTakenCourseIds());
-  const unclassifiedCourses = $derived(svelteAkiko.getUnclassifiedCourses());
-  const exportForTwinsResult = $derived(svelteAkiko.exportForTwins());
-  const uiJizentouroku = $derived.by((): UiJizentourokuCourse[] => {
-    return exportForTwinsResult.jizentouroku.map((kc) => {
-      const rc = realCoursesMap.get(kc.id);
-      const firstSlot = kc.slots[0];
-      const term: TimetableTab =
-        firstSlot !== undefined ? firstSlot.term : "other";
-      return {
-        id: kc.id,
-        name: rc?.name ?? kc.name,
-        cellId: svelteAkiko.getCellId(kc.id),
-        term,
-      };
-    });
-  });
-  const exportCourses = $derived(
-    exportForTwinsResult.kind === "ok" ? exportForTwinsResult.toExport : [],
-  );
-  const exportCredits = $derived(
-    exportCourses.reduce((sum, c) => sum + (c.credit ?? 0), 0),
-  );
-  const uiOverlaps = $derived.by((): UiOverlapGroup[] => {
-    if (exportForTwinsResult.kind === "ok") return [];
-    return exportForTwinsResult.overlaps.map((overlap) => ({
-      slot: slotToString(overlap.slot),
-      term: overlap.slot.term,
-      courses: overlap.courses.map((kc) => {
-        const rc = realCoursesMap.get(kc.id);
-        return {
-          id: kc.id,
-          name: rc?.name ?? kc.name,
-          cellId: svelteAkiko.getCellId(kc.id),
-        };
-      }),
-    }));
-  });
-
   let exportCount = $state(0);
-
-  const supportUrl = "https://buymeacoffee.com/akiko.tsukuba";
-
-  function exportMightTake() {
-    if (exportForTwinsResult.kind !== "ok") return;
-    exportCount++;
-    const content = exportForTwinsResult.toExport.map((c) => c.id).join("\n");
-    trackEvent(
-      "export",
-      "export-for-twins",
-      `${config.tableYear}/${config.major}`,
-      exportForTwinsResult.toExport.length,
-    );
-    const a = document.createElement("a");
-    a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(content);
-    a.download = "科目番号一覧.csv";
-    a.click();
-  }
 
   function reset() {
     const msg =
@@ -1050,7 +953,7 @@
       {/if}
       <br />
       <a
-        href={getSyllabusUrl(c.id, c.syllabusYear)}
+        href={syllabusUrl(c.id, c.syllabusYear)}
         target="_blank"
         draggable="false"
         >{c.name}{c.grade && gradeIsPass(c.grade) ? ` (${c.takenYear})` : ""}</a
@@ -1135,8 +1038,8 @@
             Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z)),
           )),
         ignore: "#title",
-        onpanstart: () => (panning = true),
-        onpanend: endPan,
+        onPanStart: () => (panning = true),
+        onPanEnd: endPan,
       })}
       onscroll={(e) => (scrollX = -e.currentTarget.scrollLeft)}
       onclick={() => {
@@ -1169,7 +1072,7 @@
             target="_blank"
             rel="noreferrer">ご意見はこちらから</a
           >
-          <a class="support" href={supportUrl} target="_blank" rel="noreferrer"
+          <a class="support" href={SUPPORT_URL} target="_blank" rel="noreferrer"
             ><BadgeJapaneseYen size={15} />開発を支援</a
           >
         </nav>
@@ -1286,280 +1189,28 @@
       data-tutorial="import-tab"
       class:active={activeTab === "import"}
     >
-      <div class="steps-panel">
-        <ol class="steps">
-          <li>
-            <p>
-              TWINSから成績ファイルをダウンロード
-              <a href={resolve("/twins-grades")} target="_blank">手順を見る</a>
-            </p>
-            <p class="step-note">
-              ※ ExcelやNumbersなどで開かずに、そのままインポートしてください
-            </p>
-          </li>
-          <li>
-            <p>ダウンロードしたファイルをインポート</p>
-            <label
-              id="csv-drop-zone"
-              class:dragover={csvDragOver}
-              class:imported={gradesImported}
-              ondragover={(e) => {
-                e.preventDefault();
-                csvDragOver = true;
-              }}
-              ondragleave={() => (csvDragOver = false)}
-              ondrop={(e) => {
-                e.preventDefault();
-                csvDragOver = false;
-                const file = e.dataTransfer?.files[0];
-                if (file) importCsvFile(file);
-              }}
-            >
-              {#if gradesImported}
-                <CircleCheck size={30} strokeWidth={1.5} />
-                <span>インポート済み（{importedCredits}単位）</span>
-                <span class="sub">ドロップまたはクリックで再インポート</span>
-              {:else}
-                <FileUp size={30} strokeWidth={1.5} />
-                <span>ここにドロップ</span>
-                <span class="sub">またはクリックして選択</span>
-              {/if}
-              <input
-                type="file"
-                class="csv-input"
-                accept=".csv"
-                onchange={handleCsvUpload}
-              />
-            </label>
-            <p class="step-note">
-              <Lock
-                size={15}
-              />成績データは、あきこの開発チームに閲覧されたり、外部に送信されたりすることはありません
-            </p>
-          </li>
-          <li>
-            <div id="student-type">
-              <span>総合学域群からこの学類に移行した？</span>
-              <div class="segmented">
-                <label
-                  ><input
-                    type="radio"
-                    name="student-type"
-                    bind:group={isNative}
-                    value={true}
-                  />いいえ</label
-                >
-                <label
-                  ><input
-                    type="radio"
-                    name="student-type"
-                    bind:group={isNative}
-                    value={false}
-                  />はい</label
-                >
-              </div>
-            </div>
-          </li>
-        </ol>
-        {#if unclassifiedCourses.real.length + unclassifiedCourses.fake.length > 0}
-          <details>
-            <summary
-              >卒業単位に含まれない授業（{unclassifiedCourses.real.length +
-                unclassifiedCourses.fake.length}件）</summary
-            >
-            <table class="show-term">
-              <thead>
-                <tr class="course">
-                  <th class="id-name">科目</th>
-                  <th class="credit">単位</th>
-                  <th class="term">評価</th>
-                </tr>
-              </thead>
-              <tbody>
-                {#each unclassifiedCourses.real as c (c.id)}
-                  <tr class="course">
-                    <td class="id-name">
-                      <span>{c.id}</span><br />
-                      <a
-                        href={getSyllabusUrl(c.id, c.takenYear)}
-                        target="_blank">{c.name}</a
-                      >
-                    </td>
-                    <td class="credit">{c.credit ?? "-"}</td>
-                    <td class="term">{gradeDisplay(c.grade)}</td>
-                  </tr>
-                {/each}
-                {#each unclassifiedCourses.fake as c (c.id)}
-                  <tr class="course">
-                    <td class="id-name">
-                      <span>（科目番号不明）</span><br />
-                      <span>{c.name}</span>
-                    </td>
-                    <td class="credit">{c.credit ?? "-"}</td>
-                    <td class="term">-</td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
-          </details>
-        {/if}
-      </div>
+      <ImportTab
+        {svelteAkiko}
+        {realCourses}
+        {fakeCourses}
+        bind:native={isNative}
+        onImport={importCsvFile}
+      />
     </div>
 
     <div id="export-tab" class:active={activeTab === "export"}>
-      <div class="steps-panel">
-        <ol class="steps">
-          <li>
-            <p>出力する授業を確認</p>
-            {#if exportForTwinsResult.kind === "err"}
-              <p class="step-problem">
-                <TriangleAlert
-                  size={15}
-                />時間が被っている授業はTWINSに登録できません。1つを残して、他は「当てはまる授業」に戻してください
-              </p>
-              <table class="show-term">
-                <tbody>
-                  {#each uiOverlaps as group (group.slot)}
-                    {#each group.courses as course, i (course.id)}
-                      <tr class="course">
-                        {#if i === 0}
-                          <td
-                            class="term"
-                            rowspan={group.courses.length}
-                            style="white-space: nowrap">{group.slot}</td
-                          >
-                        {/if}
-                        <td class="id-name">
-                          <span>{course.id}</span><br />
-                          <a
-                            href={getSyllabusUrl(
-                              course.id,
-                              config.knownCourseYear,
-                            )}
-                            target="_blank">{course.name}</a
-                          >
-                        </td>
-                        <td>
-                          {#if course.cellId !== undefined}
-                            {@const cellId = course.cellId}
-                            <button
-                              onclick={() => {
-                                selectedCellId = cellId;
-                                scrollCellIntoView(cellId);
-                                activeTimetableTerm = group.term;
-                                showTab("courses");
-                              }}>表示</button
-                            >
-                          {/if}
-                        </td>
-                      </tr>
-                    {/each}
-                  {/each}
-                </tbody>
-              </table>
-            {:else if exportCourses.length > 0}
-              <details>
-                <summary>{exportCourses.length}件・{exportCredits}単位</summary>
-                <table>
-                  <tbody>
-                    {#each exportCourses as course (course.id)}
-                      <tr class="course">
-                        <td class="id-name">
-                          <span>{course.id}</span><br />
-                          <a
-                            href={getSyllabusUrl(
-                              course.id,
-                              config.knownCourseYear,
-                            )}
-                            target="_blank">{course.name}</a
-                          >
-                        </td>
-                        <td class="credit">{course.credit ?? "-"}</td>
-                      </tr>
-                    {/each}
-                  </tbody>
-                </table>
-              </details>
-            {:else if uiJizentouroku.length === 0}
-              <p class="step-note">
-                TWINSに登録する授業がまだありません。<button
-                  class="link-button"
-                  onclick={() => showTab("courses")}
-                  >「履修を組む」で選ぶ</button
-                >
-              </p>
-            {/if}
-            {#if uiJizentouroku.length > 0}
-              <p class="step-problem">
-                <TriangleAlert
-                  size={15}
-                />事前登録の授業はファイルに含まれません。TWINSで別途事前登録してください
-              </p>
-              <table>
-                <tbody>
-                  {#each uiJizentouroku as course (course.id)}
-                    <tr class="course">
-                      <td class="id-name">
-                        <span>{course.id}</span><br />
-                        <a
-                          href={getSyllabusUrl(
-                            course.id,
-                            config.knownCourseYear,
-                          )}
-                          target="_blank">{course.name}</a
-                        >
-                      </td>
-                      <td>
-                        {#if course.cellId !== undefined}
-                          {@const cellId = course.cellId}
-                          <button
-                            onclick={() => {
-                              selectedCellId = cellId;
-                              scrollCellIntoView(cellId);
-                              activeTimetableTerm = course.term;
-                              showTab("courses");
-                            }}>表示</button
-                          >
-                        {/if}
-                      </td>
-                    </tr>
-                  {/each}
-                </tbody>
-              </table>
-            {/if}
-          </li>
-          <li>
-            <p>ファイルをダウンロード</p>
-            <button
-              id="export-button"
-              data-tutorial="export-button"
-              onclick={exportMightTake}
-              disabled={exportCourses.length === 0}
-            >
-              <Download size={20} />ダウンロード
-            </button>
-          </li>
-          <li data-tutorial="export-upload">
-            <p>
-              TWINSでアップロード
-              <a href={resolve("/twins-register")} target="_blank">手順を見る</a
-              >
-            </p>
-            <p class="step-note">
-              ※ アップロードしても、登録済みの授業は取り消されません
-            </p>
-          </li>
-        </ol>
-        {#if exportCount > 0}
-          <Dialog id="support-ask"
-            >あきこが役に立ったら、<a
-              href={supportUrl}
-              target="_blank"
-              rel="noreferrer">開発を支援</a
-            >してもらえると嬉しいわ〜</Dialog
-          >
-        {/if}
-      </div>
+      <ExportTab
+        {svelteAkiko}
+        {config}
+        onShowCell={(cellId: CellId, term: TimetableTab) => {
+          selectedCellId = cellId;
+          scrollCellIntoView(cellId);
+          activeTimetableTerm = term;
+          showTab("courses");
+        }}
+        onPickCourses={() => showTab("courses")}
+        onDownload={() => exportCount++}
+      />
     </div>
 
     <div id="settings-tab" class:active={activeTab === "settings"}>
@@ -1873,7 +1524,7 @@
 <MobileUnsupportedNotice />
 
 {#if tutorialOpen}
-  <Tutorial steps={tutorialSteps} onclose={closeTutorial} />
+  <Tutorial steps={tutorialSteps} onClose={closeTutorial} />
 {/if}
 
 <style lang="scss">
@@ -2527,210 +2178,6 @@
 
     & #reset {
       --h: 10;
-    }
-  }
-
-  .csv-input {
-    display: none;
-  }
-
-  .steps-panel {
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 500px;
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .steps {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    counter-reset: step;
-    display: flex;
-    flex-direction: column;
-    gap: 70px;
-
-    & > li {
-      position: relative;
-      counter-increment: step;
-      display: grid;
-      grid-template-columns: 30px 1fr;
-      column-gap: 15px;
-      row-gap: 10px;
-
-      &::before {
-        content: counter(step);
-        grid-row: 1;
-        align-self: center;
-        display: grid;
-        place-items: center;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        background-color: oklch(70% 50% 270);
-        color: white;
-        font-weight: bold;
-      }
-
-      & > * {
-        grid-column: 2;
-        margin: 0;
-      }
-
-      & > :first-child {
-        align-self: center;
-      }
-
-      &:not(:last-child)::after {
-        content: "";
-        position: absolute;
-        left: 50%;
-        bottom: -50px;
-        width: 30px;
-        height: 30px;
-        transform: translateX(-50%);
-        background-color: oklch(85% 0 0);
-        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14'/%3E%3Cpath d='m19 12-7 7-7-7'/%3E%3C/svg%3E")
-          center / contain no-repeat;
-      }
-    }
-  }
-
-  #csv-drop-zone {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    padding: 30px;
-    border: 2px dashed oklch(70% 0.1 270);
-    border-radius: 10px;
-    background-color: oklch(97% 0.02 270);
-    color: oklch(40% 0.1 270);
-    cursor: pointer;
-
-    &:hover,
-    &.dragover {
-      background-color: oklch(92% 0.05 270);
-    }
-
-    &.imported {
-      border-color: oklch(70% 0.1 150);
-      background-color: oklch(97% 0.03 150);
-      color: oklch(40% 0.1 150);
-
-      &:hover,
-      &.dragover {
-        background-color: oklch(92% 0.06 150);
-      }
-    }
-
-    & > .sub {
-      font-size: var(--fs-sm);
-    }
-  }
-
-  .step-note {
-    display: flex;
-    align-items: flex-start;
-    gap: 5px;
-    margin: 0;
-    font-size: var(--fs-sm);
-    color: #444;
-
-    & > :global(svg) {
-      flex-shrink: 0;
-      height: 1lh;
-    }
-  }
-
-  .steps-panel > :global(#support-ask) {
-    width: auto;
-    margin-top: 50px;
-  }
-
-  .step-problem {
-    display: flex;
-    align-items: flex-start;
-    gap: 5px;
-    margin: 0;
-    font-size: var(--fs-sm);
-    color: oklch(50% 0.15 50);
-
-    & > :global(svg) {
-      flex-shrink: 0;
-      height: 1lh;
-    }
-  }
-
-  #export-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 10px;
-    background-color: oklch(60% 50% 270);
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-
-    &:hover {
-      background-color: oklch(50% 50% 270);
-    }
-
-    &:disabled {
-      background-color: oklch(90% 0 0);
-      color: oklch(60% 0 0);
-    }
-  }
-
-  #student-type {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .segmented {
-    display: flex;
-    border: 1px solid gray;
-    border-radius: 10px;
-    overflow: hidden;
-
-    & > label {
-      padding: 5px 15px;
-      cursor: pointer;
-
-      & + label {
-        border-left: 1px solid gray;
-      }
-
-      &:has(input:checked) {
-        background-color: oklch(70% 50% 270);
-        color: white;
-      }
-
-      &:has(input:focus-visible) {
-        outline: 2px solid oklch(60% 15% 250);
-        outline-offset: -2px;
-      }
-    }
-
-    & input {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-    }
-  }
-
-  #import-tab details {
-    & > summary {
-      cursor: pointer;
-      margin-bottom: 10px;
     }
   }
 

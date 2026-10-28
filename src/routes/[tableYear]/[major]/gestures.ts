@@ -28,8 +28,8 @@ export type PanZoomOptions = {
   setZoom(zoom: number): void;
   /** Pressing inside an element matching this selector doesn't start a pan. */
   ignore?: string;
-  onpanstart?(): void;
-  onpanend?(): void;
+  onPanStart?(): void;
+  onPanEnd?(): void;
 };
 
 // Smaller moves are clicks, not pans
@@ -78,7 +78,7 @@ export function panZoom(opts: PanZoomOptions): Attachment<HTMLElement> {
         if (Math.hypot(dx, dy) < PAN_THRESHOLD) return;
         panning = true;
         el.setPointerCapture(e.pointerId);
-        opts.onpanstart?.();
+        opts.onPanStart?.();
       }
       el.scrollLeft = start.scrollLeft - dx;
       el.scrollTop = start.scrollTop - dy;
@@ -88,7 +88,7 @@ export function panZoom(opts: PanZoomOptions): Attachment<HTMLElement> {
       start = undefined;
       if (!panning) return;
       panning = false;
-      opts.onpanend?.();
+      opts.onPanEnd?.();
       // The click that follows a pan must not reach what's under the pointer
       suppressClick = true;
       setTimeout(() => (suppressClick = false));
