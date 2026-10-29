@@ -361,9 +361,9 @@ function baseCreditStatsNew(
 export type ListKind = "wont-take" | "might-take" | "taken";
 
 /**
- * 成績から決まる配置を上書きする、ユーザーが明示的に動かした授業の記録。
- * 「取る授業」に入れた落単済みの授業（再履修）や、「取る授業」から出した履修中
- * の授業など、成績だけからは復元できない意図を保持する。
+ * Courses the user moved by hand, overriding the list their grade puts them in.
+ * They keep what the grades can't recover, like a failed course put back in
+ * 取る授業 to retake, or a 履修中 one taken out of it.
  */
 export type ListKindOverride = "wont-take" | "might-take";
 export type ListKindOverrides = Map<CourseId, ListKindOverride>;
@@ -431,8 +431,8 @@ export function akikoNew(
   courseIdToCellId = new Map(courseIdToCellId);
   const courseIdToListKind = new Map<CourseId, ListKind>();
 
-  // 成績から決まる配置を先に求め、その上にユーザーの意図を被せる。順序が逆だと
-  // 成績が常に勝ってしまい、再履修の予定などが成績データを読むたびに消える。
+  // Grades first, then the overrides on top. The other way round, grades would
+  // win, and planned retakes would vanish on every import.
   for (const rc of realCourses.values()) {
     courseIdToListKind.set(rc.id, realCourseListKind(rc.grade));
   }
@@ -440,8 +440,8 @@ export function akikoNew(
   listKindOverrides = new Map(listKindOverrides);
   for (const [courseId, override] of listKindOverrides) {
     const fromGrade = courseIdToListKind.get(courseId) ?? "wont-take";
-    // 単位取得済みの授業は動かせないので、成績が勝つ。成績と同じ配置を指す
-    // 上書きは意味がないので、どちらの場合も記録から消す。
+    // Taken courses can't move, so the grade wins. Either way, the override no
+    // longer changes anything, so drop it.
     if (fromGrade === "taken" || fromGrade === override) {
       listKindOverrides.delete(courseId);
       continue;
@@ -937,8 +937,6 @@ export function akikoMoveCourse(
   if (current === "taken") return { kind: "course-taken" };
   if (current === dst) return { kind: "course-does-not-move" };
 
-  // 成績から決まる配置とずれたときだけ記録する。成績どおりの配置に戻ったときは
-  // 記録を消し、無意味な上書きが溜まらないようにする。
   const listKindOverrides = new Map(akiko.listKindOverrides);
   const rc = akiko.realCourses.get(courseId);
   const fromGrade =

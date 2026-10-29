@@ -108,9 +108,9 @@ function localDataV1ToV2(v1: LocalDataV1): LocalDataV2 {
 }
 
 function localDataV2ToV3(v2: LocalDataV2): LocalDataV3 {
-  // v2 の mightTakeCourseIds には、ユーザーが「取る授業」に入れた授業だけでなく、
-  // 履修中の成績から自動的に「取る授業」になった授業も混ざって保存されていた。
-  // 後者はユーザーの意図ではなく成績から復元できるので、上書きの記録には含めない。
+  // v2 saved 履修中 courses in mightTakeCourseIds too, though their grade put
+  // them there, not the user. Kept as overrides, they would stay in 取る授業 as
+  // if moved by hand once newer grades no longer have them.
   const wipCourseIds = new Set<CourseId>();
   for (const rc of v2.realCourses) {
     if (rc.grade === "wip") wipCourseIds.add(rc.id);
@@ -308,7 +308,7 @@ export function localDataFromJson(json: string): LocalDataV3 | undefined {
   return localDataV3Parse(x);
 }
 
-/** `Map` は `JSON.stringify` でそのまま扱えないので、この関数を通して保存する。 */
+/** Use this, not `JSON.stringify`, which can't serialize a `Map`. */
 export function localDataToJson(d: LocalDataV3): string {
   const listKindOverrides: Record<string, ListKindOverride> =
     Object.fromEntries(d.listKindOverrides);

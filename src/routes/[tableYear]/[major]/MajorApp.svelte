@@ -250,15 +250,14 @@
     markSeen("tutorial");
   }
 
-  // 操作を待つステップは、ステップに入った時点からの変化を見る
-  let tutorialEntry = {
+  let tutorialStepStart = {
     realCourses: [] as RealCourse[],
     mightTakeCount: 0,
     exportCount: 0,
   };
 
   function tutorialSnapshot() {
-    tutorialEntry = {
+    tutorialStepStart = {
       realCourses,
       mightTakeCount: mightTakeCourseIds.length,
       exportCount,
@@ -298,7 +297,7 @@
         },
       ],
       onEnter: tutorialSnapshot,
-      waitFor: () => realCourses !== tutorialEntry.realCourses,
+      waitFor: () => realCourses !== tutorialStepStart.realCourses,
     },
     {
       id: "progress",
@@ -339,7 +338,8 @@
       title: "ドラッグで時間割に追加",
       body: "取りたい授業があったら、その行を右側にドラッグしてみて。「取る授業」に入って、時間割にも出てくるわ〜",
       onEnter: tutorialSnapshot,
-      waitFor: () => mightTakeCourseIds.length > tutorialEntry.mightTakeCount,
+      waitFor: () =>
+        mightTakeCourseIds.length > tutorialStepStart.mightTakeCount,
     },
     {
       id: "more",
@@ -363,7 +363,7 @@
       body: "「ダウンロード」を押してみて〜。取る授業の科目番号を並べたCSVファイルをダウンロードするわ。時間が被ってる授業があると押せないから、そのときは次へを押して、あとで「履修を組む」タブで直してね",
       nextLabel: "次へ",
       onEnter: tutorialSnapshot,
-      waitFor: () => exportCount > tutorialEntry.exportCount,
+      waitFor: () => exportCount > tutorialStepStart.exportCount,
     },
     {
       id: "register",

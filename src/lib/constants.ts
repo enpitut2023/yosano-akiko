@@ -137,7 +137,7 @@ export function majorCompare(a: Major, b: Major): number {
   return ai - bi;
 }
 
-/** 学類。主専攻を持たない専門学群 (pe, art) も1つの学類として扱う。 */
+/** Colleges (学類). A 専門学群 without majors (pe, art) counts as one college. */
 export const COLLEGES = [
   "help",
   "ccc",

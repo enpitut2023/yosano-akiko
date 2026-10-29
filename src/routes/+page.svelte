@@ -65,7 +65,10 @@
     });
   }
 
-  /** 学類名を除いた主専攻名。学類名そのものなら学類名を返す */
+  /**
+   * The major's name without the college's, or the full name if the two are
+   * the same.
+   */
   function majorOnlyJa(i: Instance): string {
     const full = MAJOR_TO_JA[i.major];
     const college = COLLEGE_TO_JA[MAJOR_TO_COLLEGE[i.major]];
@@ -81,7 +84,7 @@
     pickedSection?.colleges.find((c) => c.college === pickedCollege)?.instances,
   );
 
-  // title は改行してよい位置で区切る
+  // Each element of title ends where a line may break
   const features: {
     title: string[];
     body: string;
@@ -248,7 +251,8 @@
       margin: 0;
       font-size: 60px;
       letter-spacing: 0.1em;
-      // letter-spacing は最後の文字の後ろにも付くので、左に同じだけ足して下線を中央に揃える
+      // letter-spacing also adds space after the last letter, so pad the left by
+      // the same to keep the underline centered
       padding: 0 10px 0 calc(10px + 0.1em);
       line-height: 1.2;
       background: linear-gradient(transparent 65%, oklch(90% 10% 350) 65%);
@@ -376,7 +380,7 @@
     }
   }
 
-  // 入り口なので、学類や主専攻より目立たせる
+  // The entry point, so it stands out more than the college and major choices
   .years > .choice {
     padding: 10px 20px;
     border: 2px solid oklch(70% 50% 270);

@@ -92,13 +92,11 @@ export function runTest(params: RunTestParams): void {
 }
 
 /**
- * `mightTake` を設定すると、 `rawMightTake` と `effectiveMightTake` を同じ値に
- * 設定したものとして扱われる。 `mightTake` を設定しないと、 `rawMightTake` と
- * `effectiveMightTake` を0に設定したものとして扱われる。 `taken` についても同
- * 様。
+ * `mightTake` sets both `rawMightTake` and `effectiveMightTake`; leaving all
+ * three out means 0. Same for `taken`.
  */
 /* eslint-disable @typescript-eslint/no-empty-object-type --
-   `{}` はどちらのキーも指定しない場合を表す。 */
+   `{}` is for setting neither key. */
 export type WantBaseCreditStats = (
   | { rawMightTake: number; effectiveMightTake: number }
   | { mightTake: number }

@@ -4,9 +4,6 @@ import { localDataFromJson } from "$lib/local-data";
 const WIP = "GB10000";
 const PLANNED = "GB40000";
 
-// v2 saved 履修中 courses in mightTakeCourseIds too. Kept as overrides, they
-// would stay in 取る授業 as if moved by hand once newer grades no longer have
-// them.
 test("v2 migrates, without the 履修中 courses as overrides", () => {
   const migrated = localDataFromJson(
     JSON.stringify({

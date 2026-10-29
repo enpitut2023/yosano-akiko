@@ -85,8 +85,8 @@
 
   onMount(() => {
     void goto(0);
-    // ズームやスクロール、サイドバーのリサイズなど、要素が動く原因は多いので
-    // イベントを個別に拾わず毎フレーム測る
+    // Many things move the target (zoom, scrolling, resizing the sidebar, …), so
+    // measure every frame instead of listening for each
     let raf = 0;
     const loop = () => {
       const r = measure(steps[index].target);
@@ -118,7 +118,8 @@
       Math.max(GAP, Math.min(innerHeight - popoverHeight - GAP, y));
     const needed =
       side === "left" || side === "right" ? popoverWidth : popoverHeight;
-    // 穴が画面のほとんどを占めるときは、穴に少し被せて左下の隅に置く
+    // When the hole fills most of the screen, put the popover in the bottom-left
+    // corner, partly over the hole
     if (room[side] < needed + GAP * 2) {
       return { left: GAP, top: innerHeight - popoverHeight - GAP };
     }
@@ -151,7 +152,8 @@
       style="left:{h.left}px; top:{h.top}px; width:{h.right -
         h.left}px; height:{h.bottom - h.top}px"
     ></div>
-    <!-- 穴の外のクリックを止める。穴の中は下の要素をそのまま操作できる -->
+    <!-- Blocks clicks outside the hole; inside it, the page underneath stays
+         usable -->
     <div class="blocker" style="left:0; top:0; right:0; height:{h.top}px"></div>
     <div
       class="blocker"
