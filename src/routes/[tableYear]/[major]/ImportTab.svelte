@@ -213,7 +213,6 @@
   }
 
   details > summary {
-    cursor: pointer;
     margin-bottom: 10px;
   }
 
