@@ -1,6 +1,7 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import Download from "lucide-svelte/icons/download";
+  import CircleQuestionMark from "lucide-svelte/icons/circle-question-mark";
   import TriangleAlert from "lucide-svelte/icons/triangle-alert";
   import {
     akikoExportForTwins,
@@ -213,7 +214,9 @@
     <li data-tutorial="export-upload">
       <p>
         TWINSでアップロード
-        <a href={resolve("/twins-register")} target="_blank">手順を見る</a>
+        <a class="step-help" href={resolve("/twins-register")} target="_blank"
+          ><CircleQuestionMark size={15} />手順を見る</a
+        >
       </p>
       <p class="step-note">
         ※ アップロードしても、登録済みの授業は取り消されません

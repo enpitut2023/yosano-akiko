@@ -1,6 +1,7 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import CircleCheck from "lucide-svelte/icons/circle-check";
+  import CircleQuestionMark from "lucide-svelte/icons/circle-question-mark";
   import FileUp from "lucide-svelte/icons/file-up";
   import Lock from "lucide-svelte/icons/lock";
   import {
@@ -63,7 +64,9 @@
     <li>
       <p>
         TWINSから成績ファイルをダウンロード
-        <a href={resolve("/twins-grades")} target="_blank">手順を見る</a>
+        <a class="step-help" href={resolve("/twins-grades")} target="_blank"
+          ><CircleQuestionMark size={15} />手順を見る</a
+        >
       </p>
       <p class="step-note">
         ※ ExcelやNumbersなどで開かずに、そのままインポートしてください

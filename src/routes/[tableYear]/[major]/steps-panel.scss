@@ -78,3 +78,26 @@
     height: 1lh;
   }
 }
+
+:has(> .step-help) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.step-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  border-radius: 10px;
+  background-color: oklch(95% 0.03 270);
+  color: oklch(45% 0.15 270);
+  font-size: var(--fs-sm);
+  text-decoration: none;
+
+  &:hover {
+    background-color: oklch(90% 0.05 270);
+  }
+}
