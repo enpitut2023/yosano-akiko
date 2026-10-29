@@ -9,6 +9,7 @@ const ci = process.env.CI !== undefined;
 
 export default defineConfig({
   testDir: "tests/e2e",
+  fullyParallel: true,
   forbidOnly: ci,
   retries: ci ? 1 : 0,
   reporter: ci ? "github" : "list",
