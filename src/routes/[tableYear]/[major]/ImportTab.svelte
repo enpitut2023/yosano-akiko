@@ -9,7 +9,7 @@
     akikoGetMergedCourse,
     akikoGetUnclassifiedFakeCourses,
     akikoGetUnclassifiedRealCourses,
-    creditSum,
+    coursesCreditSum,
     gradeIsPass,
     type Akiko,
     type FakeCourse,
@@ -40,7 +40,7 @@
 
   const gradesImported = $derived(realCourses.length + fakeCourses.length > 0);
   const importedCredits = $derived(
-    creditSum([
+    coursesCreditSum([
       ...realCourses.filter((c) => gradeIsPass(c.grade)),
       ...fakeCourses,
     ]),

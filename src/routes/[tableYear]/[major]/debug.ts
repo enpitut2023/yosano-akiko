@@ -4,7 +4,7 @@ import type { BaseCreditStats, CreditStats } from "$lib/akiko";
  * Logs credit stats in the shape the tests expect, for writing a test from a
  * grades file.
  */
-export function debugPrintCreditStats(stats: CreditStats): void {
+export function creditStatsDebugPrint(stats: CreditStats): void {
   function fmt(s: BaseCreditStats): Record<string, number> {
     const o: Record<string, number> = {};
     if (s.rawTaken > 0) {

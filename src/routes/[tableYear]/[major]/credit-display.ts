@@ -80,7 +80,7 @@ export function electiveCreditStatsDisplay(
  * The taken and taken-plus-planned credits as percentages of `min`, capped at
  * 100. Both are 100 when nothing is required.
  */
-export function getPercentage(
+export function creditFillPercentages(
   taken: number,
   mightTake: number,
   min: number,

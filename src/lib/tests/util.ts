@@ -11,7 +11,7 @@ import {
   type ClassifyRealCourses,
   type SetupCreditRequirements,
   classifyCoursesOrFail,
-  createCreditRequirementsOrFail,
+  creditRequirementsNewOrFail,
 } from "$lib/app-setup";
 import { parseImportedCsv } from "$lib/csv";
 import { assert } from "$lib/util";
@@ -51,7 +51,7 @@ export function getCreditStats(params: {
     courseIdToCellId,
     realCoursePositions,
     fakeCoursePositions,
-    createCreditRequirementsOrFail(params.creditRequirements),
+    creditRequirementsNewOrFail(params.creditRequirements),
   );
   assert(akiko !== undefined);
 

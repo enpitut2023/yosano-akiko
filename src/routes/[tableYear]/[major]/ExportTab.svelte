@@ -6,7 +6,7 @@
   import {
     akikoExportForTwins,
     akikoGetMergedCourse,
-    creditSum,
+    coursesCreditSum,
     slotToString,
     type Akiko,
     type MergedCourse,
@@ -67,7 +67,7 @@
       ? toCourses(exportForTwinsResult.toExport)
       : [],
   );
-  const exportCredits = $derived(creditSum(exportCourses));
+  const exportCredits = $derived(coursesCreditSum(exportCourses));
   const uiOverlaps = $derived.by((): UiOverlapGroup[] => {
     if (exportForTwinsResult.kind === "ok") return [];
     return exportForTwinsResult.overlaps.map((overlap) => ({

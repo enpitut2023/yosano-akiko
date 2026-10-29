@@ -15,7 +15,7 @@
   import {
     columnCreditStatsDisplay,
     electiveCreditStatsDisplay,
-    getPercentage,
+    creditFillPercentages,
   } from "./credit-display";
   import { panZoom } from "./gestures";
   import { markSeen, seen } from "./seen";
@@ -108,7 +108,7 @@
     for (const [colId, stats] of creditStats.columns) {
       if (!columnIdIsElective(colId)) continue;
       const display = columnCreditStatsDisplay(stats);
-      const [green, yellow] = getPercentage(
+      const [green, yellow] = creditFillPercentages(
         stats.effectiveTaken,
         stats.effectiveMightTake,
         stats.min,
@@ -216,7 +216,7 @@
     {#each cellRects as r (r.id)}
       {@const cellStats = creditStats.cells.get(r.id)}
       {#if cellStats}
-        {@const [green, yellow] = getPercentage(
+        {@const [green, yellow] = creditFillPercentages(
           cellStats.effectiveTaken,
           cellStats.effectiveMightTake,
           cellStats.min,
@@ -263,7 +263,7 @@
     {#if creditStats.elective}
       {@const s = creditStats.elective}
       {@const display = electiveCreditStatsDisplay(s)}
-      {@const [green, yellow] = getPercentage(
+      {@const [green, yellow] = creditFillPercentages(
         s.effectiveTaken,
         s.effectiveMightTake,
         s.min,

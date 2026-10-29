@@ -4,14 +4,14 @@ import { type MajorConfig } from "./app-setup";
 import { type Major } from "./constants";
 // The e2e tests swap this for a fixture (see vite.config.ts)
 import { knownCourses, knownCourseYear } from "./current-courses";
-import { assert, strictParseFloat } from "./util.js";
+import { assert, parseFloatStrict } from "./util.js";
 
 function findViewBox(
   svg: string,
 ): { width: number; height: number } | undefined {
   const match = /viewBox="(.*?)"/.exec(svg);
   if (!match) return undefined;
-  const parts = match[1].trim().split(/\s+/).map(strictParseFloat);
+  const parts = match[1].trim().split(/\s+/).map(parseFloatStrict);
   if (parts.length !== 4 || parts.some((p) => p === undefined))
     return undefined;
   const [x, y, width, height] = parts as number[];

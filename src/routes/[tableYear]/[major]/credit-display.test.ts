@@ -5,7 +5,7 @@ import {
   creditBoundsToString,
   creditProgressToString,
   electiveCreditStatsDisplay,
-  getPercentage,
+  creditFillPercentages,
   gradeDisplay,
 } from "./credit-display";
 
@@ -67,8 +67,8 @@ test("electiveCreditStatsDisplay", () => {
   ).toBe("選択科目計:0　要:71");
 });
 
-test("getPercentage", () => {
-  expect(getPercentage(1, 1, 0)).toEqual([100, 100]);
-  expect(getPercentage(3, 3, 6)).toEqual([50, 100]);
-  expect(getPercentage(8, 2, 4)).toEqual([100, 100]);
+test("creditFillPercentages", () => {
+  expect(creditFillPercentages(1, 1, 0)).toEqual([100, 100]);
+  expect(creditFillPercentages(3, 3, 6)).toEqual([50, 100]);
+  expect(creditFillPercentages(8, 2, 4)).toEqual([100, 100]);
 });

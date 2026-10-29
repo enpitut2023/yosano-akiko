@@ -3,7 +3,7 @@
     akikoGetCourseLists,
     akikoGetOccupiedSlots,
     akikoMoveCourse,
-    creditSum,
+    coursesCreditSum,
     isCourseId,
     type Akiko,
     type CellId,
@@ -107,9 +107,9 @@
   });
 
   const listCreditTotals = $derived({
-    mightTake: creditSum(courseLists.mightTake),
-    taken: creditSum(courseLists.taken),
-    fake: creditSum(courseLists.fake),
+    mightTake: coursesCreditSum(courseLists.mightTake),
+    taken: coursesCreditSum(courseLists.taken),
+    fake: coursesCreditSum(courseLists.fake),
   });
   const selectedCellStats = $derived(
     selectedCellId !== undefined

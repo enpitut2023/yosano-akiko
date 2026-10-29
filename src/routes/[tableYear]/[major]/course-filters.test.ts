@@ -9,7 +9,7 @@ import {
   type OccupiedSlots,
   type Slot,
 } from "$lib/akiko";
-import { createCreditRequirementsOrFail } from "$lib/app-setup";
+import { creditRequirementsNewOrFail } from "$lib/app-setup";
 import { assert } from "$lib/util";
 import {
   courseMatchesFilters,
@@ -82,7 +82,7 @@ function occupiedBy(slots: Slot[]): OccupiedSlots {
     new Map(),
     new Map(),
     new Map(),
-    createCreditRequirementsOrFail({
+    creditRequirementsNewOrFail({
       cells: {},
       columns: {},
       compulsory: 0,

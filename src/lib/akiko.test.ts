@@ -15,12 +15,12 @@ import {
   akikoGetListKind,
   akikoMoveCourse,
   akikoNew,
-  creditSum,
+  coursesCreditSum,
   isCellId,
   isCourseId,
   isFakeCourseId,
 } from "$lib/akiko";
-import { createCreditRequirementsOrFail } from "$lib/app-setup";
+import { creditRequirementsNewOrFail } from "$lib/app-setup";
 import { assert } from "$lib/util";
 
 function courseId(s: string): CourseId {
@@ -53,7 +53,7 @@ function akikoForTest(listKindOverrides: ListKindOverrides) {
     new Map(),
     new Map(),
     new Map(),
-    createCreditRequirementsOrFail({
+    creditRequirementsNewOrFail({
       cells: {},
       columns: {},
       compulsory: 0,
@@ -163,7 +163,7 @@ function akikoWith(params: {
   fake?: FakeCourse[];
   cells?: Record<string, CourseId[]>;
   fakeCells?: Record<string, FakeCourseId[]>;
-  requirements?: Parameters<typeof createCreditRequirementsOrFail>[0];
+  requirements?: Parameters<typeof creditRequirementsNewOrFail>[0];
 }) {
   const positions = new Map<CourseId, CellId>();
   for (const [id, courseIds] of Object.entries(params.cells ?? {})) {
@@ -182,7 +182,7 @@ function akikoWith(params: {
     positions,
     new Map(),
     fakePositions,
-    createCreditRequirementsOrFail(
+    creditRequirementsNewOrFail(
       params.requirements ?? {
         cells: {},
         columns: {},
@@ -329,8 +329,8 @@ test("the total credits are 必修 and 選択 together", () => {
   });
 });
 
-test("creditSum counts unknown credits as 0", () => {
-  expect(creditSum([{ credit: 2 }, { credit: undefined }, { credit: 1 }])).toBe(
-    3,
-  );
+test("coursesCreditSum counts unknown credits as 0", () => {
+  expect(
+    coursesCreditSum([{ credit: 2 }, { credit: undefined }, { credit: 1 }]),
+  ).toBe(3);
 });

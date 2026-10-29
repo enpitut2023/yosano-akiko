@@ -19,7 +19,7 @@
     type RealCourse,
   } from "$lib/akiko";
   import {
-    createCreditRequirementsOrFail,
+    creditRequirementsNewOrFail,
     classifyCoursesOrFail,
     type MajorConfig,
   } from "$lib/app-setup";
@@ -34,7 +34,7 @@
   import { assert } from "$lib/util.js";
   import { onMount, untrack } from "svelte";
   import { markSeen, seen } from "./seen";
-  import { debugPrintCreditStats } from "./debug";
+  import { creditStatsDebugPrint } from "./debug";
   import { mobileUnsupported } from "./mobile-unsupported";
   import MobileUnsupportedNotice from "./MobileUnsupportedNotice.svelte";
   import CoursesTab from "./CoursesTab.svelte";
@@ -70,7 +70,7 @@
   let showNonAvailable = $state(false);
 
   const creditRequirements = $derived(
-    createCreditRequirementsOrFail(
+    creditRequirementsNewOrFail(
       config.getCreditRequirements(config.tableYear, config.major),
     ),
   );
@@ -203,7 +203,7 @@
       "import-grades",
       `${config.tableYear}/${config.major}`,
     );
-    if (dev) debugPrintCreditStats(akikoGetCreditStats(akiko));
+    if (dev) creditStatsDebugPrint(akikoGetCreditStats(akiko));
     if (akikoGetUnclassifiedFakeCourses(akiko).length > 4) {
       alert(
         "申し訳ございませんが、TWINSの仕様のため編入生の認可された科目のみ単位チェック時に正しく単位を計算することができません。認可されていない通常の科目の成績は正しく計算されます。",

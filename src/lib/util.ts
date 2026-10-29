@@ -13,13 +13,13 @@ export function unreachable(_: never): never {
   throw new Error("Should be unreachable");
 }
 
-export function strictParseInt(s: string): number | undefined {
+export function parseIntStrict(s: string): number | undefined {
   if (!/^-?[0-9]+$/.test(s)) return undefined;
   const x = parseInt(s);
   if (!isNaN(x)) return x;
 }
 
-export function strictParseFloat(s: string): number | undefined {
+export function parseFloatStrict(s: string): number | undefined {
   if (!/^-?[0-9]+(\.[0-9]+)?$/.test(s)) return undefined;
   const x = parseFloat(s);
   if (!isNaN(x)) return x;

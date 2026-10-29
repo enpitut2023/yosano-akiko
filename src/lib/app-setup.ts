@@ -27,7 +27,7 @@ export type SetupCreditRequirements = {
   elective: number;
 };
 
-export function createCreditRequirementsOrFail(
+export function creditRequirementsNewOrFail(
   s: SetupCreditRequirements,
 ): CreditRequirements {
   const req: CreditRequirements = {

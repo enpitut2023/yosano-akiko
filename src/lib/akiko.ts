@@ -515,7 +515,9 @@ export function akikoGetMergedCourse(
 }
 
 /** The courses' credits added up, counting unknown ones as 0. */
-export function creditSum(courses: { credit: number | undefined }[]): number {
+export function coursesCreditSum(
+  courses: { credit: number | undefined }[],
+): number {
   return courses.reduce((sum, c) => sum + (c.credit ?? 0), 0);
 }
 

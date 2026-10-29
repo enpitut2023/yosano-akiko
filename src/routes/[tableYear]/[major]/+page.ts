@@ -6,11 +6,11 @@ import {
   MAJOR_TO_COLLEGE,
   COLLEGE_TO_JA,
 } from "$lib/constants";
-import { assert, strictParseInt } from "$lib/util";
+import { assert, parseIntStrict } from "$lib/util";
 import type { EntryGenerator, PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ params, fetch }) => {
-  const tableYear = strictParseInt(params.tableYear);
+  const tableYear = parseIntStrict(params.tableYear);
   assert(tableYear !== undefined);
   assert(isMajor(params.major));
   if (majorIsClosed(params.major)) {
