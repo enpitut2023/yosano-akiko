@@ -1,6 +1,7 @@
 <script lang="ts">
   import { resolve, asset } from "$app/paths";
   import BadgeJapaneseYen from "lucide-svelte/icons/badge-japanese-yen";
+  import ChevronLeft from "lucide-svelte/icons/chevron-left";
   import ChevronRight from "lucide-svelte/icons/chevron-right";
   import { type TimetableTab } from "./timetable";
   import Meta from "$lib/Meta.svelte";
@@ -518,9 +519,14 @@
   style="left: {barsVisible
     ? 'calc(100vw - var(--sidebar-width) - var(--toggle-width))'
     : 'calc(100vw - var(--toggle-width))'}"
+  aria-label={barsVisible ? "サイドバーを閉じる" : "サイドバーを開く"}
   onclick={() => (barsVisible = !barsVisible)}
 >
-  {barsVisible ? "⏵" : "⏴"}
+  {#if barsVisible}
+    <ChevronRight size={20} />
+  {:else}
+    <ChevronLeft size={20} />
+  {/if}
 </button>
 
 {#if barsVisible}
@@ -734,8 +740,8 @@
     border-radius: 0 0 0 10px;
     width: var(--toggle-width);
     height: var(--toggle-width);
-    font-size: var(--fs-lg);
-    text-align: center;
+    display: grid;
+    place-items: center;
     background-color: white;
     border: unset;
     border-left: 1px solid black;
