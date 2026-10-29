@@ -141,7 +141,6 @@
 
   type Tab = "import" | "export" | "courses" | "settings";
 
-  let timetableShowTaken = $state(true);
   let timetableYear = $state(untrack(() => config.knownCourseYear));
   let activeTimetableTerm = $state<TimetableTab>("spring-a");
 
@@ -492,7 +491,6 @@
     <div id="settings-tab" class:active={activeTab === "settings"}>
       <SettingsTab
         bind:showNonAvailable
-        bind:timetableShowTaken
         bind:timetableYear
         onReset={() => (saved = localDataDefault())}
       />
@@ -505,7 +503,6 @@
         {selectedCellId}
         cellRemark={selectedCellRemark}
         {showNonAvailable}
-        {timetableShowTaken}
         bind:timetableYear
         bind:timetableTerm={activeTimetableTerm}
         onShowCell={showCell}

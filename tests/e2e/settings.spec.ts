@@ -9,12 +9,10 @@ import {
   openTab,
   test,
   timetableBar,
-  timetableTerm,
   wontTakeIds,
   type Page,
 } from "./test";
 
-// On 春A, like WIP
 const PASSED_THIS_YEAR = {
   id: "GB26403",
   name: "ソフトウェアサイエンス実験A",
@@ -73,21 +71,6 @@ test("今年度開講しない授業を表示する shows courses not offered th
   await showUnavailable(page, false);
   await deselectCell(page);
   await expect(mightTakeIds(page)).toHaveText(["GB41001"]);
-});
-
-test("時間割に単位取得済みの授業を表示する shows passed courses in the timetable", async ({
-  page,
-}) => {
-  await importGrades(page, gradesFile([PASSED_THIS_YEAR, WIP]));
-  await openTab(page, "履修を組む");
-  await expect(timetableTerm(page, "春A")).toHaveClass(/active/);
-  await expect(timetableBar(page, PASSED_THIS_YEAR.id)).not.toHaveCount(0);
-
-  await openTab(page, "設定");
-  await setting(page, "時間割に単位取得済みの授業を表示する").uncheck();
-  await openTab(page, "履修を組む");
-  await expect(timetableBar(page, PASSED_THIS_YEAR.id)).toHaveCount(0);
-  await expect(timetableBar(page, WIP.id)).not.toHaveCount(0);
 });
 
 test("時間割の年度 picks the year of passed courses in the timetable", async ({

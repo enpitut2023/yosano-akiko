@@ -3,12 +3,10 @@
 
   let {
     showNonAvailable = $bindable(),
-    timetableShowTaken = $bindable(),
     timetableYear = $bindable(),
     onReset,
   }: {
     showNonAvailable: boolean;
-    timetableShowTaken: boolean;
     timetableYear: number;
     /** Called once the user has confirmed. */
     onReset: () => void;
@@ -24,10 +22,6 @@
 <label class="settings-row">
   <input type="checkbox" bind:checked={showNonAvailable} />
   <span>今年度開講しない授業を表示する</span>
-</label>
-<label class="settings-row">
-  <input type="checkbox" bind:checked={timetableShowTaken} />
-  <span>時間割に単位取得済みの授業を表示する</span>
 </label>
 <label class="settings-row">
   <span>時間割の年度</span>

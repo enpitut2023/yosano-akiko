@@ -20,7 +20,6 @@
     /** Taken courses show only if taken in this year. */
     year: number;
     activeTerm: TimetableTab;
-    showTaken: boolean;
     onBarClick: (courseId: CourseId) => void;
     onBarDragStart: (event: DragEvent, courseId: CourseId) => void;
     onBarDragEnd: () => void;
@@ -30,7 +29,6 @@
     akiko,
     year,
     activeTerm = $bindable(),
-    showTaken,
     onBarClick,
     onBarDragStart,
     onBarDragEnd,
@@ -83,10 +81,8 @@
 
   const otherTabCourses = $derived.by(() => {
     const ids = [...mightTakeCourseIds];
-    if (showTaken) {
-      for (const id of takenCourseIds) {
-        if (akiko.realCourses.get(id)?.takenYear === year) ids.push(id);
-      }
+    for (const id of takenCourseIds) {
+      if (akiko.realCourses.get(id)?.takenYear === year) ids.push(id);
     }
     return ids
       .sort(courseIdCompare)
@@ -105,7 +101,7 @@
   });
 
   const otherTabFakeCourses = $derived(
-    showTaken ? fakeCourses.filter((c) => c.takenYear === year) : [],
+    fakeCourses.filter((c) => c.takenYear === year),
   );
 
   const bars = $derived.by(() => {
@@ -114,11 +110,9 @@
     const map = new Map<string, Map<CourseId, Bar>>();
 
     const ids = [...mightTakeCourseIds];
-    if (showTaken) {
-      for (const courseId of takenCourseIds) {
-        if (akiko.realCourses.get(courseId)?.takenYear === year)
-          ids.push(courseId);
-      }
+    for (const courseId of takenCourseIds) {
+      if (akiko.realCourses.get(courseId)?.takenYear === year)
+        ids.push(courseId);
     }
     for (const courseId of ids) {
       const course = akikoGetMergedCourse(akiko, courseId);

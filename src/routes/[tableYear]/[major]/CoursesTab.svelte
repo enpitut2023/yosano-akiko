@@ -37,7 +37,6 @@
     selectedCellId,
     cellRemark,
     showNonAvailable,
-    timetableShowTaken,
     timetableYear = $bindable(),
     timetableTerm = $bindable(),
     onShowCell,
@@ -49,7 +48,6 @@
     selectedCellId: CellId | undefined;
     cellRemark: string | undefined;
     showNonAvailable: boolean;
-    timetableShowTaken: boolean;
     timetableYear: number;
     timetableTerm: TimetableTab;
     onShowCell: (cellId: CellId) => void;
@@ -260,7 +258,6 @@
     year={timetableYear}
     bind:activeTerm={timetableTerm}
     {akiko}
-    showTaken={timetableShowTaken}
     onBarClick={(courseId: CourseId) => {
       const cellId = akiko.courseIdToCellId.get(courseId);
       if (cellId !== undefined) onShowCell(cellId);
