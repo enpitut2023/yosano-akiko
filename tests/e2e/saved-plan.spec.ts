@@ -190,9 +190,9 @@ test.describe("without grades", () => {
     await openTab(page, "履修を組む");
     await dragToMightTake(page, "b1", "GB20401");
 
-    await openTab(page, "設定");
+    await openTab(page, "単位チェック");
     page.once("dialog", (d) => void d.accept());
-    await page.getByRole("button", { name: "リセット" }).click();
+    await page.getByRole("button", { name: "データをリセット" }).click();
 
     await openTab(page, "履修を組む");
     await expectPlan(page, []);
@@ -200,6 +200,34 @@ test.describe("without grades", () => {
     await expect(page.locator("#csv-drop-zone")).not.toContainText(
       "インポート済み",
     );
+  });
+
+  test("cancelling リセット keeps the grades and the plan", async ({
+    page,
+  }) => {
+    await importGrades(page, gradesFile([WIP]));
+    await openTab(page, "履修を組む");
+    await dragToMightTake(page, "b1", "GB20401");
+
+    await openTab(page, "単位チェック");
+    const asked = new Promise<void>((resolve) =>
+      page.once("dialog", (d) => {
+        void d.dismiss();
+        resolve();
+      }),
+    );
+    await page.getByRole("button", { name: "データをリセット" }).click();
+    await asked;
+
+    for (let i = 0; i < 2; i++) {
+      await openTab(page, "履修を組む");
+      await expectPlan(page, [WIP.id, "GB20401"]);
+      await openTab(page, "単位チェック");
+      await expect(page.locator("#csv-drop-zone")).toContainText(
+        "インポート済み",
+      );
+      await page.reload();
+    }
   });
 
   test("tabs of the same page stay in sync", async ({ page, context }) => {

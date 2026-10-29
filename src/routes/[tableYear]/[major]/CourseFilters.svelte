@@ -12,11 +12,13 @@
     filters = $bindable(),
     choices,
     showRemark = $bindable(),
+    showNonAvailable = $bindable(),
   }: {
     /** As chosen, including values no longer on offer */
     filters: WontTakeFilters;
     choices: FilterChoices;
     showRemark: boolean;
+    showNonAvailable: boolean;
   } = $props();
 
   let open = $state(false);
@@ -119,6 +121,10 @@
       <label class="filter-checkbox">
         <input type="checkbox" bind:checked={showRemark} />
         備考を表示
+      </label>
+      <label class="filter-checkbox">
+        <input type="checkbox" bind:checked={showNonAvailable} />
+        今年度開講しない授業も表示
       </label>
     </div>
   {/if}
@@ -232,13 +238,15 @@
 
   #filter-bar-checkboxes {
     display: flex;
-    gap: 15px;
+    flex-wrap: wrap;
+    gap: 5px 15px;
   }
 
   .filter-checkbox {
     font-size: var(--fs-sm);
     display: flex;
     align-items: center;
+    white-space: nowrap;
     cursor: pointer;
   }
 </style>

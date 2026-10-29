@@ -130,6 +130,34 @@ test.describe("filters", () => {
     await expect(wontTakeIds(page)).toHaveText(["GB27001"]);
   });
 
+  test("今年度開講しない授業も表示 shows courses not offered this year", async ({
+    page,
+  }) => {
+    const show = page.getByLabel("今年度開講しない授業も表示");
+    await page.getByTestId("cell-b2").click();
+    await expect(wontTakeIds(page)).toHaveText([
+      "GB13322",
+      "GB27001",
+      "GB31801",
+    ]);
+
+    await show.check();
+    await expect(wontTakeIds(page)).toHaveText([
+      "GB13322",
+      "GB27001",
+      "GB31801",
+      "GB41001",
+    ]);
+    const row = page.locator("#left-bar tr.course", { hasText: "GB41001" });
+    await expect(row).toContainText("（非開講）");
+
+    // Hiding them again leaves one in 取る授業 there
+    await dragToMightTake(page, "b2", "GB41001");
+    await show.uncheck();
+    await deselectCell(page);
+    await expect(mightTakeIds(page)).toHaveText(["GB41001"]);
+  });
+
   test("the badge counts the active filters", async ({ page }) => {
     const badge = page.locator(".filter-badge");
     await expect(badge).toBeHidden();

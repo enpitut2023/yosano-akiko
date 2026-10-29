@@ -37,7 +37,6 @@
   import { debugPrintCreditStats } from "./debug";
   import { mobileUnsupported } from "./mobile-unsupported";
   import MobileUnsupportedNotice from "./MobileUnsupportedNotice.svelte";
-  import SettingsTab from "./SettingsTab.svelte";
   import CoursesTab from "./CoursesTab.svelte";
   import RequirementsTable from "./RequirementsTable.svelte";
   import Tutorial from "./Tutorial.svelte";
@@ -140,7 +139,7 @@
     if (data !== undefined) saved = data;
   }
 
-  type Tab = "import" | "export" | "courses" | "settings";
+  type Tab = "import" | "export" | "courses";
 
   let timetableYear = $state(untrack(() => config.knownCourseYear));
   let activeTimetableTerm = $state<TimetableTab>("spring-a");
@@ -451,13 +450,6 @@
         ><span class="icon" style="--src: url({asset('/icons/itf.svg')})"
         ></span>TWINSに出力</button
       >
-      <button
-        class="settings"
-        class:active={activeTab === "settings"}
-        onclick={() => (activeTab = "settings")}
-        ><span class="icon" style="--src: url({asset('/icons/cog.svg')})"
-        ></span>設定</button
-      >
     </div>
 
     <div
@@ -473,6 +465,7 @@
           () => isNative, (native: boolean) => (saved = { ...saved, native })
         }
         onImport={importCsvFile}
+        onReset={() => (saved = localDataDefault())}
       />
     </div>
 
@@ -490,20 +483,13 @@
       />
     </div>
 
-    <div id="settings-tab" class:active={activeTab === "settings"}>
-      <SettingsTab
-        bind:showNonAvailable
-        onReset={() => (saved = localDataDefault())}
-      />
-    </div>
-
     <div id="courses-tab" class:active={activeTab === "courses"}>
       <CoursesTab
         {akiko}
         {creditStats}
         {selectedCellId}
         cellRemark={selectedCellRemark}
-        {showNonAvailable}
+        bind:showNonAvailable
         bind:timetableYear
         bind:timetableTerm={activeTimetableTerm}
         onShowCell={showCell}
@@ -676,10 +662,6 @@
         background-color: oklch(90% 0 0);
       }
 
-      &.settings {
-        margin-left: auto;
-      }
-
       &.active {
         background-color: white;
         border-bottom-color: white;
@@ -708,18 +690,6 @@
 
     &.active {
       display: grid;
-    }
-  }
-
-  #settings-tab {
-    display: none;
-    overflow-y: scroll;
-    padding: 15px;
-    padding-bottom: 50vh;
-
-    &.active {
-      display: flex;
-      flex-direction: column;
     }
   }
 

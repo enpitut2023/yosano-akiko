@@ -4,6 +4,7 @@
   import CircleQuestionMark from "lucide-svelte/icons/circle-question-mark";
   import FileUp from "lucide-svelte/icons/file-up";
   import Lock from "lucide-svelte/icons/lock";
+  import Trash2 from "lucide-svelte/icons/trash-2";
   import {
     akikoGetMergedCourse,
     akikoGetUnclassifiedFakeCourses,
@@ -23,6 +24,7 @@
     fakeCourses,
     native = $bindable(),
     onImport,
+    onReset,
   }: {
     akiko: Akiko;
     realCourses: RealCourse[];
@@ -30,6 +32,8 @@
     /** Whether the student entered this major directly, not through 総合学域群. */
     native: boolean;
     onImport: (file: File) => void;
+    /** Called once the user has confirmed. */
+    onReset: () => void;
   } = $props();
 
   let csvDragOver = $state(false);
@@ -56,6 +60,12 @@
     // Lets choosing the same file again fire change
     input.value = "";
     onImport(file);
+  }
+
+  function reset() {
+    const msg =
+      "インポートした成績データや「取る授業」に移動した授業などが全てリセットされます。本当にリセットしますか？";
+    if (window.confirm(msg)) onReset();
   }
 </script>
 
@@ -175,6 +185,9 @@
       </table>
     </details>
   {/if}
+  <button id="reset" onclick={reset}
+    ><Trash2 size={15} />データをリセット</button
+  >
 </div>
 
 <style lang="scss">
@@ -277,6 +290,23 @@
       position: absolute;
       opacity: 0;
       pointer-events: none;
+    }
+  }
+
+  #reset {
+    all: unset;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 50px;
+    font-size: var(--fs-sm);
+    color: #888;
+    cursor: pointer;
+
+    &:hover {
+      color: oklch(50% 0.2 25);
+      text-decoration: underline;
     }
   }
 </style>

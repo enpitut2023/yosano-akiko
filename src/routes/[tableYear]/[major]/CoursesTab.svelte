@@ -36,7 +36,7 @@
     creditStats,
     selectedCellId,
     cellRemark,
-    showNonAvailable,
+    showNonAvailable = $bindable(),
     timetableYear = $bindable(),
     timetableTerm = $bindable(),
     onShowCell,
@@ -203,6 +203,7 @@
     bind:filters={wontTakeFilters}
     choices={filterChoices}
     bind:showRemark
+    bind:showNonAvailable
   />
   <div id="left-bar-scroll" bind:this={leftBarScrollEl}>
     {#if courseListVisible}

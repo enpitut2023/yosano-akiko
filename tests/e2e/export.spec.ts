@@ -127,9 +127,8 @@ test("事前登録 courses are warned about and left out", async ({ page }) => {
 test("courses not offered this year are warned about and left out", async ({
   page,
 }) => {
-  await openTab(page, "設定");
-  await page.getByLabel("今年度開講しない授業を表示する").check();
-  await openTab(page, "履修を組む");
+  await page.getByRole("button", { name: "絞り込み条件" }).click();
+  await page.getByLabel("今年度開講しない授業も表示").check();
   await dragToMightTake(page, "b2", "GB41001");
   await dragToMightTake(page, "b2", "GB27001");
   await openTab(page, "TWINSに出力");

@@ -93,7 +93,7 @@ versioned format (`local-data.ts` migrates older versions), and a `storage`
 listener takes in what another tab of the same page saved. Nothing else reads
 localStorage. `MajorApp` holds that state and the tutorial's steps, and passes
 the rest to `RequirementsTable` (the table) and one component per tab
-(`ImportTab`, `CoursesTab`, `ExportTab`, `SettingsTab`).
+(`ImportTab`, `CoursesTab`, `ExportTab`).
 
 **Tests.** A unit test sits next to the module it tests, as `<module>.test.ts`.
 The per-major tests are the exception: they're in `src/lib/tests/`, one file
