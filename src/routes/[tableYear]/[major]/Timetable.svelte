@@ -17,7 +17,10 @@
 
   type Props = {
     akiko: Akiko;
-    /** Taken courses show only if taken in this year. */
+    /**
+     * Taken courses show only if taken in this year, and 取る授業 only if it's
+     * this year
+     */
     year: number;
     activeTerm: TimetableTab;
     onBarClick: (courseId: CourseId) => void;
@@ -27,7 +30,7 @@
 
   let {
     akiko,
-    year,
+    year = $bindable(),
     activeTerm = $bindable(),
     onBarClick,
     onBarDragStart,
@@ -70,6 +73,22 @@
   const takenCourseIds = $derived(akikoGetTakenCourseIds(akiko));
   const fakeCourses = $derived(akikoGetClassifiedFakeCourses(akiko));
 
+  const years = $derived.by(() => {
+    const years = new Set([akiko.knownCourseYear]);
+    for (const id of takenCourseIds) {
+      const takenYear = akiko.realCourses.get(id)?.takenYear;
+      if (takenYear !== undefined) years.add(takenYear);
+    }
+    for (const c of fakeCourses) years.add(c.takenYear);
+    return [...years].sort((a, b) => a - b);
+  });
+  // A reset can take away the year shown
+  const shownYear = $derived(
+    years.includes(year) ? year : akiko.knownCourseYear,
+  );
+  const isOtherYear = $derived(shownYear !== akiko.knownCourseYear);
+  const shownMightTakeIds = $derived(isOtherYear ? [] : mightTakeCourseIds);
+
   const TIMETABLE_TERMS = new Set<Term>([
     "spring-a",
     "spring-b",
@@ -80,9 +99,9 @@
   ]);
 
   const otherTabCourses = $derived.by(() => {
-    const ids = [...mightTakeCourseIds];
+    const ids = [...shownMightTakeIds];
     for (const id of takenCourseIds) {
-      if (akiko.realCourses.get(id)?.takenYear === year) ids.push(id);
+      if (akiko.realCourses.get(id)?.takenYear === shownYear) ids.push(id);
     }
     return ids
       .sort(courseIdCompare)
@@ -101,7 +120,7 @@
   });
 
   const otherTabFakeCourses = $derived(
-    fakeCourses.filter((c) => c.takenYear === year),
+    fakeCourses.filter((c) => c.takenYear === shownYear),
   );
 
   const bars = $derived.by(() => {
@@ -109,9 +128,9 @@
 
     const map = new Map<string, Map<CourseId, Bar>>();
 
-    const ids = [...mightTakeCourseIds];
+    const ids = [...shownMightTakeIds];
     for (const courseId of takenCourseIds) {
-      if (akiko.realCourses.get(courseId)?.takenYear === year)
+      if (akiko.realCourses.get(courseId)?.takenYear === shownYear)
         ids.push(courseId);
     }
     for (const courseId of ids) {
@@ -199,6 +218,17 @@
 
 <div class="timetable">
   <div class="term-tabs">
+    {#if years.length > 1}
+      <select
+        aria-label="時間割の年度"
+        value={shownYear}
+        onchange={(e) => (year = Number(e.currentTarget.value))}
+      >
+        {#each years as y (y)}
+          <option value={y}>{y}年度</option>
+        {/each}
+      </select>
+    {/if}
     {#each TERMS as term (term)}
       <button
         class:active={activeTerm === term}
@@ -210,6 +240,14 @@
       onclick={() => (activeTerm = "other")}>その他</button
     >
   </div>
+  {#if isOtherYear}
+    <p class="other-year">
+      {shownYear}年度に履修した授業（閲覧のみ）
+      <button onclick={() => (year = akiko.knownCourseYear)}
+        >今年度に戻る</button
+      >
+    </p>
+  {/if}
   {#if activeTerm === "other"}
     <div class="other-tab">
       {#if otherTabCourses.length + otherTabFakeCourses.length === 0}
@@ -310,15 +348,44 @@
 
 <style lang="scss">
   .timetable {
-    display: grid;
-    grid-template-rows: auto 1fr;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     font-size: 10px;
+  }
+
+  .other-year {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 5px;
+    background-color: oklch(95% 0.03 270);
+    border-bottom: 1px solid black;
+    font-size: 1.1em;
+
+    & > button {
+      all: unset;
+      cursor: pointer;
+      color: oklch(45% 0.15 270);
+      text-decoration: underline;
+    }
   }
 
   .term-tabs {
     display: flex;
     border-bottom: 1px solid black;
+
+    & > select {
+      padding: 0 5px;
+      border: none;
+      border-right: 1px solid black;
+      background-color: oklch(0.95 0 0);
+      font: inherit;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
     & > button {
       flex: 1;
@@ -343,6 +410,8 @@
   }
 
   .grid {
+    flex: 1;
+    min-height: 0;
     display: grid;
     grid-template-columns: auto repeat(5, 1fr);
     grid-template-rows: auto repeat(6, 1fr);
@@ -350,6 +419,8 @@
   }
 
   .other-tab {
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 8px;
 

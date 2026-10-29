@@ -481,6 +481,7 @@
         {config}
         onShowCell={(cellId: CellId, term: TimetableTab) => {
           showCell(cellId);
+          timetableYear = config.knownCourseYear;
           activeTimetableTerm = term;
         }}
         onPickCourses={() => showTab("courses")}
@@ -491,7 +492,6 @@
     <div id="settings-tab" class:active={activeTab === "settings"}>
       <SettingsTab
         bind:showNonAvailable
-        bind:timetableYear
         onReset={() => (saved = localDataDefault())}
       />
     </div>

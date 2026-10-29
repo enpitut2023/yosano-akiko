@@ -3,11 +3,9 @@
 
   let {
     showNonAvailable = $bindable(),
-    timetableYear = $bindable(),
     onReset,
   }: {
     showNonAvailable: boolean;
-    timetableYear: number;
     /** Called once the user has confirmed. */
     onReset: () => void;
   } = $props();
@@ -22,10 +20,6 @@
 <label class="settings-row">
   <input type="checkbox" bind:checked={showNonAvailable} />
   <span>今年度開講しない授業を表示する</span>
-</label>
-<label class="settings-row">
-  <span>時間割の年度</span>
-  <input type="number" bind:value={timetableYear} />
 </label>
 <div id="control">
   <button id="reset" onclick={reset}>
@@ -43,15 +37,6 @@
     background-color: hsl(0, 0%, 97%);
     border-radius: 10px;
     margin-bottom: 5px;
-
-    & input[type="number"] {
-      width: 70px;
-      font-family: inherit;
-      font-size: inherit;
-      padding: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
   }
 
   #control {

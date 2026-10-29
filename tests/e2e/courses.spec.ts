@@ -1,5 +1,5 @@
 import { knownCourseYear } from "./fixtures/courses";
-import { gradesFile } from "./fixtures/grades";
+import { gradesFile, type GradeRow } from "./fixtures/grades";
 import {
   deselectCell,
   dragToMightTake,
@@ -153,6 +153,62 @@ test("dragging a course adds it to 取る授業 and the timetable", async ({
 
   await timetableTerm(page, "秋A").click();
   await expect(timetableBar(page, "GB20401")).toBeHidden();
+});
+
+test.describe("the timetable's year", () => {
+  // Both on 春A, like GB31801
+  const passedThisYear = {
+    id: "GB26403",
+    name: "ソフトウェアサイエンス実験A",
+    credit: 3,
+    grade: "A",
+    year: knownCourseYear,
+  } satisfies GradeRow;
+  const passedLastYear = {
+    id: "GB20401",
+    name: "オートマトンと形式言語",
+    credit: 2,
+    grade: "A",
+    year: knownCourseYear - 1,
+  } satisfies GradeRow;
+
+  function yearPicker(page: Page) {
+    return page.getByLabel("時間割の年度");
+  }
+
+  test("can't be picked without grades from another year", async ({ page }) => {
+    await expect(yearPicker(page)).toHaveCount(0);
+    await importGrades(page, gradesFile([passedThisYear]));
+    await openTab(page, "履修を組む");
+    await expect(yearPicker(page)).toHaveCount(0);
+  });
+
+  test("another year shows only what was passed then", async ({ page }) => {
+    await importGrades(page, gradesFile([passedThisYear, passedLastYear]));
+    await openTab(page, "履修を組む");
+    await dragToMightTake(page, "b2", "GB31801");
+    await expect(timetableBar(page, passedThisYear.id)).not.toHaveCount(0);
+    await expect(timetableBar(page, passedLastYear.id)).toHaveCount(0);
+    await expect(timetableBar(page, "GB31801")).not.toHaveCount(0);
+
+    await yearPicker(page).selectOption(String(knownCourseYear - 1));
+    await expect(timetableBar(page, passedThisYear.id)).toHaveCount(0);
+    await expect(timetableBar(page, passedLastYear.id)).not.toHaveCount(0);
+    await expect(timetableBar(page, "GB31801")).toHaveCount(0);
+
+    await page.getByRole("button", { name: "今年度に戻る" }).click();
+    await expect(yearPicker(page)).toHaveValue(String(knownCourseYear));
+    await expect(timetableBar(page, "GB31801")).not.toHaveCount(0);
+  });
+
+  test("planning a course goes back to this year", async ({ page }) => {
+    await importGrades(page, gradesFile([passedThisYear, passedLastYear]));
+    await openTab(page, "履修を組む");
+    await yearPicker(page).selectOption(String(knownCourseYear - 1));
+    await dragToMightTake(page, "b2", "GB31801");
+    await expect(yearPicker(page)).toHaveValue(String(knownCourseYear));
+    await expect(timetableBar(page, "GB31801")).not.toHaveCount(0);
+  });
 });
 
 test("a course without a fixed time slot is under その他", async ({ page }) => {

@@ -255,7 +255,7 @@
   ondrop={(e) => handleDrop(e, "might-take")}
 >
   <Timetable
-    year={timetableYear}
+    bind:year={timetableYear}
     bind:activeTerm={timetableTerm}
     {akiko}
     onBarClick={(courseId: CourseId) => {

@@ -8,25 +8,10 @@ import {
   mightTakeIds,
   openTab,
   test,
-  timetableBar,
   wontTakeIds,
   type Page,
 } from "./test";
 
-const PASSED_THIS_YEAR = {
-  id: "GB26403",
-  name: "ソフトウェアサイエンス実験A",
-  credit: 3,
-  grade: "A",
-  year: knownCourseYear,
-} satisfies GradeRow;
-const PASSED_LAST_YEAR = {
-  id: "GB20401",
-  name: "オートマトンと形式言語",
-  credit: 2,
-  grade: "A",
-  year: knownCourseYear - 1,
-} satisfies GradeRow;
 const WIP = {
   id: "GA15211",
   name: "線形代数A",
@@ -71,30 +56,6 @@ test("今年度開講しない授業を表示する shows courses not offered th
   await showUnavailable(page, false);
   await deselectCell(page);
   await expect(mightTakeIds(page)).toHaveText(["GB41001"]);
-});
-
-test("時間割の年度 picks the year of passed courses in the timetable", async ({
-  page,
-}) => {
-  await importGrades(page, gradesFile([PASSED_THIS_YEAR, PASSED_LAST_YEAR]));
-  await openTab(page, "履修を組む");
-  await expect(timetableBar(page, PASSED_THIS_YEAR.id)).not.toHaveCount(0);
-  await expect(timetableBar(page, PASSED_LAST_YEAR.id)).toHaveCount(0);
-
-  await openTab(page, "設定");
-  await setting(page, "時間割の年度").fill(String(knownCourseYear - 1));
-  await openTab(page, "履修を組む");
-  await expect(timetableBar(page, PASSED_THIS_YEAR.id)).toHaveCount(0);
-  await expect(timetableBar(page, PASSED_LAST_YEAR.id)).not.toHaveCount(0);
-
-  // Planning a course goes back to this year, the one it's planned for
-  await dragToMightTake(page, "b2", "GB31801");
-  await expect(timetableBar(page, PASSED_THIS_YEAR.id)).not.toHaveCount(0);
-  await expect(timetableBar(page, PASSED_LAST_YEAR.id)).toHaveCount(0);
-  await openTab(page, "設定");
-  await expect(setting(page, "時間割の年度")).toHaveValue(
-    String(knownCourseYear),
-  );
 });
 
 test("cancelling リセット keeps the grades and the plan", async ({ page }) => {
