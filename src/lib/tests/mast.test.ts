@@ -84,31 +84,59 @@ function classifySingleRealCourse(params: {
   ).get(params.courseId as CourseId);
 }
 
-// For 移行 students every class's section counts; for students who entered
-// mast directly, only mast's own
 describe.each([
-  ["GA15311", "c1", false], // 微分積分A coins 1,2クラス
-  ["GA15321", "c1", false], // 微分積分A coins 3,4クラス
-  ["GA15331", "c1", true], // 微分積分A mast
-  ["GA15341", "c1", false], // 微分積分A klis
-  ["GA15211", "c3", false], // 線形代数A coins 1,2クラス
-  ["GA15221", "c3", false], // 線形代数A coins 3,4クラス
-  ["GA15231", "c3", true], // 線形代数A mast
-  ["GA15241", "c3", false], // 線形代数A klis
-  ["GA15111", "c5", false], // 情報数学A coins 1,2クラス
-  ["GA15121", "c5", false], // 情報数学A coins 3,4クラス
-  ["GA15131", "c5", true], // 情報数学A mast
-  ["GA15141", "c5", false], // 情報数学A klis
-  ["FH60474", "c7", false], // プログラミング入門A 総合学域群優先
-  ["GA18212", "c7", false], // プログラミング入門A coins
-  ["GA18222", "c7", true], // プログラミング入門A mast
-  ["GA18232", "c7", false], // プログラミング入門A klis
-  ["FH60574", "c8", false], // プログラミング入門B 総合学域群優先
-  ["GA18312", "c8", false], // プログラミング入門B coins
-  ["GA18322", "c8", true], // プログラミング入門B mast
-  ["GA18332", "c8", false], // プログラミング入門B klis
-] as const)("%s", (courseId, cellId, isMast) => {
-  const classify = (isNative: boolean) =>
+  {
+    name: "微分積分A",
+    cellId: "c1",
+    forMast: "GA15331",
+    forOthers: [
+      "GA15311", // coins 1,2クラス
+      "GA15321", // coins 3,4クラス
+      "GA15341", // klis
+    ],
+  },
+  {
+    name: "線形代数A",
+    cellId: "c3",
+    forMast: "GA15231",
+    forOthers: [
+      "GA15211", // coins 1,2クラス
+      "GA15221", // coins 3,4クラス
+      "GA15241", // klis
+    ],
+  },
+  {
+    name: "情報数学A",
+    cellId: "c5",
+    forMast: "GA15131",
+    forOthers: [
+      "GA15111", // coins 1,2クラス
+      "GA15121", // coins 3,4クラス
+      "GA15141", // klis
+    ],
+  },
+  {
+    name: "プログラミング入門A",
+    cellId: "c7",
+    forMast: "GA18222",
+    forOthers: [
+      "FH60474", // 総合学域群優先
+      "GA18212", // coins
+      "GA18232", // klis
+    ],
+  },
+  {
+    name: "プログラミング入門B",
+    cellId: "c8",
+    forMast: "GA18322",
+    forOthers: [
+      "FH60574", // 総合学域群優先
+      "GA18312", // coins
+      "GA18332", // klis
+    ],
+  },
+])("$name", ({ cellId, forMast, forOthers }) => {
+  const classify = (courseId: string, isNative: boolean) =>
     classifySingleRealCourse({
       courseId,
       isNative,
@@ -116,12 +144,16 @@ describe.each([
       tableYear: 2026,
     });
 
-  test(`is in ${cellId} for 移行 students`, () => {
-    expect(classify(false)).toBe(cellId);
+  test(`the course for mast is in ${cellId} for everyone`, () => {
+    expect(classify(forMast, true)).toBe(cellId);
+    expect(classify(forMast, false)).toBe(cellId);
   });
 
-  test(`is ${isMast ? "" : "not "}in ${cellId} for native students`, () => {
-    if (isMast) expect(classify(true)).toBe(cellId);
-    else expect(classify(true)).not.toBe(cellId);
-  });
+  test.each(forOthers)(
+    `%s, for other classes, is in ${cellId} only for 移行 students`,
+    (courseId) => {
+      expect(classify(courseId, false)).toBe(cellId);
+      expect(classify(courseId, true)).not.toBe(cellId);
+    },
+  );
 });
