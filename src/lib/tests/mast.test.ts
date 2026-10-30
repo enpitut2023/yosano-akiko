@@ -1,12 +1,10 @@
 import { describe, expect, test } from "vitest";
-import type { CourseId, Grade } from "$lib/akiko";
-import type { Major } from "$lib/constants";
 import {
   classifyFakeCourses,
   classifyRealCourses,
   getCreditRequirements,
 } from "$lib/requirements/mast-since-2021";
-import { runTest } from "./util";
+import { classifySingleRealCourse, runTest } from "./util";
 
 test("grade-csvs/2023/mast-1.csv", () => {
   runTest({
@@ -59,30 +57,6 @@ test("grade-csvs/2023/mast-1.csv", () => {
     },
   });
 });
-
-function classifySingleRealCourse(params: {
-  courseId: string;
-  courseName?: string;
-  courseGrade?: Grade;
-  courseCredit?: number;
-  courseTakenYear?: number;
-  isNative: boolean;
-  major: Major;
-  tableYear: number;
-}): string | undefined {
-  return classifyRealCourses(
-    [
-      {
-        id: params.courseId as CourseId,
-        name: params.courseName ?? "",
-        grade: params.courseGrade ?? "a+",
-        credit: params.courseCredit ?? 1,
-        takenYear: params.courseTakenYear ?? params.tableYear,
-      },
-    ],
-    params,
-  ).get(params.courseId as CourseId);
-}
 
 describe.each([
   {
@@ -138,6 +112,7 @@ describe.each([
 ])("$name", ({ cellId, forMast, forOthers }) => {
   const classify = (courseId: string, isNative: boolean) =>
     classifySingleRealCourse({
+      classifyRealCourses,
       courseId,
       isNative,
       major: "mast",

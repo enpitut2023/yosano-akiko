@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs";
 import { expect } from "vitest";
 import {
   type BaseCreditStats,
+  type CourseId,
   type CreditStats,
+  type Grade,
   akikoGetCreditStats,
   akikoNew,
 } from "$lib/akiko";
@@ -56,6 +58,33 @@ export function getCreditStats(params: {
   assert(akiko !== undefined);
 
   return akikoGetCreditStats(akiko);
+}
+
+export function classifySingleRealCourse(params: {
+  classifyRealCourses: ClassifyRealCourses;
+  courseId: string;
+  courseName?: string;
+  courseGrade?: Grade;
+  courseCredit?: number;
+  courseTakenYear?: number;
+  isNative: boolean;
+  major: Major;
+  tableYear: number;
+}): string | undefined {
+  return params
+    .classifyRealCourses(
+      [
+        {
+          id: params.courseId as CourseId,
+          name: params.courseName ?? "",
+          grade: params.courseGrade ?? "a+",
+          credit: params.courseCredit ?? 1,
+          takenYear: params.courseTakenYear ?? params.tableYear,
+        },
+      ],
+      params,
+    )
+    .get(params.courseId as CourseId);
 }
 
 export type RunTestParams = {
