@@ -42,7 +42,7 @@ type RequirementsModule = Pick<
  * Imported lazily so each major page bundles only its own requirements module.
  * `undefined` marks a major with no requirements module yet.
  */
-const MAJOR_TO_REQUIREMENTS = {
+export const MAJOR_TO_REQUIREMENTS = {
   "help-p": () => import("./requirements/help-since-2023"),
   "help-h": () => import("./requirements/help-since-2023"),
   "help-af": () => import("./requirements/help-since-2023"),
