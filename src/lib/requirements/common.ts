@@ -550,7 +550,7 @@ const FA_CALCULUS_2 = new Set([
  * 両方揃っている場合のみ読み替え、読み替えた科目はcsから取り除いて通常の分類の
  * 対象外にする。
  */
-function handleFaPair(
+export function handlePair(
   cs: RealCourse[],
   courseIdToCellId: Map<CourseId, string>,
   cellId: string,
@@ -578,7 +578,7 @@ export function handleFaLinearAlgebra(
   courseIdToCellId: Map<CourseId, string>,
   cellId: string,
 ): void {
-  handleFaPair(
+  handlePair(
     cs,
     courseIdToCellId,
     cellId,
@@ -597,5 +597,5 @@ export function handleFaCalculus(
   courseIdToCellId: Map<CourseId, string>,
   cellId: string,
 ): void {
-  handleFaPair(cs, courseIdToCellId, cellId, FA_CALCULUS_1, FA_CALCULUS_2);
+  handlePair(cs, courseIdToCellId, cellId, FA_CALCULUS_1, FA_CALCULUS_2);
 }

@@ -11,6 +11,7 @@ import type { Major } from "$lib/constants";
 import {
   handleFaCalculus,
   handleFaLinearAlgebra,
+  handlePair,
   isArt,
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
@@ -41,6 +42,10 @@ function majorToSpecialtyOrFail(m: Major): Specialty {
 }
 
 type Mode = "known" | "real";
+
+// 移行生は、FFの線形代数Aと線形代数B(どちらも1単位)を両方取っていると線形代数Aとして使える
+const FF_LINEAR_ALGEBRA_A = new Set(["FF18724", "FF18734"]);
+const FF_LINEAR_ALGEBRA_B = new Set(["FF18744", "FF18754"]);
 
 const COURSE_ID_TO_GB_COURSE_ID = new Map([
   // コンピュータグラフィックス基礎 → コンピュータグラフィックス基礎
@@ -157,18 +162,19 @@ function isB2(id: string): boolean {
 
 /**
  * 2026.4.10 あいちゃん
- * 1単位の線形代数Aがあるが、これは1単位の線形代数Bとともにcoinsの線形代数Aに読み替えられることはない
- * GAの微分積分A、線形代数A、GBの微分積分B、線形代数Bは他学類開設であってもcoins、移行生の成績としてカウントされる(注4,7の通り)
+ * GAの微分積分A、線形代数A、GBの微分積分B、線形代数Bは、他学類開設のクラスでも、
+ * coinsに直接入学した学生と移行生のどちらの単位にもなる(注4,7の通り)
  * GCの微分積分B、線形代数Bは誰の成績としてもカウントされない(注7の通り)
  * プログラミング入門A,B
  * - FHはpops開設なので移行生は成績にカウントされる(注15の通り)
- * - GAの他学類開設もcoins、移行生の成績としてカウントされる(注4の通り)
+ * - GAの他学類開設のクラスも、coinsに直接入学した学生と移行生のどちらの単位にもなる(注4の通り)
+ * 他学類開設のクラスは、単位にはなっても履修の選択肢としては出さないので、
+ * mode === "real"のときだけ当てはめる
  */
-function isC1(id: string, isNative: boolean, mode: Mode): boolean {
+function isC1(id: string, mode: Mode): boolean {
   return (
     isInfoCourseOf(id, "線形代数A", "coins") ||
-    (mode === "real" && isInfoCourseOfOthers(id, "線形代数A", "coins")) ||
-    (!isNative && mode === "real" && (id === "FF18724" || id === "FF18734"))
+    (mode === "real" && isInfoCourseOfOthers(id, "線形代数A", "coins"))
   );
 }
 
@@ -180,12 +186,10 @@ function isC2(id: string): boolean {
   );
 }
 
-function isC3(id: string, isNative: boolean, mode: Mode): boolean {
+function isC3(id: string, mode: Mode): boolean {
   return (
     isInfoCourseOf(id, "微分積分A", "coins") ||
-    (!isNative &&
-      mode === "real" &&
-      isInfoCourseOfOthers(id, "微分積分A", "coins"))
+    (mode === "real" && isInfoCourseOfOthers(id, "微分積分A", "coins"))
   );
 }
 
@@ -409,9 +413,9 @@ function classify(
   if (isA1(id, specialty)) return "a1";
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
-  if (isC1(id, isNative, mode)) return "c1";
+  if (isC1(id, mode)) return "c1";
   if (isC2(id)) return "c2";
-  if (isC3(id, isNative, mode)) return "c3";
+  if (isC3(id, mode)) return "c3";
   if (isC4(id)) return "c4";
   if (isC5(id)) return "c5";
   if (isC6(id)) return "c6";
@@ -473,6 +477,13 @@ export function classifyRealCourses(
 
   if (!opts.isNative) {
     handleFaLinearAlgebra(cs, courseIdToCellId, "c1");
+    handlePair(
+      cs,
+      courseIdToCellId,
+      "c1",
+      FF_LINEAR_ALGEBRA_A,
+      FF_LINEAR_ALGEBRA_B,
+    );
     handleFaCalculus(cs, courseIdToCellId, "c3");
   }
 

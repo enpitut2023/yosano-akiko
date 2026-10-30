@@ -1,10 +1,13 @@
-import { test } from "vitest";
+import { describe, expect, test } from "vitest";
+import type { CourseId } from "$lib/akiko";
+import { knownCourses } from "$lib/current-courses";
 import {
   classifyFakeCourses,
+  classifyKnownCourses,
   classifyRealCourses,
   getCreditRequirements,
 } from "$lib/requirements/coins-since-2021";
-import { runTest } from "./util";
+import { classifySingleRealCourse, runTest } from "./util";
 
 test("grade-csvs/2023/coins-1.csv", () => {
   runTest({
@@ -132,4 +135,154 @@ test("edge cases", () => {
       elective: { taken: 31 },
     },
   });
+});
+
+describe.each([
+  {
+    name: "線形代数A",
+    cellId: "c1",
+    forCoins: ["GA15211", "GA15221"],
+    forOthersForEveryone: [
+      "GA15231", // mast
+      "GA15241", // klis
+    ],
+    forOthersForIkou: [],
+    forOthersForNobody: [],
+  },
+  {
+    name: "微分積分A",
+    cellId: "c3",
+    forCoins: ["GA15311", "GA15321"],
+    forOthersForEveryone: [
+      "GA15331", // mast
+      "GA15341", // klis
+    ],
+    forOthersForIkou: [],
+    forOthersForNobody: [],
+  },
+  {
+    name: "情報数学A",
+    cellId: "c5",
+    forCoins: ["GA15111", "GA15121"],
+    forOthersForEveryone: [],
+    forOthersForIkou: [],
+    forOthersForNobody: [
+      "GA15131", // mast
+      "GA15141", // klis
+    ],
+  },
+  {
+    name: "プログラミング入門A",
+    cellId: "c7",
+    forCoins: ["GA18212"],
+    forOthersForEveryone: [
+      "GA18222", // mast
+      "GA18232", // klis
+    ],
+    forOthersForIkou: ["FH60474", "FH60484", "FH60494"],
+    forOthersForNobody: [],
+  },
+  {
+    name: "プログラミング入門B",
+    cellId: "c8",
+    forCoins: ["GA18312"],
+    forOthersForEveryone: [
+      "GA18322", // mast
+      "GA18332", // klis
+    ],
+    forOthersForIkou: ["FH60574", "FH60584", "FH60594"],
+    forOthersForNobody: [],
+  },
+])(
+  "$name",
+  ({
+    cellId,
+    forCoins,
+    forOthersForEveryone,
+    forOthersForIkou,
+    forOthersForNobody,
+  }) => {
+    const classify = (courseId: string, isNative: boolean) =>
+      classifySingleRealCourse({
+        classifyRealCourses,
+        courseId,
+        isNative,
+        major: "coins",
+        tableYear: 2026,
+      });
+
+    test.each(forCoins)(`%s, for coins, is in ${cellId} for everyone`, (id) => {
+      expect(classify(id, true)).toBe(cellId);
+      expect(classify(id, false)).toBe(cellId);
+    });
+
+    test.each(forOthersForEveryone)(
+      `%s, for other classes, is in ${cellId} for everyone`,
+      (id) => {
+        expect(classify(id, true)).toBe(cellId);
+        expect(classify(id, false)).toBe(cellId);
+      },
+    );
+
+    test.each(forOthersForIkou)(
+      `%s, for other classes, is in ${cellId} only for 移行 students`,
+      (id) => {
+        expect(classify(id, false)).toBe(cellId);
+        expect(classify(id, true)).not.toBe(cellId);
+      },
+    );
+
+    test.each(forOthersForNobody)(
+      `%s, for other classes, is in ${cellId} for nobody`,
+      (id) => {
+        expect(classify(id, false)).not.toBe(cellId);
+        expect(classify(id, true)).not.toBe(cellId);
+      },
+    );
+
+    test(`the catalog shows only the courses for coins in ${cellId}`, () => {
+      const got = classifyKnownCourses(knownCourses, {
+        isNative: false,
+        major: "coins",
+        tableYear: 2026,
+      });
+      for (const id of forCoins) {
+        expect(got.get(id as CourseId)).toBe(cellId);
+      }
+      for (const id of [
+        ...forOthersForEveryone,
+        ...forOthersForIkou,
+        ...forOthersForNobody,
+      ]) {
+        expect(got.get(id as CourseId)).not.toBe(cellId);
+      }
+    });
+  },
+);
+
+function classifyPair(ids: string[], isNative: boolean) {
+  return [
+    ...classifyRealCourses(
+      ids.map((id) => ({
+        id: id as CourseId,
+        name: "",
+        grade: "a+",
+        credit: 1,
+        takenYear: 2025,
+      })),
+      { isNative, major: "coins", tableYear: 2026 },
+    ).values(),
+  ];
+}
+
+test("FA 微積分1 and 2 together are in c3 only for 移行 students", () => {
+  expect(classifyPair(["FA01311", "FA01411"], false)).toEqual(["c3", "c3"]);
+  expect(classifyPair(["FA01311", "FA01411"], true)).not.toContain("c3");
+});
+
+test("FF 線形代数A and B together are in c1 only for 移行 students", () => {
+  expect(classifyPair(["FF18724", "FF18744"], false)).toEqual(["c1", "c1"]);
+  expect(classifyPair(["FF18724", "FF18744"], true)).not.toContain("c1");
+  expect(classifyPair(["FF18724"], false)).not.toContain("c1");
+  expect(classifyPair(["FF18744"], false)).not.toContain("c1");
 });

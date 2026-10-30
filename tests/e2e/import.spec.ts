@@ -27,8 +27,9 @@ const ROWS: GradeRow[] = [
     grade: "D",
     year: 2024,
   },
-  // c1 only for 移行 students; fits no cell otherwise
-  { id: "FF18724", name: "線形代数A", credit: 2, grade: "B", year: 2023 },
+  // c1 together, only for 移行 students; fit no cell otherwise
+  { id: "FF18724", name: "線形代数A", credit: 1, grade: "B", year: 2023 },
+  { id: "FF18744", name: "線形代数B", credit: 1, grade: "B", year: 2023 },
   // Fits no cell
   { name: "編入前の単位", credit: 2, grade: "認", year: 2023 },
 ];
@@ -143,8 +144,9 @@ test("a broken file shows an alert and keeps the imported grades", async ({
 test("courses that fit no cell are listed", async ({ page }) => {
   await importGrades(page, GRADES);
   await unclassified(page).locator("summary").click();
-  await expect(unclassified(page).locator("tbody tr")).toHaveCount(2);
+  await expect(unclassified(page).locator("tbody tr")).toHaveCount(3);
   await expect(unclassified(page)).toContainText("FF18724");
+  await expect(unclassified(page)).toContainText("FF18744");
   await expect(unclassified(page)).toContainText("編入前の単位");
 });
 
@@ -160,6 +162,7 @@ test("the 移行 answer is saved and changes the classification", async ({
   await expectCell(page, "c1", 100, 100);
   await unclassified(page).locator("summary").click();
   await expect(unclassified(page)).not.toContainText("FF18724");
+  await expect(unclassified(page)).not.toContainText("FF18744");
 
   await page.reload();
   await openTab(page, "単位チェック");
