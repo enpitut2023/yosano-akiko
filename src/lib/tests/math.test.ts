@@ -1,10 +1,13 @@
-import { test } from "vitest";
+import { describe, expect, test } from "vitest";
+import type { CourseId } from "$lib/akiko";
+import { knownCourses } from "$lib/current-courses";
 import {
   classifyFakeCourses,
+  classifyKnownCourses,
   classifyRealCourses,
   getCreditRequirements,
 } from "$lib/requirements/math-since-2023";
-import { runTest } from "./util";
+import { classifySingleRealCourse, runTest } from "./util";
 
 test("grade-csvs/2023/math-1.csv", () => {
   runTest({
@@ -45,5 +48,34 @@ test("grade-csvs/2023/math-1.csv", () => {
       compulsory: { taken: 20, mightTake: 3 },
       elective: { taken: 75.5, mightTake: 12.5 },
     },
+  });
+});
+
+describe.each([
+  { id: "FA013C1", cellId: "c1" }, // 微積分1（総合）
+  { id: "GA15311", cellId: "c1" }, // 微分積分A
+  { id: "FA016C1", cellId: "c2" }, // 線形代数1（総合）
+  { id: "GB10234", cellId: "c2" }, // 線形代数B
+])("$id", ({ id, cellId }) => {
+  test(`is in ${cellId} only for 移行 students`, () => {
+    const classify = (isNative: boolean) =>
+      classifySingleRealCourse({
+        classifyRealCourses,
+        courseId: id,
+        isNative,
+        major: "math",
+        tableYear: 2026,
+      });
+    expect(classify(false)).toBe(cellId);
+    expect(classify(true)).not.toBe(cellId);
+  });
+
+  test(`is not a choice in ${cellId} for 移行 students`, () => {
+    const got = classifyKnownCourses(knownCourses, {
+      isNative: false,
+      major: "math",
+      tableYear: 2026,
+    });
+    expect(got.get(id as CourseId)).not.toBe(cellId);
   });
 });

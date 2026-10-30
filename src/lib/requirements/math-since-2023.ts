@@ -27,6 +27,8 @@ import {
   redistributeOverflow,
 } from "$lib/requirements/common";
 
+type Mode = "known" | "real";
+
 function isA1(id: string): boolean {
   return id === "FB14908"; // 卒業研究
 }
@@ -50,9 +52,16 @@ function isB1(id: string): boolean {
   );
 }
 
-function isC1(id: string, isNative: boolean, tableYear: number): boolean {
+// isC1・isC2の移行生の読み替えは、総合在籍中に取った科目なので成績にあるときだけ当てはめる
+function isC1(
+  id: string,
+  isNative: boolean,
+  mode: Mode,
+  tableYear: number,
+): boolean {
   const transfer =
     !isNative &&
+    mode === "real" &&
     (id === "FA013C1" || // 微積分1（総合）
       id === "FA013D1" || // 微積分1（総合）
       id === "FA014C1" || // 微積分2（総合）
@@ -76,9 +85,15 @@ function isC1(id: string, isNative: boolean, tableYear: number): boolean {
   );
 }
 
-function isC2(id: string, isNative: boolean, tableYear: number): boolean {
+function isC2(
+  id: string,
+  isNative: boolean,
+  mode: Mode,
+  tableYear: number,
+): boolean {
   const transfer =
     !isNative &&
+    mode === "real" &&
     (id === "FA016C1" || // 線形代数1（総合）
       id === "FA016D1" || // 線形代数1（総合）
       id === "FA017C1" || // 線形代数2 （総合）
@@ -143,7 +158,7 @@ function isD1(id: string): boolean {
   );
 }
 
-function isE1(id: string, mode: "known" | "real"): boolean {
+function isE1(id: string, mode: Mode): boolean {
   return (
     id === "1112102" || //ファーストイヤーセミナー
     id === "1227371" || //学問への誘い
@@ -159,7 +174,7 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string, mode: "known" | "real"): boolean {
+function isE4(id: string, mode: Mode): boolean {
   return (
     id === "6112101" || //情報リテラシー(講義)
     id === "6412102" || //情報リテラシー(演習)
@@ -203,15 +218,15 @@ function classify(
   id: CourseId,
   name: string,
   isNative: boolean,
-  mode: "known" | "real",
+  mode: Mode,
   tableYear: number,
 ): string | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
-  if (isC1(id, isNative, tableYear)) return "c1";
-  if (isC2(id, isNative, tableYear)) return "c2";
+  if (isC1(id, isNative, mode, tableYear)) return "c1";
+  if (isC2(id, isNative, mode, tableYear)) return "c2";
   if (isC3(id)) return "c3";
   if (isC4(id)) return "c4";
   if (isE1(id, mode)) return "e1";
