@@ -285,18 +285,32 @@
       waitFor: () => activeTab === "import",
     },
     {
-      id: "import",
-      target: ["import-tab"],
-      title: "成績データをインポート",
-      body: "まずはTWINSの成績データをちょうだいね。「手順を見る」のとおりにダウンロードして、そのファイルを枠にドロップするか選んでくれたら、次に進むわよ〜",
+      id: "download",
+      target: ["grades-download"],
+      title: "成績ファイルをダウンロード",
+      body: "まずはTWINSから成績ファイルをダウンロードしてね。やり方は「手順を見る」に書いてあるわ〜",
+      nextLabel: "ダウンロードした",
       choices: [
         {
-          label: "まだ成績ファイルを持っていない（新入生）",
+          label: "新入生なのでスキップ",
           next: "tab-courses",
         },
       ],
+    },
+    {
+      id: "import",
+      target: ["grades-import"],
+      title: "成績ファイルをインポート",
+      body: "ダウンロードしたファイルを枠にドロップするか、枠を押して選んでね。インポートできたら次に進むわよ〜",
       onEnter: tutorialSnapshot,
       waitFor: () => realCourses !== tutorialStepStart.realCourses,
+    },
+    {
+      id: "student-type",
+      target: ["student-type"],
+      title: "移行生？",
+      body: "総合学域群からこの学類に移行したかどうかで、単位の数え方が変わるの。当てはまる方を選んで、次へを押してね〜",
+      nextLabel: "次へ",
     },
     {
       id: "progress",
@@ -452,11 +466,7 @@
       >
     </div>
 
-    <div
-      id="import-tab"
-      data-tutorial="import-tab"
-      class:active={activeTab === "import"}
-    >
+    <div id="import-tab" class:active={activeTab === "import"}>
       <ImportTab
         {akiko}
         {realCourses}

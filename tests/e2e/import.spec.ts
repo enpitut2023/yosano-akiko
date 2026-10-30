@@ -170,7 +170,7 @@ test("the 移行 answer is saved and changes the classification", async ({
 test("手順を見る opens the TWINS grades guide", async ({ page }) => {
   const popup = page.waitForEvent("popup");
   await page
-    .locator('[data-tutorial="import-tab"]')
+    .locator("#import-tab")
     .getByRole("link", { name: "手順を見る" })
     .click();
   await expect(await popup).toHaveURL(/\/twins-grades$/);

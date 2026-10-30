@@ -287,6 +287,7 @@
   button {
     font-size: inherit;
     padding: 5px 15px;
+    white-space: nowrap;
     border: 1px solid #ccc;
     border-radius: 10px;
     background-color: white;

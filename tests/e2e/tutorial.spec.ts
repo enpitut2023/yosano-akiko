@@ -51,8 +51,14 @@ test.describe("on the first visit", () => {
     await expectWaiting(page, "tab-import");
     await page.getByRole("button", { name: "単位チェック" }).click();
 
+    await expectStep(page, "download");
+    await next(page);
+
     await expectWaiting(page, "import");
     await page.locator(".csv-input").setInputFiles(GRADES);
+
+    await expectStep(page, "student-type");
+    await next(page);
 
     await expectStep(page, "progress");
     await next(page);
@@ -96,9 +102,9 @@ test.describe("on the first visit", () => {
     await page.goto("2023/coins");
     await next(page);
     await page.getByRole("button", { name: "単位チェック" }).click();
-    await expectStep(page, "import");
+    await expectStep(page, "download");
     await tutorial(page)
-      .getByRole("button", { name: /成績ファイルを持っていない/ })
+      .getByRole("button", { name: "新入生なのでスキップ" })
       .click();
     await expectWaiting(page, "tab-courses");
   });

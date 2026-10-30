@@ -71,7 +71,7 @@
 
 <div class="steps-panel">
   <ol class="steps">
-    <li>
+    <li data-tutorial="grades-download">
       <p>
         TWINSから成績ファイルをダウンロード
         <a class="step-help" href={resolve("/twins-grades")} target="_blank"
@@ -82,7 +82,7 @@
         ※ ExcelやNumbersなどで開かずに、そのままインポートしてください
       </p>
     </li>
-    <li>
+    <li data-tutorial="grades-import">
       <p>ダウンロードしたファイルをインポート</p>
       <label
         id="csv-drop-zone"
@@ -122,7 +122,7 @@
         />成績データは、あきこの開発チームに閲覧されたり、外部に送信されたりすることはありません
       </p>
     </li>
-    <li>
+    <li data-tutorial="student-type">
       <div id="student-type">
         <span>総合学域群からこの学類に移行した？</span>
         <div class="segmented">
