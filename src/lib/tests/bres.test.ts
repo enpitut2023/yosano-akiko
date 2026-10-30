@@ -1,10 +1,13 @@
-import { test } from "vitest";
+import { describe, expect, test } from "vitest";
+import type { CourseId } from "$lib/akiko";
+import { knownCourses } from "$lib/current-courses";
 import {
   classifyFakeCourses,
+  classifyKnownCourses,
   classifyRealCourses,
   getCreditRequirements,
 } from "$lib/requirements/bres-since-2023";
-import { runTest } from "./util";
+import { classifySingleRealCourse, runTest } from "./util";
 
 test("grade-csvs/2024/bres-1.csv", () => {
   runTest({
@@ -45,5 +48,42 @@ test("grade-csvs/2024/bres-1.csv", () => {
       compulsory: { taken: 16 },
       elective: { taken: 68, mightTake: 2 },
     },
+  });
+});
+
+describe("生物資源科学演習", () => {
+  const classify = (courseId: string, isNative: boolean) =>
+    classifySingleRealCourse({
+      classifyRealCourses,
+      courseId,
+      isNative,
+      major: "bres",
+      tableYear: 2026,
+    });
+  const offered = (courseId: string, isNative: boolean) =>
+    classifyKnownCourses(knownCourses, {
+      isNative,
+      major: "bres",
+      tableYear: 2026,
+    }).get(courseId as CourseId);
+
+  test.each(["EC11212", "EC11222", "EC11232", "EC11242", "EC11252"])(
+    "%s, a class section, is in c1 only for students who entered directly",
+    (id) => {
+      expect(classify(id, true)).toBe("c1");
+      expect(classify(id, false)).not.toBe("c1");
+    },
+  );
+
+  test("EC11262 is in c1 only for 移行 students", () => {
+    expect(classify("EC11262", false)).toBe("c1");
+    expect(classify("EC11262", true)).not.toBe("c1");
+  });
+
+  test("each student is offered only their own class", () => {
+    expect(offered("EC11212", true)).toBe("c1");
+    expect(offered("EC11262", true)).toBeUndefined();
+    expect(offered("EC11262", false)).toBe("c1");
+    expect(offered("EC11212", false)).toBeUndefined();
   });
 });
