@@ -388,6 +388,15 @@ function classify(
   specialty: Specialty,
   isNative: boolean,
 ): string | undefined {
+  // 総合在籍中に取る専門導入科目なので、履修の選択肢としては出さない
+  if (
+    mode === "known" &&
+    (id === "HB21211" || // 医科生化学
+      id === "HB21221") // 医科分子生物学
+  ) {
+    return undefined;
+  }
+
   // 必修
   const a = classifyColumnA(id, tableYear, specialty, isNative);
   if (a !== undefined) return a;
