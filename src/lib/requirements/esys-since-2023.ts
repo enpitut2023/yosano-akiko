@@ -444,33 +444,19 @@ function isC5(id: string): boolean {
   );
 }
 
-function isC6(id: string, isNative: boolean, mode: Mode): boolean {
+function isC6(id: string): boolean {
   return (
     //微積分1
     id === "FA01331" || //工学システム学類(1,2クラス)
-    id === "FA01341" || //工学システム学類(3,4クラス)
-    //総合からの移行生に限り情報学群開設の微分積分Aを理工学群開設の微積分1, 2へ読み替えられる
-    (!isNative &&
-      mode === "real" &&
-      (id === "GA15311" || //微分積分A 情報科学類1・2クラス
-        id === "GA15321" || //微分積分A 情報科学類3・4クラス
-        id === "GA15331" || //微分積分A 情報メディア創成学類生および総合学域群生
-        id === "GA15341")) //微分積分A 知識学類生および総合学域群生
+    id === "FA01341" //工学システム学類(3,4クラス)
   );
 }
 
-function isC7(id: string, isNative: boolean, mode: Mode): boolean {
+function isC7(id: string): boolean {
   return (
     //微積分2
     id === "FA01431" || //工学システム学類(1,2クラス)
-    id === "FA01441" || //工学システム学類(3,4クラス)
-    //総合からの移行生に限り情報学群開設の微分積分Aを理工学群開設の微積分1, 2へ読み替えられる
-    (!isNative &&
-      mode === "real" &&
-      (id === "GA15311" || //微分積分A 情報科学類1・2クラス
-        id === "GA15321" || //微分積分A 情報科学類3・4クラス
-        id === "GA15331" || //微分積分A 情報メディア創成学類生および総合学域群生
-        id === "GA15341")) //微分積分A 知識学類生および総合学域群生
+    id === "FA01441" //工学システム学類(3,4クラス)
   );
 }
 
@@ -691,7 +677,7 @@ function isH3(id: string): boolean {
 function classify(
   id: CourseId,
   specialty: Specialty,
-  isNative: boolean,
+  _isNative: boolean,
   mode: Mode,
   name: string,
 ): string | undefined {
@@ -703,8 +689,8 @@ function classify(
   if (isC3(id)) return "c3";
   if (isC4(id)) return "c4";
   if (isC5(id)) return "c5";
-  if (isC6(id, isNative, mode)) return "c6";
-  if (isC7(id, isNative, mode)) return "c7";
+  if (isC6(id)) return "c6";
+  if (isC7(id)) return "c7";
   if (isC8(id)) return "c8";
   if (isC9(id)) return "c9";
   if (isC10(id)) return "c10";
