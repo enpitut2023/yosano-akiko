@@ -193,6 +193,12 @@ function isC2(id: string): boolean {
   );
 }
 
+// TODO: 他学類開設のプログラミング入門A・Bを誰が使えるか知識学類に確認して、
+// - coins開設(GA18212・GA18312)は今は無条件に含めているので、mode === "real"に
+//   絞り、必要なら!isNativeでも絞る
+// - mast開設(GA18222・GA18322)も使えるなら同様に加える
+// - isC3・isC4・isC5・isD1の科目番号を、common.tsのisInfoCourseOf・
+//   isInfoCourseOfOthers・isInfoCourseで書き直す
 function isC3(id: string): boolean {
   // プログラミング入門A
   return (

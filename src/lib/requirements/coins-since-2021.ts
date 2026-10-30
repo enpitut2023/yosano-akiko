@@ -20,6 +20,8 @@ import {
   isFirstYearSeminar,
   isForeignLanguage,
   isGakushikiban,
+  isInfoCourseOf,
+  isInfoCourseOfOthers,
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
   isIzanai,
@@ -163,13 +165,9 @@ function isB2(id: string): boolean {
  * - GAの他学類開設もcoins、移行生の成績としてカウントされる(注4の通り)
  */
 function isC1(id: string, isNative: boolean, mode: Mode): boolean {
-  // 線形代数A
   return (
-    id === "GA15211" || //1・2クラス
-    id === "GA15221" || //3・4クラス
-    (mode === "real" &&
-      (id === "GA15231" || // 情報メディア創成学類生および総合学域群生(情報メディア創成学類への移行希望者)優先
-        id === "GA15241")) || // 知識情報・図書館学類生および総合学域群生(知識情報・図書館学類への移行希望者)優先
+    isInfoCourseOf(id, "線形代数A", "coins") ||
+    (mode === "real" && isInfoCourseOfOthers(id, "線形代数A", "coins")) ||
     (!isNative && mode === "real" && (id === "FF18724" || id === "FF18734"))
   );
 }
@@ -183,14 +181,11 @@ function isC2(id: string): boolean {
 }
 
 function isC3(id: string, isNative: boolean, mode: Mode): boolean {
-  // 微分積分A
   return (
-    id === "GA15311" || //1・2クラス
-    id === "GA15321" || //3・4クラス
+    isInfoCourseOf(id, "微分積分A", "coins") ||
     (!isNative &&
       mode === "real" &&
-      (id === "GA15331" || // 情報メディア創成学類生および総合学域群生(情報メディア創成学類への移行希望者)優先
-        id === "GA15341")) // 知識情報・図書館学類生および総合学域群生(知識情報・図書館学類への移行希望者)優先
+      isInfoCourseOfOthers(id, "微分積分A", "coins"))
   );
 }
 
@@ -203,11 +198,7 @@ function isC4(id: string): boolean {
 }
 
 function isC5(id: string): boolean {
-  // 情報数学A
-  return (
-    id === "GA15111" || //1・2クラス
-    id === "GA15121" //3・4クラス
-  );
+  return isInfoCourseOf(id, "情報数学A", "coins");
 }
 
 function isC6(id: string): boolean {
@@ -216,12 +207,10 @@ function isC6(id: string): boolean {
 }
 
 function isC7(id: string, isNative: boolean, mode: Mode): boolean {
-  // プログラミング入門A
   return (
-    id === "GA18212" ||
+    isInfoCourseOf(id, "プログラミング入門A", "coins") ||
     (mode === "real" &&
-      (id === "GA18222" || // 情報メディア創成学類生および総合学域群生優先
-        id === "GA18232")) || // 知識学類生および総合学域群生優先
+      isInfoCourseOfOthers(id, "プログラミング入門A", "coins")) ||
     // 移行生はFHから始まるプロ入Aをcoinsのプロ入Aとして使える
     (!isNative &&
       mode === "real" &&
@@ -230,12 +219,10 @@ function isC7(id: string, isNative: boolean, mode: Mode): boolean {
 }
 
 function isC8(id: string, isNative: boolean, mode: Mode): boolean {
-  // プログラミング入門B
   return (
-    id === "GA18312" ||
+    isInfoCourseOf(id, "プログラミング入門B", "coins") ||
     (mode === "real" &&
-      (id === "GA18322" || // 情報メディア創成学類生および総合学域群生優先
-        id === "GA18332")) || // 知識学類生および総合学域群生優先
+      isInfoCourseOfOthers(id, "プログラミング入門B", "coins")) ||
     // 移行生はFHから始まるプロ入Bをcoinsのプロ入Bとして使える
     (!isNative &&
       mode === "real" &&
