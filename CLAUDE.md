@@ -74,6 +74,18 @@ Each module exports:
 
 Shared predicates (共通科目, 体育, 外国語, …) are in `requirements/common.ts`.
 
+**Offered vs counted.** A module's `classify` runs twice per course kind:
+`mode === "known"` on the catalog decides what 当てはまる授業 offers, and
+`mode === "real"` on grades decides where a credit counts. Offer narrowly and
+count broadly: a course the student shouldn't be steered toward, but that counts
+if it's in their grades anyway, is gated with `mode === "real"`. Examples are
+another 学類's class of a course every 学類 teaches, or a course taken during
+総合. `fromSougou` is a separate axis, for rules that differ between 直接入学 and
+移行生. Don't use it to hide a course. For example, coins counts mast's
+微分積分A for every student but offers it to none. `src/lib/tests/offered.test.ts`
+compares the two modes over the whole catalog, and `classification-symptoms.md`
+lists where they disagree.
+
 **Assembling a page.** `src/routes/[tableYear]/[major]/+page.ts` calls
 `getMajorConfig` (`major-config.ts`). It lazy-imports the major's requirements
 module, so each page bundles only its own, and fetches
