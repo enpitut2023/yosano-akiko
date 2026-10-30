@@ -12,7 +12,7 @@ import { classifySingleRealCourse, runTest } from "./util";
 test("grade-csvs/2024/bres-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2024/bres-1.csv",
-    isNative: true,
+    fromSougou: false,
     tableYear: 2023,
     major: "bres",
     getCreditRequirements,
@@ -52,17 +52,17 @@ test("grade-csvs/2024/bres-1.csv", () => {
 });
 
 describe("生物資源科学演習", () => {
-  const classify = (courseId: string, isNative: boolean) =>
+  const classify = (courseId: string, fromSougou: boolean) =>
     classifySingleRealCourse({
       classifyRealCourses,
       courseId,
-      isNative,
+      fromSougou,
       major: "bres",
       tableYear: 2026,
     });
-  const offered = (courseId: string, isNative: boolean) =>
+  const offered = (courseId: string, fromSougou: boolean) =>
     classifyKnownCourses(knownCourses, {
-      isNative,
+      fromSougou,
       major: "bres",
       tableYear: 2026,
     }).get(courseId as CourseId);
@@ -70,20 +70,20 @@ describe("生物資源科学演習", () => {
   test.each(["EC11212", "EC11222", "EC11232", "EC11242", "EC11252"])(
     "%s, a class section, is in c1 only for students who entered directly",
     (id) => {
-      expect(classify(id, true)).toBe("c1");
-      expect(classify(id, false)).not.toBe("c1");
+      expect(classify(id, false)).toBe("c1");
+      expect(classify(id, true)).not.toBe("c1");
     },
   );
 
   test("EC11262 is in c1 only for 移行 students", () => {
-    expect(classify("EC11262", false)).toBe("c1");
-    expect(classify("EC11262", true)).not.toBe("c1");
+    expect(classify("EC11262", true)).toBe("c1");
+    expect(classify("EC11262", false)).not.toBe("c1");
   });
 
   test("each student is offered only their own class", () => {
-    expect(offered("EC11212", true)).toBe("c1");
-    expect(offered("EC11262", true)).toBeUndefined();
-    expect(offered("EC11262", false)).toBe("c1");
-    expect(offered("EC11212", false)).toBeUndefined();
+    expect(offered("EC11212", false)).toBe("c1");
+    expect(offered("EC11262", false)).toBeUndefined();
+    expect(offered("EC11262", true)).toBe("c1");
+    expect(offered("EC11212", true)).toBeUndefined();
   });
 });

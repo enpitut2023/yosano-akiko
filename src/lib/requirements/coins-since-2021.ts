@@ -210,25 +210,25 @@ function isC6(id: string): boolean {
   return id === "GB19061";
 }
 
-function isC7(id: string, isNative: boolean, mode: Mode): boolean {
+function isC7(id: string, fromSougou: boolean, mode: Mode): boolean {
   return (
     isInfoCourseOf(id, "プログラミング入門A", "coins") ||
     (mode === "real" &&
       isInfoCourseOfOthers(id, "プログラミング入門A", "coins")) ||
     // 移行生はFHから始まるプロ入Aをcoinsのプロ入Aとして使える
-    (!isNative &&
+    (fromSougou &&
       mode === "real" &&
       (id === "FH60474" || id === "FH60484" || id === "FH60494"))
   );
 }
 
-function isC8(id: string, isNative: boolean, mode: Mode): boolean {
+function isC8(id: string, fromSougou: boolean, mode: Mode): boolean {
   return (
     isInfoCourseOf(id, "プログラミング入門B", "coins") ||
     (mode === "real" &&
       isInfoCourseOfOthers(id, "プログラミング入門B", "coins")) ||
     // 移行生はFHから始まるプロ入Bをcoinsのプロ入Bとして使える
-    (!isNative &&
+    (fromSougou &&
       mode === "real" &&
       (id === "FH60574" || id === "FH60584" || id === "FH60594"))
   );
@@ -396,7 +396,7 @@ function classify(
   id: string,
   name: string,
   mode: Mode,
-  isNative: boolean,
+  fromSougou: boolean,
   specialty: Specialty,
   tableYear: number,
 ): string | undefined {
@@ -419,8 +419,8 @@ function classify(
   if (isC4(id)) return "c4";
   if (isC5(id)) return "c5";
   if (isC6(id)) return "c6";
-  if (isC7(id, isNative, mode)) return "c7";
-  if (isC8(id, isNative, mode)) return "c8";
+  if (isC7(id, fromSougou, mode)) return "c7";
+  if (isC8(id, fromSougou, mode)) return "c8";
   if (isC9(id)) return "c9";
   if (isC10(id)) return "c10";
   if (isC11(id)) return "c11";
@@ -456,7 +456,7 @@ export function classifyKnownCourses(
       c.id,
       c.name,
       "known",
-      opts.isNative,
+      opts.fromSougou,
       specialty,
       opts.tableYear,
     );
@@ -475,7 +475,7 @@ export function classifyRealCourses(
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
 
-  if (!opts.isNative) {
+  if (opts.fromSougou) {
     handleFaLinearAlgebra(cs, courseIdToCellId, "c1");
     handlePair(
       cs,
@@ -492,7 +492,7 @@ export function classifyRealCourses(
       c.id,
       c.name,
       "real",
-      opts.isNative,
+      opts.fromSougou,
       specialty,
       opts.tableYear,
     );

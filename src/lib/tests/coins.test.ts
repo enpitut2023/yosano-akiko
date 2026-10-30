@@ -12,7 +12,7 @@ import { classifySingleRealCourse, runTest } from "./util";
 test("grade-csvs/2023/coins-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/coins-1.csv",
-    isNative: true,
+    fromSougou: false,
     tableYear: 2023,
     major: "coins",
     getCreditRequirements,
@@ -105,7 +105,7 @@ test("edge cases", () => {
 `.trim();
   runTest({
     csv,
-    isNative: false,
+    fromSougou: true,
     tableYear: 2023,
     major: "coins",
     getCreditRequirements,
@@ -202,47 +202,47 @@ describe.each([
     forOthersForIkou,
     forOthersForNobody,
   }) => {
-    const classify = (courseId: string, isNative: boolean) =>
+    const classify = (courseId: string, fromSougou: boolean) =>
       classifySingleRealCourse({
         classifyRealCourses,
         courseId,
-        isNative,
+        fromSougou,
         major: "coins",
         tableYear: 2026,
       });
 
     test.each(forCoins)(`%s, for coins, is in ${cellId} for everyone`, (id) => {
-      expect(classify(id, true)).toBe(cellId);
       expect(classify(id, false)).toBe(cellId);
+      expect(classify(id, true)).toBe(cellId);
     });
 
     test.each(forOthersForEveryone)(
       `%s, for other classes, is in ${cellId} for everyone`,
       (id) => {
-        expect(classify(id, true)).toBe(cellId);
         expect(classify(id, false)).toBe(cellId);
+        expect(classify(id, true)).toBe(cellId);
       },
     );
 
     test.each(forOthersForIkou)(
       `%s, for other classes, is in ${cellId} only for 移行 students`,
       (id) => {
-        expect(classify(id, false)).toBe(cellId);
-        expect(classify(id, true)).not.toBe(cellId);
+        expect(classify(id, true)).toBe(cellId);
+        expect(classify(id, false)).not.toBe(cellId);
       },
     );
 
     test.each(forOthersForNobody)(
       `%s, for other classes, is in ${cellId} for nobody`,
       (id) => {
-        expect(classify(id, false)).not.toBe(cellId);
         expect(classify(id, true)).not.toBe(cellId);
+        expect(classify(id, false)).not.toBe(cellId);
       },
     );
 
     test(`the catalog shows only the courses for coins in ${cellId}`, () => {
       const got = classifyKnownCourses(knownCourses, {
-        isNative: false,
+        fromSougou: true,
         major: "coins",
         tableYear: 2026,
       });
@@ -260,7 +260,7 @@ describe.each([
   },
 );
 
-function classifyPair(ids: string[], isNative: boolean) {
+function classifyPair(ids: string[], fromSougou: boolean) {
   return [
     ...classifyRealCourses(
       ids.map((id) => ({
@@ -270,19 +270,19 @@ function classifyPair(ids: string[], isNative: boolean) {
         credit: 1,
         takenYear: 2025,
       })),
-      { isNative, major: "coins", tableYear: 2026 },
+      { fromSougou, major: "coins", tableYear: 2026 },
     ).values(),
   ];
 }
 
 test("FA 微積分1 and 2 together are in c3 only for 移行 students", () => {
-  expect(classifyPair(["FA01311", "FA01411"], false)).toEqual(["c3", "c3"]);
-  expect(classifyPair(["FA01311", "FA01411"], true)).not.toContain("c3");
+  expect(classifyPair(["FA01311", "FA01411"], true)).toEqual(["c3", "c3"]);
+  expect(classifyPair(["FA01311", "FA01411"], false)).not.toContain("c3");
 });
 
 test("FF 線形代数A and B together are in c1 only for 移行 students", () => {
-  expect(classifyPair(["FF18724", "FF18744"], false)).toEqual(["c1", "c1"]);
-  expect(classifyPair(["FF18724", "FF18744"], true)).not.toContain("c1");
-  expect(classifyPair(["FF18724"], false)).not.toContain("c1");
-  expect(classifyPair(["FF18744"], false)).not.toContain("c1");
+  expect(classifyPair(["FF18724", "FF18744"], true)).toEqual(["c1", "c1"]);
+  expect(classifyPair(["FF18724", "FF18744"], false)).not.toContain("c1");
+  expect(classifyPair(["FF18724"], true)).not.toContain("c1");
+  expect(classifyPair(["FF18744"], true)).not.toContain("c1");
 });

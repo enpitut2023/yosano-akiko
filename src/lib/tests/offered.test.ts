@@ -22,13 +22,13 @@ async function loadRequirements(major: Major): Promise<Requirements> {
 async function classifyOffered(
   major: Major,
   tableYear: number,
-  isNative: boolean,
+  fromSougou: boolean,
 ): Promise<Map<CourseId, string>> {
   const req = await loadRequirements(major);
   return req.classifyKnownCourses(knownCourses, {
     major,
     tableYear,
-    isNative,
+    fromSougou,
   });
 }
 
@@ -36,10 +36,10 @@ async function classifyOffered(
 async function classifyCounted(
   major: Major,
   tableYear: number,
-  isNative: boolean,
+  fromSougou: boolean,
 ): Promise<Map<CourseId, string>> {
   const req = await loadRequirements(major);
-  const opts = { major, tableYear, isNative };
+  const opts = { major, tableYear, fromSougou };
   const counted = new Map<CourseId, string>();
   for (const c of knownCourses) {
     // One course at a time, so rules that move credits between cells don't
@@ -115,8 +115,8 @@ describe.each(majors)("%s", (major) => {
   test("the 移行 answer changes what's offered only for known courses", async () => {
     const got = new Set<string>();
     for (const tableYear of tableYearsOf(major)) {
-      const native = await classifyOffered(major, tableYear, true);
-      const ikou = await classifyOffered(major, tableYear, false);
+      const native = await classifyOffered(major, tableYear, false);
+      const ikou = await classifyOffered(major, tableYear, true);
       for (const c of knownCourses) {
         if (native.get(c.id) !== ikou.get(c.id)) {
           got.add(c.id);
@@ -131,9 +131,9 @@ describe.each(majors)("%s", (major) => {
   test("a course counts in the cell it's offered in", async () => {
     const got = new Set<string>();
     for (const tableYear of tableYearsOf(major)) {
-      for (const isNative of [true, false]) {
-        const offered = await classifyOffered(major, tableYear, isNative);
-        const counted = await classifyCounted(major, tableYear, isNative);
+      for (const fromSougou of [true, false]) {
+        const offered = await classifyOffered(major, tableYear, fromSougou);
+        const counted = await classifyCounted(major, tableYear, fromSougou);
         for (const [id, offeredIn] of offered) {
           const countedIn = counted.get(id);
           if (countedIn !== offeredIn) {

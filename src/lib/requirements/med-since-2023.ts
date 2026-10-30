@@ -41,7 +41,7 @@ function classifyColumnA(
   id: string,
   tableYear: number,
   specialty: Specialty,
-  isNative: boolean,
+  fromSougou: boolean,
 ): string | undefined {
   const b = {
     医学統計学: id === "HB31141",
@@ -73,11 +73,11 @@ function classifyColumnA(
       case "med":
         if (b["医学統計学"]) return "a1";
         if (b["医療・福祉現場でのふれあい等"]) return "a2";
-        if (b["医療概論I"] || (b["医療概論I-B"] && !isNative)) return "a3";
+        if (b["医療概論I"] || (b["医療概論I-B"] && fromSougou)) return "a3";
         if (
           b["医学の基礎"] ||
-          (b["医学の基礎B"] && !isNative) ||
-          (b["医科分子生物学"] && !isNative)
+          (b["医学の基礎B"] && fromSougou) ||
+          (b["医科分子生物学"] && fromSougou)
         )
           return "a4";
         if (b["機能・構造と病態I"]) return "a5";
@@ -100,11 +100,11 @@ function classifyColumnA(
       case "med-new":
         if (b["医学統計学"]) return "a1";
         if (b["医療・福祉現場でのふれあい等"]) return "a2";
-        if (b["医療概論I"] || (b["医療概論I-B"] && !isNative)) return "a3";
+        if (b["医療概論I"] || (b["医療概論I-B"] && fromSougou)) return "a3";
         if (
           b["医学の基礎"] ||
-          (b["医学の基礎B"] && !isNative) ||
-          (b["医科分子生物学"] && !isNative)
+          (b["医学の基礎B"] && fromSougou) ||
+          (b["医科分子生物学"] && fromSougou)
         )
           return "a4";
         if (b["機能・構造と病態I"]) return "a5";
@@ -168,11 +168,11 @@ function classifyColumnA(
       case "med":
         if (b["医学統計学"]) return "a1";
         if (b["医療・福祉現場でのふれあい等"]) return "a2";
-        if (b["医療概論I"] || (b["医療概論I-B"] && !isNative)) return "a3";
+        if (b["医療概論I"] || (b["医療概論I-B"] && fromSougou)) return "a3";
         if (
           b["医学の基礎"] ||
-          (b["医学の基礎B"] && !isNative) ||
-          (b["医科分子生物学"] && !isNative)
+          (b["医学の基礎B"] && fromSougou) ||
+          (b["医科分子生物学"] && fromSougou)
         )
           return "a4";
         if (b["機能・構造と病態I"]) return "a5";
@@ -195,11 +195,11 @@ function classifyColumnA(
       case "med-new":
         if (b["医学統計学"]) return "a1";
         if (b["医療・福祉現場でのふれあい等"]) return "a2";
-        if (b["医療概論I"] || (b["医療概論I-B"] && !isNative)) return "a3";
+        if (b["医療概論I"] || (b["医療概論I-B"] && fromSougou)) return "a3";
         if (
           b["医学の基礎"] ||
-          (b["医学の基礎B"] && !isNative) ||
-          (b["医科分子生物学"] && !isNative)
+          (b["医学の基礎B"] && fromSougou) ||
+          (b["医科分子生物学"] && fromSougou)
         )
           return "a4";
         if (b["機能・構造と病態I"]) return "a5";
@@ -287,7 +287,7 @@ function isC3(id: string, tableYear: number, mode: Mode): boolean {
   );
 }
 
-function isD1(id: string, specialty: Specialty, isNative: boolean): boolean {
+function isD1(id: string, specialty: Specialty, fromSougou: boolean): boolean {
   if (!(specialty === "med" || specialty === "med-new")) return false;
   return (
     id === "FCB1221" || // 力学1 医学生向け !!A!!
@@ -300,7 +300,7 @@ function isD1(id: string, specialty: Specialty, isNative: boolean): boolean {
     id === "FE11191" || // 化学3 2023,2024,2025年開講 化学類、物理学類、医学類、総合学域群第１類および第３類
     id === "FE11291" || // 化学3 2023, 2024年開講 応用理工学類、地球学類、総合学域群第２類の学生
     // 総合生のみ生物学I, IIに読み替え可能
-    (!isNative && id === "HB21211") // 医科生化学
+    (fromSougou && id === "HB21211") // 医科生化学
   );
 }
 
@@ -386,7 +386,7 @@ function classify(
   mode: Mode,
   tableYear: number,
   specialty: Specialty,
-  isNative: boolean,
+  fromSougou: boolean,
 ): string | undefined {
   // 総合在籍中に取る専門導入科目なので、履修の選択肢としては出さない
   if (
@@ -398,12 +398,12 @@ function classify(
   }
 
   // 必修
-  const a = classifyColumnA(id, tableYear, specialty, isNative);
+  const a = classifyColumnA(id, tableYear, specialty, fromSougou);
   if (a !== undefined) return a;
   if (isC1(id)) return "c1";
   if (isC2(id)) return "c2";
   if (isC3(id, tableYear, mode)) return "c3";
-  if (isD1(id, specialty, isNative)) return "d1";
+  if (isD1(id, specialty, fromSougou)) return "d1";
   switch (specialty) {
     case "med":
     case "med-new":
@@ -441,7 +441,7 @@ export function classifyKnownCourses(
       "known",
       opts.tableYear,
       specialty,
-      opts.isNative,
+      opts.fromSougou,
     );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
@@ -463,7 +463,7 @@ export function classifyRealCourses(
       "real",
       opts.tableYear,
       specialty,
-      opts.isNative,
+      opts.fromSougou,
     );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);

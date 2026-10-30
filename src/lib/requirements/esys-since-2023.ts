@@ -677,7 +677,7 @@ function isH3(id: string): boolean {
 function classify(
   id: CourseId,
   specialty: Specialty,
-  _isNative: boolean,
+  _fromSougou: boolean,
   mode: Mode,
   name: string,
 ): string | undefined {
@@ -738,7 +738,7 @@ export function classifyKnownCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, specialty, opts.isNative, "known", c.name);
+    const cellId = classify(c.id, specialty, opts.fromSougou, "known", c.name);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -753,7 +753,7 @@ export function classifyRealCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, specialty, opts.isNative, "real", c.name);
+    const cellId = classify(c.id, specialty, opts.fromSougou, "real", c.name);
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }

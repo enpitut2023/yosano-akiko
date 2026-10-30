@@ -9,7 +9,7 @@ import { runTest } from "./util";
 test("grade-csvs/2023/esys-ies-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/esys-ies-1.csv",
-    isNative: true,
+    fromSougou: false,
     tableYear: 2023,
     major: "esys-ies",
     getCreditRequirements,
@@ -77,7 +77,7 @@ test("grade-csvs/2023/esys-ies-1.csv", () => {
 test("grade-csvs/2023/esys-ies-2.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/esys-ies-2.csv",
-    isNative: true,
+    fromSougou: false,
     tableYear: 2023,
     major: "esys-ies",
     getCreditRequirements,

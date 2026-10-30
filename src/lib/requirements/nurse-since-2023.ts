@@ -655,7 +655,7 @@ function classify(
   id: CourseId,
   name: string,
   specialty: Specialty,
-  _isNative: boolean,
+  _fromSougou: boolean,
   mode: Mode,
   tableYear: number,
 ): string | undefined {
@@ -689,7 +689,7 @@ export function classifyKnownCourses(
       c.id,
       c.name,
       specialty,
-      opts.isNative,
+      opts.fromSougou,
       "known",
       opts.tableYear,
     );
@@ -711,7 +711,7 @@ export function classifyRealCourses(
       c.id,
       c.name,
       specialty,
-      opts.isNative,
+      opts.fromSougou,
       "real",
       opts.tableYear,
     );

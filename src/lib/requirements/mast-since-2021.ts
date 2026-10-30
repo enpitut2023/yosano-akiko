@@ -86,17 +86,17 @@ function isInfoCourseForMast(
 
 // TODO: 社会工学類の新入生向けのクラス(FH60484・FH60494・FH60584・FH60594)も
 // 移行生が使えるか、情報メディア創成学類の確認待ち
-function isProgIntroA(id: CourseId, mode: Mode, isNative: boolean): boolean {
+function isProgIntroA(id: CourseId, mode: Mode, fromSougou: boolean): boolean {
   return (
     isInfoCourseForMast(id, "プログラミング入門A", mode) ||
-    (mode === "real" && !isNative && id === "FH60474") // 総合学域群優先
+    (mode === "real" && fromSougou && id === "FH60474") // 総合学域群優先
   );
 }
 
-function isProgIntroB(id: CourseId, mode: Mode, isNative: boolean): boolean {
+function isProgIntroB(id: CourseId, mode: Mode, fromSougou: boolean): boolean {
   return (
     isInfoCourseForMast(id, "プログラミング入門B", mode) ||
-    (mode === "real" && !isNative && id === "FH60574") // 総合学域群優先
+    (mode === "real" && fromSougou && id === "FH60574") // 総合学域群優先
   );
 }
 
@@ -104,7 +104,7 @@ function classifyColumnC(
   id: CourseId,
   tableYear: number,
   mode: Mode,
-  isNative: boolean,
+  fromSougou: boolean,
 ): string | undefined {
   if (isInfoCourseForMast(id, "微分積分A", mode)) return "c1";
   if (id === "GC11701") return "c2"; // 微分積分B
@@ -112,8 +112,8 @@ function classifyColumnC(
   if (id === "GC11801") return "c4"; // 線形代数B
   if (isInfoCourseForMast(id, "情報数学A", mode)) return "c5";
   if (id === "GC11601") return "c6"; // 確率と統計
-  if (isProgIntroA(id, mode, isNative)) return "c7"; // プログラミング入門A
-  if (isProgIntroB(id, mode, isNative)) return "c8"; // プログラミング入門B
+  if (isProgIntroA(id, mode, fromSougou)) return "c7"; // プログラミング入門A
+  if (isProgIntroB(id, mode, fromSougou)) return "c8"; // プログラミング入門B
   let offset = 0;
   if (tableYear >= 2025) {
     offset = 1;
@@ -227,7 +227,7 @@ function classify(
   id: CourseId,
   name: string,
   tableYear: number,
-  isNative: boolean,
+  fromSougou: boolean,
   mode: Mode,
 ): string | undefined {
   // 必修
@@ -237,7 +237,7 @@ function classify(
   if (isA4(id)) return "a4";
   if (isA5(id)) return "a5";
   if (isA6(id)) return "a6";
-  const c = classifyColumnC(id, tableYear, mode, isNative);
+  const c = classifyColumnC(id, tableYear, mode, fromSougou);
   if (c !== undefined) return c;
   if (isE1(id, mode)) return "e1";
   if (isE2(id, mode)) return "e2";
@@ -267,7 +267,7 @@ export function classifyKnownCourses(
       c.id,
       c.name,
       opts.tableYear,
-      opts.isNative,
+      opts.fromSougou,
       "known",
     );
     if (cellId !== undefined) {
@@ -286,7 +286,7 @@ export function classifyRealCourses(
 
   // 注10: 総合学域群からの移行生はFAから始まる微積分1と2で微分積分Aに、
   // 線形代数1と2で線形代数Aに読み替えられる
-  if (!opts.isNative) {
+  if (opts.fromSougou) {
     handleFaCalculus(cs, courseIdToCellId, "c1");
     handleFaLinearAlgebra(cs, courseIdToCellId, "c3");
   }
@@ -296,7 +296,7 @@ export function classifyRealCourses(
       c.id,
       c.name,
       opts.tableYear,
-      opts.isNative,
+      opts.fromSougou,
       "real",
     );
     if (cellId !== undefined) {

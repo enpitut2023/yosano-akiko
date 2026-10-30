@@ -143,8 +143,13 @@ function isB3(id: string, specialty: Specialty): boolean {
 /**
  * 生物資源科学演習
  */
-function isBiologicalResourcesPractice(id: string, isNative: boolean): boolean {
-  if (isNative) {
+function isBiologicalResourcesPractice(
+  id: string,
+  fromSougou: boolean,
+): boolean {
+  if (fromSougou) {
+    return id === "EC11262"; // 総合学域群から生物資源学類に移行した学生に限る
+  } else {
     // 2023, 2024年度はクラスごとに分かれているが、2025年度は分かれていない。今
     // 後クラス分けが復活する可能性を考えて広くとっておく。
     return (
@@ -154,8 +159,6 @@ function isBiologicalResourcesPractice(id: string, isNative: boolean): boolean {
       id === "EC11242" || // 4クラス
       id === "EC11252" // 5クラス
     );
-  } else {
-    return id === "EC11262"; // 総合学域群から生物資源学類に移行した学生に限る
   }
 }
 
@@ -166,15 +169,15 @@ function isJapanExpertOverview(id: string): boolean {
 function classifyColumnC(
   id: string,
   specialty: Specialty,
-  isNative: boolean,
+  fromSougou: boolean,
 ): string | undefined {
   switch (specialty) {
     case "none":
-      if (isBiologicalResourcesPractice(id, isNative)) return "c1";
+      if (isBiologicalResourcesPractice(id, fromSougou)) return "c1";
       break;
     case "as":
       if (isJapanExpertOverview(id)) return "c1";
-      if (isBiologicalResourcesPractice(id, isNative)) return "c2";
+      if (isBiologicalResourcesPractice(id, fromSougou)) return "c2";
       break;
     default:
       return unreachable(specialty);
@@ -572,7 +575,7 @@ function classifyColumnH(id: string, specialty: Specialty): string | undefined {
 function classify(
   id: string,
   specialty: Specialty,
-  isNative: boolean,
+  fromSougou: boolean,
   mode: Mode,
   tableYear: number,
   name: string,
@@ -580,7 +583,7 @@ function classify(
   // 必修
   const a = classifyColumnA(id, specialty, mode, tableYear);
   if (a !== undefined) return a;
-  const c = classifyColumnC(id, specialty, isNative);
+  const c = classifyColumnC(id, specialty, fromSougou);
   if (c !== undefined) return c;
   const e = classifyColumnE(id, specialty, mode, tableYear);
   if (e !== undefined) return e;
@@ -606,7 +609,7 @@ export function classifyKnownCourses(
     const cellId = classify(
       c.id,
       specialty,
-      opts.isNative,
+      opts.fromSougou,
       "known",
       opts.tableYear,
       c.name,
@@ -628,7 +631,7 @@ export function classifyRealCourses(
     const cellId = classify(
       c.id,
       specialty,
-      opts.isNative,
+      opts.fromSougou,
       "real",
       opts.tableYear,
       c.name,

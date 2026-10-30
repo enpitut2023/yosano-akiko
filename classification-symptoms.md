@@ -57,14 +57,14 @@ reaching a later cell:
 ## "Not offered" is not a concept
 
 Nothing says "this counts but isn't offered". It's spelled as conditions on
-`mode`, and before `mode` existed it was spelled with `isNative`. The two got
-mixed up:
+`mode`, and before `mode` existed it was spelled with the 移行 flag,
+`fromSougou` (then `isNative`). The two got mixed up:
 
-- mast counted other 学類's classes only for 移行生 (`!isNative`) when the
+- mast counted other 学類's classes only for 移行生 (`fromSougou`) when the
   rule was that they count for everyone but aren't offered.
-- math and med gated courses taken during 総合 with `!isNative` alone, so
+- math and med gated courses taken during 総合 with `fromSougou` alone, so
   移行生 were offered them as courses to take.
-- coins's `isC3` gated other 学類's 微分積分A with `!isNative` while `isC1`
+- coins's `isC3` gated other 学類's 微分積分A with `fromSougou` while `isC1`
   didn't for 線形代数A, under one comment that said both count for everyone.
 
 ## Offered and counted can be different courses

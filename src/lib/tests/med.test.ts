@@ -12,23 +12,23 @@ describe.each([
   { name: "医科分子生物学", id: "HB21221", cellId: "a4", shown: false },
   { name: "医科生化学", id: "HB21211", cellId: "d1", shown: false },
 ])("$name", ({ id, cellId, shown }) => {
-  const classify = (isNative: boolean) =>
+  const classify = (fromSougou: boolean) =>
     classifySingleRealCourse({
       classifyRealCourses,
       courseId: id,
-      isNative,
+      fromSougou,
       major: "med",
       tableYear: 2026,
     });
 
   test(`is in ${cellId} only for 移行 students`, () => {
-    expect(classify(false)).toBe(cellId);
-    expect(classify(true)).not.toBe(cellId);
+    expect(classify(true)).toBe(cellId);
+    expect(classify(false)).not.toBe(cellId);
   });
 
   test(`is ${shown ? "" : "not "}a choice for 移行 students`, () => {
     const got = classifyKnownCourses(knownCourses, {
-      isNative: false,
+      fromSougou: true,
       major: "med",
       tableYear: 2026,
     }).get(id as CourseId);

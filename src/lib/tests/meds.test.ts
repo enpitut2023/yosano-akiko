@@ -9,7 +9,7 @@ import { runTest } from "./util";
 test("grade-csvs/2024/meds-ims-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2024/meds-ims-1.csv",
-    isNative: true,
+    fromSougou: false,
     tableYear: 2024,
     major: "meds-ims",
     getCreditRequirements,

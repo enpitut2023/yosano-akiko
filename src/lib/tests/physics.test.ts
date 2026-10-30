@@ -9,7 +9,7 @@ import { runTest } from "./util";
 test("grade-csvs/2023/physics-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/physics-1.csv",
-    isNative: false,
+    fromSougou: true,
     tableYear: 2023,
     major: "physics",
     getCreditRequirements,

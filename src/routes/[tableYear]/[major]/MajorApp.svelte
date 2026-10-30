@@ -65,7 +65,7 @@
   let saved = $state.raw<LocalDataV3>(localDataLoad());
   const realCourses = $derived(saved.realCourses);
   const fakeCourses = $derived(saved.fakeCourses);
-  const isNative = $derived(saved.native);
+  const fromSougou = $derived(!saved.native);
   let selectedCellId = $state<CellId | undefined>(undefined);
   let showNonAvailable = $state(false);
 
@@ -81,7 +81,7 @@
       config.knownCourses,
       realCourses,
       fakeCourses,
-      isNative,
+      fromSougou,
       config.tableYear,
       config.major,
       config.classifyKnownCourses,
@@ -472,7 +472,8 @@
         {realCourses}
         {fakeCourses}
         bind:native={
-          () => isNative, (native: boolean) => (saved = { ...saved, native })
+          () => saved.native,
+          (native: boolean) => (saved = { ...saved, native })
         }
         onImport={importCsvFile}
         onReset={() => (saved = localDataDefault())}

@@ -9,7 +9,7 @@ import { runTest } from "./util";
 test("grade-csvs/2023/klis-rm-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/klis-rm-1.csv",
-    isNative: true,
+    fromSougou: false,
     tableYear: 2023,
     major: "klis-rm",
     getCreditRequirements,
@@ -62,7 +62,7 @@ test("grade-csvs/2023/klis-rm-1.csv", () => {
 test("grade-csvs/2023/klis-system-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/klis-system-1.csv",
-    isNative: true,
+    fromSougou: false,
     tableYear: 2023,
     major: "klis-system",
     getCreditRequirements,
@@ -116,7 +116,7 @@ test("grade-csvs/2023/klis-system-1.csv", () => {
 test("grade-csvs/2023/klis-science-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/klis-science-1.csv",
-    isNative: true,
+    fromSougou: false,
     tableYear: 2023,
     major: "klis-science",
     getCreditRequirements,

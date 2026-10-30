@@ -12,7 +12,7 @@ import { classifySingleRealCourse, runTest } from "./util";
 test("grade-csvs/2023/math-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/math-1.csv",
-    isNative: true,
+    fromSougou: false,
     tableYear: 2023,
     major: "math",
     getCreditRequirements,
@@ -58,21 +58,21 @@ describe.each([
   { id: "GB10234", cellId: "c2" }, // 線形代数B
 ])("$id", ({ id, cellId }) => {
   test(`is in ${cellId} only for 移行 students`, () => {
-    const classify = (isNative: boolean) =>
+    const classify = (fromSougou: boolean) =>
       classifySingleRealCourse({
         classifyRealCourses,
         courseId: id,
-        isNative,
+        fromSougou,
         major: "math",
         tableYear: 2026,
       });
-    expect(classify(false)).toBe(cellId);
-    expect(classify(true)).not.toBe(cellId);
+    expect(classify(true)).toBe(cellId);
+    expect(classify(false)).not.toBe(cellId);
   });
 
   test(`is not a choice in ${cellId} for 移行 students`, () => {
     const got = classifyKnownCourses(knownCourses, {
-      isNative: false,
+      fromSougou: true,
       major: "math",
       tableYear: 2026,
     });

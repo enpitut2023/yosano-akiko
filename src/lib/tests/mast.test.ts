@@ -12,7 +12,7 @@ import { classifySingleRealCourse, runTest } from "./util";
 test("grade-csvs/2023/mast-1.csv", () => {
   runTest({
     csvPath: "grade-csvs/2023/mast-1.csv",
-    isNative: true,
+    fromSougou: false,
     tableYear: 2023,
     major: "mast",
     getCreditRequirements,
@@ -120,39 +120,39 @@ describe.each([
     ],
   },
 ])("$name", ({ cellId, forMast, forOthersForEveryone, forOthersForIkou }) => {
-  const classify = (courseId: string, isNative: boolean) =>
+  const classify = (courseId: string, fromSougou: boolean) =>
     classifySingleRealCourse({
       classifyRealCourses,
       courseId,
-      isNative,
+      fromSougou,
       major: "mast",
       tableYear: 2026,
     });
 
   test(`the course for mast is in ${cellId} for everyone`, () => {
-    expect(classify(forMast, true)).toBe(cellId);
     expect(classify(forMast, false)).toBe(cellId);
+    expect(classify(forMast, true)).toBe(cellId);
   });
 
   test.each(forOthersForEveryone)(
     `%s, for other classes, is in ${cellId} for everyone`,
     (courseId) => {
-      expect(classify(courseId, true)).toBe(cellId);
       expect(classify(courseId, false)).toBe(cellId);
+      expect(classify(courseId, true)).toBe(cellId);
     },
   );
 
   test.each(forOthersForIkou)(
     `%s, for other classes, is in ${cellId} only for 移行 students`,
     (courseId) => {
-      expect(classify(courseId, false)).toBe(cellId);
-      expect(classify(courseId, true)).not.toBe(cellId);
+      expect(classify(courseId, true)).toBe(cellId);
+      expect(classify(courseId, false)).not.toBe(cellId);
     },
   );
 
   test(`the catalog shows only the course for mast in ${cellId}`, () => {
     const got = classifyKnownCourses(knownCourses, {
-      isNative: false,
+      fromSougou: true,
       major: "mast",
       tableYear: 2026,
     });

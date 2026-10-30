@@ -55,12 +55,12 @@ function isB1(id: string): boolean {
 // isC1・isC2の移行生の読み替えは、総合在籍中に取った科目なので成績にあるときだけ当てはめる
 function isC1(
   id: string,
-  isNative: boolean,
+  fromSougou: boolean,
   mode: Mode,
   tableYear: number,
 ): boolean {
   const transfer =
-    !isNative &&
+    fromSougou &&
     mode === "real" &&
     (id === "FA013C1" || // 微積分1（総合）
       id === "FA013D1" || // 微積分1（総合）
@@ -87,12 +87,12 @@ function isC1(
 
 function isC2(
   id: string,
-  isNative: boolean,
+  fromSougou: boolean,
   mode: Mode,
   tableYear: number,
 ): boolean {
   const transfer =
-    !isNative &&
+    fromSougou &&
     mode === "real" &&
     (id === "FA016C1" || // 線形代数1（総合）
       id === "FA016D1" || // 線形代数1（総合）
@@ -217,7 +217,7 @@ function isH1(id: string): boolean {
 function classify(
   id: CourseId,
   name: string,
-  isNative: boolean,
+  fromSougou: boolean,
   mode: Mode,
   tableYear: number,
 ): string | undefined {
@@ -225,8 +225,8 @@ function classify(
   if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
-  if (isC1(id, isNative, mode, tableYear)) return "c1";
-  if (isC2(id, isNative, mode, tableYear)) return "c2";
+  if (isC1(id, fromSougou, mode, tableYear)) return "c1";
+  if (isC2(id, fromSougou, mode, tableYear)) return "c2";
   if (isC3(id)) return "c3";
   if (isC4(id)) return "c4";
   if (isE1(id, mode)) return "e1";
@@ -250,7 +250,7 @@ export function classifyKnownCourses(
     const cellId = classify(
       c.id,
       c.name,
-      opts.isNative,
+      opts.fromSougou,
       "known",
       opts.tableYear,
     );
@@ -270,7 +270,7 @@ export function classifyRealCourses(
     const cellId = classify(
       c.id,
       c.name,
-      opts.isNative,
+      opts.fromSougou,
       "real",
       opts.tableYear,
     );

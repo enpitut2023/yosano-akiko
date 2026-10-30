@@ -21,7 +21,7 @@ import type { Major } from "$lib/constants";
 
 export function getCreditStats(params: {
   csv: string;
-  isNative: boolean;
+  fromSougou: boolean;
   tableYear: number;
   major: Major;
   creditRequirements: SetupCreditRequirements;
@@ -36,7 +36,7 @@ export function getCreditStats(params: {
       [],
       result.realCourses,
       result.fakeCourses,
-      params.isNative,
+      params.fromSougou,
       params.tableYear,
       params.major,
       () => new Map(),
@@ -67,7 +67,7 @@ export function classifySingleRealCourse(params: {
   courseGrade?: Grade;
   courseCredit?: number;
   courseTakenYear?: number;
-  isNative: boolean;
+  fromSougou: boolean;
   major: Major;
   tableYear: number;
 }): string | undefined {
@@ -88,7 +88,7 @@ export function classifySingleRealCourse(params: {
 }
 
 export type RunTestParams = {
-  isNative: boolean;
+  fromSougou: boolean;
   tableYear: number;
   major: Major;
   getCreditRequirements: (
@@ -107,7 +107,7 @@ export function runTest(params: RunTestParams): void {
       : readFileSync(params.csvPath, { encoding: "utf8" });
   const got = getCreditStats({
     csv,
-    isNative: params.isNative,
+    fromSougou: params.fromSougou,
     tableYear: params.tableYear,
     major: params.major,
     creditRequirements: params.getCreditRequirements(

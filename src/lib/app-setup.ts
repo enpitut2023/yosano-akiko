@@ -15,7 +15,7 @@ import { assert } from "./util";
 type Rect = { x: number; y: number; width: number; height: number };
 
 export type ClassifyOptions = {
-  isNative: boolean;
+  fromSougou: boolean;
   tableYear: number;
   major: Major;
 };
@@ -66,7 +66,7 @@ export function classifyCoursesOrFail(
   knownCourses: KnownCourse[],
   realCourses: RealCourse[],
   fakeCourses: FakeCourse[],
-  isNative: boolean,
+  fromSougou: boolean,
   tableYear: number,
   major: Major,
   classifyKnownCourses: ClassifyKnownCourses,
@@ -81,7 +81,7 @@ export function classifyCoursesOrFail(
   const realCoursePositions = new Map<CourseId, CellId>();
   const fakeCoursePositions = new Map<FakeCourseId, CellId>();
 
-  const classifyOptions: ClassifyOptions = { isNative, tableYear, major };
+  const classifyOptions: ClassifyOptions = { fromSougou, tableYear, major };
   for (const [courseId, cellId] of classifyKnownCourses(
     knownCourses,
     classifyOptions,

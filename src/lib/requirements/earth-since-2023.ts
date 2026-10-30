@@ -286,7 +286,7 @@ function isH2(id: string): boolean {
 function classify(
   id: CourseId,
   specialty: Specialty,
-  _isNative: boolean,
+  _fromSougou: boolean,
   mode: Mode,
   tableYear: number,
 ): string | undefined {
@@ -319,7 +319,7 @@ export function classifyKnownCourses(
     const cellId = classify(
       c.id,
       specialty,
-      opts.isNative,
+      opts.fromSougou,
       "known",
       opts.tableYear,
     );
@@ -340,7 +340,7 @@ export function classifyRealCourses(
     const cellId = classify(
       c.id,
       specialty,
-      opts.isNative,
+      opts.fromSougou,
       "real",
       opts.tableYear,
     );

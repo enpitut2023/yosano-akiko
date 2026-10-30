@@ -254,7 +254,7 @@ function classify(
   id: CourseId,
   name: string,
   mode: Mode,
-  _isNative: boolean,
+  _fromSougou: boolean,
   tableYear: number,
 ): string | undefined {
   // 必修
@@ -302,7 +302,7 @@ export function classifyKnownCourses(
       c.id,
       c.name,
       "known",
-      opts.isNative,
+      opts.fromSougou,
       opts.tableYear,
     );
     if (cellId !== undefined) {
@@ -322,7 +322,7 @@ export function classifyRealCourses(
       c.id,
       c.name,
       "real",
-      opts.isNative,
+      opts.fromSougou,
       opts.tableYear,
     );
     if (cellId !== undefined) {
