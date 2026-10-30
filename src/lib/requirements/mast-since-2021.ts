@@ -76,25 +76,26 @@ function isInfoCourseForMast(
   id: CourseId,
   course: InfoCourseName,
   mode: Mode,
-  isNative: boolean,
 ): boolean {
-  // 他学類開設のものは移行生のみ
+  // 他学類開設のものは単位にはなるが、履修の選択肢としては出さない
   return (
     isInfoCourseOf(id, course, "mast") ||
-    (mode === "real" && !isNative && isInfoCourseOfOthers(id, course, "mast"))
+    (mode === "real" && isInfoCourseOfOthers(id, course, "mast"))
   );
 }
 
+// TODO: 社会工学類の新入生向けのクラス(FH60484・FH60494・FH60584・FH60594)も
+// 移行生が使えるか、情報メディア創成学類の確認待ち
 function isProgIntroA(id: CourseId, mode: Mode, isNative: boolean): boolean {
   return (
-    isInfoCourseForMast(id, "プログラミング入門A", mode, isNative) ||
+    isInfoCourseForMast(id, "プログラミング入門A", mode) ||
     (mode === "real" && !isNative && id === "FH60474") // 総合学域群優先
   );
 }
 
 function isProgIntroB(id: CourseId, mode: Mode, isNative: boolean): boolean {
   return (
-    isInfoCourseForMast(id, "プログラミング入門B", mode, isNative) ||
+    isInfoCourseForMast(id, "プログラミング入門B", mode) ||
     (mode === "real" && !isNative && id === "FH60574") // 総合学域群優先
   );
 }
@@ -105,11 +106,11 @@ function classifyColumnC(
   mode: Mode,
   isNative: boolean,
 ): string | undefined {
-  if (isInfoCourseForMast(id, "微分積分A", mode, isNative)) return "c1";
+  if (isInfoCourseForMast(id, "微分積分A", mode)) return "c1";
   if (id === "GC11701") return "c2"; // 微分積分B
-  if (isInfoCourseForMast(id, "線形代数A", mode, isNative)) return "c3";
+  if (isInfoCourseForMast(id, "線形代数A", mode)) return "c3";
   if (id === "GC11801") return "c4"; // 線形代数B
-  if (isInfoCourseForMast(id, "情報数学A", mode, isNative)) return "c5";
+  if (isInfoCourseForMast(id, "情報数学A", mode)) return "c5";
   if (id === "GC11601") return "c6"; // 確率と統計
   if (isProgIntroA(id, mode, isNative)) return "c7"; // プログラミング入門A
   if (isProgIntroB(id, mode, isNative)) return "c8"; // プログラミング入門B
@@ -262,7 +263,13 @@ export function classifyKnownCourses(
 ): Map<CourseId, string> {
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, opts.tableYear, true, "known");
+    const cellId = classify(
+      c.id,
+      c.name,
+      opts.tableYear,
+      opts.isNative,
+      "known",
+    );
     if (cellId !== undefined) {
       courseIdToCellId.set(c.id, cellId);
     }
