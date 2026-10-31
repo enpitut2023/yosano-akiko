@@ -28,6 +28,8 @@ import {
   isJapanExpertJapanese,
   isKyoutsuu,
   redistributeOverflow,
+  type Mode,
+  unlisted,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
@@ -37,8 +39,6 @@ function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "bres-as") return "as";
   throw new Error(`Bad major: ${m}`);
 }
-
-type Mode = "known" | "real";
 
 function isThesis(id: string): boolean {
   return (
@@ -83,7 +83,6 @@ function isA2(id: string): boolean {
 function classifyColumnA(
   id: string,
   specialty: Specialty,
-  _mode: Mode,
   tableYear: number,
 ): string | undefined {
   switch (specialty) {
@@ -401,7 +400,7 @@ function isD2(id: string, tableYear: number): boolean {
   );
 }
 
-function isE1(id: string, mode: Mode, specialty: Specialty): boolean {
+function isE1(id: string, specialty: Specialty): boolean {
   let fys: boolean;
   switch (specialty) {
     case "none":
@@ -425,48 +424,63 @@ function isE1(id: string, mode: Mode, specialty: Specialty): boolean {
     id === "1227301" || // 学問への誘い 2クラス
     id === "1227311" || // 学問への誘い 3クラス
     id === "1227321" || // 学問への誘い 4クラス
-    id === "1227331" || // 学問への誘い 5クラス
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227331" // 学問への誘い 5クラス
   );
 }
 
-function isInfo(id: string, mode: Mode): boolean {
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
+}
+
+function isInfo(id: string): boolean {
   return (
     id === "6110101" || //情報リテラシー(講義)
     id === "6410102" || //情報リテラシー(演習) 1班
     id === "6410202" || //情報リテラシー(演習) 2班
     id === "6510102" || //データサイエンス 1班
-    id === "6510202" || //データサイエンス 2班
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6510202" //データサイエンス 2班
   );
+}
+
+function isInfoUnlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
+  );
+}
+
+function getInfoCellId(specialty: Specialty): string {
+  switch (specialty) {
+    case "none":
+      return "e4";
+    case "as":
+      return "e5";
+    default:
+      unreachable(specialty);
+  }
 }
 
 function classifyColumnE(
   id: string,
   specialty: Specialty,
-  mode: Mode,
   _tableYear: number,
 ): string | undefined {
   switch (specialty) {
     case "none":
-      if (isE1(id, mode, specialty)) return "e1";
+      if (isE1(id, specialty)) return "e1";
       if (isCompulsoryPe1(id) || isCompulsoryPe2(id) || isCompulsoryPe3(id))
         return "e2";
       if (isCompulsoryEnglishById(id)) return "e3";
-      if (isInfo(id, mode)) return "e4";
+      if (isInfo(id)) return getInfoCellId(specialty);
       if (isJapanese1(id)) return "e5";
       break;
     case "as":
-      if (isE1(id, mode, specialty)) return "e1";
+      if (isE1(id, specialty)) return "e1";
       if (isCompulsoryPe1(id) || isCompulsoryPe2(id) || isCompulsoryPe3(id))
         return "e2";
       // TODO: 第二外国語(英語)の定義 !!B!!
       if (isJapanExpertJapanese(id)) return "e3";
       if (isCompulsoryEnglishById(id)) return "e4";
-      if (isInfo(id, mode)) return "e5";
+      if (isInfo(id)) return getInfoCellId(specialty);
       break;
     default:
       return unreachable(specialty);
@@ -488,7 +502,6 @@ function isArtAs(id: string): boolean {
 function classifyColumnF(
   id: string,
   specialty: Specialty,
-  _mode: Mode,
   tableYear: number,
   name: string,
 ): string | undefined {
@@ -581,19 +594,21 @@ function classify(
   name: string,
 ): string | undefined {
   // 必修
-  const a = classifyColumnA(id, specialty, mode, tableYear);
+  const a = classifyColumnA(id, specialty, tableYear);
   if (a !== undefined) return a;
   const c = classifyColumnC(id, specialty, fromSougou);
   if (c !== undefined) return c;
-  const e = classifyColumnE(id, specialty, mode, tableYear);
+  const e = classifyColumnE(id, specialty, tableYear);
   if (e !== undefined) return e;
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
+  if (isInfoUnlisted(id)) return unlisted(getInfoCellId(specialty), mode);
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";
   if (isB3(id, specialty)) return "b3";
   if (isD1(id)) return "d1";
   if (isD2(id, tableYear)) return "d2";
-  const f = classifyColumnF(id, specialty, mode, tableYear, name);
+  const f = classifyColumnF(id, specialty, tableYear, name);
   if (f !== undefined) return f;
   const h = classifyColumnH(id, specialty);
   if (h !== undefined) return h;

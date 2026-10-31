@@ -18,6 +18,8 @@ import {
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
   isIzanai,
+  type Mode,
+  unlisted,
 } from "./common";
 import { unreachable } from "$lib/util";
 
@@ -26,8 +28,6 @@ export type Specialty =
   | "med-new" // 医学類 新医学主専攻
   | "med-2" // 医学類 2年次編入
   | "med-2-new"; // 医学類 2年次編入 新医学主専攻
-
-type Mode = "known" | "real";
 
 function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "med") return "med";
@@ -277,14 +277,17 @@ function isC2(id: string): boolean {
   );
 }
 
-function isC3(id: string, tableYear: number, mode: Mode): boolean {
+function isC3(id: string, tableYear: number): boolean {
   if (tableYear >= 2026) {
     return id === "HB13232"; // 学術英語
   }
   return (
-    id === "HB13222" || // TOEFL演習 2025年開講
-    (mode === "real" && id === "HB33312") // TOEFL演習 2023, 2024年開講
+    id === "HB13222" // TOEFL演習 2025年開講
   );
+}
+
+function isC3Unlisted(id: string, tableYear: number): boolean {
+  return tableYear < 2026 && id === "HB33312"; // TOEFL演習 2023, 2024年開講
 }
 
 function isD1(id: string, specialty: Specialty, fromSougou: boolean): boolean {
@@ -304,7 +307,7 @@ function isD1(id: string, specialty: Specialty, fromSougou: boolean): boolean {
   );
 }
 
-function isE1MedMedNew(id: string, mode: Mode): boolean {
+function isE1MedMedNew(id: string): boolean {
   return (
     id === "1121102" || // ファーストイヤーセミナー 1クラス
     id === "1121202" || // ファーストイヤーセミナー 2クラス
@@ -317,9 +320,12 @@ function isE1MedMedNew(id: string, mode: Mode): boolean {
     id === "1227691" || // 学問への誘い 3クラス
     id === "1227701" || // 学問への誘い 4クラス
     id === "1227711" || // 学問への誘い 5クラス
-    id === "1227721" || // 学問への誘い 6クラス
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227721" // 学問への誘い 6クラス
   );
+}
+
+function isE1MedMedNewUnlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE1Med2MedNew2(id: string) {
@@ -334,7 +340,7 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string, mode: Mode): boolean {
+function isE4(id: string): boolean {
   return (
     id === "6117101" || // 情報リテラシー(講義) 2024 A班
     id === "6117201" || // 情報リテラシー(講義)2024年まで班で分割されていた B班
@@ -343,21 +349,26 @@ function isE4(id: string, mode: Mode): boolean {
     id === "6417302" || // 情報リテラシー(演習) 3班
     id === "6517102" || // データサイエンス 1班
     id === "6517202" || // データサイエンス 2班
-    id === "6517302" || // データサイエンス 3班
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6517302" // データサイエンス 3班
   );
 }
 
-function isE5(id: string, mode: Mode): boolean {
+function isE4Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
+  );
+}
+
+function isE5(id: string): boolean {
   return (
     id === "5104011" || // 国語I 1班
     id === "5104021" || // 国語I 2班
-    id === "5104031" || // 国語I 3班
-    (mode === "real" && id === "5108091") // 国語I 総合学域群生のうち医学類または看護学類に移行する学生で、国語Iを未履修の者に限る
+    id === "5104031" // 国語I 3班
   );
+}
+
+function isE5Unlisted(id: string): boolean {
+  return id === "5108091"; // 国語I 総合学域群生のうち医学類または看護学類に移行する学生で、国語Iを未履修の者に限る
 }
 
 function isF1(id: string): boolean {
@@ -402,16 +413,20 @@ function classify(
   if (a !== undefined) return a;
   if (isC1(id)) return "c1";
   if (isC2(id)) return "c2";
-  if (isC3(id, tableYear, mode)) return "c3";
+  if (isC3(id, tableYear)) return "c3";
+  if (isC3Unlisted(id, tableYear)) return unlisted("c3", mode);
   if (isD1(id, specialty, fromSougou)) return "d1";
   switch (specialty) {
     case "med":
     case "med-new":
-      if (isE1MedMedNew(id, mode)) return "e1";
+      if (isE1MedMedNew(id)) return "e1";
+      if (isE1MedMedNewUnlisted(id)) return unlisted("e1", mode);
       if (isE2(id)) return "e2";
       if (isE3(name)) return "e3";
-      if (isE4(id, mode)) return "e4";
-      if (isE5(id, mode)) return "e5";
+      if (isE4(id)) return "e4";
+      if (isE4Unlisted(id)) return unlisted("e4", mode);
+      if (isE5(id)) return "e5";
+      if (isE5Unlisted(id)) return unlisted("e5", mode);
       if (isF1(id)) return "f1";
       // 選択
       if (isH1(id)) return "h1";

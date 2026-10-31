@@ -19,6 +19,8 @@ import {
   isInfoLiteracyLecture,
   isIzanai,
   isJapaneseAsForeignLanguage,
+  type Mode,
+  unlisted,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
@@ -30,8 +32,6 @@ function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "meds-mspis") return "mspis";
   throw new Error(`Bad major: ${m}`);
 }
-
-type Mode = "known" | "real";
 
 function classifyColumnAMs(id: string): string | undefined {
   // !!A!!はその他の科目が全て国際医療科学主専攻G30コース学生向け
@@ -306,12 +306,15 @@ function classifyColumnDImsMspis(id: string): string | undefined {
     return "d1";
 }
 
-function isE1(id: string, mode: Mode): boolean {
+function isE1(id: string): boolean {
   return (
     id === "1123102" || // ファーストイヤーセミナー
-    id === "1227901" || // 学問への誘い
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227901" // 学問への誘い
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
@@ -330,16 +333,18 @@ function isE3(id: string, name: string, specialty: Specialty): boolean {
   }
 }
 
-function isE4(id: string, mode: Mode): boolean {
+function isE4(id: string): boolean {
   return (
     id === "6118101" || // 情報リテラシー(講義) 2024,2025年開講 看護、医療対象
     id === "6119101" || // 情報リテラシー(講義) 2023年開講 医療科学, 総学第3類A班
     id === "6419102" || // 情報リテラシー(演習)
-    id === "6519102" || // データサイエンス
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6519102" // データサイエンス
+  );
+}
+
+function isE4Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -399,10 +404,12 @@ function classify(
   }
 
   // 必修
-  if (isE1(id, mode)) return "e1";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
   if (isE3(id, name, specialty)) return "e3";
-  if (isE4(id, mode)) return "e4";
+  if (isE4(id)) return "e4";
+  if (isE4Unlisted(id)) return unlisted("e4", mode);
   if (isG1(id)) return "g1";
   if (isG2(id)) return "g2";
 

@@ -27,6 +27,8 @@ import {
   isJiyuukamoku,
   isKyoushoku,
   isKyoutsuu,
+  type Mode,
+  unlisted,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
@@ -47,8 +49,6 @@ function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "coens-mme") return "mme";
   throw new Error(`Bad major: ${m}`);
 }
-
-type Mode = "known" | "real";
 
 function isA1(id: string): boolean {
   return (
@@ -189,18 +189,17 @@ function isB3(id: string, specialty: Specialty): boolean {
   }
 }
 
-function classifyC1D2(
-  id: string,
-  tableYear: number,
-  mode: Mode,
-  name: string,
-): string | undefined {
+// 2023年度は、2024, 2025年度のd2に含まれる科目をc1に含む
+function getC1D2CellId(tableYear: number): string {
+  return tableYear === 2023 ? "c1" : "d2";
+}
+
+function classifyC1D2(id: string, tableYear: number): string | undefined {
   // 応用理工学概論
   if (id === "FF17011") return "c1";
   // 微積分1 (2023年度のみ救済として開講)
   if (tableYear === 2023 && id === "FF18764") return "c1";
   if (
-    // 2026.3.26 成績は名前で見る
     id === "FA01111" || // 数学リテラシー1 学籍番号奇数 !!A!!
     id === "FA01121" || // 数学リテラシー1 学籍番号偶数 !!A!!
     id === "FA01211" || // 数学リテラシー2 学籍番号奇数 !!A!!
@@ -225,34 +224,35 @@ function classifyC1D2(
     id === "FCB1381" || // 電磁気学3 !!A!!
     id === "FE11171" || // 化学1 !!A!!
     id === "FE11181" || // 化学2 !!A!!
-    id === "FE11191" || // 化学3 !!A!!
-    (mode === "real" &&
-      (name === "数学リテラシー1" ||
-        name === "数学リテラシー2" ||
-        name === "微積分1" ||
-        name === "微積分2" ||
-        name === "微積分3" ||
-        name === "線形代数1" ||
-        name === "線形代数2" ||
-        name === "線形代数3" ||
-        name === "力学1" ||
-        name === "力学2" ||
-        name === "力学3" ||
-        name === "電磁気学1" ||
-        name === "電磁気学2" ||
-        name === "電磁気学3" ||
-        name === "化学1" ||
-        name === "化学2" ||
-        name === "化学3"))
-  ) {
-    // 2023年度は、2024, 2025年度のd2に含まれる科目をc1に含む
-    if (tableYear === 2023) return "c1";
-    else return "d2";
-  }
+    id === "FE11191" // 化学3 !!A!!
+  )
+    return getC1D2CellId(tableYear);
 }
 
-function isC2(id: string, mode: Mode, name: string): boolean {
-  // 2026.3.26 成績は名前で見る
+// 2026.3.26 成績は名前で見る
+function isC1D2Unlisted(name: string): boolean {
+  return (
+    name === "数学リテラシー1" ||
+    name === "数学リテラシー2" ||
+    name === "微積分1" ||
+    name === "微積分2" ||
+    name === "微積分3" ||
+    name === "線形代数1" ||
+    name === "線形代数2" ||
+    name === "線形代数3" ||
+    name === "力学1" ||
+    name === "力学2" ||
+    name === "力学3" ||
+    name === "電磁気学1" ||
+    name === "電磁気学2" ||
+    name === "電磁気学3" ||
+    name === "化学1" ||
+    name === "化学2" ||
+    name === "化学3"
+  );
+}
+
+function isC2(id: string): boolean {
   return (
     id === "FF18804" || // 熱力学 1・2クラス
     id === "FF18814" || // 熱力学 3・4クラス
@@ -279,9 +279,13 @@ function isC2(id: string, mode: Mode, name: string): boolean {
     id === "FF19303" || // 応用理工物理学実験 2班対象
     id === "FF19313" || // 応用理工物理学実験 1班対象
     id === "FF19203" || // 応用理工化学実験 1班対象
-    id === "FF19213" || // 応用理工化学実験 2班対象
-    (mode === "real" && (name === "線形代数A" || name === "線形代数B"))
+    id === "FF19213" // 応用理工化学実験 2班対象
   );
+}
+
+// 2026.3.26 成績は名前で見る
+function isC2Unlisted(name: string): boolean {
+  return name === "線形代数A" || name === "線形代数B";
 }
 
 function isC3(id: string, specialty: Specialty): boolean {
@@ -319,16 +323,19 @@ function isD1(id: string): boolean {
   return id.startsWith("FF15");
 }
 
-function isE1(id: string, mode: Mode): boolean {
+function isE1(id: string): boolean {
   return (
     id === "1115102" || // ファーストイヤーセミナー 1クラス
     id === "1115202" || // ファーストイヤーセミナー 2クラス
     id === "1115302" || // ファーストイヤーセミナー 3クラス
     id === "1227431" || // 学問への誘い 1クラス
     id === "1227441" || // 学問への誘い 2クラス
-    id === "1227451" || // 学問への誘い 3クラス
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227451" // 学問への誘い 3クラス
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
@@ -339,17 +346,19 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string, mode: Mode): boolean {
+function isE4(id: string): boolean {
   return (
     id === "6115101" || // 情報リテラシー(講義)
     id === "6415102" || // 情報リテラシー(演習) 1班
     id === "6415202" || // 情報リテラシー(演習) 2班
     id === "6515102" || // データサイエンス 1班
-    id === "6515202" || // データサイエンス 2班
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6515202" // データサイエンス 2班
+  );
+}
+
+function isE4Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -440,14 +449,18 @@ function classify(
   if (isA1(id)) return "a1";
   if (isA2(id, specialty)) return "a2";
   if (isA3(id, specialty)) return "a3";
-  const c1d2 = classifyC1D2(id, tableYear, mode, name);
+  const c1d2 = classifyC1D2(id, tableYear);
   if (c1d2 !== undefined) return c1d2;
-  if (isC2(id, mode, name)) return "c2";
+  if (isC1D2Unlisted(name)) return unlisted(getC1D2CellId(tableYear), mode);
+  if (isC2(id)) return "c2";
+  if (isC2Unlisted(name)) return unlisted("c2", mode);
   if (isC3(id, specialty)) return "c3";
-  if (isE1(id, mode)) return "e1";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id, mode)) return "e4";
+  if (isE4(id)) return "e4";
+  if (isE4Unlisted(id)) return unlisted("e4", mode);
   if (COMPULSORY_NAMES.has(name)) return undefined;
 
   // 選択

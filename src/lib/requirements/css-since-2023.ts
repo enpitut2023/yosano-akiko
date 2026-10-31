@@ -25,6 +25,8 @@ import {
   isKyoushoku,
   isSecondForeignLanguageAdvanced,
   redistributeOverflow,
+  type Mode,
+  unlisted,
 } from "./common";
 import { unreachable } from "$lib/util";
 
@@ -37,8 +39,6 @@ export type Specialty =
   | "ps"
   // Economics（経済学）
   | "e";
-type Mode = "known" | "real";
-
 function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "css-s") return "s";
   if (m === "css-l") return "l";
@@ -214,16 +214,19 @@ function isD3(id: string): boolean {
   );
 }
 
-function isE1(id: string, mode: Mode): boolean {
+function isE1(id: string): boolean {
   return (
     id === "1104102" || // ファーストイヤーセミナー 1クラス
     id === "1104202" || // ファーストイヤーセミナー 2クラス
     id === "1104302" || // ファーストイヤーセミナー 3クラス
     id === "1227131" || // 学問への誘い 1クラス
     id === "1227141" || // 学問への誘い 2クラス
-    id === "1227151" || // 学問への誘い 3クラス
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227151" // 学問への誘い 3クラス
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
@@ -239,17 +242,19 @@ function isE4(id: string, name: string): boolean {
   return isSecondForeignLanguageAdvanced(id, name);
 }
 
-function isE5(id: string, mode: Mode): boolean {
+function isE5(id: string): boolean {
   return (
     id === "6104101" || // 情報リテラシー(講義)
     id === "6404102" || // 情報リテラシー(演習) 1班
     id === "6404202" || // 情報リテラシー(演習) 2班
     id === "6504102" || // データサイエンス 1班
-    id === "6504202" || // データサイエンス 2班
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6504202" // データサイエンス 2班
+  );
+}
+
+function isE5Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -302,11 +307,13 @@ function classify(
   const a = classifyColumnA(id, specialty);
   if (a !== undefined) return a;
   if (isC1(id, specialty)) return "c1";
-  if (isE1(id, mode)) return "e1";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id, name)) return "e4";
-  if (isE5(id, mode)) return "e5";
+  if (isE5(id)) return "e5";
+  if (isE5Unlisted(id)) return unlisted("e5", mode);
   // 選択
   // d列に当てはまる科目がb列の条件にも該当してしまうため先にd列を処理
   if (isD1(id, specialty)) return "d1";

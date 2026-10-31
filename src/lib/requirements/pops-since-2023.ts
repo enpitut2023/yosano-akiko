@@ -28,6 +28,8 @@ import {
   isJiyuukamoku,
   isKyoushoku,
   isKyoutsuu,
+  type Mode,
+  unlisted,
 } from "./common";
 
 type Specialty =
@@ -41,8 +43,6 @@ function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "pops-urp") return "urp";
   throw new Error(`Bad major: ${m}`);
 }
-
-type Mode = "known" | "real";
 
 function isThesis(id: string): boolean {
   return (
@@ -176,7 +176,7 @@ function isD1(id: string): boolean {
   );
 }
 
-function isE1(id: string, mode: Mode): boolean {
+function isE1(id: string): boolean {
   return (
     id === "1117102" || //ファーストイヤーセミナー  1クラス
     id === "1117202" || //ファーストイヤーセミナー  2クラス
@@ -185,26 +185,31 @@ function isE1(id: string, mode: Mode): boolean {
     id === "1227511" || // 学問への誘い 1クラス
     id === "1227521" || // 学問への誘い 2クラス
     id === "1227531" || // 学問への誘い 3クラス
-    id === "1227541" || // 学問への誘い 4クラス
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227541" // 学問への誘い 4クラス
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE3(id: string, mode: Mode): boolean {
+function isE3(id: string): boolean {
   return (
     id === "6123101" || //情報リテラシー(講義)
     id === "6423102" || //情報リテラシー(演習) 1班
     id === "6423202" || //情報リテラシー(演習) 2班
     id === "6523102" || //データサイエンス 1班
-    id === "6523202" || //データサイエンス 2班
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6523202" //データサイエンス 2班
+  );
+}
+
+function isE3Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -256,9 +261,11 @@ function classify(
   if (isC2(id)) return "c2";
   if (isC3(id)) return "c3";
   if (isC4(id)) return "c4";
-  if (isE1(id, mode)) return "e1";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(name)) return "e2";
-  if (isE3(id, mode)) return "e3";
+  if (isE3(id)) return "e3";
+  if (isE3Unlisted(id)) return unlisted("e3", mode);
   if (isE4(id)) return "e4";
   // 選択
   const b = classifyColumnB(id, specialty);

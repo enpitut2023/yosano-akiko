@@ -26,6 +26,8 @@ import {
   isJapanese,
   isKyoushoku,
   isKyoutsuu,
+  type Mode,
+  unlisted,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
@@ -36,8 +38,6 @@ function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "earth-ees") return "ees";
   throw new Error(`Bad major: ${m}`);
 }
-
-type Mode = "known" | "real";
 
 function isA1(id: string, tableYear: number): boolean {
   if (tableYear >= 2024) {
@@ -220,14 +220,17 @@ function isD1(id: string, tableYear: number): boolean {
   }
 }
 
-function isE1(id: string, mode: Mode): boolean {
+function isE1(id: string): boolean {
   return (
     id === "1111102" || // ファーストイヤーセミナー 1クラス
     id === "1111202" || // ファーストイヤーセミナー 2クラス
     id === "1227351" || // 学問への誘い 1クラス
-    id === "1227361" || // 学問への誘い 2クラス
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227361" // 学問への誘い 2クラス
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
@@ -238,15 +241,17 @@ function isE3(id: string): boolean {
   return isCompulsoryEnglishById(id);
 }
 
-function isE4(id: string, mode: Mode): boolean {
+function isE4(id: string): boolean {
   return (
     id === "6109101" || // 情報リテラシー(講義)
     id === "6411102" || // 情報リテラシー(演習)
-    id === "6511102" || // データサイエンス
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6511102" // データサイエンス
+  );
+}
+
+function isE4Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -294,10 +299,12 @@ function classify(
   if (isA1(id, tableYear)) return "a1";
   if (isA2(id, specialty, tableYear)) return "a2";
   if (isC1(id)) return "c1";
-  if (isE1(id, mode)) return "e1";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
   if (isE3(id)) return "e3";
-  if (isE4(id, mode)) return "e4";
+  if (isE4(id)) return "e4";
+  if (isE4Unlisted(id)) return unlisted("e4", mode);
   if (isA2(id, "ees", tableYear) || isA2(id, "gs", tableYear)) return undefined;
   // 選択
   const b = classifyColumnB(id, specialty, tableYear);

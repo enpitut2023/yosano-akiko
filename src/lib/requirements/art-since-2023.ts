@@ -29,12 +29,12 @@ import {
   isKyoushoku,
   isNonCompulsoryEnglish,
   redistributeOverflow,
+  type Mode,
+  unlisted,
 } from "./common";
 import { unreachable } from "$lib/util";
 
 export type Specialty = "none" | "jad";
-type Mode = "known" | "real";
-
 function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "art") return "none";
   if (m === "art-jad") return "jad";
@@ -310,7 +310,7 @@ function isD4(id: string): boolean {
   return id.startsWith("YA");
 }
 
-function isE1(id: string, mode: Mode, specialty: Specialty): boolean {
+function isE1(id: string, specialty: Specialty): boolean {
   return (
     id === "1125102" || // ファーストイヤーセミナー 1クラス
     id === "1125202" || // ファーストイヤーセミナー 2クラス
@@ -318,9 +318,12 @@ function isE1(id: string, mode: Mode, specialty: Specialty): boolean {
     id === "1227871" || // 学問への誘い 1クラス
     id === "1227881" || // 学問への誘い 2クラス
     id === "1227891" || // 学問への誘い 3クラス
-    (specialty === "jad" && id === "1122502") || // Japan-Expertファーストイヤーセミナー
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    (specialty === "jad" && id === "1122502") // Japan-Expertファーストイヤーセミナー
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
@@ -338,17 +341,19 @@ function isE3(name: string, specialty: Specialty, id: string): boolean {
   }
 }
 
-function isE4(id: string, mode: Mode): boolean {
+function isE4(id: string): boolean {
   return (
     id === "6121101" || // 情報リテラシー(講義)
     id === "6421102" || // 情報リテラシー(演習) 1班
     id === "6421202" || // 情報リテラシー(演習) 2班
     id === "6521102" || // データサイエンス 1班
-    id === "6521202" || // データサイエンス 2班
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6521202" // データサイエンス 2班
+  );
+}
+
+function isE4Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -438,10 +443,12 @@ function classify(
   if (isC3(id)) return "c3";
   if (isC4(id)) return "c4";
   if (isC5(id, specialty)) return "c5";
-  if (isE1(id, mode, specialty)) return "e1";
+  if (isE1(id, specialty)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
   if (isE3(name, specialty, id)) return "e3";
-  if (isE4(id, mode)) return "e4";
+  if (isE4(id)) return "e4";
+  if (isE4Unlisted(id)) return unlisted("e4", mode);
   // 選択
   if (isD1(id)) return "d1";
   if (isD2(id)) return "d2";

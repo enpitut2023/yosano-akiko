@@ -20,9 +20,9 @@ import {
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
   isIzanai,
+  type Mode,
+  unlisted,
 } from "./common";
-
-type Mode = "known" | "real";
 
 function isA1(id: string): boolean {
   return (
@@ -66,7 +66,7 @@ function isD1(id: string): boolean {
   );
 }
 
-function isE1(id: string, mode: Mode): boolean {
+function isE1(id: string): boolean {
   return (
     id === "1110102" || // ファーストイヤーセミナー 2023,2024,2025開講 資源1クラス対象
     id === "1110202" || // ファーストイヤーセミナー 2023,2024,2025開講 資源2クラス対象
@@ -77,9 +77,12 @@ function isE1(id: string, mode: Mode): boolean {
     id === "1227301" || // 学問への誘い 2023,2024,2025開講 資源2クラス対象
     id === "1227311" || // 学問への誘い 2023,2024,2025開講 資源3クラス対象
     id === "1227321" || // 学問への誘い 2023,2024,2025開講 資源4クラス対象
-    id === "1227331" || // 学問への誘い 2023開講 資源5クラス対象
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227331" // 学問への誘い 2023開講 資源5クラス対象
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
@@ -90,21 +93,23 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string, mode: Mode): boolean {
+function isE4(id: string): boolean {
   return (
     id === "6110101" || // 情報リテラシー(講義)
     id === "6410102" || // 情報リテラシー(演習) 2023,2024,2025開講 資源1班対象
     id === "6410202" || // 情報リテラシー(演習) 2023,2024,2025開講 資源2班対象
     id === "6510102" || // データサイエンス 2023,2024,2025開講 資源1班対象
-    id === "6510202" || // データサイエンス 2023,2024,2025開講 資源2班対象
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6510202" // データサイエンス 2023,2024,2025開講 資源2班対象
   );
 }
 
-function isE5(id: string, _mode: Mode): boolean {
+function isE4Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
+  );
+}
+
+function isE5(id: string): boolean {
   return isArt(id);
 }
 
@@ -137,11 +142,13 @@ function classify(
   // 必修
   if (isA1(id)) return "a1";
   if (isC1(id)) return "c1";
-  if (isE1(id, mode)) return "e1";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id, mode)) return "e4";
-  if (!isE5Full && isE5(id, mode)) return "e5";
+  if (isE4(id)) return "e4";
+  if (isE4Unlisted(id)) return unlisted("e4", mode);
+  if (!isE5Full && isE5(id)) return "e5";
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";

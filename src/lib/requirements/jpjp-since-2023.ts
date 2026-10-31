@@ -24,6 +24,8 @@ import {
   isJapanese,
   isJapanExpertJapanese,
   isSecondForeignLanguageAdvanced,
+  type Mode,
+  unlisted,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
@@ -34,8 +36,6 @@ function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "jpjp-jltt") return "jltt";
   throw new Error(`Bad major: ${m}`);
 }
-
-type Mode = "known" | "real";
 
 function isA1(id: string): boolean {
   return (
@@ -127,15 +127,17 @@ function isE4(id: string, name: string, specialty: Specialty): boolean {
   }
 }
 
-function isE5(id: string, mode: Mode): boolean {
+function isE5(id: string): boolean {
   return (
     id === "6102101" || // 情報リテラシー(講義) !!A!!
     id === "6402202" || // 情報リテラシー(演習)  !!A!!
-    id === "6502202" || // データサイエンス !!A!!
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6502202" // データサイエンス !!A!!
+  );
+}
+
+function isE5Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -200,7 +202,8 @@ function classify(
   if (isE2(id)) return "e2";
   if (isE3(id, name, specialty)) return "e3";
   if (isE4(id, name, specialty)) return "e4";
-  if (isE5(id, mode)) return "e5";
+  if (isE5(id)) return "e5";
+  if (isE5Unlisted(id)) return unlisted("e5", mode);
   if (isE6(id, specialty)) return "e6";
   // 選択
   const b = classifyColumnB(id, specialty);

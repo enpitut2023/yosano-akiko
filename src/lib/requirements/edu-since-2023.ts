@@ -28,9 +28,9 @@ import {
   isKyoushoku,
   isSecondForeignLanguageBasic,
   redistributeOverflow,
+  type Mode,
+  unlisted,
 } from "$lib/requirements/common";
-
-type Mode = "known" | "real";
 
 function isA1(id: string): boolean {
   return (
@@ -103,12 +103,15 @@ function isD1(id: string): boolean {
   return isHumanSciencesCoreCurriculum(id) || id.startsWith("CB1");
 }
 
-function isE1(id: string, mode: Mode): boolean {
+function isE1(id: string): boolean {
   return (
     id === "1106102" || // ファーストイヤーセミナー 1,2クラス
-    id === "1227201" || // 学問への誘い 1,2クラス
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227201" // 学問への誘い 1,2クラス
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
@@ -123,15 +126,17 @@ function isE4(id: string, name: string): boolean {
   return isSecondForeignLanguageBasic(id, name);
 }
 
-function isE5(id: string, mode: Mode): boolean {
+function isE5(id: string): boolean {
   return (
     id === "6126101" || // 情報リテラシー(講義)
     id === "6406102" || // 情報リテラシー(演習)
-    id === "6506102" || // データサイエンス
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6506102" // データサイエンス
+  );
+}
+
+function isE5Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -173,11 +178,13 @@ function classify(
   if (isC9(id)) return "c9";
   if (isC10(id)) return "c10";
   if (isC11(id)) return "c11";
-  if (isE1(id, mode)) return "e1";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id, name)) return "e4";
-  if (isE5(id, mode)) return "e5";
+  if (isE5(id)) return "e5";
+  if (isE5Unlisted(id)) return unlisted("e5", mode);
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";

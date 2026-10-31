@@ -27,6 +27,8 @@ import {
   isKyoushoku,
   isSecondForeignLanguageAdvanced,
   redistributeOverflow,
+  type Mode,
+  unlisted,
 } from "$lib/requirements/common";
 
 type Specialty = "ir" | "id";
@@ -35,8 +37,6 @@ function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "cis-id") return "id";
   throw new Error(`Bad major: ${m}`);
 }
-type Mode = "known" | "real";
-
 function isA1(id: string): boolean {
   return (
     id === "BC14908" || // 卒業論文
@@ -109,14 +109,17 @@ function isD3(id: string): boolean {
   );
 }
 
-function isE1(id: string, mode: Mode): boolean {
+function isE1(id: string): boolean {
   return (
     id === "1105102" || // ファーストイヤーセミナー 1クラス
     id === "1105202" || // ファーストイヤーセミナー 2クラス
     id === "1227171" || // 学問への誘い 1クラス
-    id === "1227181" || // 学問への誘い 2クラス
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227181" // 学問への誘い 2クラス
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
@@ -132,17 +135,19 @@ function isE4(id: string, name: string): boolean {
   return isSecondForeignLanguageAdvanced(id, name);
 }
 
-function isE5(id: string, mode: Mode): boolean {
+function isE5(id: string): boolean {
   return (
     id === "6105101" || // 情報リテラシー(講義) !!A!!
     id === "6404102" || // 情報リテラシー(演習) 1班 !!A!!
     id === "6405102" || // 情報リテラシー(演習) 2班 !!A!!
     id === "6504102" || // データサイエンス 1班 !!A!!
-    id === "6505102" || // データサイエンス 2班 !!A!!
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6505102" // データサイエンス 2班 !!A!!
+  );
+}
+
+function isE5Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -192,11 +197,13 @@ function classify(id: CourseId, name: string, mode: Mode): string | undefined {
   if (isC2(id)) return "c2";
   if (isC3(id)) return "c3";
   if (isC4(id)) return "c4";
-  if (isE1(id, mode)) return "e1";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id, name)) return "e4";
-  if (isE5(id, mode)) return "e5";
+  if (isE5(id)) return "e5";
+  if (isE5Unlisted(id)) return unlisted("e5", mode);
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";

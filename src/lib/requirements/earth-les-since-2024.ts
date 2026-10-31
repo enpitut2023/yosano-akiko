@@ -21,9 +21,9 @@ import {
   isIzanai,
   isJapaneseAsForeignLanguage,
   isKyoutsuu,
+  type Mode,
+  unlisted,
 } from "./common";
-
-type Mode = "known" | "real";
 
 function isA1(id: string): boolean {
   return (
@@ -103,29 +103,34 @@ function isD1(id: string): boolean {
   );
 }
 
-function isE1(id: string, mode: Mode): boolean {
+function isE1(id: string): boolean {
   return (
     id === "1111102" || // ファーストイヤーセミナー 地球1クラス対象
     id === "1111202" || // ファーストイヤーセミナー 地球2クラス対象
     id === "1227351" || // 学問への誘い 地球1クラス対象
-    id === "1227361" || // 学問への誘い 地球2クラス対象
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227361" // 学問への誘い 地球2クラス対象
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
   return isJapaneseAsForeignLanguage(id);
 }
 
-function isE3(id: string, mode: Mode): boolean {
+function isE3(id: string): boolean {
   return (
     id === "6109101" || // 情報リテラシー(講義) 生物, 地球対象
     id === "6411102" || // 情報リテラシー(演習) 地球, 生物1班対象
-    id === "6511102" || // データサイエンス 地球, 生物1班対象
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6511102" // データサイエンス 地球, 生物1班対象
+  );
+}
+
+function isE3Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -163,9 +168,11 @@ function classify(id: CourseId, mode: Mode): string | undefined {
   if (isA3(id)) return "a3";
   if (isA4(id)) return "a4";
   if (isC1(id)) return "c1";
-  if (isE1(id, mode)) return "e1";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
-  if (isE3(id, mode)) return "e3";
+  if (isE3(id)) return "e3";
+  if (isE3Unlisted(id)) return unlisted("e3", mode);
   if (isE4(id)) return "e4";
   if (isE5(id)) return "e5";
   // 選択

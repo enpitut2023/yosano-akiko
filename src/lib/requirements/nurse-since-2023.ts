@@ -25,13 +25,13 @@ import {
   isJapanese,
   isJapanExpertJapanese,
   isKyoutsuu,
+  type Mode,
+  unlisted,
 } from "./common";
 import { unreachable } from "$lib/util";
 import { type Major } from "$lib/constants";
 
 export type Specialty = "nurse-n" | "nurse-phn" | "nurse-h";
-type Mode = "known" | "real";
-
 function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "nurse-n") return "nurse-n";
   if (m === "nurse-phn") return "nurse-phn";
@@ -464,7 +464,7 @@ function classifyColumnD(
   }
 }
 
-function isE1(id: string, specialty: Specialty, mode: Mode): boolean {
+function isE1(id: string, specialty: Specialty): boolean {
   return (
     // ファーストイヤーセミナー
     id === "1122102" || // Aクラス
@@ -477,9 +477,12 @@ function isE1(id: string, specialty: Specialty, mode: Mode): boolean {
     id === "1227731" || // Aクラス
     id === "1227741" || // Bクラス
     id === "1227751" || // Cクラス
-    id === "1227761" || // Dクラス !!B!!2025年度に存在しないが正しいか
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227761" // Dクラス !!B!!2025年度に存在しないが正しいか
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
@@ -494,24 +497,29 @@ function isE3(id: string, name: string, specialty: Specialty): boolean {
   );
 }
 
-function isE4(id: string, specialty: Specialty, mode: Mode): boolean {
+function isE4(id: string, specialty: Specialty): boolean {
   return (
     ((specialty === "nurse-n" || specialty === "nurse-phn") && // 看護師または保健師
       (id === "6118101" || // 情報リテラシー(講義)
         id === "6418102" || // 情報リテラシー(演習) 看護2班対象
         id === "6419102" || // 情報リテラシー(演習) 医療, 看護1班対象
         id === "6518102" || // データサイエンス 看護2班対象
-        id === "6519102" || // データサイエンス 医療，看護1班対象
-        (mode === "real" &&
-          (isInfoLiteracyLecture(id) ||
-            isInfoLiteracyExercise(id) ||
-            isDataScience(id))))) ||
+        id === "6519102")) || // データサイエンス 医療，看護1班対象
     (specialty === "nurse-h" && // ヘルスケア
       isCompulsoryEnglishById(id)) // 第２外国語（英語）!!B!!これは必修英語と同じ？
   );
 }
 
-function isE5(id: string, specialty: Specialty, mode: Mode): boolean {
+function isE4Unlisted(id: string, specialty: Specialty): boolean {
+  return (
+    (specialty === "nurse-n" || specialty === "nurse-phn") &&
+    (isInfoLiteracyLecture(id) ||
+      isInfoLiteracyExercise(id) ||
+      isDataScience(id))
+  );
+}
+
+function isE5(id: string, specialty: Specialty): boolean {
   return (
     ((specialty === "nurse-n" || specialty === "nurse-phn") &&
       isJapanese(id)) ||
@@ -520,11 +528,16 @@ function isE5(id: string, specialty: Specialty, mode: Mode): boolean {
         id === "6418102" || // 情報リテラシー(演習) 看護2班対象
         id === "6419102" || // 情報リテラシー(演習) 医療, 看護1班対象
         id === "6518102" || // データサイエンス 看護2班対象
-        id === "6519102" || // データサイエンス 医療，看護1班対象
-        (mode === "real" &&
-          (isInfoLiteracyLecture(id) ||
-            isInfoLiteracyExercise(id) ||
-            isDataScience(id)))))
+        id === "6519102")) // データサイエンス 医療，看護1班対象
+  );
+}
+
+function isE5Unlisted(id: string, specialty: Specialty): boolean {
+  return (
+    specialty === "nurse-h" &&
+    (isInfoLiteracyLecture(id) ||
+      isInfoLiteracyExercise(id) ||
+      isDataScience(id))
   );
 }
 
@@ -664,11 +677,14 @@ function classify(
   if (a !== undefined) return a;
   const c = classifyColumnC(id, specialty, mode);
   if (c !== undefined) return c;
-  if (isE1(id, specialty, mode)) return "e1";
+  if (isE1(id, specialty)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
   if (isE3(id, name, specialty)) return "e3";
-  if (isE4(id, specialty, mode)) return "e4";
-  if (isE5(id, specialty, mode)) return "e5";
+  if (isE4(id, specialty)) return "e4";
+  if (isE4Unlisted(id, specialty)) return unlisted("e4", mode);
+  if (isE5(id, specialty)) return "e5";
+  if (isE5Unlisted(id, specialty)) return unlisted("e5", mode);
   if (isG1(id, specialty)) return "g1";
   // 選択
   const d = classifyColumnD(id, specialty, mode);

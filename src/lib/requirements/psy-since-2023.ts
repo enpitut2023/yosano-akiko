@@ -29,9 +29,9 @@ import {
   isNonCompulsoryEnglish,
   isSecondForeignLanguageBasic,
   redistributeOverflow,
+  type Mode,
+  unlisted,
 } from "$lib/requirements/common";
-
-type Mode = "known" | "real";
 
 function classifyColumnA(id: string): string | undefined {
   if (id === "CC21291") return "a1"; // 知覚・認知心理学
@@ -94,14 +94,17 @@ function isD2(id: string): boolean {
   return id === "CC11293"; // 心理学研究実習Ⅱ
 }
 
-function isE1(id: string, mode: Mode): boolean {
+function isE1(id: string): boolean {
   return (
     id === "1107102" || // ファーストイヤーセミナー 1クラス
     id === "1107202" || // ファーストイヤーセミナー 2クラス
     id === "1227211" || // 学問への誘い 1クラス
-    id === "1227221" || // 学問への誘い 2クラス
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227221" // 学問への誘い 2クラス
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
@@ -116,15 +119,17 @@ function isE4(id: string, name: string): boolean {
   return isSecondForeignLanguageBasic(id, name);
 }
 
-function isE5(id: string, mode: Mode): boolean {
+function isE5(id: string): boolean {
   return (
     id === "6107101" || // 情報リテラシー(講義)
     id === "6407102" || // 情報リテラシー(演習)
-    id === "6507102" || // データサイエンス
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6507102" // データサイエンス
+  );
+}
+
+function isE5Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -165,11 +170,13 @@ function classify(
   const c = classifyColumnC(id);
   if (c !== undefined) return c;
   if (isD2(id)) return "d2";
-  if (isE1(id, mode)) return "e1";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id, name)) return "e4";
-  if (isE5(id, mode)) return "e5";
+  if (isE5(id)) return "e5";
+  if (isE5Unlisted(id)) return unlisted("e5", mode);
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";

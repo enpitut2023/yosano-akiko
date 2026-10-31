@@ -78,7 +78,8 @@ Shared predicates (共通科目, 体育, 外国語, …) are in `requirements/co
 `mode === "known"` on the catalog decides what 当てはまる授業 offers, and
 `mode === "real"` on grades decides where a credit counts. Offer narrowly and
 count broadly: a course the student shouldn't be steered toward, but that counts
-if it's in their grades anyway, is gated with `mode === "real"`. Examples are
+if it's in their grades anyway, goes in an `isXxUnlisted` check right after its
+cell's, returning `unlisted(cellId, mode)` from `classify`. Examples are
 another 学類's class of a course every 学類 teaches, or a course taken during
 総合. `fromSougou` is a separate axis, for rules that differ between 直接入学 and
 移行生. Don't use it to hide a course. For example, coins counts mast's
