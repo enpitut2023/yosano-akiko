@@ -6,14 +6,15 @@ import { arrayRemove, assert } from "$lib/util";
  */
 export type Mode = "known" | "real";
 
+export const UNLISTED = Symbol("unlisted");
+
 /**
  * 成績にあれば単位になるが、当てはまる授業には出さない科目のマス。
- * 選択肢ではundefinedを返して分類を終えるので、後ろのマスに選択肢として出ること
- * もない。classifyから直接返すこと。classifyColumnCなどから返すと、undefinedが
- * 「この列ではない」になり後ろのマスに落ちる。
+ * 選択肢ではUNLISTEDを返す。undefined(当てはまらない)とは違うので、
+ * classifyColumnCなどから返しても後ろのマスに落ちずに分類が終わる。
  */
-export function unlisted(cellId: string, mode: Mode): string | undefined {
-  return mode === "real" ? cellId : undefined;
+export function unlisted(cellId: string, mode: Mode): string | typeof UNLISTED {
+  return mode === "real" ? cellId : UNLISTED;
 }
 
 /**

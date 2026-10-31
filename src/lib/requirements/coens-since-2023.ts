@@ -28,6 +28,7 @@ import {
   isKyoushoku,
   isKyoutsuu,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
@@ -189,16 +190,18 @@ function isB3(id: string, specialty: Specialty): boolean {
   }
 }
 
-// 2023年度は、2024, 2025年度のd2に含まれる科目をc1に含む
-function getC1D2CellId(tableYear: number): string {
-  return tableYear === 2023 ? "c1" : "d2";
-}
-
-function classifyC1D2(id: string, tableYear: number): string | undefined {
+function classifyC1D2(
+  id: string,
+  name: string,
+  tableYear: number,
+  mode: Mode,
+): string | typeof UNLISTED | undefined {
   // 応用理工学概論
   if (id === "FF17011") return "c1";
   // 微積分1 (2023年度のみ救済として開講)
   if (tableYear === 2023 && id === "FF18764") return "c1";
+  // 2023年度は、2024, 2025年度のd2に含まれる科目をc1に含む
+  const cellId = tableYear === 2023 ? "c1" : "d2";
   if (
     id === "FA01111" || // 数学リテラシー1 学籍番号奇数 !!A!!
     id === "FA01121" || // 数学リテラシー1 学籍番号偶数 !!A!!
@@ -226,7 +229,8 @@ function classifyC1D2(id: string, tableYear: number): string | undefined {
     id === "FE11181" || // 化学2 !!A!!
     id === "FE11191" // 化学3 !!A!!
   )
-    return getC1D2CellId(tableYear);
+    return cellId;
+  if (isC1D2Unlisted(name)) return unlisted(cellId, mode);
 }
 
 // 2026.3.26 成績は名前で見る
@@ -444,14 +448,13 @@ function classify(
   tableYear: number,
   specialty: Specialty,
   mode: Mode,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isA2(id, specialty)) return "a2";
   if (isA3(id, specialty)) return "a3";
-  const c1d2 = classifyC1D2(id, tableYear);
+  const c1d2 = classifyC1D2(id, name, tableYear, mode);
   if (c1d2 !== undefined) return c1d2;
-  if (isC1D2Unlisted(name)) return unlisted(getC1D2CellId(tableYear), mode);
   if (isC2(id)) return "c2";
   if (isC2Unlisted(name)) return unlisted("c2", mode);
   if (isC3(id, specialty)) return "c3";
@@ -483,7 +486,7 @@ export function classifyKnownCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, opts.tableYear, specialty, "known");
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -499,7 +502,7 @@ export function classifyRealCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, opts.tableYear, specialty, "real");
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }

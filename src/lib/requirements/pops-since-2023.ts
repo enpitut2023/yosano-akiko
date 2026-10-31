@@ -29,6 +29,7 @@ import {
   isKyoushoku,
   isKyoutsuu,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "./common";
 
@@ -253,7 +254,7 @@ function classify(
   _tableYear: number,
   specialty: Specialty,
   mode: Mode,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   // 必修
   const a = classifyColumnA(id, specialty);
   if (a !== undefined) return a;
@@ -287,7 +288,7 @@ export function classifyKnownCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, opts.tableYear, specialty, "known");
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -302,7 +303,7 @@ export function classifyRealCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, opts.tableYear, specialty, "real");
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }

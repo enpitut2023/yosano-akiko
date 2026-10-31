@@ -26,6 +26,7 @@ import {
   isKyoushoku,
   isSecondForeignLanguageAdvanced,
   redistributeOverflow,
+  UNLISTED,
   unlisted,
 } from "./common";
 import { unreachable } from "$lib/util";
@@ -250,7 +251,7 @@ function classify(
   specialty: Specialty,
   tableYear: number,
   mode: "known" | "real",
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isE1(id)) return "e1";
@@ -284,7 +285,7 @@ export function classifyKnownCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, specialty, opts.tableYear, "known");
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -299,7 +300,7 @@ export function classifyRealCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, specialty, opts.tableYear, "real");
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }

@@ -19,6 +19,7 @@ import {
   isInfoLiteracyLecture,
   isIzanai,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "./common";
 import { unreachable } from "$lib/util";
@@ -398,7 +399,7 @@ function classify(
   tableYear: number,
   specialty: Specialty,
   fromSougou: boolean,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   // 総合在籍中に取る専門導入科目なので、履修の選択肢としては出さない
   if (
     mode === "known" &&
@@ -458,7 +459,7 @@ export function classifyKnownCourses(
       specialty,
       opts.fromSougou,
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -480,7 +481,7 @@ export function classifyRealCourses(
       specialty,
       opts.fromSougou,
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }

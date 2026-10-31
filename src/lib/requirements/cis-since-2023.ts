@@ -28,6 +28,7 @@ import {
   isSecondForeignLanguageAdvanced,
   redistributeOverflow,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "$lib/requirements/common";
 
@@ -190,7 +191,11 @@ function isH4(id: string): boolean {
   return isKyoushoku(id);
 }
 
-function classify(id: CourseId, name: string, mode: Mode): string | undefined {
+function classify(
+  id: CourseId,
+  name: string,
+  mode: Mode,
+): string | typeof UNLISTED | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isC1(id)) return "c1";
@@ -230,7 +235,7 @@ export function classifyKnownCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, "known");
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -246,7 +251,7 @@ export function classifyRealCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, "real");
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }

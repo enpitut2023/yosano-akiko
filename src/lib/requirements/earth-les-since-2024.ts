@@ -22,6 +22,7 @@ import {
   isJapaneseAsForeignLanguage,
   isKyoutsuu,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "./common";
 
@@ -161,7 +162,10 @@ function isH1(id: string): boolean {
   // FJ20134 Introduction to Single-Variable Calculus II
 }
 
-function classify(id: CourseId, mode: Mode): string | undefined {
+function classify(
+  id: CourseId,
+  mode: Mode,
+): string | typeof UNLISTED | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
@@ -191,7 +195,7 @@ export function classifyKnownCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, "known");
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -205,7 +209,7 @@ export function classifyRealCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, "real");
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }

@@ -20,6 +20,7 @@ import {
   isIzanai,
   isJapaneseAsForeignLanguage,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
@@ -374,7 +375,7 @@ function classify(
   specialty: Specialty,
   mode: Mode,
   tableYear: number,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   switch (specialty) {
     case "ms": {
       const a = classifyColumnAMs(id);
@@ -427,7 +428,7 @@ export function classifyKnownCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, specialty, "known", opts.tableYear);
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -442,7 +443,7 @@ export function classifyRealCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, specialty, "real", opts.tableYear);
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }

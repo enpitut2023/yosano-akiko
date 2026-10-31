@@ -25,6 +25,7 @@ import {
   isJapanExpertJapanese,
   isSecondForeignLanguageAdvanced,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
@@ -193,7 +194,7 @@ function classify(
   specialty: Specialty,
   _fromSougou: boolean,
   mode: Mode,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isC1(id)) return "c1";
@@ -232,7 +233,7 @@ export function classifyKnownCourses(
       opts.fromSougou,
       "known",
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -254,7 +255,7 @@ export function classifyRealCourses(
       opts.fromSougou,
       "real",
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }

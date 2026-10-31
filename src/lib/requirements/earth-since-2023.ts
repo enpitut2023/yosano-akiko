@@ -27,6 +27,7 @@ import {
   isKyoushoku,
   isKyoutsuu,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
@@ -294,7 +295,7 @@ function classify(
   _fromSougou: boolean,
   mode: Mode,
   tableYear: number,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   // 必修
   if (isA1(id, tableYear)) return "a1";
   if (isA2(id, specialty, tableYear)) return "a2";
@@ -330,7 +331,7 @@ export function classifyKnownCourses(
       "known",
       opts.tableYear,
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -351,7 +352,7 @@ export function classifyRealCourses(
       "real",
       opts.tableYear,
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }

@@ -26,6 +26,7 @@ import {
   isSecondForeignLanguageAdvanced,
   redistributeOverflow,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "$lib/requirements/common";
 
@@ -196,7 +197,7 @@ function classify(
   mode: Mode,
   _fromSougou: boolean,
   tableYear: number,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
@@ -239,7 +240,7 @@ export function classifyKnownCourses(
       opts.fromSougou,
       opts.tableYear,
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -259,7 +260,7 @@ export function classifyRealCourses(
       opts.fromSougou,
       opts.tableYear,
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }

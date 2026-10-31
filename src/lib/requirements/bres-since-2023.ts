@@ -29,6 +29,7 @@ import {
   isKyoutsuu,
   redistributeOverflow,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
@@ -448,39 +449,33 @@ function isInfoUnlisted(id: string): boolean {
   );
 }
 
-function getInfoCellId(specialty: Specialty): string {
-  switch (specialty) {
-    case "none":
-      return "e4";
-    case "as":
-      return "e5";
-    default:
-      unreachable(specialty);
-  }
-}
-
 function classifyColumnE(
   id: string,
   specialty: Specialty,
+  mode: Mode,
   _tableYear: number,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   switch (specialty) {
     case "none":
       if (isE1(id, specialty)) return "e1";
+      if (isE1Unlisted(id)) return unlisted("e1", mode);
       if (isCompulsoryPe1(id) || isCompulsoryPe2(id) || isCompulsoryPe3(id))
         return "e2";
       if (isCompulsoryEnglishById(id)) return "e3";
-      if (isInfo(id)) return getInfoCellId(specialty);
+      if (isInfo(id)) return "e4";
+      if (isInfoUnlisted(id)) return unlisted("e4", mode);
       if (isJapanese1(id)) return "e5";
       break;
     case "as":
       if (isE1(id, specialty)) return "e1";
+      if (isE1Unlisted(id)) return unlisted("e1", mode);
       if (isCompulsoryPe1(id) || isCompulsoryPe2(id) || isCompulsoryPe3(id))
         return "e2";
       // TODO: 第二外国語(英語)の定義 !!B!!
       if (isJapanExpertJapanese(id)) return "e3";
       if (isCompulsoryEnglishById(id)) return "e4";
-      if (isInfo(id)) return getInfoCellId(specialty);
+      if (isInfo(id)) return "e5";
+      if (isInfoUnlisted(id)) return unlisted("e5", mode);
       break;
     default:
       return unreachable(specialty);
@@ -592,16 +587,14 @@ function classify(
   mode: Mode,
   tableYear: number,
   name: string,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   // 必修
   const a = classifyColumnA(id, specialty, tableYear);
   if (a !== undefined) return a;
   const c = classifyColumnC(id, specialty, fromSougou);
   if (c !== undefined) return c;
-  const e = classifyColumnE(id, specialty, tableYear);
+  const e = classifyColumnE(id, specialty, mode, tableYear);
   if (e !== undefined) return e;
-  if (isE1Unlisted(id)) return unlisted("e1", mode);
-  if (isInfoUnlisted(id)) return unlisted(getInfoCellId(specialty), mode);
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";
@@ -629,7 +622,7 @@ export function classifyKnownCourses(
       opts.tableYear,
       c.name,
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -651,7 +644,7 @@ export function classifyRealCourses(
       opts.tableYear,
       c.name,
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }

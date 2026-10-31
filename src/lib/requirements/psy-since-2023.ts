@@ -30,6 +30,7 @@ import {
   isSecondForeignLanguageBasic,
   redistributeOverflow,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "$lib/requirements/common";
 
@@ -163,7 +164,7 @@ function classify(
   name: string,
   mode: Mode,
   _tableYear: number,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   // 必修
   const a = classifyColumnA(id);
   if (a !== undefined) return a;
@@ -193,7 +194,7 @@ export function classifyKnownCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, "known", opts.tableYear);
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -207,7 +208,7 @@ export function classifyRealCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, "real", opts.tableYear);
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }

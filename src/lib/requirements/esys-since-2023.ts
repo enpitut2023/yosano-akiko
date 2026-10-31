@@ -28,6 +28,7 @@ import {
   isKyoushoku,
   isKyoutsuu,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
@@ -305,7 +306,11 @@ function isA6EmeUnlisted(id: string): boolean {
   return id === "FG50354"; // 数値計算法
 }
 
-function classifyColumnA(id: string, specialty: Specialty): string | undefined {
+function classifyColumnA(
+  id: string,
+  specialty: Specialty,
+  mode: Mode,
+): string | typeof UNLISTED | undefined {
   switch (specialty) {
     case "ies":
       if (isA1Ies(id)) return "a1";
@@ -318,10 +323,12 @@ function classifyColumnA(id: string, specialty: Specialty): string | undefined {
     case "eme":
       if (isA1Eme(id)) return "a1";
       if (isA2Eme(id)) return "a2";
+      if (isA2EmeUnlisted(id)) return unlisted("a2", mode);
       if (isA3Eme(id)) return "a3";
       if (isA4Eme(id)) return "a4";
       if (isA5Eme(id)) return "a5";
       if (isA6Eme(id)) return "a6";
+      if (isA6EmeUnlisted(id)) return unlisted("a6", mode);
       break;
     default:
       unreachable(specialty);
@@ -693,14 +700,10 @@ function classify(
   _fromSougou: boolean,
   mode: Mode,
   name: string,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   // 必修
-  const a = classifyColumnA(id, specialty);
+  const a = classifyColumnA(id, specialty, mode);
   if (a !== undefined) return a;
-  if (specialty === "eme") {
-    if (isA2EmeUnlisted(id)) return unlisted("a2", mode);
-    if (isA6EmeUnlisted(id)) return unlisted("a6", mode);
-  }
   if (isC1(id)) return "c1";
   if (isC2(id)) return "c2";
   if (isC3(id)) return "c3";
@@ -759,7 +762,7 @@ export function classifyKnownCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, specialty, opts.fromSougou, "known", c.name);
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -774,7 +777,7 @@ export function classifyRealCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, specialty, opts.fromSougou, "real", c.name);
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }

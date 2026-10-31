@@ -21,6 +21,7 @@ import {
   isInfoLiteracyLecture,
   isIzanai,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "./common";
 
@@ -138,7 +139,7 @@ function classify(
   mode: Mode,
   tableYear: number,
   isE5Full: boolean,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isC1(id)) return "c1";
@@ -165,7 +166,7 @@ export function classifyKnownCourses(
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, "known", opts.tableYear, false);
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -189,7 +190,7 @@ export function classifyRealCourses(
       opts.tableYear,
       e5Credit >= 1,
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
       if (cellId === "e5") e5Credit += c.credit ?? 0;
     }

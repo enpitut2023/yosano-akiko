@@ -26,6 +26,7 @@ import {
   isKyoutsuu,
   redistributeOverflow,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "$lib/requirements/common";
 
@@ -218,7 +219,7 @@ function classify(
   fromSougou: boolean,
   mode: Mode,
   tableYear: number,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
@@ -256,7 +257,7 @@ export function classifyKnownCourses(
       "known",
       opts.tableYear,
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -276,7 +277,7 @@ export function classifyRealCourses(
       "real",
       opts.tableYear,
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }

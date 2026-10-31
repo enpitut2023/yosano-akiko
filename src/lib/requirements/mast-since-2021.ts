@@ -29,6 +29,7 @@ import {
   isKyoushoku,
   isKyoutsuu,
   type Mode,
+  UNLISTED,
   unlisted,
 } from "$lib/requirements/common";
 
@@ -147,13 +148,25 @@ function isC8Unlisted(id: string, fromSougou: boolean): boolean {
   );
 }
 
-/**
- * c9以降。2025年度からc9にコンピュータリテラシーが入り、後ろが1つずつずれる
- */
-function classifyColumnCFromC9(
+function classifyColumnC(
   id: CourseId,
   tableYear: number,
-): string | undefined {
+  fromSougou: boolean,
+  mode: Mode,
+): string | typeof UNLISTED | undefined {
+  if (isC1(id)) return "c1";
+  if (isC1Unlisted(id)) return unlisted("c1", mode);
+  if (isC2(id)) return "c2";
+  if (isC3(id)) return "c3";
+  if (isC3Unlisted(id)) return unlisted("c3", mode);
+  if (isC4(id)) return "c4";
+  if (isC5(id)) return "c5";
+  if (isC5Unlisted(id)) return unlisted("c5", mode);
+  if (isC6(id)) return "c6";
+  if (isC7(id)) return "c7";
+  if (isC7Unlisted(id, fromSougou)) return unlisted("c7", mode);
+  if (isC8(id)) return "c8";
+  if (isC8Unlisted(id, fromSougou)) return unlisted("c8", mode);
   let offset = 0;
   if (tableYear >= 2025) {
     offset = 1;
@@ -274,7 +287,7 @@ function classify(
   tableYear: number,
   fromSougou: boolean,
   mode: Mode,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   // 必修
   if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
@@ -282,20 +295,7 @@ function classify(
   if (isA4(id)) return "a4";
   if (isA5(id)) return "a5";
   if (isA6(id)) return "a6";
-  if (isC1(id)) return "c1";
-  if (isC1Unlisted(id)) return unlisted("c1", mode);
-  if (isC2(id)) return "c2";
-  if (isC3(id)) return "c3";
-  if (isC3Unlisted(id)) return unlisted("c3", mode);
-  if (isC4(id)) return "c4";
-  if (isC5(id)) return "c5";
-  if (isC5Unlisted(id)) return unlisted("c5", mode);
-  if (isC6(id)) return "c6";
-  if (isC7(id)) return "c7";
-  if (isC7Unlisted(id, fromSougou)) return unlisted("c7", mode);
-  if (isC8(id)) return "c8";
-  if (isC8Unlisted(id, fromSougou)) return unlisted("c8", mode);
-  const c = classifyColumnCFromC9(id, tableYear);
+  const c = classifyColumnC(id, tableYear, fromSougou, mode);
   if (c !== undefined) return c;
   if (isE1(id)) return "e1";
   if (isE1Unlisted(id)) return unlisted("e1", mode);
@@ -330,7 +330,7 @@ export function classifyKnownCourses(
       opts.fromSougou,
       "known",
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
@@ -359,7 +359,7 @@ export function classifyRealCourses(
       opts.fromSougou,
       "real",
     );
-    if (cellId !== undefined) {
+    if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
   }
