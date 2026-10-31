@@ -260,7 +260,7 @@ function classifyColumnC(
   id: CourseId,
   specialty: Specialty,
   mode: Mode,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   const b = {
     // JEプログラム共通科目
     "Japan-Expert総論": id === "AE51K11",
@@ -289,22 +289,17 @@ function classifyColumnC(
     疫学: id === "HC22021",
     障害理解: id === "HC22151",
     国際保健学: id === "HC22091",
-    // TODO: 選択肢に出すBB00301・BB00601が、成績では日本国憲法として数えられて
-    // いない(classifyColumnDも同じ)。BB00601は1年次に取らなかった人向けだと思う
-    // が、どの科目番号を数えるか看護学類の確認待ち
-    日本国憲法: {
-      // !!A!!
-      known:
-        mode === "known" &&
-        (id === "BB00301" || // 体育・看護・医療対象
-          id === "BB00601"), // 全学対象(2年次以上),
-      real:
-        mode === "real" &&
-        (id === "BB00101" ||
-          id === "BB00201" ||
-          id === "BB00401" ||
-          id === "BB00501"),
-    },
+    // TODO: 履修要覧に「日本国憲法（全学群対象）」とあるので、どのクラスでも日本国
+    // 憲法として数えている(classifyColumnDも同じ)。看護学類の確認待ちで、違えば
+    // 「日本国憲法(他のクラス)」を直す
+    日本国憲法:
+      id === "BB00301" || // 体育・看護・医療対象
+      id === "BB00601", // 全学対象(2年次以上)
+    "日本国憲法(他のクラス)":
+      id === "BB00101" || // 比較・日日・生物・資源対象
+      id === "BB00201" || // 教育・心理・障害・地球・数学・物理・化学対象
+      id === "BB00401" || // 芸術・総合学域群対象
+      id === "BB00501", // 人文・国際・応理・工シス・社工・情報・創成・知識・総合学域群対象
   } as const;
   switch (specialty) {
     case "nurse-n":
@@ -360,7 +355,8 @@ function classifyColumnC(
       if (b["疫学"]) return "c20";
       if (b["障害理解"]) return "c21";
       if (b["国際保健学"]) return "c22";
-      if (b["日本国憲法"].known || b["日本国憲法"].real) return "c23";
+      if (b["日本国憲法"]) return "c23";
+      if (b["日本国憲法(他のクラス)"]) return unlisted("c23", mode);
       break;
     case "nurse-h":
       // JEプログラム共通科目
@@ -390,7 +386,8 @@ function classifyColumnC(
       if (b["疫学"]) return "c21";
       if (b["障害理解"]) return "c22";
       if (b["国際保健学"]) return "c23";
-      if (b["日本国憲法"].known || b["日本国憲法"].real) return "c24";
+      if (b["日本国憲法"]) return "c24";
+      if (b["日本国憲法(他のクラス)"]) return unlisted("c24", mode);
       break;
   }
 }
@@ -399,35 +396,28 @@ function classifyColumnD(
   id: CourseId,
   specialty: Specialty,
   mode: Mode,
-): string | undefined {
+): string | typeof UNLISTED | undefined {
   const b = {
     // 生活支援科学分野
     医療経済学: id === "HC22101" || id === "HE22121", // !!B!! 授業の違い
     環境保健: id === "HC22251",
-    日本国憲法: {
-      // !!A!!
-      known:
-        mode === "known" &&
-        (id === "BB00301" || // 体育・看護・医療対象
-          id === "BB00601"), // 全学対象(2年次以上),
-      real:
-        mode === "real" &&
-        (id === "BB00101" ||
-          id === "BB00201" ||
-          id === "BB00401" ||
-          id === "BB00501"),
-    },
+    // TODO: 看護師のd1は1単位なので、日本国憲法(2単位)を取ると1単位余る。今は
+    // どこにも数えていないが、h1などに回るならredistributeOverflowで回す。看護学類
+    // の確認待ち
+    日本国憲法:
+      id === "BB00301" || // 体育・看護・医療対象
+      id === "BB00601", // 全学対象(2年次以上)
+    "日本国憲法(他のクラス)":
+      id === "BB00101" || // 比較・日日・生物・資源対象
+      id === "BB00201" || // 教育・心理・障害・地球・数学・物理・化学対象
+      id === "BB00401" || // 芸術・総合学域群対象
+      id === "BB00501", // 人文・国際・応理・工シス・社工・情報・創成・知識・総合学域群対象
   } as const;
   switch (specialty) {
     case "nurse-n":
       // 生活支援科学分野
-      if (
-        b["医療経済学"] ||
-        b["環境保健"] ||
-        b["日本国憲法"].known ||
-        b["日本国憲法"].real
-      )
-        return "d1";
+      if (b["医療経済学"] || b["環境保健"] || b["日本国憲法"]) return "d1";
+      if (b["日本国憲法(他のクラス)"]) return unlisted("d1", mode);
       break;
     case "nurse-phn":
       // 生活支援科学分野

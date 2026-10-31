@@ -76,18 +76,6 @@ function tableYearsOf(major: Major): number[] {
 }
 
 /**
- * Courses offered in one cell but counted in another (or nowhere), as
- * "counted → offered". Each entry is a known problem.
- */
-const OFFERED_ELSEWHERE: Partial<Record<Major, string[]>> = {
-  // 日本国憲法: the counted classes fall through to h1, and the offered ones
-  // don't count (see the TODO in nurse-since-2023.ts)
-  "nurse-n": ["d1 → h1", "h1 → d1", "nowhere → d1"],
-  "nurse-phn": ["c23 → h1", "h1 → c23", "nowhere → c23"],
-  "nurse-h": ["c24 → h1", "h1 → c24", "nowhere → c24"],
-};
-
-/**
  * Courses offered differently to 移行生 and to students who entered directly:
  * the ones each takes after entering the major.
  */
@@ -134,13 +122,13 @@ describe.each(majors)("%s", (major) => {
         for (const [id, offeredIn] of offered) {
           const countedIn = counted.get(id);
           if (countedIn !== offeredIn) {
-            got.add(`${countedIn ?? "nowhere"} → ${offeredIn}`);
+            got.add(
+              `${id} is offered in ${offeredIn}, counts in ${countedIn ?? "nowhere"}`,
+            );
           }
         }
       }
     }
-    expect([...got].sort()).toEqual(
-      [...(OFFERED_ELSEWHERE[major] ?? [])].sort(),
-    );
+    expect([...got].sort()).toEqual([]);
   });
 });
