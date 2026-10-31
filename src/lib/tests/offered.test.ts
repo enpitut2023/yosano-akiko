@@ -77,8 +77,7 @@ function tableYearsOf(major: Major): number[] {
 
 /**
  * Courses offered in one cell but counted in another (or nowhere), as
- * "counted → offered". Each entry is a known problem; see
- * classification-symptoms.md.
+ * "counted → offered". Each entry is a known problem.
  */
 const OFFERED_ELSEWHERE: Partial<Record<Major, string[]>> = {
   // 日本国憲法: the counted classes fall through to h1, and the offered ones

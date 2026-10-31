@@ -84,8 +84,7 @@ another 学類's class of a course every 学類 teaches, or a course taken durin
 総合. `fromSougou` is a separate axis, for rules that differ between 直接入学 and
 移行生. Don't use it to hide a course. For example, coins counts mast's
 微分積分A for every student but offers it to none. `src/lib/tests/offered.test.ts`
-compares the two modes over the whole catalog, and `classification-symptoms.md`
-lists where they disagree.
+compares the two modes over the whole catalog and lists where they disagree.
 
 **Assembling a page.** `src/routes/[tableYear]/[major]/+page.ts` calls
 `getMajorConfig` (`major-config.ts`). It lazy-imports the major's requirements
