@@ -23,6 +23,8 @@ import {
   isIzanai,
   isJapanese,
   isKyoushoku,
+  type Mode,
+  unlisted,
 } from "$lib/requirements/common";
 
 function isA1(id: string): boolean {
@@ -93,7 +95,8 @@ function isD1Native(id: string): boolean {
   );
 }
 
-function isD1Foreign(id: string): boolean {
+// TODO: 別学類のD1該当科目を取ってしまっていたら一応成績には反映されるだろうと判断。支援室に要確認。 !!B!!
+function isD1Unlisted(id: string): boolean {
   return (
     id === "FCB1201" || //力学1(応用理工学類・工学システム学類の学生向け)
     id === "FCB1221" || //力学1(医学類・医療科学学類の学生向け)
@@ -112,12 +115,9 @@ function isD1Foreign(id: string): boolean {
   );
 }
 
-function isD1(id: string, mode: "known" | "real"): boolean {
+function isD1(id: string): boolean {
   return (
-    isD1Native(id) ||
-    id === "FCB1401" || // 物理学概論
-    // TODO: 別学類のD1該当科目を取ってしまっていたら一応成績には反映されるだろうと判断。支援室に要確認。 !!B!!
-    (mode === "real" && isD1Foreign(id))
+    isD1Native(id) || id === "FCB1401" // 物理学概論
   );
 }
 
@@ -145,7 +145,8 @@ function isD2Native(id: string, tableYear: number): boolean {
   }
 }
 
-function isD2Foreign(id: string, tableYear: number): boolean {
+// TODO: 別学類のD2該当科目を取ってしまっていたら一応成績には反映されるだろうと判断。支援室に要確認。 !!B!!
+function isD2Unlisted(id: string, tableYear: number): boolean {
   const until2023 =
     id === "FBA1461" || // 微積分I (数学類)
     id === "FBA1481" || // 微積分I (化学類)
@@ -262,40 +263,37 @@ function isD2Foreign(id: string, tableYear: number): boolean {
   }
 }
 
-function isD2(id: string, mode: "known" | "real", tableYear: number): boolean {
+function isD2(id: string, tableYear: number): boolean {
   // 1. 「微積分1,2または微分積分A」、「線形代数1,2または線形代数A」との記述が
   // あったため、線形代数1と線形代数Aを取得していた場合はどちらかのみ加算される
   // と考えられるが、その処理はしていない。
   // 2. "FF18724","FF18734"も「線形代数A」とい名前で解説されているが、シラバス
   // によると、他学類開設の授業であり、この区分に該当する授業ではないと判断した
   // ため、記述していない。
-  return (
-    isD2Native(id, tableYear) ||
-    // TODO: 別学類のD2該当科目を取ってしまっていたら一応成績には反映されるだろうと判断。支援室に要確認。 !!B!!
-    (mode === "real" && isD2Foreign(id, tableYear))
-  );
+  return isD2Native(id, tableYear);
 }
 
 function isD3(id: string, tableYear: number): boolean {
   return (
-    !isD1Foreign(id) &&
-    !isD2Foreign(id, tableYear) &&
-    (id.startsWith("FA") ||
-      id.startsWith("FB") ||
-      (id.startsWith("FC") && !id.startsWith("FCC")) ||
-      id.startsWith("FE") ||
-      id.startsWith("EE") ||
-      (tableYear >= 2026 && id.startsWith("EB")))
+    id.startsWith("FA") ||
+    id.startsWith("FB") ||
+    (id.startsWith("FC") && !id.startsWith("FCC")) ||
+    id.startsWith("FE") ||
+    id.startsWith("EE") ||
+    (tableYear >= 2026 && id.startsWith("EB"))
   );
 }
 
-function isE1(id: string, mode: "known" | "real"): boolean {
+function isE1(id: string): boolean {
   return (
     id === "1113102" || // ファーストイヤーセミナー
-    id === "1227391" || // 学問への誘い
-    // TODO: 別学類のE1該当科目を取ってしまっていたら一応成績には反映されるだろうと判断。支援室に要確認。 !!B!!
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227391" // 学問への誘い
   );
+}
+
+// TODO: 別学類のE1該当科目を取ってしまっていたら一応成績には反映されるだろうと判断。支援室に要確認。 !!B!!
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
@@ -353,7 +351,7 @@ function isH2(id: string, tableYear: number): boolean {
 function classify(
   id: CourseId,
   name: string,
-  mode: "known" | "real",
+  mode: Mode,
   tableYear: number,
 ): string | undefined {
   // 必修
@@ -361,7 +359,8 @@ function classify(
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
   if (isA4(id)) return "a4";
-  if (isE1(id, mode)) return "e1";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
   if (isE4(id)) return "e4";
@@ -370,8 +369,10 @@ function classify(
   if (isB2(id)) return "b2";
   if (isB3(id)) return "b3";
   if (isB4(id)) return "b4";
-  if (isD1(id, mode)) return "d1";
-  if (isD2(id, mode, tableYear)) return "d2";
+  if (isD1(id)) return "d1";
+  if (isD1Unlisted(id)) return unlisted("d1", mode);
+  if (isD2(id, tableYear)) return "d2";
+  if (isD2Unlisted(id, tableYear)) return unlisted("d2", mode);
   if (isD3(id, tableYear)) return "d3";
   if (isF1(id)) return "f1";
   if (isF2(id)) return "f2";

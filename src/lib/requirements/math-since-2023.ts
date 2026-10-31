@@ -25,9 +25,9 @@ import {
   isKyoushoku,
   isKyoutsuu,
   redistributeOverflow,
+  type Mode,
+  unlisted,
 } from "$lib/requirements/common";
-
-type Mode = "known" | "real";
 
 function isA1(id: string): boolean {
   return id === "FB14908"; // 卒業研究
@@ -52,16 +52,25 @@ function isB1(id: string): boolean {
   );
 }
 
-// isC1・isC2の移行生の読み替えは、総合在籍中に取った科目なので成績にあるときだけ当てはめる
-function isC1(
-  id: string,
-  fromSougou: boolean,
-  mode: Mode,
-  tableYear: number,
-): boolean {
-  const transfer =
+function isC1(id: string, tableYear: number): boolean {
+  if (tableYear <= 2023) {
+    return (
+      id === "FBA1461" || // 微積分I
+      id === "FBA1901" || // 微積分I（再履修用）
+      id === "FBA1501" // 微積分II
+    );
+  }
+  return (
+    id === "FA01371" || //微積分1(2024以降)
+    id === "FA01471" //微積分2(2024以降)
+  );
+}
+
+// isC1Unlisted・isC2Unlistedは移行生の読み替え。総合在籍中に取った科目なので
+// 選択肢には出さない
+function isC1Unlisted(id: string, fromSougou: boolean): boolean {
+  return (
     fromSougou &&
-    mode === "real" &&
     (id === "FA013C1" || // 微積分1（総合）
       id === "FA013D1" || // 微積分1（総合）
       id === "FA014C1" || // 微積分2（総合）
@@ -69,31 +78,27 @@ function isC1(
       id === "GA15311" || //微分積分A 情報科学類1・2クラス
       id === "GA15321" || //微分積分A 情報科学類3・4クラス
       id === "GA15331" || //微分積分A 情報メディア創成学類生および総合学域群生
-      id === "GA15341"); //微分積分A 知識学類生および総合学域群生
-  if (tableYear <= 2023) {
-    return (
-      id === "FBA1461" || // 微積分I
-      id === "FBA1901" || // 微積分I（再履修用）
-      id === "FBA1501" || // 微積分II
-      transfer
-    );
-  }
-  return (
-    id === "FA01371" || //微積分1(2024以降)
-    id === "FA01471" || //微積分2(2024以降)
-    transfer
+      id === "GA15341") //微分積分A 知識学類生および総合学域群生
   );
 }
 
-function isC2(
-  id: string,
-  fromSougou: boolean,
-  mode: Mode,
-  tableYear: number,
-): boolean {
-  const transfer =
+function isC2(id: string, tableYear: number): boolean {
+  if (tableYear <= 2023) {
+    return (
+      id === "FBA1581" || // 線形代数I
+      id === "FBA1911" || // 線形代数I（再履修用）
+      id === "FBA1621" // 線形代数II
+    );
+  }
+  return (
+    id === "FA01671" || //線形代数1(2024以降)
+    id === "FA01771" //線形代数2(2024以降)
+  );
+}
+
+function isC2Unlisted(id: string, fromSougou: boolean): boolean {
+  return (
     fromSougou &&
-    mode === "real" &&
     (id === "FA016C1" || // 線形代数1（総合）
       id === "FA016D1" || // 線形代数1（総合）
       id === "FA017C1" || // 線形代数2 （総合）
@@ -102,19 +107,7 @@ function isC2(
       id === "FF18754" || // 線形代数B
       id === "GB10234" || // 線形代数B
       id === "GB10244" || // 線形代数B
-      id === "GC11801"); // 線形代数B
-  if (tableYear <= 2023) {
-    return (
-      id === "FBA1581" || // 線形代数I
-      id === "FBA1911" || // 線形代数I（再履修用）
-      id === "FBA1621" || // 線形代数II
-      transfer
-    );
-  }
-  return (
-    id === "FA01671" || //線形代数1(2024以降)
-    id === "FA01771" || //線形代数2(2024以降)
-    transfer
+      id === "GC11801") // 線形代数B
   );
 }
 
@@ -158,12 +151,15 @@ function isD1(id: string): boolean {
   );
 }
 
-function isE1(id: string, mode: Mode): boolean {
+function isE1(id: string): boolean {
   return (
     id === "1112102" || //ファーストイヤーセミナー
-    id === "1227371" || //学問への誘い
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227371" //学問への誘い
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
@@ -174,15 +170,17 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string, mode: Mode): boolean {
+function isE4(id: string): boolean {
   return (
     id === "6112101" || //情報リテラシー(講義)
     id === "6412102" || //情報リテラシー(演習)
-    id === "6512102" || //データサイエンス
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6512102" //データサイエンス
+  );
+}
+
+function isE4Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -225,14 +223,18 @@ function classify(
   if (isA1(id)) return "a1";
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
-  if (isC1(id, fromSougou, mode, tableYear)) return "c1";
-  if (isC2(id, fromSougou, mode, tableYear)) return "c2";
+  if (isC1(id, tableYear)) return "c1";
+  if (isC1Unlisted(id, fromSougou)) return unlisted("c1", mode);
+  if (isC2(id, tableYear)) return "c2";
+  if (isC2Unlisted(id, fromSougou)) return unlisted("c2", mode);
   if (isC3(id)) return "c3";
   if (isC4(id)) return "c4";
-  if (isE1(id, mode)) return "e1";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id, mode)) return "e4";
+  if (isE4(id)) return "e4";
+  if (isE4Unlisted(id)) return unlisted("e4", mode);
   // 選択
   if (isB1(id)) return "b1";
   if (isD1(id)) return "d1";

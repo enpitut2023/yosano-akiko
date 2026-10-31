@@ -81,16 +81,6 @@ function tableYearsOf(major: Major): number[] {
  * classification-symptoms.md.
  */
 const OFFERED_ELSEWHERE: Partial<Record<Major, string[]>> = {
-  // Other classes' ファーストイヤーセミナー etc. and 情報リテラシー etc.
-  chem: ["e1 → h2", "e4 → h2"],
-  // Other classes' ファーストイヤーセミナー etc., other 学類's 微積分 and 線形代数
-  physics: ["d2 → h2", "e1 → h2"],
-  // 移行生's courses from 総合
-  math: ["c1 → h1", "c2 → h1"],
-  // Classes registered under the other 主専攻's number
-  "esys-eme": ["a2 → b5", "a6 → b5"],
-  // W160361 スポーツキャリア形成A, 2023–2025
-  pe: ["a5 → b2"],
   // 日本国憲法: the counted classes fall through to h1, and the offered ones
   // don't count (see the TODO in nurse-since-2023.ts)
   "nurse-n": ["d1 → h1", "h1 → d1", "nowhere → d1"],
@@ -109,6 +99,14 @@ const OFFERED_BY_NATIVENESS: Partial<Record<Major, string[]>> = {
   // 医療概論I-B, 医学の基礎B
   med: ["HB32122", "HB32235"],
   "med-new": ["HB32122", "HB32235"],
+  // 総合's 微積分 and 線形代数 classes, which count in c1 and c2 for 移行生 and
+  // aren't offered to them
+  math: [
+    ...["FA013C1", "FA013D1", "FA014C1", "FA014D1"],
+    ...["FA016C1", "FA016D1", "FA017C1", "FA017D1"],
+    ...["GA15311", "GA15321", "GA15331", "GA15341"],
+    ...["FF18744", "FF18754", "GB10234", "GB10244", "GC11801"],
+  ],
 };
 
 describe.each(majors)("%s", (major) => {

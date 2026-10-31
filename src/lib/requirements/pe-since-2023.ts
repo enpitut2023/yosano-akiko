@@ -24,9 +24,9 @@ import {
   isJiyuukamoku,
   isKyoushoku,
   isKyoutsuu,
+  type Mode,
+  unlisted,
 } from "$lib/requirements/common";
-
-type Mode = "known" | "real";
 
 function isA1(id: string): boolean {
   // 専門語学B（卒業研究領域別）
@@ -50,7 +50,7 @@ function isA4(id: string): boolean {
   );
 }
 
-function isA5(id: string, tableYear: number, mode: Mode): boolean {
+function isA5(id: string, tableYear: number): boolean {
   // スポーツキャリア形成は2023,4,5に開講するI,II,IIIと、2026に開講するA,B,無印
   // がある。無印の備考には「「スポーツキャリア形成I」を履修していない学生のみ
   // 受講可」とあり、この科目は救済だと思われる。標準履修年次はI,II, A=1, B=2,
@@ -70,11 +70,14 @@ function isA5(id: string, tableYear: number, mode: Mode): boolean {
     )
       return true;
   }
+  return false;
+}
+
+function isA5Unlisted(id: string): boolean {
   return (
-    mode === "real" &&
-    (id === "W160361" || // スポーツキャリア形成I
-      id === "W160371" || // スポーツキャリア形成II
-      id === "W160381") // スポーツキャリア形成III
+    id === "W160361" || // スポーツキャリア形成I
+    id === "W160371" || // スポーツキャリア形成II
+    id === "W160381" // スポーツキャリア形成III
   );
 }
 
@@ -161,15 +164,16 @@ function isD5(id: string): boolean {
   return /^W[89]/.test(id);
 }
 
-function isE1(id: string, mode: Mode): boolean {
+function isE1(id: string): boolean {
   // ファーストイヤーセミナー
-  return (
-    id.startsWith("1124") || // !!IP!!
-    (mode === "real" && isFirstYearSeminar(id))
-  );
+  return id.startsWith("1124"); // !!IP!!
 }
 
-function isE2(id: string, mode: Mode): boolean {
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id);
+}
+
+function isE2(id: string): boolean {
   // 学問への誘い
   return (
     id === "1227771" || // 1クラス
@@ -181,25 +185,30 @@ function isE2(id: string, mode: Mode): boolean {
     id === "1227831" || // 7クラス
     id === "1227841" || // 8クラス
     id === "1227851" || // 9クラス
-    id === "1227861" || // 10クラス
-    (mode === "real" && isIzanai(id))
+    id === "1227861" // 10クラス
   );
+}
+
+function isE2Unlisted(id: string): boolean {
+  return isIzanai(id);
 }
 
 function isE3(id: string): boolean {
   return isCompulsoryEnglishById(id);
 }
 
-function isE4(id: string, mode: Mode): boolean {
+function isE4(id: string): boolean {
   // 情報
   return (
     id.startsWith("6120") || // 情報リテラシー(講義) !!IP!!
     id.startsWith("6420") || // 情報リテラシー(演習) !!IP!!
-    id.startsWith("6520") || // データサイエンス !!IP!!
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id.startsWith("6520") // データサイエンス !!IP!!
+  );
+}
+
+function isE4Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -262,17 +271,21 @@ function classify(
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
   if (isA4(id)) return "a4";
-  if (isA5(id, tableYear, mode)) return "a5";
+  if (isA5(id, tableYear)) return "a5";
+  if (isA5Unlisted(id)) return unlisted("a5", mode);
   if (isC1(id)) return "c1";
   if (isC2(id)) return "c2";
   if (isC3(id)) return "c3";
   if (isC4(id)) return "c4";
   if (isC5(id, tableYear)) return "c5";
   if (isC6(id)) return "c6";
-  if (isE1(id, mode)) return "e1";
-  if (isE2(id, mode)) return "e2";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
+  if (isE2(id)) return "e2";
+  if (isE2Unlisted(id)) return unlisted("e2", mode);
   if (isE3(id)) return "e3";
-  if (isE4(id, mode)) return "e4";
+  if (isE4(id)) return "e4";
+  if (isE4Unlisted(id)) return unlisted("e4", mode);
   if (isE5(id)) return "e5";
   if (COMPULSORY_NAMES.has(name)) return undefined;
   // 選択

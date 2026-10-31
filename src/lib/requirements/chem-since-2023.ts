@@ -20,6 +20,7 @@ import {
   isIzanai,
   isKyoushoku,
   redistributeOverflow,
+  unlisted,
 } from "$lib/requirements/common";
 
 function isA1(id: string): boolean {
@@ -239,7 +240,7 @@ function isD2(id: string, tableYear: number): boolean {
   );
 }
 
-function isE1(id: string, tableYear: number, mode: "real" | "known"): boolean {
+function isE1(id: string, tableYear: number): boolean {
   //事例に学ぶ環境安全衛生と化学物質
   if (tableYear >= 2025 && id === "1414014") return true;
 
@@ -249,9 +250,12 @@ function isE1(id: string, tableYear: number, mode: "real" | "known"): boolean {
     id === "1227421" || //2クラス
     //ファーストイヤーセミナー
     id === "1114102" || //1クラス
-    id === "1114202" || //2クラス
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1114202" //2クラス
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
@@ -262,16 +266,18 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string, mode: "known" | "real"): boolean {
+function isE4(id: string): boolean {
   return (
     id === "6112101" || //  情報リテラシー(講義) 2024~ 数学、化学対象
     id === "6114101" || //  情報リテラシー(講義) 2023 化学、創成、物理対象
     id === "6414102" || //  情報リテラシー(演習) 化学対象
-    id === "6514102" || //  データサイエンス 化学対象
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6514102" //  データサイエンス 化学対象
+  );
+}
+
+function isE4Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -308,10 +314,12 @@ function classify(
   if (isA3(id)) return "a3";
   if (isA4(id)) return "a4";
   if (isC1(id)) return "c1";
-  if (isE1(id, tableYear, mode)) return "e1";
+  if (isE1(id, tableYear)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id, mode)) return "e4";
+  if (isE4(id)) return "e4";
+  if (isE4Unlisted(id)) return unlisted("e4", mode);
   // 選択
   if (isB1(id)) return "b1";
   if (isB2(id)) return "b2";
