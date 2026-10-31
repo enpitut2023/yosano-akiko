@@ -21,20 +21,16 @@ import {
   isForeignLanguage,
   isGakushikiban,
   isHakubutsukan,
-  isInfoCourse,
-  isInfoCourseOf,
-  isInfoCourseOfOthers,
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
   isIzanai,
-  type InfoCourseName,
   isJapanese,
   isJiyuukamoku,
   isKyoushoku,
   isKyoutsuu,
+  type Mode,
+  unlisted,
 } from "$lib/requirements/common";
-
-type Mode = "known" | "real";
 
 function isA1(id: string): boolean {
   // 卒業研究A
@@ -72,48 +68,92 @@ function isB1(id: string) {
   return id.startsWith("GC5") || id.startsWith("GA4");
 }
 
-function isInfoCourseForMast(
-  id: CourseId,
-  course: InfoCourseName,
-  mode: Mode,
-): boolean {
-  // 他学類開設のものは単位にはなるが、履修の選択肢としては出さない
+function isC1(id: string): boolean {
+  return id === "GA15331"; // 微分積分A
+}
+
+function isC1Unlisted(id: string): boolean {
+  // 他学類開設の微分積分A
   return (
-    isInfoCourseOf(id, course, "mast") ||
-    (mode === "real" && isInfoCourseOfOthers(id, course, "mast"))
+    id === "GA15311" || // 情報科学類1・2クラス
+    id === "GA15321" || // 情報科学類3・4クラス
+    id === "GA15341" // 知識情報・図書館学類
   );
+}
+
+function isC2(id: string): boolean {
+  return id === "GC11701"; // 微分積分B
+}
+
+function isC3(id: string): boolean {
+  return id === "GA15231"; // 線形代数A
+}
+
+function isC3Unlisted(id: string): boolean {
+  // 他学類開設の線形代数A
+  return (
+    id === "GA15211" || // 情報科学類1・2クラス
+    id === "GA15221" || // 情報科学類3・4クラス
+    id === "GA15241" // 知識情報・図書館学類
+  );
+}
+
+function isC4(id: string): boolean {
+  return id === "GC11801"; // 線形代数B
+}
+
+function isC5(id: string): boolean {
+  return id === "GA15131"; // 情報数学A
+}
+
+function isC5Unlisted(id: string): boolean {
+  // 他学類開設の情報数学A
+  return (
+    id === "GA15111" || // 情報科学類1・2クラス
+    id === "GA15121" || // 情報科学類3・4クラス
+    id === "GA15141" // 知識情報・図書館学類
+  );
+}
+
+function isC6(id: string): boolean {
+  return id === "GC11601"; // 確率と統計
+}
+
+function isC7(id: string): boolean {
+  return id === "GA18222"; // プログラミング入門A
 }
 
 // TODO: 社会工学類の新入生向けのクラス(FH60484・FH60494・FH60584・FH60594)も
 // 移行生が使えるか、情報メディア創成学類の確認待ち
-function isProgIntroA(id: CourseId, mode: Mode, fromSougou: boolean): boolean {
+function isC7Unlisted(id: string, fromSougou: boolean): boolean {
+  // 他学類開設のプログラミング入門A
   return (
-    isInfoCourseForMast(id, "プログラミング入門A", mode) ||
-    (mode === "real" && fromSougou && id === "FH60474") // 総合学域群優先
+    id === "GA18212" || // 情報科学類
+    id === "GA18232" || // 知識情報・図書館学類
+    (fromSougou && id === "FH60474") // 社会工学類、総合学域群優先
   );
 }
 
-function isProgIntroB(id: CourseId, mode: Mode, fromSougou: boolean): boolean {
+function isC8(id: string): boolean {
+  return id === "GA18322"; // プログラミング入門B
+}
+
+function isC8Unlisted(id: string, fromSougou: boolean): boolean {
+  // 他学類開設のプログラミング入門B
   return (
-    isInfoCourseForMast(id, "プログラミング入門B", mode) ||
-    (mode === "real" && fromSougou && id === "FH60574") // 総合学域群優先
+    id === "GA18312" || // 情報科学類
+    id === "GA18332" || // 知識情報・図書館学類
+    (fromSougou && id === "FH60574") // 社会工学類、総合学域群優先
   );
 }
 
-function classifyColumnC(
+/**
+ * c9以降。2025年度からc9にコンピュータリテラシーが入り、後ろが1つずつずれる
+ */
+function classifyColumnCFromC9(
   id: CourseId,
   tableYear: number,
-  mode: Mode,
-  fromSougou: boolean,
 ): string | undefined {
-  if (isInfoCourseForMast(id, "微分積分A", mode)) return "c1";
-  if (id === "GC11701") return "c2"; // 微分積分B
-  if (isInfoCourseForMast(id, "線形代数A", mode)) return "c3";
-  if (id === "GC11801") return "c4"; // 線形代数B
-  if (isInfoCourseForMast(id, "情報数学A", mode)) return "c5";
-  if (id === "GC11601") return "c6"; // 確率と統計
-  if (isProgIntroA(id, mode, fromSougou)) return "c7"; // プログラミング入門A
-  if (isProgIntroB(id, mode, fromSougou)) return "c8"; // プログラミング入門B
   let offset = 0;
   if (tableYear >= 2025) {
     offset = 1;
@@ -132,27 +172,32 @@ function classifyColumnC(
 }
 
 function isD1(id: string) {
-  return !isInfoCourse(id) && (id.startsWith("GC2") || id.startsWith("GA1"));
+  return id.startsWith("GC2") || id.startsWith("GA1");
 }
 
-function isE1(id: string, mode: Mode) {
+function isE1(id: string) {
   return (
     id === "1119102" || // ファーストイヤーセミナー
-    id === "1227611" || // 学問への誘い
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227611" // 学問への誘い
   );
 }
 
-function isE2(id: string, mode: Mode) {
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
+}
+
+function isE2(id: string) {
   return (
     id === "6525102" || // データサイエンス
     id === "6425102" || // 情報リテラシー(演習)
     id === "6114101" || // 情報リテラシー(講義) 2023
-    id === "6125101" || // 情報リテラシー(講義) 2024, 2025
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6125101" // 情報リテラシー(講義) 2024, 2025
+  );
+}
+
+function isE2Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -237,10 +282,25 @@ function classify(
   if (isA4(id)) return "a4";
   if (isA5(id)) return "a5";
   if (isA6(id)) return "a6";
-  const c = classifyColumnC(id, tableYear, mode, fromSougou);
+  if (isC1(id)) return "c1";
+  if (isC1Unlisted(id)) return unlisted("c1", mode);
+  if (isC2(id)) return "c2";
+  if (isC3(id)) return "c3";
+  if (isC3Unlisted(id)) return unlisted("c3", mode);
+  if (isC4(id)) return "c4";
+  if (isC5(id)) return "c5";
+  if (isC5Unlisted(id)) return unlisted("c5", mode);
+  if (isC6(id)) return "c6";
+  if (isC7(id)) return "c7";
+  if (isC7Unlisted(id, fromSougou)) return unlisted("c7", mode);
+  if (isC8(id)) return "c8";
+  if (isC8Unlisted(id, fromSougou)) return unlisted("c8", mode);
+  const c = classifyColumnCFromC9(id, tableYear);
   if (c !== undefined) return c;
-  if (isE1(id, mode)) return "e1";
-  if (isE2(id, mode)) return "e2";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
+  if (isE2(id)) return "e2";
+  if (isE2Unlisted(id)) return unlisted("e2", mode);
   if (isE3(id)) return "e3";
   if (isE4(name)) return "e4";
   if (COMPULSORY_NAMES.has(name)) return undefined;

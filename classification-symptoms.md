@@ -44,9 +44,8 @@ reaching a later cell:
   `COMPULSORY_NAMES` once the compulsory cells are checked, so that another
   class of a compulsory course (e.g. FF18724 線形代数A for a direct-entry
   coins student) doesn't land in an elective cell.
-- mast's `isD1` excludes every class of the five courses all 情報学群 colleges
-  offer (`!isInfoCourse(id)`), and klis's `isD1` lists the classes to exclude
-  by hand.
+- klis's `isD1` lists by hand the classes of 情報学群 courses to keep out of
+  d1.
 - coins's `isD3` excludes 情報特別演習 I・II and 情報科学特別演習, which `isB2`
   already takes.
 - Catch-all cells carry the comment 「...以外」なので最後: moving them up

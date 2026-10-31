@@ -21,14 +21,14 @@ import {
   isFirstYearSeminar,
   isForeignLanguage,
   isGakushikiban,
-  isInfoCourseOf,
-  isInfoCourseOfOthers,
   isInfoLiteracyExercise,
   isInfoLiteracyLecture,
   isIzanai,
   isJapanese,
   isKyoushoku,
   isKyoutsuu,
+  type Mode,
+  unlisted,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
@@ -40,8 +40,6 @@ function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "coins-mimt") return "mimt";
   throw new Error(`Bad major: ${m}`);
 }
-
-type Mode = "known" | "real";
 
 // 移行生は、FFの線形代数Aと線形代数B(どちらも1単位)を両方取っていると線形代数Aとして使える
 const FF_LINEAR_ALGEBRA_A = new Set(["FF18724", "FF18734"]);
@@ -168,13 +166,20 @@ function isB2(id: string): boolean {
  * プログラミング入門A,B
  * - FHはpops開設なので移行生は成績にカウントされる(注15の通り)
  * - GAの他学類開設のクラスも、coinsに直接入学した学生と移行生のどちらの単位にもなる(注4の通り)
- * 他学類開設のクラスは、単位にはなっても履修の選択肢としては出さないので、
- * mode === "real"のときだけ当てはめる
  */
-function isC1(id: string, mode: Mode): boolean {
+function isC1(id: string): boolean {
+  // 線形代数A
   return (
-    isInfoCourseOf(id, "線形代数A", "coins") ||
-    (mode === "real" && isInfoCourseOfOthers(id, "線形代数A", "coins"))
+    id === "GA15211" || // 1・2クラス
+    id === "GA15221" // 3・4クラス
+  );
+}
+
+function isC1Unlisted(id: string): boolean {
+  // 他学類開設の線形代数A
+  return (
+    id === "GA15231" || // 情報メディア創成学類
+    id === "GA15241" // 知識情報・図書館学類
   );
 }
 
@@ -186,10 +191,19 @@ function isC2(id: string): boolean {
   );
 }
 
-function isC3(id: string, mode: Mode): boolean {
+function isC3(id: string): boolean {
+  // 微分積分A
   return (
-    isInfoCourseOf(id, "微分積分A", "coins") ||
-    (mode === "real" && isInfoCourseOfOthers(id, "微分積分A", "coins"))
+    id === "GA15311" || // 1・2クラス
+    id === "GA15321" // 3・4クラス
+  );
+}
+
+function isC3Unlisted(id: string): boolean {
+  // 他学類開設の微分積分A
+  return (
+    id === "GA15331" || // 情報メディア創成学類
+    id === "GA15341" // 知識情報・図書館学類
   );
 }
 
@@ -202,7 +216,11 @@ function isC4(id: string): boolean {
 }
 
 function isC5(id: string): boolean {
-  return isInfoCourseOf(id, "情報数学A", "coins");
+  // 情報数学A
+  return (
+    id === "GA15111" || // 1・2クラス
+    id === "GA15121" // 3・4クラス
+  );
 }
 
 function isC6(id: string): boolean {
@@ -210,27 +228,31 @@ function isC6(id: string): boolean {
   return id === "GB19061";
 }
 
-function isC7(id: string, fromSougou: boolean, mode: Mode): boolean {
+function isC7(id: string): boolean {
+  return id === "GA18212"; // プログラミング入門A
+}
+
+function isC7Unlisted(id: string, fromSougou: boolean): boolean {
+  // 他学類開設のプログラミング入門A
   return (
-    isInfoCourseOf(id, "プログラミング入門A", "coins") ||
-    (mode === "real" &&
-      isInfoCourseOfOthers(id, "プログラミング入門A", "coins")) ||
-    // 移行生はFHから始まるプロ入Aをcoinsのプロ入Aとして使える
-    (fromSougou &&
-      mode === "real" &&
-      (id === "FH60474" || id === "FH60484" || id === "FH60494"))
+    id === "GA18222" || // 情報メディア創成学類
+    id === "GA18232" || // 知識情報・図書館学類
+    // 社会工学類開設のものは移行生だけ
+    (fromSougou && (id === "FH60474" || id === "FH60484" || id === "FH60494"))
   );
 }
 
-function isC8(id: string, fromSougou: boolean, mode: Mode): boolean {
+function isC8(id: string): boolean {
+  return id === "GA18312"; // プログラミング入門B
+}
+
+function isC8Unlisted(id: string, fromSougou: boolean): boolean {
+  // 他学類開設のプログラミング入門B
   return (
-    isInfoCourseOf(id, "プログラミング入門B", "coins") ||
-    (mode === "real" &&
-      isInfoCourseOfOthers(id, "プログラミング入門B", "coins")) ||
-    // 移行生はFHから始まるプロ入Bをcoinsのプロ入Bとして使える
-    (fromSougou &&
-      mode === "real" &&
-      (id === "FH60574" || id === "FH60584" || id === "FH60594"))
+    id === "GA18322" || // 情報メディア創成学類
+    id === "GA18332" || // 知識情報・図書館学類
+    // 社会工学類開設のものは移行生だけ
+    (fromSougou && (id === "FH60574" || id === "FH60584" || id === "FH60594"))
   );
 }
 
@@ -294,7 +316,7 @@ function isD4(id: string): boolean {
   return id.startsWith("GA1");
 }
 
-function isE1(id: string, mode: Mode): boolean {
+function isE1(id: string): boolean {
   return (
     // 学問への誘い
     id === "1227571" || // 1クラス
@@ -305,9 +327,12 @@ function isE1(id: string, mode: Mode): boolean {
     id === "1118102" || // 1クラス
     id === "1118202" || // 2クラス
     id === "1118302" || // 3クラス
-    id === "1118402" || // 4クラス
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1118402" // 4クラス
   );
+}
+
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
 }
 
 function isE2(id: string): boolean {
@@ -319,17 +344,19 @@ function isE3(name: string): boolean {
   return isCompulsoryEnglishByName(name);
 }
 
-function isE4(id: string, mode: Mode): boolean {
+function isE4(id: string): boolean {
   return (
     id === "6124101" || // 情報リテラシー(講義)
     id === "6424102" || // 情報リテラシー(演習) 2023年度は情報1班対象 以降は全員対象
     id === "6424202" || // 情報リテラシー(演習) 2023年度は情報2班対象 以降は開講せず
     id === "6524102" || // データサイエンス 2023年度は情報1班対象 以降は全員対象
-    id === "6524202" || // データサイエンス 2023年度は情報2班対象 以降は開講せず
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6524202" // データサイエンス 2023年度は情報2班対象 以降は開講せず
+  );
+}
+
+function isE4Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -413,23 +440,29 @@ function classify(
   if (isA1(id, specialty)) return "a1";
   if (isA2(id)) return "a2";
   if (isA3(id)) return "a3";
-  if (isC1(id, mode)) return "c1";
+  if (isC1(id)) return "c1";
+  if (isC1Unlisted(id)) return unlisted("c1", mode);
   if (isC2(id)) return "c2";
-  if (isC3(id, mode)) return "c3";
+  if (isC3(id)) return "c3";
+  if (isC3Unlisted(id)) return unlisted("c3", mode);
   if (isC4(id)) return "c4";
   if (isC5(id)) return "c5";
   if (isC6(id)) return "c6";
-  if (isC7(id, fromSougou, mode)) return "c7";
-  if (isC8(id, fromSougou, mode)) return "c8";
+  if (isC7(id)) return "c7";
+  if (isC7Unlisted(id, fromSougou)) return unlisted("c7", mode);
+  if (isC8(id)) return "c8";
+  if (isC8Unlisted(id, fromSougou)) return unlisted("c8", mode);
   if (isC9(id)) return "c9";
   if (isC10(id)) return "c10";
   if (isC11(id)) return "c11";
   if (isC12(id)) return "c12";
   if (isC13(id)) return "c13";
-  if (isE1(id, mode)) return "e1";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
   if (isE2(id)) return "e2";
   if (isE3(name)) return "e3";
-  if (isE4(id, mode)) return "e4";
+  if (isE4(id)) return "e4";
+  if (isE4Unlisted(id)) return unlisted("e4", mode);
   if (COMPULSORY_NAMES.has(name)) return undefined;
 
   // 選択

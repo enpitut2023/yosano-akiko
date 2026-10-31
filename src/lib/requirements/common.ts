@@ -2,6 +2,21 @@ import { gradeIsPass, type CourseId, type RealCourse } from "$lib/akiko";
 import { arrayRemove, assert } from "$lib/util";
 
 /**
+ * "known"は履修の選択肢(当てはまる授業)、"real"は成績の分類
+ */
+export type Mode = "known" | "real";
+
+/**
+ * 成績にあれば単位になるが、当てはまる授業には出さない科目のマス。
+ * 選択肢ではundefinedを返して分類を終えるので、後ろのマスに選択肢として出ること
+ * もない。classifyから直接返すこと。classifyColumnCなどから返すと、undefinedが
+ * 「この列ではない」になり後ろのマスに落ちる。
+ */
+export function unlisted(cellId: string, mode: Mode): string | undefined {
+  return mode === "real" ? cellId : undefined;
+}
+
+/**
  * 共通科目
  */
 export function isKyoutsuu(id: string): boolean {
@@ -415,74 +430,6 @@ export function redistributeOverflow(
       }
     }
   }
-}
-
-type InfoCollege = "coins" | "mast" | "klis";
-
-/**
- * 情報学群の専門基礎科目のうち、3学類がそれぞれ同じ名前で開設するもの
- */
-const INFO_COURSE_IDS = {
-  情報数学A: {
-    coins: ["GA15111", "GA15121"],
-    mast: ["GA15131"],
-    klis: ["GA15141"],
-  },
-  線形代数A: {
-    coins: ["GA15211", "GA15221"],
-    mast: ["GA15231"],
-    klis: ["GA15241"],
-  },
-  微分積分A: {
-    coins: ["GA15311", "GA15321"],
-    mast: ["GA15331"],
-    klis: ["GA15341"],
-  },
-  プログラミング入門A: {
-    coins: ["GA18212"],
-    mast: ["GA18222"],
-    klis: ["GA18232"],
-  },
-  プログラミング入門B: {
-    coins: ["GA18312"],
-    mast: ["GA18322"],
-    klis: ["GA18332"],
-  },
-} satisfies Record<string, Record<InfoCollege, string[]>>;
-
-export type InfoCourseName = keyof typeof INFO_COURSE_IDS;
-
-/**
- * どれかの学類が開設する`course`。`course`を省くと、どの科目でもよい。
- */
-export function isInfoCourse(id: string, course?: InfoCourseName): boolean {
-  const courses =
-    course === undefined
-      ? Object.values(INFO_COURSE_IDS)
-      : [INFO_COURSE_IDS[course]];
-  return courses.some((c) => Object.values(c).some((ids) => ids.includes(id)));
-}
-
-/**
- * `college`が開設する`course`
- */
-export function isInfoCourseOf(
-  id: string,
-  course: InfoCourseName,
-  college: InfoCollege,
-): boolean {
-  return INFO_COURSE_IDS[course][college].includes(id);
-}
-
-/**
- * `college`以外の学類が開設する`course`
- */
-export function isInfoCourseOfOthers(
-  id: string,
-  course: InfoCourseName,
-  college: InfoCollege,
-): boolean {
-  return isInfoCourse(id, course) && !isInfoCourseOf(id, course, college);
 }
 
 const FA_LINEAR_ALGEBRA_1 = new Set([

@@ -24,11 +24,12 @@ import {
   isJapanese,
   isKyoushoku,
   isKyoutsuu,
+  type Mode,
+  unlisted,
 } from "$lib/requirements/common";
 import { unreachable } from "$lib/util";
 
 type Specialty = "science" | "system" | "rm";
-type Mode = "known" | "real";
 
 function majorToSpecialtyOrFail(m: Major): Specialty {
   if (m === "klis-science") return "science";
@@ -194,11 +195,9 @@ function isC2(id: string): boolean {
 }
 
 // TODO: 他学類開設のプログラミング入門A・Bを誰が使えるか知識学類に確認して、
-// - coins開設(GA18212・GA18312)は今は無条件に含めているので、mode === "real"に
-//   絞り、必要ならfromSougouでも絞る
+// - coins開設(GA18212・GA18312)は今は選択肢にも出しているので、isC3Unlisted・
+//   isC4Unlistedに移し、必要ならfromSougouでも絞る
 // - mast開設(GA18222・GA18322)も使えるなら同様に加える
-// - isC3・isC4・isC5・isD1の科目番号を、common.tsのisInfoCourseOf・
-//   isInfoCourseOfOthers・isInfoCourseで書き直す
 function isC3(id: string): boolean {
   // プログラミング入門A
   return (
@@ -280,19 +279,22 @@ function isD1(id: string): boolean {
   );
 }
 
-function isE1(id: string, mode: Mode): boolean {
+function isE1(id: string): boolean {
   return (
     // ファーストイヤーセミナー
     id === "1120102" || // 1クラス
     id === "1120202" || // 2クラス
     // 学問への誘い
     id === "1227631" || // 1クラス
-    id === "1227641" || // 2クラス
-    (mode === "real" && (isFirstYearSeminar(id) || isIzanai(id)))
+    id === "1227641" // 2クラス
   );
 }
 
-function isE2(id: string, mode: Mode): boolean {
+function isE1Unlisted(id: string): boolean {
+  return isFirstYearSeminar(id) || isIzanai(id);
+}
+
+function isE2(id: string): boolean {
   return (
     // データサイエンス
     id === "6526102" ||
@@ -300,11 +302,13 @@ function isE2(id: string, mode: Mode): boolean {
     id === "6426102" || // 2025 統一　2024以前 1班
     id === "6426202" || // 2024以前 2班
     // 情報リテラシー(講義)
-    id === "6126101" || // 2クラス
-    (mode === "real" &&
-      (isInfoLiteracyLecture(id) ||
-        isInfoLiteracyExercise(id) ||
-        isDataScience(id)))
+    id === "6126101" // 2クラス
+  );
+}
+
+function isE2Unlisted(id: string): boolean {
+  return (
+    isInfoLiteracyLecture(id) || isInfoLiteracyExercise(id) || isDataScience(id)
   );
 }
 
@@ -364,8 +368,10 @@ function classify(
   if (isC10(id)) return "c10";
   if (isC11(id)) return "c11";
   if (isC12(id)) return "c12";
-  if (isE1(id, mode)) return "e1";
-  if (isE2(id, mode)) return "e2";
+  if (isE1(id)) return "e1";
+  if (isE1Unlisted(id)) return unlisted("e1", mode);
+  if (isE2(id)) return "e2";
+  if (isE2Unlisted(id)) return unlisted("e2", mode);
   if (isE3(id)) return "e3";
   if (isE4(name)) return "e4";
   // 選択
