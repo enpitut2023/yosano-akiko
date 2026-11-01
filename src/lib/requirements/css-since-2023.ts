@@ -284,9 +284,12 @@ function isH1(id: string): boolean {
 }
 
 function isH2(id: string, specialty: Specialty, tableYear: number): boolean {
-  if (tableYear >= 2024 && id.startsWith("V")) return true;
+  // css-lのh2は履修要覧でAB00・AB60・BC11を除いているので、その通りに書いてい
+  // る。ただしこれらはclassifyでh2より先にb3に入るので、この行が結果を変えるこ
+  // とは現状ない。
   if (specialty === "l" && /^(AB00|AB60|BC11)/.test(id)) return false;
-  return /^(BC|A|C|H|W|Y|8|99)/.test(id);
+  if (tableYear >= 2024) return /^(A|BC|C|H|W|Y|V|8|99)/.test(id);
+  return /^(A|BC|C|H|W|Y|8|99)/.test(id);
 }
 
 function isH3(id: string): boolean {
