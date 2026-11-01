@@ -75,7 +75,7 @@ function isB2(id: string): boolean {
   ) {
     return true;
   }
-  if (id === "AB61") return true;
+  if (id.startsWith("AB61")) return true;
   if (id.startsWith("AB62") && !id.startsWith("AB62K")) return true;
   if (id.startsWith("AB63") && !id.startsWith("AB63K")) return true;
   if (id === "AE13G41") return true;
