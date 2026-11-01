@@ -337,6 +337,9 @@ export function isHumanSciencesCoreCurriculum(id: string): boolean {
   return id.startsWith("CA1");
 }
 
+// TODO: 単位数が整数であることを前提にしている。0.5単位(基礎体育など)や1.5単位の
+// 科目があり、合計が整数でないとdpの長さが不正になってRangeErrorで落ちる。合計が
+// 整数でも、dpの添字が小数になり組み合わせを正しく探せない
 /**
  * 目標単位数にピッタリ合う科目の組み合わせを動的計画法(DP)で探す。
  * ピッタリの組み合わせが見つからない場合は、目標を超える組み合わせのうち
