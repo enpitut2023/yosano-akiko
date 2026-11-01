@@ -190,70 +190,14 @@ function isB3(id: string, specialty: Specialty): boolean {
   }
 }
 
-function classifyC1D2(
-  id: string,
-  name: string,
-  tableYear: number,
-  mode: Mode,
-): string | typeof UNLISTED | undefined {
-  // 応用理工学概論
-  if (id === "FF17011") return "c1";
-  // 微積分1 (2023年度のみ救済として開講)
-  if (tableYear === 2023 && id === "FF18764") return "c1";
-  // 2023年度は、2024, 2025年度のd2に含まれる科目をc1に含む
-  const cellId = tableYear === 2023 ? "c1" : "d2";
-  if (
-    id === "FA01111" || // 数学リテラシー1 学籍番号奇数 !!A!!
-    id === "FA01121" || // 数学リテラシー1 学籍番号偶数 !!A!!
-    id === "FA01211" || // 数学リテラシー2 学籍番号奇数 !!A!!
-    id === "FA01221" || // 数学リテラシー2 学籍番号偶数 !!A!!
-    id === "FA01311" || // 微積分1 学籍番号奇数 !!A!!
-    id === "FA01321" || // 微積分1 学籍番号偶数 !!A!!
-    id === "FA01411" || // 微積分2 学籍番号奇数 !!A!!
-    id === "FA01421" || // 微積分2 学籍番号偶数 !!A!!
-    id === "FA01511" || // 微積分3 学籍番号奇数 !!A!!
-    id === "FA01521" || // 微積分3 学籍番号偶数 !!A!!
-    id === "FA01611" || // 線形代数1 学籍番号奇数 !!A!!
-    id === "FA01621" || // 線形代数1 学籍番号偶数 !!A!!
-    id === "FA01711" || // 線形代数2 学籍番号奇数 !!A!!
-    id === "FA01721" || // 線形代数2 学籍番号偶数 !!A!!
-    id === "FA01811" || // 線形代数3 学籍番号奇数 !!A!!
-    id === "FA01821" || // 線形代数3 学籍番号偶数 !!A!!
-    id === "FCB1201" || // 力学1 !!A!!
-    id === "FCB1241" || // 力学2 !!A!!
-    id === "FCB1291" || // 力学3 !!A!!
-    id === "FCB1321" || // 電磁気学1 !!A!!
-    id === "FCB1361" || // 電磁気学2 !!A!!
-    id === "FCB1381" || // 電磁気学3 !!A!!
-    id === "FE11171" || // 化学1 !!A!!
-    id === "FE11181" || // 化学2 !!A!!
-    id === "FE11191" // 化学3 !!A!!
-  )
-    return cellId;
-  if (isC1D2Unlisted(name)) return unlisted(cellId, mode);
+function isC1(id: string, tableYear: number): boolean {
+  if (id === "FF17011") return true; // 応用理工学概論
+  if (tableYear !== 2023) return false;
+  return id === "FF18764" || isD2(id); // FF18764: 微積分1 (2023年度のみ救済として開講)
 }
 
-// 2026.3.26 成績は名前で見る
-function isC1D2Unlisted(name: string): boolean {
-  return (
-    name === "数学リテラシー1" ||
-    name === "数学リテラシー2" ||
-    name === "微積分1" ||
-    name === "微積分2" ||
-    name === "微積分3" ||
-    name === "線形代数1" ||
-    name === "線形代数2" ||
-    name === "線形代数3" ||
-    name === "力学1" ||
-    name === "力学2" ||
-    name === "力学3" ||
-    name === "電磁気学1" ||
-    name === "電磁気学2" ||
-    name === "電磁気学3" ||
-    name === "化学1" ||
-    name === "化学2" ||
-    name === "化学3"
-  );
+function isC1Unlisted(name: string, tableYear: number): boolean {
+  return tableYear === 2023 && isD2Unlisted(name);
 }
 
 function isC2(id: string): boolean {
@@ -325,6 +269,60 @@ function isC3(id: string, specialty: Specialty): boolean {
 
 function isD1(id: string): boolean {
   return id.startsWith("FF15");
+}
+
+// 2024年度以降のd2。2023年度はc1に含む
+function isD2(id: string): boolean {
+  return (
+    id === "FA01111" || // 数学リテラシー1 学籍番号奇数 !!A!!
+    id === "FA01121" || // 数学リテラシー1 学籍番号偶数 !!A!!
+    id === "FA01211" || // 数学リテラシー2 学籍番号奇数 !!A!!
+    id === "FA01221" || // 数学リテラシー2 学籍番号偶数 !!A!!
+    id === "FA01311" || // 微積分1 学籍番号奇数 !!A!!
+    id === "FA01321" || // 微積分1 学籍番号偶数 !!A!!
+    id === "FA01411" || // 微積分2 学籍番号奇数 !!A!!
+    id === "FA01421" || // 微積分2 学籍番号偶数 !!A!!
+    id === "FA01511" || // 微積分3 学籍番号奇数 !!A!!
+    id === "FA01521" || // 微積分3 学籍番号偶数 !!A!!
+    id === "FA01611" || // 線形代数1 学籍番号奇数 !!A!!
+    id === "FA01621" || // 線形代数1 学籍番号偶数 !!A!!
+    id === "FA01711" || // 線形代数2 学籍番号奇数 !!A!!
+    id === "FA01721" || // 線形代数2 学籍番号偶数 !!A!!
+    id === "FA01811" || // 線形代数3 学籍番号奇数 !!A!!
+    id === "FA01821" || // 線形代数3 学籍番号偶数 !!A!!
+    id === "FCB1201" || // 力学1 !!A!!
+    id === "FCB1241" || // 力学2 !!A!!
+    id === "FCB1291" || // 力学3 !!A!!
+    id === "FCB1321" || // 電磁気学1 !!A!!
+    id === "FCB1361" || // 電磁気学2 !!A!!
+    id === "FCB1381" || // 電磁気学3 !!A!!
+    id === "FE11171" || // 化学1 !!A!!
+    id === "FE11181" || // 化学2 !!A!!
+    id === "FE11191" // 化学3 !!A!!
+  );
+}
+
+// 2026.3.26 成績は名前で見る
+function isD2Unlisted(name: string): boolean {
+  return (
+    name === "数学リテラシー1" ||
+    name === "数学リテラシー2" ||
+    name === "微積分1" ||
+    name === "微積分2" ||
+    name === "微積分3" ||
+    name === "線形代数1" ||
+    name === "線形代数2" ||
+    name === "線形代数3" ||
+    name === "力学1" ||
+    name === "力学2" ||
+    name === "力学3" ||
+    name === "電磁気学1" ||
+    name === "電磁気学2" ||
+    name === "電磁気学3" ||
+    name === "化学1" ||
+    name === "化学2" ||
+    name === "化学3"
+  );
 }
 
 function isE1(id: string): boolean {
@@ -401,23 +399,6 @@ const COMPULSORY_NAMES = new Set([
   "卒業研究A",
   "卒業研究B",
   "応用理工学概論",
-  "数学リテラシー1",
-  "数学リテラシー2",
-  "微積分1",
-  "微積分2",
-  "微積分3",
-  "線形代数1",
-  "線形代数2",
-  "線形代数3",
-  "力学1",
-  "力学2",
-  "力学3",
-  "電磁気学1",
-  "電磁気学2",
-  "電磁気学3",
-  "化学1",
-  "化学2",
-  "化学3",
   "熱力学",
   "解析学A",
   "解析学B",
@@ -453,8 +434,8 @@ function classify(
   if (isA1(id)) return "a1";
   if (isA2(id, specialty)) return "a2";
   if (isA3(id, specialty)) return "a3";
-  const c1d2 = classifyC1D2(id, name, tableYear, mode);
-  if (c1d2 !== undefined) return c1d2;
+  if (isC1(id, tableYear)) return "c1";
+  if (isC1Unlisted(name, tableYear)) return unlisted("c1", mode);
   if (isC2(id)) return "c2";
   if (isC2Unlisted(name)) return unlisted("c2", mode);
   if (isC3(id, specialty)) return "c3";
@@ -468,6 +449,10 @@ function classify(
 
   // 選択
   if (isD1(id)) return "d1";
+  if (tableYear >= 2024) {
+    if (isD2(id)) return "d2";
+    if (isD2Unlisted(name)) return unlisted("d2", mode);
+  }
   if (isB1(id, specialty)) return "b1";
   if (isB2(id, specialty)) return "b2";
   if (isB3(id, specialty)) return "b3";
@@ -525,16 +510,19 @@ export function classifyFakeCourses(
 
 export function getRemark(
   id: CellId,
-  _tableYear: number,
+  tableYear: number,
   _major: Major,
 ): string | undefined {
   if (id === "a2" || id === "a3") {
     // !!F!!
     return `カッコの条件には対応していません。`;
   }
-  if (id === "d4") {
+  if (
+    (tableYear === 2023 && id === "c1") ||
+    (tableYear >= 2024 && id === "d2")
+  ) {
     // !!D!!
-    return `注6(表下部参照)で言及されている、微積分Aと微積分Bの読み替えには対応していません。`;
+    return `注6(表下部参照)で言及されている、情報学群開設の「微分積分A」「線形代数A」の読み替えには対応していません。`;
   } else if (id === "e3" || id === "f2") {
     // !!E!!
     return `注3(表下部参照)には対応していません。`;
