@@ -196,8 +196,14 @@ function isC1(id: string, tableYear: number): boolean {
   return id === "FF18764" || isD2(id); // FF18764: 微積分1 (2023年度のみ救済として開講)
 }
 
-function isC1Unlisted(name: string, tableYear: number): boolean {
-  return tableYear === 2023 && isD2Unlisted(name);
+function isC1Unlisted(
+  id: string,
+  name: string,
+  tableYear: number,
+  fromSougou: boolean,
+): boolean {
+  if (tableYear !== 2023) return false;
+  return isD2Unlisted(name) || (fromSougou && isNote6(id));
 }
 
 function isC2(id: string): boolean {
@@ -269,6 +275,31 @@ function isC3(id: string, specialty: Specialty): boolean {
 
 function isD1(id: string): boolean {
   return id.startsWith("FF15");
+}
+
+// TODO: 注6をこう解釈しているが、応用理工学類の確認待ち。
+// - 微分積分A(2単位)は微積分1,2(各1単位)の2単位として数えている
+// - 微分積分Aと微積分1,2の両方を取っていれば両方数えている。両方は単位にならない
+//   なら、微積分1,2を取っている学生の微分積分Aは数えないようにする(線形代数Aと
+//   線形代数1,2も同じ)
+// - 移行前に修得したかは成績からはわからないので確認していない
+// - 移行生でない学生は情報学群の線形代数Aもc2の線形代数Aとして名前で数えている
+//   (isC2Unlisted)。違えばisC2Unlistedから外す
+/**
+ * 注6: 移行生に限り、情報学群開設の微分積分Aを微積分1,2へ、線形代数Aを線形代数1,2へ
+ * 読み替えられる。読み替え先はd2(2023年度はc1)
+ */
+function isNote6(id: string): boolean {
+  return (
+    id === "GA15311" || // 微分積分A 情報科学類1・2クラス
+    id === "GA15321" || // 微分積分A 情報科学類3・4クラス
+    id === "GA15331" || // 微分積分A 情報メディア創成学類
+    id === "GA15341" || // 微分積分A 知識情報・図書館学類
+    id === "GA15211" || // 線形代数A 情報科学類1・2クラス
+    id === "GA15221" || // 線形代数A 情報科学類3・4クラス
+    id === "GA15231" || // 線形代数A 情報メディア創成学類
+    id === "GA15241" // 線形代数A 知識情報・図書館学類
+  );
 }
 
 // 2024年度以降のd2。2023年度はc1に含む
@@ -428,6 +459,7 @@ function classify(
   name: string,
   tableYear: number,
   specialty: Specialty,
+  fromSougou: boolean,
   mode: Mode,
 ): string | typeof UNLISTED | undefined {
   // 必修
@@ -435,7 +467,13 @@ function classify(
   if (isA2(id, specialty)) return "a2";
   if (isA3(id, specialty)) return "a3";
   if (isC1(id, tableYear)) return "c1";
-  if (isC1Unlisted(name, tableYear)) return unlisted("c1", mode);
+  if (isC1Unlisted(id, name, tableYear, fromSougou))
+    return unlisted("c1", mode);
+  // 注6の線形代数Aは名前でisC2UnlistedやCOMPULSORY_NAMESにも当たるので、d2でも
+  // それより先に見る
+  if (tableYear >= 2024 && fromSougou && isNote6(id)) {
+    return unlisted("d2", mode);
+  }
   if (isC2(id)) return "c2";
   if (isC2Unlisted(name)) return unlisted("c2", mode);
   if (isC3(id, specialty)) return "c3";
@@ -470,7 +508,14 @@ export function classifyKnownCourses(
   const specialty = majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, opts.tableYear, specialty, "known");
+    const cellId = classify(
+      c.id,
+      c.name,
+      opts.tableYear,
+      specialty,
+      opts.fromSougou,
+      "known",
+    );
     if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -486,7 +531,14 @@ export function classifyRealCourses(
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
-    const cellId = classify(c.id, c.name, opts.tableYear, specialty, "real");
+    const cellId = classify(
+      c.id,
+      c.name,
+      opts.tableYear,
+      specialty,
+      opts.fromSougou,
+      "real",
+    );
     if (cellId !== undefined && cellId !== UNLISTED) {
       courseIdToCellId.set(c.id, cellId);
     }
@@ -522,7 +574,7 @@ export function getRemark(
     (tableYear >= 2024 && id === "d2")
   ) {
     // !!D!!
-    return `注6(表下部参照)で言及されている、情報学群開設の「微分積分A」「線形代数A」の読み替えには対応していません。`;
+    return `注6(表下部参照)の情報学群開設の「微分積分A」「線形代数A」の読み替えは、移行前に修得したかどうかを確認せずに数えています。`;
   } else if (id === "e3" || id === "f2") {
     // !!E!!
     return `注3(表下部参照)には対応していません。`;

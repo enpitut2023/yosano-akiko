@@ -94,6 +94,12 @@ const OFFERED_BY_NATIVENESS: Partial<Record<Major, string[]>> = {
     ...["GA15311", "GA15321", "GA15331", "GA15341"],
     ...["FF18744", "FF18754", "GB10234", "GB10244", "GC11801"],
   ],
+  // 情報学群's 微分積分A, offered in h1 to students who entered directly, and
+  // counted in c1 or d2 for 移行生 (注6) without being offered to them
+  "coens-ap": ["GA15311", "GA15321", "GA15331", "GA15341"],
+  "coens-eqe": ["GA15311", "GA15321", "GA15331", "GA15341"],
+  "coens-mse": ["GA15311", "GA15321", "GA15331", "GA15341"],
+  "coens-mme": ["GA15311", "GA15321", "GA15331", "GA15341"],
 };
 
 describe.each(majors)("%s", (major) => {
