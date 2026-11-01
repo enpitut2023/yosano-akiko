@@ -433,7 +433,7 @@ export function classifyFakeCourses(
   cs: FakeCourse[],
   opts: ClassifyOptions,
 ): Map<FakeCourseId, string> {
-  const _specialty = majorToSpecialtyOrFail(opts.major);
+  majorToSpecialtyOrFail(opts.major);
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {
     if (isE4(c.name)) {

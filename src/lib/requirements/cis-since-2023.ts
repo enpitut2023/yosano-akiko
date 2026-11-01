@@ -231,7 +231,7 @@ export function classifyKnownCourses(
   cs: KnownCourse[],
   opts: ClassifyOptions,
 ): Map<CourseId, string> {
-  const _specialty = majorToSpecialtyOrFail(opts.major);
+  majorToSpecialtyOrFail(opts.major);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
     const cellId = classify(c.id, c.name, "known");
@@ -246,7 +246,7 @@ export function classifyRealCourses(
   cs: RealCourse[],
   opts: ClassifyOptions,
 ): Map<CourseId, string> {
-  const _specialty = majorToSpecialtyOrFail(opts.major);
+  majorToSpecialtyOrFail(opts.major);
   cs = Array.from(cs);
   const courseIdToCellId = new Map<CourseId, string>();
   for (const c of cs) {
@@ -263,7 +263,7 @@ export function classifyFakeCourses(
   cs: FakeCourse[],
   opts: ClassifyOptions,
 ): Map<FakeCourseId, string> {
-  const _specialty = majorToSpecialtyOrFail(opts.major);
+  majorToSpecialtyOrFail(opts.major);
   const fakeCourseIdToCellId = new Map<FakeCourseId, string>();
   for (const c of cs) {
     if (isE3(c.name)) {
