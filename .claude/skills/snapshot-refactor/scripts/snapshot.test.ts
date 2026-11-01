@@ -127,7 +127,6 @@ test.skipIf(env.dir === undefined)(
       if (pages !== undefined && !pages.test(`${major}-${tableYear}`)) continue;
       const load = MAJOR_TO_REQUIREMENTS[major];
       if (load === undefined) continue;
-      // Not every module exports getRemark
       const req: Pick<
         MajorConfig,
         | "getCreditRequirements"
@@ -140,7 +139,7 @@ test.skipIf(env.dir === undefined)(
       const remarks = Object.fromEntries(
         Object.keys(requirements.cells).map((cellId) => [
           cellId,
-          req.getRemark?.(cellId as never, tableYear, major),
+          req.getRemark(cellId as never, tableYear, major),
         ]),
       );
 

@@ -70,7 +70,7 @@ Each module exports:
   column, and the 必修/選択 totals.
 - `classifyKnownCourses` / `classifyRealCourses` / `classifyFakeCourses`: map
   each course to a cell ID.
-- `getRemark` (optional): notes shown for a cell.
+- `getRemark`: notes shown for a cell, or `undefined` for none.
 
 Shared predicates (共通科目, 体育, 外国語, …) are in `requirements/common.ts`.
 

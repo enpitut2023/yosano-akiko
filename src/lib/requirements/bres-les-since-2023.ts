@@ -278,3 +278,7 @@ export function getCreditRequirements(
   if (tableYear >= 2025) return reqSince2025;
   return reqSince2023;
 }
+
+export function getRemark(): undefined {
+  return undefined;
+}

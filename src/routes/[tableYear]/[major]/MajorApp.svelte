@@ -213,7 +213,7 @@
 
   const selectedCellRemark = $derived(
     selectedCellId !== undefined
-      ? config.getRemark?.(selectedCellId, config.tableYear, config.major)
+      ? config.getRemark(selectedCellId, config.tableYear, config.major)
       : undefined,
   );
   const mightTakeCourseIds = $derived(akikoGetMightTakeCourseIds(akiko));

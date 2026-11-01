@@ -130,8 +130,7 @@ export type MajorConfig = {
     tableYear: number,
     major: Major,
   ) => SetupCreditRequirements;
-  // Not every major has remarks to show.
-  getRemark?: (
+  getRemark: (
     cellId: CellId,
     tableYear: number,
     major: Major,
