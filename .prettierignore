@@ -1,3 +1,4 @@
 /node_modules
 /src/lib/current-courses.ts
 /static/rects
+/.claude/skills/snapshot-refactor/data/past-courses.json
