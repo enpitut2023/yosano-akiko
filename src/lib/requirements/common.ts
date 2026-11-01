@@ -79,6 +79,7 @@ export function isCompulsoryPe3(id: string): boolean {
 /**
  * 体育（4年次必修）
  * 通常の曜時限で開講するものは24、集中で開講するものは27から始まる。
+ * 今はどの学類も使っていないが、科目番号の知識として残している。
  */
 export function isCompulsoryPe4(id: string): boolean {
   return id.startsWith("24") || id.startsWith("27");
