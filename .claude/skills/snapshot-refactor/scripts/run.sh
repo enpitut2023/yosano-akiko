@@ -29,6 +29,14 @@ worktree() {
   (cd "$dir" && npx svelte-kit sync >/dev/null)
 }
 
+cleanup() {
+  for dir in "$out/wt-base" "$out/wt-new"; do
+    [ -d "$dir" ] && git -C "$repo" worktree remove --force "$dir"
+  done
+  return 0
+}
+trap cleanup EXIT
+
 worktree "$out/wt-base" "$base_ref"
 new_tree=$repo
 if [ -n "$new_ref" ]; then
@@ -40,8 +48,5 @@ python3 -I "$here/make-sweep.py" "$out/wt-base" "$new_tree" >"$out/sweep.txt"
 
 "$here/snapshot.sh" "$out/wt-base" "$out/base" "$out/sweep.txt"
 "$here/snapshot.sh" "$new_tree" "$out/new" "$out/sweep.txt"
-
-git -C "$repo" worktree remove --force "$out/wt-base"
-[ -n "$new_ref" ] && git -C "$repo" worktree remove --force "$out/wt-new"
 
 python3 -I "$here/snapdiff.py" "$out/base" "$out/new"
