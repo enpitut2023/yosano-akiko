@@ -125,3 +125,22 @@ importing a grades file logs the current stats in that same shape.
 - Name callback props in camelCase (`onShowCell`, `onClose`).
 - Write comments in English, except in `src/lib/requirements/`, where Japanese
   fits the domain (履修要覧, 科目区分, …). UI text is Japanese.
+- A requirements module mirrors its 履修要覧 table: one predicate per cell,
+  named after the cell (`isC1`, `isD2Unlisted`), listing that cell's course
+  IDs with a comment each. Don't group courses under a name the table doesn't
+  use, or share such a group between modules. When courses move between cells
+  across years, name them after the cell where a table lists them on their
+  own, and let the other year call it.
+
+  Mistakes this rule comes from:
+  - 5ae5dd4 factored the five courses every 情報学群 学類 teaches into an
+    `INFO_COURSE_IDS` table in `common.ts`, read through `isInfoCourse`,
+    `isInfoCourseOf` and `isInfoCourseOfOthers`, which mast wrapped again in
+    `isInfoCourseForMast(id, "微分積分A", mode, isNative)`. "Information
+    course" is in no table, and learning that mast's c1 is GA15331 took three
+    functions and a table in another file. 116fd88 undid it: mast's `isC1` is
+    now `id === "GA15331"`, and `isC1Unlisted` lists the other 学類's classes.
+  - coens's 数学リテラシー, 微積分, 線形代数, 力学, 電磁気学 and 化学 1–3 are in
+    c1 in the 2023 table and in d2 from 2024. A proposed `isFoundation` for
+    them named a group no table names. a85b65e lists them in `isD2`, after
+    the 2024 table's d2, and 2023's `isC1` calls it.
