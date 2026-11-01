@@ -15,16 +15,16 @@ two trees.
 .claude/skills/snapshot-refactor/scripts/run.sh OUT BASE_REF [NEW_REF]
 ```
 
-- `OUT` goes in the scratchpad. A run writes about 500MB there and takes about
-  4 minutes; delete it when done.
+- `OUT` goes in the scratchpad. A run writes about 500MB there and takes under a
+  minute per tree; delete it when done.
 - `BASE_REF` is checked out as a git worktree, so the baseline is exactly
   that commit, not whatever the working tree held. Without `NEW_REF` the new
   side is the current working tree. Uncommitted changes are fine there.
 - For a series of commits, check each one on its own:
   `run.sh OUT <commit>~1 <commit>`.
 - `SNAPSHOT_PAGES='^coins'` limits the pages (a regex on
-  `<major>-<tableYear>`). `SHARDS` sets how many processes split the run
-  (default 4).
+  `<major>-<tableYear>`). `SHARDS` sets how many vitest workers split the
+  pages (default 8).
 
 The script prints `identical`, or one line per page and place that differs,
 counting each `old -> new` change (`-` means absent). To list every
@@ -40,7 +40,7 @@ python3 -I .claude/skills/snapshot-refactor/scripts/snapdiff.py OUT/base OUT/new
   explain a difference away: find what caused it.
 - For a behavior change, account for every line. Check the catalog side
   (`known`) separately from the grades side (`realAlone`, `realTogether…`,
-  `csvs/…`): a change meant only for the catalog must leave grades alone.
+  `fakeByName`, `csvs/…`): a change meant only for the catalog must leave grades alone.
 - A value like `throws RangeError: …` is a crash, recorded instead of
   stopping the run. A refactor that adds or removes one shows up as a
   difference.
@@ -60,12 +60,16 @@ changed.
 1. **Mutation check.** Break the module you changed on purpose, e.g. change
    one returned cell ID, run with `SNAPSHOT_PAGES` limited to its pages, and
    confirm a difference appears. Then undo the break.
-2. **Coverage.** `scripts/coverage.sh OUT` prints which lines of
-   `src/lib/requirements/` the snapshot never runs. It needs
-   `@vitest/coverage-v8`; if it's missing, the script prints the
-   `npm install --no-save` command. Ask the user before running it. A line
-   the snapshot never runs is a blind spot: add an input that reaches it, or
-   tell the user.
+2. **Coverage.** `scripts/coverage.sh OUT` lists the code in
+   `src/lib/requirements/` the snapshot never runs: functions, sides of
+   branches, and operands of `||` and `&&`. To list one module again
+   without rerunning, pass a file name to
+   `scripts/uncovered.py OUT/coverage/coverage-final.json coins`. Code it
+   never runs is a blind spot: add an input that reaches it, or tell the
+   user. Coverage only says an operand was evaluated, not that it was ever
+   true. Some leftovers are harmless: the implicit else of an `else if`
+   that already covers every specialty, a `tableYear >= 2023` check with no
+   page before 2023, and the "nothing fits" end of `findExactCombination`.
 
 ## What a snapshot holds
 
@@ -80,6 +84,8 @@ One gzipped JSON per page and 移行 answer (`<major>-<tableYear>-direct` or
   and overflow rules fire. `realTogetherShuffled` is the same in a fixed
   shuffled order, to catch order dependence. `realTogetherFailed` gives every
   course a failing grade.
+- `fakeByName`: `classifyFakeCourses` on every name in the current and past
+  catalogs at once, keyed by name.
 - `csvs`: for each file in `grade-csvs/`, the real and fake course
   classification and the credit stats.
 
@@ -105,9 +111,10 @@ prefix also runs, so catch-all rules meet unseen prefixes even before that.
 
 ## When it breaks
 
-The snapshot test (`scripts/snapshot.test.ts`, copied into
-`src/lib/tests/snapshot.tmp.test.ts` for each run and removed afterwards)
+The snapshot test (`scripts/snapshot.test.ts`, copied by `snapshot.sh` into
+`src/lib/tests/` as `snapshot.tmp.<i>of<n>.test.ts` for each run and
+removed afterwards)
 uses `MAJOR_TO_REQUIREMENTS`, `instances`, `parseImportedCsv` and
 `getCreditStats` from `src/lib/tests/util.ts`. If a base commit is older
-than one of these, the run fails in that tree; its logs are in
-`OUT/base.*.log`.
+than one of these, the run fails in that tree; its log is
+`OUT/base.log`.

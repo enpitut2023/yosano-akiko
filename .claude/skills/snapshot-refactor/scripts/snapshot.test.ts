@@ -4,13 +4,24 @@
 //
 // Env: SNAPSHOT_DIR (output), SNAPSHOT_SWEEP (sweep.txt from make-sweep.py),
 // SNAPSHOT_PAST (past-courses.json), SNAPSHOT_PAGES (optional regex on
-// "<major>-<tableYear>"), SNAPSHOT_SHARD (optional "i/n": only every nth page,
-// starting at the ith, so n processes can split the pages).
+// "<major>-<tableYear>").
+//
+// A copy named snapshot.tmp.<i>of<n>.test.ts does only every nth page,
+// starting at the ith. Vitest runs test files in parallel, so n copies split
+// the pages between workers, and coverage from all of them is merged.
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import { test } from "vitest";
-import type { CourseId, Grade, KnownCourse, RealCourse } from "$lib/akiko";
+import type {
+  CourseId,
+  FakeCourse,
+  FakeCourseId,
+  Grade,
+  KnownCourse,
+  RealCourse,
+} from "$lib/akiko";
 import { instances } from "$lib/constants";
 import { parseImportedCsv } from "$lib/csv";
 import { knownCourses } from "$lib/current-courses";
@@ -24,7 +35,6 @@ const env = {
   sweep: process.env.SNAPSHOT_SWEEP,
   past: process.env.SNAPSHOT_PAST,
   pages: process.env.SNAPSHOT_PAGES,
-  shard: process.env.SNAPSHOT_SHARD,
 };
 
 type Course = Pick<RealCourse, "id" | "name" | "credit">;
@@ -85,6 +95,9 @@ test.skipIf(env.dir === undefined)(
     const past = JSON.parse(readFileSync(pastPath, "utf8")) as Course[];
     for (const c of past) if (!courses.has(c.id)) courses.set(c.id, c);
     const named = [...courses.values()];
+    // Grades files have few fake courses, all English, so every known name
+    // also goes in as one
+    const names = [...new Set(named.map((c) => c.name))].sort();
     for (const id of readFileSync(sweep, "utf8").split("\n")) {
       if (id !== "" && !courses.has(id)) {
         courses.set(id, { id: id as CourseId, name: "", credit: 1 });
@@ -107,7 +120,8 @@ test.skipIf(env.dir === undefined)(
     );
 
     const pages = env.pages === undefined ? undefined : new RegExp(env.pages);
-    const [shard, shards] = (env.shard ?? "0/1").split("/").map(Number);
+    const m = /\.(\d+)of(\d+)\.test\.ts$/.exec(fileURLToPath(import.meta.url));
+    const [shard, shards] = m === null ? [0, 1] : [Number(m[1]), Number(m[2])];
     for (const [i, { major, tableYear }] of instances.entries()) {
       if (i % shards !== shard) continue;
       if (pages !== undefined && !pages.test(`${major}-${tableYear}`)) continue;
@@ -141,6 +155,15 @@ test.skipIf(env.dir === undefined)(
           );
           if (cellId !== undefined) alone.set(c.id, cellId);
         }
+        const fakes = names.map(
+          (name, i): FakeCourse => ({
+            id: i as FakeCourseId,
+            name,
+            credit: 1,
+            takenYear: tableYear,
+            grade: "free",
+          }),
+        );
         const together = (cs: Course[], grade: Grade) =>
           attempt(() =>
             sorted(
@@ -158,6 +181,15 @@ test.skipIf(env.dir === undefined)(
           realTogether: together(named, "a+"),
           realTogetherShuffled: together(shuffled(named, 1), "a+"),
           realTogetherFailed: together(named, "d"),
+          fakeByName: attempt(() =>
+            sorted(
+              new Map(
+                [...req.classifyFakeCourses(fakes, opts)].map(
+                  ([id, cellId]) => [names[id], cellId],
+                ),
+              ),
+            ),
+          ),
           csvs: Object.fromEntries(
             csvs.map((csv) => [
               csv.path,
