@@ -270,8 +270,7 @@ function isH1(id: string, tableYear: number): boolean {
   if (isKyoutsuu(id)) {
     return false;
   }
-  // TODO: その他学類長が特に指定する科目 2025のみH1
-  // ファーストイヤーセミナーとかがめっちゃ入ってる
+  // TODO: その他学類長が特に指定する科目 2025年度以降H1
   if (tableYear >= 2025) {
     return isKyoushoku(id) || isHakubutsukan(id) || !/^(E|FB|FC|FE)/.test(id);
   } else {

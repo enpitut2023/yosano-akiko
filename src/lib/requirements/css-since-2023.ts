@@ -93,7 +93,7 @@ function classifyColumnB(
         return "b3";
       break;
     case "ps":
-      // TODO:2025年度だけ、BB3から始まる科目（ただし、BB32を6単位以上含めること）という制限がある。
+      // TODO: 2025年度以降、BB3から始まる科目（ただし、BB32を6単位以上含めること）という制限がある。
       if (tableYear >= 2025) {
         if (id.startsWith("BB3")) return "b1";
         if (bb1 || bb2 || bb4) return "b2";
