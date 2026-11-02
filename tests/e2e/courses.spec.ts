@@ -1,5 +1,5 @@
 import { knownCourseYear } from "./fixtures/courses";
-import { gradesFile, type GradeRow } from "./fixtures/grades";
+import { gradeRow, gradesFile } from "./fixtures/grades";
 import {
   deselectCell,
   dragToMightTake,
@@ -185,20 +185,8 @@ test("dragging a course adds it to 取る授業 and the timetable", async ({
 
 test.describe("the timetable's year", () => {
   // Both on 春A, like GB31801
-  const passedThisYear = {
-    id: "GB26403",
-    name: "ソフトウェアサイエンス実験A",
-    credit: 3,
-    grade: "A",
-    year: knownCourseYear,
-  } satisfies GradeRow;
-  const passedLastYear = {
-    id: "GB20401",
-    name: "オートマトンと形式言語",
-    credit: 2,
-    grade: "A",
-    year: knownCourseYear - 1,
-  } satisfies GradeRow;
+  const passedThisYear = gradeRow("GB26403", "A", knownCourseYear);
+  const passedLastYear = gradeRow("GB20401", "A", knownCourseYear - 1);
 
   function yearPicker(page: Page) {
     return page.getByLabel("時間割の年度");
@@ -294,20 +282,8 @@ test("a passed course can't be dragged out of the timetable", async ({
   await importGrades(
     page,
     gradesFile([
-      {
-        id: "GB20401",
-        name: "オートマトンと形式言語",
-        credit: 2,
-        grade: "A",
-        year: knownCourseYear,
-      },
-      {
-        id: "GB13322",
-        name: "情報特別演習II",
-        credit: 2,
-        grade: "A",
-        year: knownCourseYear,
-      },
+      gradeRow("GB20401", "A", knownCourseYear),
+      gradeRow("GB13322", "A", knownCourseYear),
     ]),
   );
   await openTab(page, "履修を組む");
@@ -360,21 +336,9 @@ test("a passed course links to the syllabus of the year it was taken", async ({
   await importGrades(
     page,
     gradesFile([
-      {
-        id: "GB26403",
-        name: "ソフトウェアサイエンス実験A",
-        credit: 3,
-        grade: "A",
-        year: 2023,
-      },
+      gradeRow("GB26403", "A", 2023),
       // Failed, so it would be taken under this year's syllabus
-      {
-        id: "GB27001",
-        name: "ソフトウェア工学演習",
-        credit: 1,
-        grade: "D",
-        year: 2024,
-      },
+      gradeRow("GB27001", "D", 2024),
     ]),
   );
   await openTab(page, "履修を組む");

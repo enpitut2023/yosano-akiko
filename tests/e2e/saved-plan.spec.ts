@@ -1,6 +1,6 @@
 // How courses moved by hand interact with grades, rebuilds of the page's data
 // and what's saved in localStorage
-import { gradesFile, type GradeRow } from "./fixtures/grades";
+import { gradeRow, gradesFile } from "./fixtures/grades";
 import {
   deselectCell,
   dragToMightTake,
@@ -15,42 +15,12 @@ import {
   type Page,
 } from "./test";
 
-const WIP = {
-  id: "GA15211",
-  name: "線形代数A",
-  credit: 2,
-  grade: "履修中",
-  year: 2025,
-} satisfies GradeRow;
-const FAILED = {
-  id: "GB27001",
-  name: "ソフトウェア工学演習",
-  credit: 1,
-  grade: "D",
-  year: 2024,
-} satisfies GradeRow;
-const PASSED = {
-  id: "GB26403",
-  name: "ソフトウェアサイエンス実験A",
-  credit: 3,
-  grade: "A",
-  year: 2023,
-} satisfies GradeRow;
+const WIP = gradeRow("GA15211", "履修中", 2025);
+const FAILED = gradeRow("GB27001", "D", 2024);
+const PASSED = gradeRow("GB26403", "A", 2023);
 const GRADES = gradesFile([WIP, FAILED, PASSED]);
-const NEW_WIP = {
-  id: "GB13322",
-  name: "情報特別演習II",
-  credit: 2,
-  grade: "履修中",
-  year: 2025,
-} satisfies GradeRow;
-const GB20401_PASSED = {
-  id: "GB20401",
-  name: "オートマトンと形式言語",
-  credit: 2,
-  grade: "A",
-  year: 2025,
-} satisfies GradeRow;
+const NEW_WIP = gradeRow("GB13322", "履修中", 2025);
+const GB20401_PASSED = gradeRow("GB20401", "A", 2025);
 
 /** Checks all of 取る授業, not just the selected cell's part of it. */
 async function expectPlan(page: Page, ids: string[]): Promise<void> {

@@ -1,4 +1,4 @@
-import { gradesFile, type GradeRow } from "./fixtures/grades";
+import { gradeRow, gradesFile, type GradeRow } from "./fixtures/grades";
 import {
   dragToMightTake,
   expect,
@@ -10,23 +10,11 @@ import {
 
 const ROWS: GradeRow[] = [
   // a1, half of it
-  {
-    id: "GB26403",
-    name: "ソフトウェアサイエンス実験A",
-    credit: 3,
-    grade: "A",
-    year: 2023,
-  },
+  gradeRow("GB26403", "A", 2023),
   // c1, starts in 取る授業
-  { id: "GA15211", name: "線形代数A", credit: 2, grade: "履修中", year: 2025 },
+  gradeRow("GA15211", "履修中", 2025),
   // b2, failed, so it stays in 当てはまる授業
-  {
-    id: "GB27001",
-    name: "ソフトウェア工学演習",
-    credit: 1,
-    grade: "D",
-    year: 2024,
-  },
+  gradeRow("GB27001", "D", 2024),
   // c1 together, only for 移行 students; fit no cell otherwise
   { id: "FF18724", name: "線形代数A", credit: 1, grade: "B", year: 2023 },
   { id: "FF18744", name: "線形代数B", credit: 1, grade: "B", year: 2023 },

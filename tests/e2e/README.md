@@ -72,6 +72,8 @@ page and in prerendering.
 ### Grades files built in each test
 
 `gradesFile(rows)` (`fixtures/grades.ts`) lays rows out like a TWINS export.
+`gradeRow(id, grade, year)` takes a fixture course's name and credit from
+`fixtures/courses.ts`; write a row out only for a course not in it.
 Each test lists only the rows it needs, next to the assertions that depend on
 them, so adding a row for one test can't break another.
 

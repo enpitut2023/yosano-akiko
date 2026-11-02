@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { gradesFile } from "./fixtures/grades";
+import { gradeRow, gradesFile } from "./fixtures/grades";
 import {
   dragToMightTake,
   expect,
@@ -65,18 +65,7 @@ test("ダウンロード downloads the IDs of 取る授業", async ({ page }) =>
 test("履修中 courses are left out, since they're registered already", async ({
   page,
 }) => {
-  await importGrades(
-    page,
-    gradesFile([
-      {
-        id: "GB13322",
-        name: "情報特別演習II",
-        credit: 2,
-        grade: "履修中",
-        year: 2026,
-      },
-    ]),
-  );
+  await importGrades(page, gradesFile([gradeRow("GB13322", "履修中", 2026)]));
   await openTab(page, "履修を組む");
   await dragToMightTake(page, "b2", "GB27001");
   await openTab(page, "TWINSに出力");

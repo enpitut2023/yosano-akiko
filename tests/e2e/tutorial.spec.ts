@@ -1,16 +1,8 @@
-import { gradesFile } from "./fixtures/grades";
+import { gradeRow, gradesFile } from "./fixtures/grades";
 import { expect, test, waitForHydration, type Page } from "./test";
 
 // The tutorial only needs some valid file
-const GRADES = gradesFile([
-  {
-    id: "GB26403",
-    name: "ソフトウェアサイエンス実験A",
-    credit: 3,
-    grade: "A",
-    year: 2023,
-  },
-]);
+const GRADES = gradesFile([gradeRow("GB26403", "A", 2023)]);
 
 function tutorial(page: Page) {
   return page
