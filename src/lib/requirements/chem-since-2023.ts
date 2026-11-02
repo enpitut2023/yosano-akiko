@@ -101,7 +101,7 @@ function isC1(id: string): boolean {
 function isD1(id: string, tableYear: number): boolean {
   return (
     // 2023, 2024のみ
-    ((tableYear === 2023 || tableYear === 2024) &&
+    (tableYear <= 2024 &&
       (id === "FA01191" || // 数学リテラシー1 !!A!!
         id === "FA011B1" || // 数学リテラシー1 (2年) !!A!!
         id === "FA011C1" || // 数学リテラシー1 (総合) !!A!!
@@ -117,7 +117,7 @@ function isD1(id: string, tableYear: number): boolean {
         id === "FBA1782" || //  線形代数演習S
         id === "FBA1862")) || //  線形代数演習F
     // 2023年のみ
-    (tableYear === 2023 &&
+    (tableYear <= 2023 &&
       (id === "FBA1481" || // 微積分I (化学類対象)  !!A!!
         id === "FBA1901" || // 微積分I (再履修者対象) !!A!!
         id === "FBA1521" || // 微積分II(化学類対象) !!A!!
@@ -384,10 +384,10 @@ export function classifyFakeCourses(
 export function getRemark(id: CellId, tableYear: number): string | undefined {
   if (id === "a1" || id === "a2" || id === "a3") {
     // !!F!!
-    if (tableYear <= 2024) {
-      return `単位数について、見た目は旧版の4.5となっていますが、改訂版の4で計算しています。また、これに伴う変更は全て改訂版の基準を反映させています。\nカッコの条件は判定していません。`;
+    if (tableYear >= 2025) {
+      return `カッコの条件は判定していません。`;
     }
-    return `カッコの条件は判定していません。`;
+    return `単位数について、見た目は旧版の4.5となっていますが、改訂版の4で計算しています。また、これに伴う変更は全て改訂版の基準を反映させています。\nカッコの条件は判定していません。`;
   }
   if (id === "a4") {
     // !!F!!

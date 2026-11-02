@@ -58,23 +58,23 @@ function isJapanExpertAgronomistInternship(id: string): boolean {
 
 function isA1(id: string, tableYear: number): boolean {
   // 専門語学(英語)I
-  if (tableYear === 2023) {
-    return (
-      id === "EC13112" || // 1クラス 春
-      id === "EC13122" || // 1クラス 秋
-      id === "EC13212" || // 2クラス 春
-      id === "EC13222" || // 2クラス 秋
-      id === "EC13312" || // 3クラス 春
-      id === "EC13322" || // 3クラス 秋
-      id === "EC13412" || // 4クラス 春
-      id === "EC13422" || // 4クラス 秋
-      id === "EC13512" || // 5クラス 春
-      id === "EC13522" || // 5クラス 秋
-      id === "EC13802" // 生物資源学類長が特別に認めた者，通年
-    );
+  if (tableYear >= 2024) {
+    // 春と秋
+    return id === "EC13112" || id === "EC13122";
   }
-  // 春と秋
-  return id === "EC13112" || id === "EC13122";
+  return (
+    id === "EC13112" || // 1クラス 春
+    id === "EC13122" || // 1クラス 秋
+    id === "EC13212" || // 2クラス 春
+    id === "EC13222" || // 2クラス 秋
+    id === "EC13312" || // 3クラス 春
+    id === "EC13322" || // 3クラス 秋
+    id === "EC13412" || // 4クラス 春
+    id === "EC13422" || // 4クラス 秋
+    id === "EC13512" || // 5クラス 春
+    id === "EC13522" || // 5クラス 秋
+    id === "EC13802" // 生物資源学類長が特別に認めた者，通年
+  );
 }
 
 function isA2(id: string): boolean {
@@ -502,12 +502,7 @@ function classifyColumnF(
 ): string | undefined {
   switch (specialty) {
     case "none":
-      if (tableYear <= 2024) {
-        if (isGakushikiban(id)) return "f1";
-        if (isElectivePe(id)) return "f2";
-        if (isArt(id)) return "f3";
-        if (isElectiveSecondForeignLanguage(id, name)) return "f4";
-      } else {
+      if (tableYear >= 2025) {
         if (isGakushikiban(id)) return "f1";
         if (
           isElectivePe(id) ||
@@ -515,17 +510,16 @@ function classifyColumnF(
           isElectiveSecondForeignLanguage(id, name)
         )
           return "f2";
+      } else {
+        if (isGakushikiban(id)) return "f1";
+        if (isElectivePe(id)) return "f2";
+        if (isArt(id)) return "f3";
+        if (isElectiveSecondForeignLanguage(id, name)) return "f4";
       }
       break;
     case "as":
       // asでは第一外国語（日本語）が追加される．
-      if (tableYear <= 2024) {
-        if (isGakushikiban(id)) return "f1";
-        if (isElectivePe(id)) return "f2";
-        if (isArtAs(id)) return "f3";
-        if (isElectiveSecondForeignLanguage(id, name)) return "f4";
-        if (isJapaneseAsForeignLanguage(id)) return "f5";
-      } else {
+      if (tableYear >= 2025) {
         if (isGakushikiban(id)) return "f1";
         if (
           isElectivePe(id) ||
@@ -534,6 +528,12 @@ function classifyColumnF(
           isJapaneseAsForeignLanguage(id)
         )
           return "f2";
+      } else {
+        if (isGakushikiban(id)) return "f1";
+        if (isElectivePe(id)) return "f2";
+        if (isArtAs(id)) return "f3";
+        if (isElectiveSecondForeignLanguage(id, name)) return "f4";
+        if (isJapaneseAsForeignLanguage(id)) return "f5";
       }
       break;
     default:

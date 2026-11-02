@@ -288,7 +288,7 @@ function isC3(id: string, tableYear: number): boolean {
 }
 
 function isC3Unlisted(id: string, tableYear: number): boolean {
-  return tableYear < 2026 && id === "HB33312"; // TOEFL演習 2023, 2024年開講
+  return tableYear <= 2025 && id === "HB33312"; // TOEFL演習 2023, 2024年開講
 }
 
 function isD1(id: string, specialty: Specialty, fromSougou: boolean): boolean {

@@ -105,7 +105,7 @@ function classifyColumnBMs(id: string, tableYear: number): string | undefined {
     id === "HE37141" || // 人工臓器学
     id === "HE36151" || // 胚操作・動物実験法(実験動物学)
     (tableYear >= 2026 && id === "HE37151") || // 発生工学と再生医療
-    (2023 <= tableYear && tableYear <= 2024 && id === "HE35051") || // 多職種連携医療学概論
+    (tableYear <= 2024 && id === "HE35051") || // 多職種連携医療学概論
     (tableYear >= 2025 && id === "HE39012") || // ケア・コロキウム
     id === "HE35002" || // 生体機能診断ワークショップ
     id === "HE41181" || // 健幸医科学グループワーク
@@ -201,7 +201,8 @@ function classifyColumnBImsMspis(
     id === "HE36161" || // ためになる血液学
     id === "HE36121" || // ためになる内分泌代謝学
     id === "HE40161" || // 血管生物学のトピックス
-    ((tableYear === 2024 || tableYear === 2025) &&
+    (2024 <= tableYear &&
+      tableYear <= 2025 &&
       (id === "HE36221" || // 実践的オンラインコンテンツ・ツール活用論
         id === "HE36201" || // 自己免疫疾患・アレルギー疾患の病態と臨床
         id === "HE36211")) || // 検査医学とスポーツ医学の密接な接点

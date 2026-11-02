@@ -94,13 +94,13 @@ function classifyColumnB(
       break;
     case "ps":
       // TODO:2025年度だけ、BB3から始まる科目（ただし、BB32を6単位以上含めること）という制限がある。
-      if (tableYear == 2023 || tableYear == 2024) {
+      if (tableYear >= 2025) {
+        if (id.startsWith("BB3")) return "b1";
+        if (bb1 || bb2 || bb4) return "b2";
+      } else {
         if (id.startsWith("BB32")) return "b1";
         if (id.startsWith("BB31")) return "b2";
         if (bb1 || bb2 || bb4) return "b3";
-      } else {
-        if (id.startsWith("BB3")) return "b1";
-        if (bb1 || bb2 || bb4) return "b2";
       }
       break;
     case "e":

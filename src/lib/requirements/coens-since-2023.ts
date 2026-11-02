@@ -192,7 +192,7 @@ function isB3(id: string, specialty: Specialty): boolean {
 
 function isC1(id: string, tableYear: number): boolean {
   if (id === "FF17011") return true; // 応用理工学概論
-  if (tableYear !== 2023) return false;
+  if (tableYear >= 2024) return false;
   return id === "FF18764" || isD2(id); // FF18764: 微積分1 (2023年度のみ救済として開講)
 }
 
@@ -202,7 +202,7 @@ function isC1Unlisted(
   tableYear: number,
   fromSougou: boolean,
 ): boolean {
-  if (tableYear !== 2023) return false;
+  if (tableYear >= 2024) return false;
   return isD2Unlisted(name) || (fromSougou && isNote6(id));
 }
 
@@ -570,7 +570,7 @@ export function getRemark(
     return `カッコの条件には対応していません。`;
   }
   if (
-    (tableYear === 2023 && id === "c1") ||
+    (tableYear <= 2023 && id === "c1") ||
     (tableYear >= 2024 && id === "d2")
   ) {
     return `注6(表下部参照)の情報学群開設の「微分積分A」「線形代数A」の読み替えは、移行前に修得したかどうかを確認せずに数えています。`;

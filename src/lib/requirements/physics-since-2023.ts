@@ -139,11 +139,8 @@ function isD2Native(id: string, tableYear: number): boolean {
     id === "FA011B1" || //数学リテラシー(生物学類の学生, および数学類, 物理学類, 化学類, 地球学類の２年次以上の学生)
     id === "FA01281" || //数学リテラシー(物理学類の学生)
     id === "FA012B1"; //数学リテラシー(生物学類の学生, および数学類, 物理学類, 化学類, 地球学類の２年次以上の学生)
-  if (tableYear <= 2023) {
-    return until2023 || since2023;
-  } else {
-    return since2023;
-  }
+  if (tableYear >= 2024) return since2023;
+  return until2023 || since2023;
 }
 
 // TODO: 別学類のD2該当科目を取ってしまっていたら一応成績には反映されるだろうと判断。支援室に要確認。 !!B!!
@@ -257,11 +254,8 @@ function isD2Unlisted(id: string, tableYear: number): boolean {
     id === "GA15221" || //線形代数A(情報科学類生および総合学域群生(情報科学類への移行希望者・学籍番号の下一桁が偶数)優先)
     id === "GA15231" || //線形代数A(情報メディア創成学類生および総合学域群生（情報メディア創成学類への移行希望者）優先)
     id === "GA15241"; //線形代数A(知識学類生および総合学域群生（知識学類への移行希望者）優先)
-  if (tableYear <= 2023) {
-    return until2023 || since2023;
-  } else {
-    return since2023;
-  }
+  if (tableYear >= 2024) return since2023;
+  return until2023 || since2023;
 }
 
 function isD2(id: string, tableYear: number): boolean {

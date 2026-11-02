@@ -54,16 +54,16 @@ function isB1(id: string): boolean {
 }
 
 function isC1(id: string, tableYear: number): boolean {
-  if (tableYear <= 2023) {
+  if (tableYear >= 2024) {
     return (
-      id === "FBA1461" || // 微積分I
-      id === "FBA1901" || // 微積分I（再履修用）
-      id === "FBA1501" // 微積分II
+      id === "FA01371" || //微積分1(2024以降)
+      id === "FA01471" //微積分2(2024以降)
     );
   }
   return (
-    id === "FA01371" || //微積分1(2024以降)
-    id === "FA01471" //微積分2(2024以降)
+    id === "FBA1461" || // 微積分I
+    id === "FBA1901" || // 微積分I（再履修用）
+    id === "FBA1501" // 微積分II
   );
 }
 
@@ -84,16 +84,16 @@ function isC1Unlisted(id: string, fromSougou: boolean): boolean {
 }
 
 function isC2(id: string, tableYear: number): boolean {
-  if (tableYear <= 2023) {
+  if (tableYear >= 2024) {
     return (
-      id === "FBA1581" || // 線形代数I
-      id === "FBA1911" || // 線形代数I（再履修用）
-      id === "FBA1621" // 線形代数II
+      id === "FA01671" || //線形代数1(2024以降)
+      id === "FA01771" //線形代数2(2024以降)
     );
   }
   return (
-    id === "FA01671" || //線形代数1(2024以降)
-    id === "FA01771" //線形代数2(2024以降)
+    id === "FBA1581" || // 線形代数I
+    id === "FBA1911" || // 線形代数I（再履修用）
+    id === "FBA1621" // 線形代数II
   );
 }
 

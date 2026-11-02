@@ -293,7 +293,7 @@ function isD1(id: string, tableYear: number): boolean {
     id === "GB12601" || // 論理と形式化
     id === "GB12801" || // 論理システム
     id === "GB12812" || // 論理システム演習
-    (tableYear === 2021 && id === "GB11404") // 電磁気学
+    (tableYear <= 2021 && id === "GB11404") // 電磁気学
   );
 }
 
