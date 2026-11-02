@@ -1,6 +1,8 @@
 <script lang="ts">
   import { asset } from "$app/paths";
   import Hand from "lucide-svelte/icons/hand";
+  import TriangleAlert from "lucide-svelte/icons/triangle-alert";
+  import ZoomIn from "lucide-svelte/icons/zoom-in";
   import { onMount, untrack, type Snippet } from "svelte";
   import {
     cellIdToColumnId,
@@ -239,7 +241,7 @@
   {/if}
   <div id="credit-sums-container">
     <div id="zoom-control">
-      <img src={asset("/icons/zoom-in.svg")} width="15" alt="zoom" />
+      <ZoomIn size={15} />
       <input
         type="range"
         min="0"
@@ -255,7 +257,7 @@
           data-message-on-click={display.warning}
           onclick={() => display.warning && alert(display.warning)}
         >
-          <img src={asset("/icons/warning.svg")} width="20" alt="warning" />
+          <TriangleAlert size={20} fill="#fcec5f" />
           <span bind:this={columnSpanEls[colId]}>{display.brief}</span>
         </div>
       {/each}
@@ -274,7 +276,7 @@
         data-message-on-click={display.warning}
         onclick={() => display.warning && alert(display.warning)}
       >
-        <img src={asset("/icons/warning.svg")} width="20" alt="warning" />
+        <TriangleAlert size={20} fill="#fcec5f" />
         <span bind:this={overallSpanEl}>{display.brief}</span>
       </div>
     {/if}
@@ -395,7 +397,7 @@
     &[data-message-on-click]:not([data-message-on-click=""]) {
       cursor: pointer;
 
-      & > img {
+      & > :global(svg) {
         display: unset;
       }
 
@@ -404,7 +406,7 @@
       }
     }
 
-    & > img {
+    & > :global(svg) {
       display: none;
       position: absolute;
       left: 8px;
