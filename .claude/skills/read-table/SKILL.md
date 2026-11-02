@@ -14,7 +14,7 @@ instead of trusting a comment or TODO about it.
 From the repo root:
 
 ```sh
-node .claude/skills/read-table/scripts/render.mjs OUT YEAR MAJOR [CELL_ID | x,y,w,h]...
+node .claude/skills/read-table/scripts/render.mjs [--labels] OUT YEAR MAJOR [CELL_ID | x,y,w,h]...
 ```
 
 - `OUT` goes in the scratchpad.
@@ -26,6 +26,10 @@ node .claude/skills/read-table/scripts/render.mjs OUT YEAR MAJOR [CELL_ID | x,y,
   region of the full image. Crops are at twice the resolution, so small
   text is legible.
 - It prints where each crop sits in the full image.
+- `--labels` also writes `OUT/<year>-<major>-labels.png`: the full image
+  with each cell rect outlined and tagged with its ID. Use it to map IDs
+  to cells. A tag hides the start of the cell's text, so read the text
+  from the plain image or a crop.
 
 The full image is displayed downscaled. Multiply coordinates read off it by
 the factor stated with the image before passing them as a region.

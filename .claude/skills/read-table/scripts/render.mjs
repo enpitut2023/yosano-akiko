@@ -1,6 +1,6 @@
 // Renders a page's 履修要覧 table to PNG, plus a crop per cell or region.
 //
-// Usage: node render.mjs OUT YEAR MAJOR [CELL_ID | x,y,w,h]...
+// Usage: node render.mjs [--labels] OUT YEAR MAJOR [CELL_ID | x,y,w,h]...
 //
 // Run from the repo root. The table is drawn on white at the SVG's own
 // width and height, the pixels that cell rects (static/rects/) and a region
@@ -10,9 +10,13 @@ import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { chromium } from "@playwright/test";
 
-const [out, year, major, ...targets] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const labels = args[0] === "--labels";
+const [out, year, major, ...targets] = labels ? args.slice(1) : args;
 if (!out || !year || !major) {
-  console.error("Usage: node render.mjs OUT YEAR MAJOR [CELL_ID | x,y,w,h]...");
+  console.error(
+    "Usage: node render.mjs [--labels] OUT YEAR MAJOR [CELL_ID | x,y,w,h]...",
+  );
   process.exit(2);
 }
 
@@ -58,6 +62,28 @@ try {
   const full = join(out, `${name}.png`);
   await page.screenshot({ path: full, scale: "css" });
   console.log(`${full} (${width}x${height})`);
+
+  if (labels) {
+    // After the full image and before the crops, so neither shows the labels
+    await page.evaluate((rects) => {
+      for (const [id, r] of Object.entries(rects)) {
+        const box = document.createElement("div");
+        box.style.cssText = `position:absolute;left:${r.x}px;top:${r.y}px;width:${r.width}px;height:${r.height}px;box-sizing:border-box;border:2px solid #e00;`;
+        const tag = document.createElement("span");
+        tag.textContent = id;
+        tag.style.cssText =
+          "position:absolute;left:0;top:0;padding:0 3px;background:#e00;color:#fff;font:bold 15px/1.2 sans-serif;";
+        box.append(tag);
+        document.body.append(box);
+      }
+    }, rects);
+    const path = join(out, `${name}-labels.png`);
+    await page.screenshot({ path, scale: "css" });
+    console.log(path);
+    await page.evaluate(() =>
+      document.querySelectorAll("body > div").forEach((d) => d.remove()),
+    );
+  }
 
   for (const t of targets) {
     const region = /^[\d.]+(,[\d.]+){3}$/.test(t);
