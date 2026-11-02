@@ -459,7 +459,7 @@ const reqSSince2023: SetupCreditRequirements = {
     f5: { min: 0, max: 2 },
     h1: { min: 0, max: 8 },
     h2: { min: 10, max: 20 },
-    h3: { min: 2, max: 20 },
+    h3: { min: 2, max: 10 },
     h4: { min: 0, max: 12 },
   },
   columns: {
