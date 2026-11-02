@@ -102,8 +102,9 @@ saved (grades, the 移行 answer, courses moved by hand) is one `$state.raw` val
 `saved`, replaced whole on every change. The `Akiko` is `$derived` from it. One
 effect writes `saved` to localStorage under `${major}_${tableYear}` in a
 versioned format (`local-data.ts` migrates older versions), and a `storage`
-listener takes in what another tab of the same page saved. Nothing else reads
-localStorage. `MajorApp` holds that state and the tutorial's steps, and passes
+listener takes in what another tab of the same page saved. The only other
+localStorage use is `seen.ts`, which remembers whether the tutorial and the pan
+hint were shown. `MajorApp` holds that state and the tutorial's steps, and passes
 the rest to `RequirementsTable` (the table) and one component per tab
 (`ImportTab`, `CoursesTab`, `ExportTab`).
 
