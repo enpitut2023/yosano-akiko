@@ -128,8 +128,8 @@ function classifyColumnD(
   specialty: Specialty,
   tableYear: number,
 ): string | undefined {
-  // TODO: d1とd2の条件が完全に被っているので、おそらくd1に入りきらなかった単位
-  // がd2に流れていく。未実装。 !!B!!
+  // d1とd2の条件が完全に被っているので、おそらくd1に入りきらなかった単位がd2に
+  // 流れていく。classifyRealCoursesのredistributeOverflowで流している。 !!B!!
   switch (specialty) {
     case "p":
       if (

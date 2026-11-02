@@ -48,12 +48,6 @@ function majorToSpecialtyOrFail(m: Major): Specialty {
   throw new Error(`Bad major: ${m}`);
 }
 
-// TODO:
-// 全ての主専攻で2023→2024,2025で、h2にVから始まる科目が追加され、単位数の上限が20→34まで増えた。
-// 全ての主専攻で2023→2024,2025で、h3の単位数の上限が10→26まで増えた。
-// TODO:
-// ps（政治学）の2023,2024→2025で、b1,b2がまとめてb1となっている。（BB32、BB31→BB3）
-
 function classifyColumnA(id: string, specialty: Specialty): string | undefined {
   if (specialty === "s") {
     if (id === "BB11998") return "a1"; // 卒業論文
