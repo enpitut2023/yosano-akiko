@@ -10,6 +10,13 @@ re-read on a 2x crop. To see one again:
 node .claude/skills/read-table/scripts/render.mjs --labels OUT YEAR MAJOR CELL_ID...
 ```
 
+`requirements-check/` has what the check ran, to redo it after the fixes:
+
+- `dump.sh OUT` writes what the code says for every page, one
+  `OUT/<year>-<major>.txt` each, and lists rect IDs with no requirement and
+  the reverse.
+- `agent-prompt.md` is what each checker agent (one per 学類) was told.
+
 Fix one commit per 学類. Where only some years change, split the shared
 object into a new `req<X>Since<year>` and extend the `>=` chain. Check each
 fix with the snapshot-refactor skill: only those pages' `requirements` (and
