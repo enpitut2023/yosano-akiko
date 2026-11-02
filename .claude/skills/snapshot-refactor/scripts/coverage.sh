@@ -19,6 +19,6 @@ out=$(cd "$out" && pwd)
 python3 -I "$here/make-sweep.py" "$repo" >"$out/sweep.txt"
 "$here/snapshot.sh" "$repo" "$out/snapshot" "$out/sweep.txt" \
   --coverage.enabled --coverage.provider=istanbul \
-  --coverage.include='src/lib/requirements/**' --coverage.reporter=json \
+  --coverage.include='src/lib/requirements/*.ts' --coverage.reporter=json \
   --coverage.reportsDirectory="$out/coverage"
 python3 -I "$here/uncovered.py" "$out/coverage/coverage-final.json"

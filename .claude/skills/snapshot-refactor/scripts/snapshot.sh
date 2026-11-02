@@ -13,9 +13,13 @@ shift 3
 here=$(cd "$(dirname "$0")" && pwd)
 shards=${SHARDS:-8}
 
+# Base trees from before the per-major tests moved keep them in src/lib/tests.
+dir=$tree/src/lib/requirements/tests
+[[ -d $dir ]] || dir=$tree/src/lib/tests
+
 tests=()
 for ((i = 0; i < shards; i++)); do
-  tests+=("$tree/src/lib/tests/snapshot.tmp.${i}of$shards.test.ts")
+  tests+=("$dir/snapshot.tmp.${i}of$shards.test.ts")
   cp "$here/snapshot.test.ts" "${tests[$i]}"
 done
 trap 'rm -f "${tests[@]}"' EXIT

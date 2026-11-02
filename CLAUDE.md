@@ -83,7 +83,7 @@ cell's, returning `unlisted(cellId, mode)`. Examples are
 another 学類's class of a course every 学類 teaches, or a course taken during
 総合. `fromSougou` is a separate axis, for rules that differ between 直接入学 and
 移行生. Don't use it to hide a course. For example, coins counts mast's
-微分積分A for every student but offers it to none. `src/lib/tests/offered.test.ts`
+微分積分A for every student but offers it to none. `src/lib/requirements/tests/offered.test.ts`
 compares the two modes over the whole catalog and lists where they disagree.
 
 **Assembling a page.** `src/routes/[tableYear]/[major]/+page.ts` calls
@@ -109,10 +109,11 @@ the rest to `RequirementsTable` (the table) and one component per tab
 (`ImportTab`, `CoursesTab`, `ExportTab`).
 
 **Tests.** A unit test sits next to the module it tests, as `<module>.test.ts`.
-The per-major tests are the exception: they're in `src/lib/tests/`, one file
-per major, and each calls `runTest` (`src/lib/tests/util.ts`) with a real
-grades CSV from `grade-csvs/` and the expected credit stats per cell. In dev,
-importing a grades file logs the current stats in that same shape.
+The per-major tests are the exception: they're in `src/lib/requirements/tests/`,
+one file per major, and each calls `runTest`
+(`src/lib/requirements/tests/util.ts`) with a real grades CSV from
+`grade-csvs/` and the expected credit stats per cell. In dev, importing a
+grades file logs the current stats in that same shape.
 
 ## Conventions
 

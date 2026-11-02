@@ -1,4 +1,4 @@
-// Copied into src/lib/tests/ by run.sh for one run, then removed. Dumps every
+// Copied beside the per-major tests' util.ts by snapshot.sh for one run, then removed. Dumps every
 // classification, the credit requirements and the remarks of every page, as
 // one gzipped JSON per page and 移行 answer.
 //
@@ -27,8 +27,8 @@ import { parseImportedCsv } from "$lib/csv";
 import { knownCourses } from "$lib/current-courses";
 import type { MajorConfig } from "$lib/app-setup";
 import { MAJOR_TO_REQUIREMENTS } from "$lib/major-config";
-import { getCreditStats } from "$lib/tests/util";
 import { assert } from "$lib/util";
+import { getCreditStats } from "./util";
 
 const env = {
   dir: process.env.SNAPSHOT_DIR,

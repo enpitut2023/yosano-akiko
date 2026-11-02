@@ -111,9 +111,9 @@ prefix also runs, so catch-all rules meet unseen prefixes even before that.
 ## When it breaks
 
 The snapshot test (`scripts/snapshot.test.ts`, copied by `snapshot.sh` into
-`src/lib/tests/` as `snapshot.tmp.<i>of<n>.test.ts` for each run and
-removed afterwards)
+`src/lib/requirements/tests/` (`src/lib/tests/` in older trees) as
+`snapshot.tmp.<i>of<n>.test.ts` for each run and removed afterwards)
 uses `MAJOR_TO_REQUIREMENTS`, `instances`, `parseImportedCsv` and
-`getCreditStats` from `src/lib/tests/util.ts`. If a base commit is older
+`getCreditStats` from the `util.ts` beside it. If a base commit is older
 than one of these, the run fails in that tree; its log is
 `OUT/base.log`.
