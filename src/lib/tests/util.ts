@@ -55,7 +55,6 @@ export function getCreditStats(params: {
     fakeCoursePositions,
     creditRequirementsNewOrFail(params.creditRequirements),
   );
-  assert(akiko !== undefined);
 
   return akikoGetCreditStats(akiko);
 }

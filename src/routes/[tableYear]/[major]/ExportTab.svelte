@@ -16,7 +16,7 @@
   import { trackEvent } from "$lib/analytics";
   import type { MajorConfig } from "$lib/app-setup";
   import Dialog from "$lib/Dialog.svelte";
-  import { SUPPORT_URL } from "./links";
+  import { SUPPORT_URL } from "$lib/constants";
   import SyllabusLink from "./SyllabusLink.svelte";
   import type { TimetableTab } from "./timetable";
 

@@ -89,7 +89,6 @@ function occupiedBy(slots: Slot[]): OccupiedSlots {
       elective: 0,
     }),
   );
-  assert(akiko !== undefined);
   return akikoGetOccupiedSlots(akiko);
 }
 

@@ -5,7 +5,7 @@
   import ChevronRight from "lucide-svelte/icons/chevron-right";
   import { type TimetableTab } from "./timetable";
   import Meta from "$lib/Meta.svelte";
-  import { FEEDBACK_FORM_URL, MAJOR_TO_JA } from "$lib/constants";
+  import { FEEDBACK_FORM_URL, MAJOR_TO_JA, SUPPORT_URL } from "$lib/constants";
   import { parseImportedCsv } from "$lib/csv";
   import {
     akikoGetCourseLists,
@@ -31,7 +31,6 @@
     type LocalDataV3,
   } from "$lib/local-data";
   import { browser, dev } from "$app/environment";
-  import { assert } from "$lib/util.js";
   import { onMount, untrack } from "svelte";
   import { markSeen, seen } from "./seen";
   import { creditStatsDebugPrint } from "./debug";
@@ -42,7 +41,6 @@
   import Tutorial from "./Tutorial.svelte";
   import ImportTab from "./ImportTab.svelte";
   import ExportTab from "./ExportTab.svelte";
-  import { SUPPORT_URL } from "./links";
   import { resizeHandle } from "./gestures";
   import type { TutorialStep } from "./tutorial";
 
@@ -92,7 +90,7 @@
   const akiko = $derived.by(() => {
     const { courseIdToCellId, realCoursePositions, fakeCoursePositions } =
       classification;
-    const a = akikoNew(
+    return akikoNew(
       config.knownCourses,
       config.knownCourseYear,
       realCourses,
@@ -103,8 +101,6 @@
       fakeCoursePositions,
       creditRequirements,
     );
-    assert(a !== undefined);
-    return a;
   });
 
   const creditStats = $derived(akikoGetCreditStats(akiko));
@@ -219,10 +215,10 @@
   const mightTakeCourseIds = $derived(akikoGetMightTakeCourseIds(akiko));
   let exportCount = $state(0);
 
-  let metaTitle = $derived(
+  const metaTitle = $derived(
     `あきこ - ${config.tableYear}年度 ${MAJOR_TO_JA[config.major]}`,
   );
-  let metaDescription = $derived(
+  const metaDescription = $derived(
     `${config.tableYear}年度入学の${MAJOR_TO_JA[config.major]}の学生向け履修サポートツールです。単位の計算・授業探し・Twinsへの登録を楽に終わらせましょう！`,
   );
 

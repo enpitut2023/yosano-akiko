@@ -60,7 +60,6 @@ function akikoForTest(listKindOverrides: ListKindOverrides) {
       elective: 0,
     }),
   );
-  assert(akiko !== undefined);
   return akiko;
 }
 
@@ -191,7 +190,6 @@ function akikoWith(params: {
       },
     ),
   );
-  assert(akiko !== undefined);
   return akiko;
 }
 

@@ -409,7 +409,7 @@ export function akikoNew(
   realCoursePositions: Map<CourseId, CellId>,
   fakeCoursePositions: Map<FakeCourseId, CellId>,
   creditRequirements: CreditRequirements,
-): Akiko | undefined {
+): Akiko {
   const knownCourses = new Map(knownCoursesArray.map((c) => [c.id, c]));
 
   realCoursesArray = Array.from(realCoursesArray);

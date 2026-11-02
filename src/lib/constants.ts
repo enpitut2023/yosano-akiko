@@ -506,3 +506,5 @@ export const FEEDBACK_FORM_URL =
 export const AKIKO_X_URL = "https://x.com/akiko_tsukuba";
 
 export const ENPIT_URL = "https://enpit.coins.tsukuba.ac.jp/";
+
+export const SUPPORT_URL = "https://buymeacoffee.com/akiko.tsukuba";
