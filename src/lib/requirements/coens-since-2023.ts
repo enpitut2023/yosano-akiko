@@ -573,7 +573,6 @@ export function getRemark(
     (tableYear === 2023 && id === "c1") ||
     (tableYear >= 2024 && id === "d2")
   ) {
-    // !!D!!
     return `注6(表下部参照)の情報学群開設の「微分積分A」「線形代数A」の読み替えは、移行前に修得したかどうかを確認せずに数えています。`;
   } else if (id === "e3" || id === "f2") {
     // !!E!!
