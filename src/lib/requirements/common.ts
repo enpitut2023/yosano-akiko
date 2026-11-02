@@ -338,9 +338,6 @@ export function isHumanSciencesCoreCurriculum(id: string): boolean {
   return id.startsWith("CA1");
 }
 
-// TODO: 単位数が整数であることを前提にしている。0.5単位(基礎体育など)や1.5単位の
-// 科目があり、合計が整数でないとdpの長さが不正になってRangeErrorで落ちる。合計が
-// 整数でも、dpの添字が小数になり組み合わせを正しく探せない
 /**
  * 目標単位数にピッタリ合う科目の組み合わせを動的計画法(DP)で探す。
  * ピッタリの組み合わせが見つからない場合は、目標を超える組み合わせのうち
@@ -360,42 +357,29 @@ export function findExactCombination(
       gradeIsPass(c.grade) && c.credit !== undefined,
   );
 
-  // 全科目の合計単位数を上限としてDPの範囲を決める
   const totalCredits = passedCourses.reduce((sum, c) => sum + c.credit, 0);
   if (totalCredits < target) return undefined;
 
-  // dp[i] は「合計単位数を i にできる科目の組み合わせ（配列）」を保持する
-  // 達成不可能な場合は undefined とする
-  const dp = Array<(RealCourse & { credit: number })[] | undefined>(
-    totalCredits + 1,
-  ).fill(undefined);
-
-  // 初期状態: 合計0単位を作るための組み合わせは「何も選ばない（空の配列）」
-  dp[0] = [];
-
-  // 各科目について、上限値までの各単位数で組み合わせが作れるか更新していく
+  // 合計単位数から、その合計にできる科目の組み合わせへのマップ。0.5単位や1.5単位
+  // の科目があるので配列の添字ではなく合計そのものをキーにする。0.5の倍数の和は
+  // 浮動小数点数でも誤差なく表せるので、キーの比較で困ることはない
+  const combinations = new Map<number, RealCourse[]>([[0, []]]);
   for (const course of passedCourses) {
-    // 同じ科目を複数回使わないよう、後ろ（大きい単位数）から前へループを回す
-    for (
-      let currentTarget = totalCredits;
-      currentTarget >= course.credit;
-      currentTarget--
-    ) {
-      const prevTarget = currentTarget - course.credit;
-
-      // 「現在の科目単位数を引いた値(prevTarget)」が達成可能であり、
-      // かつ「現在の目標値(currentTarget)」がまだ未達成の場合、組み合わせを記録する
-      if (dp[prevTarget] !== undefined && dp[currentTarget] === undefined) {
-        dp[currentTarget] = [...dp[prevTarget], course];
+    // 同じ科目を複数回使わないよう、この科目を足す前の組み合わせだけから広げる
+    for (const [sum, combination] of [...combinations]) {
+      const newSum = sum + course.credit;
+      if (!combinations.has(newSum)) {
+        combinations.set(newSum, [...combination, course]);
       }
     }
   }
 
   // target以上で最小の達成可能な単位数の組み合わせを返す
-  for (let i = target; i <= totalCredits; i++) {
-    if (dp[i] !== undefined) return dp[i];
+  let best: number | undefined;
+  for (const sum of combinations.keys()) {
+    if (sum >= target && (best === undefined || sum < best)) best = sum;
   }
-  return undefined;
+  return best === undefined ? undefined : combinations.get(best);
 }
 
 /**

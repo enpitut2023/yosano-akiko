@@ -45,8 +45,7 @@ python3 -I .claude/skills/snapshot-refactor/scripts/snapdiff.py OUT/base OUT/new
   stopping the run. A refactor that adds or removes one shows up as a
   difference.
 - `snapdiff.py --throws OUT/new` lists every recorded crash, per page and
-  section. Known: bres and bres-as crash in `realTogether` from the
-  fractional credits (the TODO on `findExactCombination`).
+  section.
 - The inputs come from each tree, so if the two trees have different
   catalogs (`src/lib/current-courses.ts`) or grades files, the snapshots
   differ for that reason too. Compare refactors on trees with the same
