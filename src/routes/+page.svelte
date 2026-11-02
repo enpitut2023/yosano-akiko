@@ -112,7 +112,7 @@
   ];
 </script>
 
-<Meta title="あきこ" {description} />
+<Meta title="あきこ - 筑波大生向けの履修サポートツール" {description} />
 
 <Nav />
 
