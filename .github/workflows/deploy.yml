@@ -13,14 +13,14 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy-pages-step.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - env:
           BASE_PATH: "/${{ github.event.repository.name }}"
         run: npm run verify
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: "build"
-      - uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v5
         id: deploy-pages-step
