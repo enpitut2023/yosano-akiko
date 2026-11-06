@@ -234,7 +234,7 @@
     position: fixed;
     z-index: 1001;
     box-sizing: border-box;
-    width: 400px;
+    width: 450px;
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -280,6 +280,7 @@
 
   footer {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
     gap: 10px;
   }

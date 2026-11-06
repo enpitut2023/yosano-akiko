@@ -1,5 +1,11 @@
 import { gradeRow, gradesFile } from "./fixtures/grades";
-import { expect, test, waitForHydration, type Page } from "./test";
+import {
+  expect,
+  importGrades,
+  test,
+  waitForHydration,
+  type Page,
+} from "./test";
 
 // The tutorial only needs some valid file
 const GRADES = gradesFile([gradeRow("GB26403", "A", 2023)]);
@@ -112,6 +118,45 @@ test.describe("on the first visit", () => {
       .getByRole("button", { name: "チュートリアル", exact: true })
       .click();
     await expectStep(page, "welcome");
+  });
+});
+
+test.describe("with grades already imported", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("2023/coins");
+    await importGrades(page, GRADES);
+    await page
+      .getByRole("button", { name: "チュートリアル", exact: true })
+      .click();
+    await expectStep(page, "welcome");
+    await next(page);
+    await expectStep(page, "download");
+  });
+
+  test("the download step can skip importing", async ({ page }) => {
+    await expect(
+      tutorial(page).getByRole("button", { name: "新入生なのでスキップ" }),
+    ).toHaveCount(0);
+    await tutorial(page)
+      .getByRole("button", { name: "インポート済みなのでスキップ" })
+      .click();
+    await expectStep(page, "student-type");
+  });
+
+  test("the import step can keep the grades", async ({ page }) => {
+    await next(page);
+    await expectStep(page, "import");
+    await tutorial(page).getByRole("button", { name: "このまま次へ" }).click();
+    await expectStep(page, "student-type");
+  });
+
+  test("the import step still takes a new file", async ({ page }) => {
+    await next(page);
+    await expectStep(page, "import");
+    await page
+      .locator(".csv-input")
+      .setInputFiles(gradesFile([gradeRow("GB26403", "B", 2023)]));
+    await expectStep(page, "student-type");
   });
 });
 

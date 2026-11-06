@@ -63,6 +63,7 @@
   let saved = $state.raw<LocalDataV3>(localDataLoad());
   const realCourses = $derived(saved.realCourses);
   const fakeCourses = $derived(saved.fakeCourses);
+  const gradesImported = $derived(realCourses.length + fakeCourses.length > 0);
   const fromSougou = $derived(!saved.native);
   let selectedCellId = $state<CellId | undefined>(undefined);
   let showNonAvailable = $state(false);
@@ -239,7 +240,7 @@
   onMount(() => {
     // Not in activeTab's initial value: the prerendered page has no saved
     // grades, and hydration wouldn't correct its tab classes
-    if (realCourses.length + fakeCourses.length > 0) activeTab = "courses";
+    if (gradesImported) activeTab = "courses";
     if (!mobileUnsupported() && !seen("tutorial")) tutorialOpen = true;
   });
 
@@ -281,18 +282,20 @@
       title: "成績ファイルをダウンロード",
       body: "まずはTWINSから成績ファイルをダウンロードしてね。やり方は「手順を見る」に書いてあるわ〜",
       nextLabel: "ダウンロードした",
-      choices: [
-        {
-          label: "新入生なのでスキップ",
-          next: "tab-courses",
-        },
-      ],
+      get choices() {
+        return gradesImported
+          ? [{ label: "インポート済みなのでスキップ", next: "student-type" }]
+          : [{ label: "新入生なのでスキップ", next: "tab-courses" }];
+      },
     },
     {
       id: "import",
       target: ["grades-import"],
       title: "成績ファイルをインポート",
       body: "ダウンロードしたファイルを枠にドロップするか、枠を押して選んでね。インポートできたら次に進むわよ〜",
+      get nextLabel() {
+        return gradesImported ? "このまま次へ" : undefined;
+      },
       onEnter: tutorialSnapshot,
       waitFor: () => realCourses !== tutorialStepStart.realCourses,
     },
