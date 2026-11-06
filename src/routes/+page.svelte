@@ -195,6 +195,9 @@
         >{majorOnlyJa(i)}{#if i.checked}&nbsp;✅{/if}</a
       >
     {/each}
+    <p class="undecided">
+      主専攻がまだ決まっていない場合は、進みたい主専攻に一番近いものを選んでください。必要な単位は主専攻ごとに異なるため、主専攻が決まったら選び直してください。
+    </p>
   </div>
 {/if}
 
@@ -378,6 +381,15 @@
       border-color: $c;
       color: white;
     }
+  }
+
+  .undecided {
+    flex-basis: 100%;
+    margin: 5px 0 0;
+    color: #555;
+    font-size: 15px;
+    line-height: 1.6;
+    word-break: auto-phrase;
   }
 
   // The entry point, so it stands out more than the college and major choices
