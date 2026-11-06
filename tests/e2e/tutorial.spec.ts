@@ -40,9 +40,6 @@ test.describe("on the first visit", () => {
     await expectStep(page, "welcome");
     await next(page);
 
-    await expectWaiting(page, "tab-import");
-    await page.getByRole("button", { name: "単位チェック" }).click();
-
     await expectStep(page, "download");
     await next(page);
 
@@ -93,7 +90,6 @@ test.describe("on the first visit", () => {
   test("without grades, it skips the import steps", async ({ page }) => {
     await page.goto("2023/coins");
     await next(page);
-    await page.getByRole("button", { name: "単位チェック" }).click();
     await expectStep(page, "download");
     await tutorial(page)
       .getByRole("button", { name: "新入生なのでスキップ" })

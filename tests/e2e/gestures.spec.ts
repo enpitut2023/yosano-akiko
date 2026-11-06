@@ -2,7 +2,14 @@
 // Each test's page is the default 1280×720 viewport, where the table is larger
 // than its view.
 import { SEEN_KEYS } from "../../src/routes/[tableYear]/[major]/seen";
-import { clickUntil, expect, test, waitForHydration, type Page } from "./test";
+import {
+  clickUntil,
+  expect,
+  openTab,
+  test,
+  waitForHydration,
+  type Page,
+} from "./test";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("2023/coins");
@@ -263,7 +270,7 @@ test.describe("the sidebar", () => {
 
 test.describe("the timetable", () => {
   test.beforeEach(async ({ page }) => {
-    await waitForHydration(page);
+    await openTab(page, "履修を組む");
   });
 
   function timetableHeight(page: Page) {

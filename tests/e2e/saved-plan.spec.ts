@@ -11,6 +11,7 @@ import {
   openTab,
   takenIds,
   test,
+  waitForHydration,
   wontTakeIds,
   type Page,
 } from "./test";
@@ -41,6 +42,19 @@ async function answerTransfer(page: Page, answer: "はい" | "いいえ") {
     .click();
   await openTab(page, "履修を組む");
 }
+
+test("the page opens on 単位チェック until there are grades", async ({
+  page,
+}) => {
+  await page.goto("2023/coins");
+  await waitForHydration(page);
+  await expect(page.locator("#import-tab")).toHaveClass(/active/);
+
+  await importGrades(page, GRADES);
+  await page.reload();
+  await waitForHydration(page);
+  await expect(page.locator("#courses-tab")).toHaveClass(/active/);
+});
 
 test.describe("with grades", () => {
   test.beforeEach(async ({ page }) => {

@@ -141,7 +141,7 @@
   let activeTimetableTerm = $state<TimetableTab>("spring-a");
 
   let barsVisible = $state(true);
-  let activeTab = $state<Tab>("courses");
+  let activeTab = $state<Tab>("import");
 
   const SIDEBAR_MARGIN = 100;
   const SIDEBAR_WIDTH_DEFAULT = 740;
@@ -237,6 +237,9 @@
   let tutorialOpen = $state(false);
 
   onMount(() => {
+    // Not in activeTab's initial value: the prerendered page has no saved
+    // grades, and hydration wouldn't correct its tab classes
+    if (realCourses.length + fakeCourses.length > 0) activeTab = "courses";
     if (!mobileUnsupported() && !seen("tutorial")) tutorialOpen = true;
   });
 
@@ -270,15 +273,7 @@
       title: "はじめまして〜",
       body: "あきこよ〜。卒業に必要な単位のチェックから、授業探し、TWINSへの履修登録までお手伝いするわね。実際に触りながら使い方を教えるから、一緒にやってみましょ〜",
       nextLabel: "お願いします！",
-      onEnter: () => showTab("courses"),
-    },
-    {
-      id: "tab-import",
-      target: ["tab-import"],
-      title: "タブで画面を切り替える",
-      body: "右側の画面は、上のタブで切り替えるの。まずは「単位チェック」タブを押してみて〜",
-      onEnter: () => (barsVisible = true),
-      waitFor: () => activeTab === "import",
+      onEnter: () => showTab("import"),
     },
     {
       id: "download",
@@ -319,7 +314,7 @@
       id: "tab-courses",
       target: ["tab-courses"],
       title: "授業を探しに行こう",
-      body: "次は授業探しよ。「履修を組む」タブを押してね〜",
+      body: "次は授業探しよ。右側の画面は上のタブで切り替えるの。「履修を組む」タブを押してね〜",
       onEnter: () => (barsVisible = true),
       waitFor: () => activeTab === "courses",
     },
@@ -434,7 +429,6 @@
   <div id="sidebar">
     <div id="tab-header">
       <button
-        data-tutorial="tab-import"
         class:active={activeTab === "import"}
         onclick={() => (activeTab = "import")}
         ><span class="icon" style="--src: url({asset('/icons/math.svg')})"

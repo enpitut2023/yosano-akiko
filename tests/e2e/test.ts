@@ -49,6 +49,9 @@ export const test = base.extend<{ seen: boolean }>({
 
 /** Opens a sidebar tab of a major page, waiting for the page to hydrate. */
 export async function openTab(page: Page, name: string): Promise<void> {
+  // The prerendered page shows 単位チェック as active, and hydrating with saved
+  // grades can move away from it, so a tab being active proves nothing before
+  await waitForHydration(page);
   const tab = page.getByRole("button", { name, exact: true });
   await clickUntil(tab, () =>
     expect(tab).toHaveClass(/active/, { timeout: 100 }),
