@@ -23,6 +23,7 @@
      */
     year: number;
     activeTerm: TimetableTab;
+    highlightedCourseId: CourseId | undefined;
     onBarClick: (courseId: CourseId) => void;
     onBarDragStart: (event: DragEvent, courseId: CourseId) => void;
     onBarDragEnd: () => void;
@@ -32,6 +33,7 @@
     akiko,
     year = $bindable(),
     activeTerm = $bindable(),
+    highlightedCourseId,
     onBarClick,
     onBarDragStart,
     onBarDragEnd,
@@ -178,7 +180,9 @@
     }
 
     // Group unique bars by column, then greedily layer to avoid overlap.
-    // Sort key: taken, length asc (longer first), yStart asc, then courseId.
+    // Sort key: highlighted last, so that it's offset above what it overlaps
+    // and those bars still show; taken; length asc (longer first); yStart asc;
+    // then courseId.
     const byX = new Map<number, Bar[]>();
     for (const bar of unique) {
       const col = byX.get(bar.x) ?? [];
@@ -187,6 +191,9 @@
     }
     for (const col of byX.values()) {
       col.sort((a, b) => {
+        const aHighlighted = a.courseId === highlightedCourseId;
+        const bHighlighted = b.courseId === highlightedCourseId;
+        if (aHighlighted !== bHighlighted) return aHighlighted ? 1 : -1;
         if (a.taken !== b.taken) return a.taken ? -1 : 1;
         const aLen = a.yEnd - a.yStart;
         const bLen = b.yEnd - b.yStart;
@@ -264,6 +271,7 @@
           <tbody>
             {#each otherTabCourses as { course, draggable } (course.id)}
               <tr
+                class:highlighted={course.id === highlightedCourseId}
                 {draggable}
                 ondragstart={(e) => {
                   if (draggable) onBarDragStart(e, course.id);
@@ -326,6 +334,7 @@
       {#each bars as bar (`${bar.courseId}-${bar.x}-${bar.yStart}`)}
         <div
           class="bar-outer"
+          class:highlighted={bar.courseId === highlightedCourseId}
           style="grid-column: {bar.x + 2}; grid-row: {bar.yStart +
             2} / {bar.yEnd + 3}; --nudge: {bar.nudge}"
         >
@@ -445,6 +454,10 @@
         cursor: grabbing;
       }
     }
+
+    tbody > tr.highlighted {
+      background-color: oklch(93% 0.07 70);
+    }
   }
 
   .tt-cell {
@@ -475,6 +488,17 @@
     overflow: hidden;
     z-index: var(--nudge, 0);
     pointer-events: none;
+
+    &.highlighted {
+      & > .bar-inner {
+        background-color: oklch(76% 0.16 70);
+        border-color: oklch(51% 0.22 70);
+      }
+
+      & .bar-name {
+        font-weight: bold;
+      }
+    }
   }
 
   .bar-inner {

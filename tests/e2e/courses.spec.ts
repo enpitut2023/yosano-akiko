@@ -183,6 +183,64 @@ test("dragging a course adds it to 取る授業 and the timetable", async ({
   await expect(timetableBar(page, "GB20401")).toBeHidden();
 });
 
+test.describe("the course added last", () => {
+  function highlightedBars(page: Page) {
+    return page.locator(".bar-outer.highlighted .bar-id");
+  }
+
+  test("stays highlighted until the next add", async ({ page }) => {
+    await dragToMightTake(page, "b1", "GB20401");
+    await expect(highlightedBars(page).first()).toHaveText("GB20401");
+    await expect(page.locator("#right-bar tr.highlighted")).toContainText(
+      "GB20401",
+    );
+
+    await dragToMightTake(page, "b2", "GB31801");
+    await expect(highlightedBars(page).first()).toHaveText("GB31801");
+    await expect(page.locator("#right-bar tr.highlighted")).toContainText(
+      "GB31801",
+    );
+    await expect(
+      page.locator(".bar-outer.highlighted", { hasText: "GB20401" }),
+    ).toHaveCount(0);
+  });
+
+  test("leaves the course it overlaps visible", async ({ page }) => {
+    await dragToMightTake(page, "b2", "GB31801");
+    // Sorts before GB31801, so it would otherwise cover it
+    await dragToMightTake(page, "b1", "GB20401");
+    await expect(page.locator(".bar-outer.highlighted")).toHaveCSS(
+      "--nudge",
+      "1",
+    );
+    await expect(page.locator(".bar-outer", { hasText: "GB31801" })).toHaveCSS(
+      "--nudge",
+      "0",
+    );
+  });
+
+  test("is highlighted under その他", async ({ page }) => {
+    await dragToMightTake(page, "b2", "GB13322");
+    await expect(page.locator(".other-tab tr.highlighted")).toContainText(
+      "GB13322",
+    );
+  });
+
+  test("isn't highlighted after a reload", async ({ page }) => {
+    await dragToMightTake(page, "b1", "GB20401");
+    await page.reload();
+    await openTab(page, "履修を組む");
+    await expect(timetableBar(page, "GB20401")).not.toHaveCount(0);
+    await expect(page.locator(".bar-outer.highlighted")).toHaveCount(0);
+  });
+
+  test("a removed course doesn't stay highlighted", async ({ page }) => {
+    await dragToMightTake(page, "b1", "GB20401");
+    await dragToWontTake(page, "GB20401");
+    await expect(page.locator(".bar-outer.highlighted")).toHaveCount(0);
+  });
+});
+
 test.describe("the timetable's year", () => {
   // Both on 春A, like GB31801
   const passedThisYear = gradeRow("GB26403", "A", knownCourseYear);

@@ -153,6 +153,9 @@
     if (e.dataTransfer !== null) e.dataTransfer.dropEffect = "move";
   }
 
+  /** Kept until the next add: dropping can switch the timetable's term. */
+  let lastAddedCourseId = $state<CourseId | undefined>();
+
   function handleDrop(event: DragEvent, dst: "wont-take" | "might-take") {
     event.preventDefault();
     const courseId = event.dataTransfer?.getData("text/plain");
@@ -160,6 +163,7 @@
     const moved = akikoMoveCourse(akiko, courseId, dst);
     if (moved.kind === "moved") {
       onMove(moved.listKindOverrides);
+      if (dst === "might-take") lastAddedCourseId = courseId;
       trackEvent(
         "plan",
         dst === "might-take" ? "add-course" : "remove-course",
@@ -259,6 +263,7 @@
     bind:year={timetableYear}
     bind:activeTerm={timetableTerm}
     {akiko}
+    highlightedCourseId={lastAddedCourseId}
     onBarClick={(courseId: CourseId) => {
       const cellId = akiko.courseIdToCellId.get(courseId);
       if (cellId !== undefined) onShowCell(cellId);
@@ -304,6 +309,7 @@
         <CourseTable
           courses={courseLists.mightTake}
           catalogYear={akiko.knownCourseYear}
+          highlightedCourseId={lastAddedCourseId}
           {showRemark}
           showGotoCell={selectedCellId === undefined}
           {onShowCell}

@@ -15,6 +15,7 @@
     showExpects,
     showRemark,
     showGotoCell,
+    highlightedCourseId,
     onShowCell,
     onDragStart,
     onDragEnd,
@@ -26,6 +27,7 @@
     showRemark: boolean;
     /** Whether each course has a 該当マスを表示 button */
     showGotoCell: boolean;
+    highlightedCourseId?: CourseId;
     onShowCell: (cellId: CellId) => void;
     /** Rows are draggable only with it */
     onDragStart?: (e: DragEvent, courseId: CourseId) => void;
@@ -48,6 +50,7 @@
     {#each courses as c (c.id)}
       <tr
         class="course"
+        class:highlighted={c.id === highlightedCourseId}
         draggable={onDragStart !== undefined}
         ondragstart={(e) => onDragStart?.(e, c.id)}
         ondragend={() => onDragEnd?.()}
@@ -116,5 +119,9 @@
     &:active {
       cursor: grabbing;
     }
+  }
+
+  tbody > tr.highlighted {
+    background-color: oklch(93% 0.07 70);
   }
 </style>
