@@ -285,6 +285,29 @@ test.describe("the timetable's year", () => {
   });
 });
 
+test("the drop guide covers overlapping bars", async ({ page }) => {
+  await dragToMightTake(page, "b1", "GB20401");
+  await dragToMightTake(page, "b2", "GB31801");
+  // Dragging from the left, as the guide covers the side it can be dropped on
+  await page
+    .locator("#left-bar tbody tr.course")
+    .first()
+    .dispatchEvent("dragstart");
+  await expect(page.locator("#drop-guide")).toBeVisible();
+
+  // The guide lets clicks through, which elementFromPoint would skip it for
+  await page.addStyleTag({
+    content: "#drop-guide { pointer-events: auto !important; }",
+  });
+  const box = await timetableBar(page, "GB31801").boundingBox();
+  if (box === null) throw new Error("The bar isn't rendered");
+  const topId = await page.evaluate(
+    ({ x, y }) => document.elementFromPoint(x, y)?.id,
+    { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+  );
+  expect(topId).toBe("drop-guide");
+});
+
 test("a course without a fixed time slot is under その他", async ({ page }) => {
   await dragToMightTake(page, "b2", "GB13322");
   await expect(timetableTerm(page, "その他")).toHaveClass(/active/);

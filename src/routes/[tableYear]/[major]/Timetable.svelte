@@ -425,6 +425,8 @@
     grid-template-columns: auto repeat(5, 1fr);
     grid-template-rows: auto repeat(6, 1fr);
     overflow: hidden;
+    // Keeps the bars' z-indexes under the drop guide
+    isolation: isolate;
   }
 
   .other-tab {
