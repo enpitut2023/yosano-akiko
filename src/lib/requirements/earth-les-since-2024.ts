@@ -242,7 +242,7 @@ const reqSince2024: SetupCreditRequirements = {
     e4: { min: 2, max: 2 },
     e5: { min: 1, max: 1 },
     f1: { min: 1, max: 1 },
-    f2: { min: 0, max: 14 },
+    f2: { min: 0, max: 15 },
     h1: { min: 9, max: 23 },
   },
   columns: {
@@ -274,7 +274,7 @@ const reqSince2026: SetupCreditRequirements = {
     e4: { min: 2, max: 2 },
     e5: { min: 1, max: 1 },
     f1: { min: 1, max: 1 },
-    f2: { min: 0, max: 14 },
+    f2: { min: 0, max: 15 },
     h1: { min: 9, max: 23 },
   },
   columns: {
