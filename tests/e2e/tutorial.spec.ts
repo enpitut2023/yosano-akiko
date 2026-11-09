@@ -1,5 +1,4 @@
 import { gradeRow, gradesFile } from "./fixtures/grades";
-import { shot } from "./shot";
 import {
   expect,
   importGrades,
@@ -19,7 +18,6 @@ function tutorial(page: Page) {
 
 async function expectStep(page: Page, id: string): Promise<void> {
   await expect(tutorial(page)).toHaveAttribute("data-testid", `tutorial-${id}`);
-  await shot(page, `step-${id}`);
 }
 
 /** Clicks the button that goes to the next step. */

@@ -87,6 +87,6 @@ these were done with a script instead.
       the code; the four `screenshots/before-*` runs are untracked):
       `for i in 1 2 3; do SHOTS=screenshots/after-$i npx playwright test; done`,
       then `python3 tests/e2e/compare-shots.py screenshots`.
-- [ ] Revert 90f3743 and delete `screenshots/`.
+- [x] Revert 90f3743 and delete `screenshots/`.
 - [x] Update `CLAUDE.md` where it mentions anything changed above. Nothing
       in it was out of date.

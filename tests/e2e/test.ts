@@ -6,7 +6,6 @@ import {
 } from "@playwright/test";
 import { SEEN_KEYS } from "../../src/routes/[tableYear]/[major]/seen";
 import type { gradesFile } from "./fixtures/grades";
-import { shot } from "./shot";
 
 export { expect, type Page } from "@playwright/test";
 
@@ -44,7 +43,6 @@ export const test = base.extend<{ seen: boolean }>({
       }
     });
     await use(page);
-    await shot(page, "end");
     expect(errors, "errors logged by the page").toEqual([]);
   },
 });
@@ -58,7 +56,6 @@ export async function openTab(page: Page, name: string): Promise<void> {
   await clickUntil(tab, () =>
     expect(tab).toHaveClass(/active/, { timeout: 100 }),
   );
-  await shot(page, `tab-${name}`);
 }
 
 /** Imports a grades file on the 単位チェック tab. */
@@ -69,7 +66,6 @@ export async function importGrades(
   await openTab(page, "単位チェック");
   await page.locator(".csv-input").setInputFiles(file);
   await expect(page.locator("#csv-drop-zone")).toContainText("インポート済み");
-  await shot(page, "imported");
 }
 
 /**
@@ -108,7 +104,6 @@ export async function dragToMightTake(
   const row = page.locator("#left-bar tr.course", { hasText: courseId });
   await row.dragTo(page.locator("#right-bar"));
   await expect(row).toHaveCount(0);
-  await shot(page, `added-${courseId}`);
 }
 
 /** A term's tab above the timetable, by its label (春A, …, その他). */

@@ -17,26 +17,7 @@ export default defineConfig({
     baseURL: url,
     trace: "retain-on-failure",
   },
-  projects: [
-    {
-      name: "chromium",
-      use: {
-        ...devices["Desktop Chrome"],
-        // Rasterizes the same way every run, for shot.ts
-        launchOptions: {
-          args: [
-            "--disable-gpu",
-            "--disable-gpu-rasterization",
-            "--num-raster-threads=1",
-            "--disable-partial-raster",
-            "--force-color-profile=srgb",
-            "--disable-lcd-text",
-            "--disable-font-subpixel-positioning",
-          ],
-        },
-      },
-    },
-  ],
+  projects: [{ name: "chromium", use: devices["Desktop Chrome"] }],
   webServer: {
     // Tests run against the production build, built fresh every run so a
     // leftover server can't serve stale code
