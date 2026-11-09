@@ -4,7 +4,32 @@ on:
     branches:
       - "main"
 jobs:
-  publish:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run verify
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm ci
+      - env:
+          BASE_PATH: "/${{ github.event.repository.name }}"
+        run: npm run build
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: "build"
+  deploy:
+    needs: [test, build]
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -13,17 +38,5 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy-pages-step.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - env:
-          BASE_PATH: "/${{ github.event.repository.name }}"
-        run: npm run verify
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: "build"
       - uses: actions/deploy-pages@v5
         id: deploy-pages-step
