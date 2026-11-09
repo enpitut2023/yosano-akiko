@@ -57,6 +57,9 @@ export default defineConfig({
       // Nothing reads `updated`, so fetching version.json every hour is waste
       version: { pollInterval: 0 },
       compilerOptions: {
+        // Libraries may still use legacy syntax, so they're left to decide
+        runes: ({ filename }) =>
+          filename.split(/[/\\]/).includes("node_modules") ? undefined : true,
         warningFilter: (warning) => !warning.code.startsWith("a11y_"),
       },
     }),

@@ -43,20 +43,18 @@ function parseImportedCourse(row: unknown): ImportedCourse | undefined {
   const trimmed = Object.fromEntries(
     Object.entries(row).map(([k, v]) => [k.trim(), v]),
   );
-  if (
-    !(
-      "科目番号" in trimmed &&
-      typeof trimmed["科目番号"] === "string" &&
-      "科目名" in trimmed &&
-      typeof trimmed["科目名"] === "string" &&
-      "単位数" in trimmed &&
-      typeof trimmed["単位数"] === "string" &&
-      "総合評価" in trimmed &&
-      typeof trimmed["総合評価"] === "string" &&
-      "開講年度" in trimmed &&
-      typeof trimmed["開講年度"] === "string"
-    )
-  ) {
+  if (!(
+    "科目番号" in trimmed &&
+    typeof trimmed["科目番号"] === "string" &&
+    "科目名" in trimmed &&
+    typeof trimmed["科目名"] === "string" &&
+    "単位数" in trimmed &&
+    typeof trimmed["単位数"] === "string" &&
+    "総合評価" in trimmed &&
+    typeof trimmed["総合評価"] === "string" &&
+    "開講年度" in trimmed &&
+    typeof trimmed["開講年度"] === "string"
+  )) {
     return undefined;
   }
 

@@ -70,10 +70,15 @@ these were done with a script instead.
 
 ## Optional, from the template
 
-- [ ] `prettier-plugin-svelte` 4, and `prettier` as a direct
+- [x] `prettier-plugin-svelte` 4, and `prettier` as a direct
       devDependency (only the plugin is listed now).
-- [ ] `compilerOptions.runes` to force runes mode outside `node_modules`.
-- [ ] `engine-strict=true` in `.npmrc`.
+  - Reformatted no Svelte file. Prettier 3.9 reflowed three `if (!(…))`.
+- [x] `compilerOptions.runes` to force runes mode outside `node_modules`.
+- [x] `engine-strict=true` in `.npmrc`.
+- [x] Everything else to its latest version within its range, except
+      TypeScript 7 (Kit 3 needs ^6) and `@types/node` 26 (CI runs Node 24).
+      The built CSS is byte for byte the same, and so is every prerendered
+      page apart from hashes.
 
 ## Finish
 

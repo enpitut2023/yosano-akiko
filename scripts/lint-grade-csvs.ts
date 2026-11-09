@@ -25,16 +25,14 @@ function lint(csv: string): boolean {
     const trimmed = Object.fromEntries(
       Object.entries(row).map(([k, v]) => [k.trim(), v]),
     );
-    if (
-      !(
-        "学籍番号" in trimmed &&
-        typeof trimmed["学籍番号"] === "string" &&
-        trimmed["学籍番号"] === "" &&
-        "学生氏名" in trimmed &&
-        typeof trimmed["学生氏名"] === "string" &&
-        trimmed["学生氏名"] === ""
-      )
-    ) {
+    if (!(
+      "学籍番号" in trimmed &&
+      typeof trimmed["学籍番号"] === "string" &&
+      trimmed["学籍番号"] === "" &&
+      "学生氏名" in trimmed &&
+      typeof trimmed["学生氏名"] === "string" &&
+      trimmed["学生氏名"] === ""
+    )) {
       return false;
     }
   }

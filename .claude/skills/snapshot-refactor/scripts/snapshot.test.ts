@@ -154,15 +154,13 @@ test.skipIf(env.dir === undefined)(
           );
           if (cellId !== undefined) alone.set(c.id, cellId);
         }
-        const fakes = names.map(
-          (name, i): FakeCourse => ({
-            id: i as FakeCourseId,
-            name,
-            credit: 1,
-            takenYear: tableYear,
-            grade: "free",
-          }),
-        );
+        const fakes = names.map((name, i): FakeCourse => ({
+          id: i as FakeCourseId,
+          name,
+          credit: 1,
+          takenYear: tableYear,
+          grade: "free",
+        }));
         const together = (cs: Course[], grade: Grade) =>
           attempt(() =>
             sorted(
