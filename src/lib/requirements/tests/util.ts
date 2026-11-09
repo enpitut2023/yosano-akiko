@@ -7,17 +7,17 @@ import {
   type Grade,
   akikoGetCreditStats,
   akikoNew,
-} from "$lib/akiko";
+} from "#lib/akiko.ts";
 import {
   type ClassifyFakeCourses,
   type ClassifyRealCourses,
   type SetupCreditRequirements,
   classifyCoursesOrFail,
   creditRequirementsNewOrFail,
-} from "$lib/app-setup";
-import { parseImportedCsv } from "$lib/csv";
-import { assert } from "$lib/util";
-import type { Major } from "$lib/constants";
+} from "#lib/app-setup.ts";
+import { parseImportedCsv } from "#lib/csv.ts";
+import { assert } from "#lib/util.ts";
+import type { Major } from "#lib/constants.ts";
 
 export function getCreditStats(params: {
   csv: string;

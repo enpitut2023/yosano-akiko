@@ -40,9 +40,10 @@ minutes on one.
 
 - **Separate outputs:** the build goes to `build-e2e/` and `.svelte-kit-e2e/`,
   so running the tests never replaces `build/` or what `npm run preview`
-  serves. SvelteKit then warns that `tsconfig.json` should extend
-  `.svelte-kit-e2e/tsconfig.json`. That's harmless: the root tsconfig is only
-  for editors and `npm run check`.
+  serves. The build also points the generated `$app/tsconfig` (in
+  `node_modules/`) at `.svelte-kit-e2e/` until the next `svelte-kit sync`,
+  which `npm run dev` and `npm run check` run. That's harmless: both have the
+  same routes, so the same types.
 - **Port:** the dev server stays on :42263, so both can run at once.
 - **Network:** the production build loads Matomo. The `context` fixture in
   `test.ts` answers every request to another origin with an empty response.

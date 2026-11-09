@@ -3,7 +3,7 @@ import type {
   ColumnCreditStats,
   ElectiveCreditStats,
   Grade,
-} from "$lib/akiko";
+} from "#lib/akiko.ts";
 
 /** How a grade is shown in the course lists. */
 export function gradeDisplay(g: Grade): string {

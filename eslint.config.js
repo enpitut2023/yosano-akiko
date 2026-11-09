@@ -73,7 +73,7 @@ export default defineConfig(
     },
   },
   {
-    // svelte.config.js filters a11y warnings out of the compiler, so the
+    // vite.config.ts filters a11y warnings out of the compiler, so the
     // matching lint rules would reintroduce them.
     rules: Object.fromEntries(
       Object.keys(svelte.rules)

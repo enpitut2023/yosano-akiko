@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import type { BaseCreditStats } from "$lib/akiko";
+import type { BaseCreditStats } from "#lib/akiko.ts";
 import {
   cellCreditStatsDisplay,
   creditBoundsToString,

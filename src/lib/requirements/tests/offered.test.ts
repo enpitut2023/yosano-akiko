@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
-import type { CourseId } from "$lib/akiko";
-import { instances, type Major } from "$lib/constants";
-import { knownCourses } from "$lib/current-courses";
-import { MAJOR_TO_REQUIREMENTS } from "$lib/major-config";
+import type { CourseId } from "#lib/akiko.ts";
+import { instances, type Major } from "#lib/constants.ts";
+import { knownCourses } from "#lib/current-courses.ts";
+import { MAJOR_TO_REQUIREMENTS } from "#lib/major-config.ts";
 
 // What the catalog offers is classified with classifyKnownCourses, what counts
 // with classifyRealCourses, so the two can disagree. These tests compare them

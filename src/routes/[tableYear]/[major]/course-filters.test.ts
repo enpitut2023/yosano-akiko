@@ -8,9 +8,9 @@ import {
   type MergedCourse,
   type OccupiedSlots,
   type Slot,
-} from "$lib/akiko";
-import { creditRequirementsNewOrFail } from "$lib/app-setup";
-import { assert } from "$lib/util";
+} from "#lib/akiko.ts";
+import { creditRequirementsNewOrFail } from "#lib/app-setup.ts";
+import { assert } from "#lib/util.ts";
 import {
   courseMatchesFilters,
   filterChoicesOf,

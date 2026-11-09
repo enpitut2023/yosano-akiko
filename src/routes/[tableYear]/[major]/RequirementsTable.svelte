@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { asset } from "$app/paths";
   import Hand from "lucide-svelte/icons/hand";
   import TriangleAlert from "lucide-svelte/icons/triangle-alert";
   import ZoomIn from "lucide-svelte/icons/zoom-in";
@@ -11,9 +10,10 @@
     isCellId,
     type CellId,
     type CreditStats,
-  } from "$lib/akiko";
-  import type { MajorConfig } from "$lib/app-setup";
-  import { assert } from "$lib/util";
+  } from "#lib/akiko.ts";
+  import type { MajorConfig } from "#lib/app-setup.ts";
+  import { tableSvgUrl } from "#lib/major-config.ts";
+  import { assert } from "#lib/util.ts";
   import {
     columnCreditStatsDisplay,
     electiveCreditStatsDisplay,
@@ -208,7 +208,7 @@
     onclick={() => onSelect(undefined)}
   >
     <img
-      src={asset(`/tables/${config.tableYear}/${config.major}.svg`)}
+      src={tableSvgUrl(config.tableYear, config.major)}
       alt="Table"
       width={tableScale * zoomLevel * config.tableViewBox.width}
       height={tableScale * zoomLevel * config.tableViewBox.height}

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
-  import { AKIKO_X_URL, ENPIT_URL, FEEDBACK_FORM_URL } from "$lib/constants";
-  import Meta from "$lib/Meta.svelte";
-  import Nav from "$lib/Nav.svelte";
+  import { AKIKO_X_URL, ENPIT_URL, FEEDBACK_FORM_URL } from "#lib/constants.ts";
+  import Meta from "#lib/Meta.svelte";
+  import Nav from "#lib/Nav.svelte";
 
   const title = "よくある質問";
   const description = "あきこについてよく寄せられる質問と回答をまとめました。";

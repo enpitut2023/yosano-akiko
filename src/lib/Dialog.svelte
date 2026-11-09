@@ -1,10 +1,11 @@
 <script lang="ts">
   import { asset } from "$app/paths";
+  import type { AssetPath } from "$app/types";
   import type { Snippet } from "svelte";
 
   type Props = { id?: string; children: Snippet } & (
     | { speaker?: "akiko" }
-    | { speaker: "student"; image: string; alt: string }
+    | { speaker: "student"; image: AssetPath; alt: string }
   );
 
   let props: Props = $props();
@@ -16,7 +17,7 @@
     <img src={asset(props.image)} alt={props.alt} />
     <span>学生</span>
   {:else}
-    <img src={asset("/images/akiko.png")} alt="あきこ" />
+    <img src={asset("images/akiko.png")} alt="あきこ" />
     <span>あきこ</span>
   {/if}
   <span>{@render props.children()}</span>

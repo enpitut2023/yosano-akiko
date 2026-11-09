@@ -4,7 +4,7 @@ import {
   MAJOR_TO_COLLEGE,
   MAJOR_TO_JA,
   majorIsClosed,
-} from "$lib/constants";
+} from "#lib/constants.ts";
 import { expect, openTab, test, waitForHydration } from "./test";
 
 for (const { tableYear, major } of instances) {

@@ -10,7 +10,7 @@
     type CourseId,
     type Dow,
     type Term,
-  } from "$lib/akiko";
+  } from "#lib/akiko.ts";
   import { gradeDisplay } from "./credit-display";
   import SyllabusLink from "./SyllabusLink.svelte";
   import { type TimetableTab } from "./timetable";

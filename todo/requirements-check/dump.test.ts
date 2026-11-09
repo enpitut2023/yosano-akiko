@@ -5,10 +5,10 @@
 // Env: DUMP_DIR (output).
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { test } from "vitest";
-import type { CellId } from "$lib/akiko";
-import type { MajorConfig } from "$lib/app-setup";
-import { instances } from "$lib/constants";
-import { MAJOR_TO_REQUIREMENTS } from "$lib/major-config";
+import type { CellId } from "#lib/akiko.ts";
+import type { MajorConfig } from "#lib/app-setup.ts";
+import { instances } from "#lib/constants.ts";
+import { MAJOR_TO_REQUIREMENTS } from "#lib/major-config.ts";
 
 const bound = ({ min, max }: { min: number; max: number | undefined }) =>
   min === max ? `${min}` : `${min}〜${max ?? ""}`;

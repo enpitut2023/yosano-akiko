@@ -21,13 +21,13 @@ import type {
   Grade,
   KnownCourse,
   RealCourse,
-} from "$lib/akiko";
-import { instances } from "$lib/constants";
-import { parseImportedCsv } from "$lib/csv";
-import { knownCourses } from "$lib/current-courses";
-import type { MajorConfig } from "$lib/app-setup";
-import { MAJOR_TO_REQUIREMENTS } from "$lib/major-config";
-import { assert } from "$lib/util";
+} from "#lib/akiko.ts";
+import { instances } from "#lib/constants.ts";
+import { parseImportedCsv } from "#lib/csv.ts";
+import { knownCourses } from "#lib/current-courses.ts";
+import type { MajorConfig } from "#lib/app-setup.ts";
+import { MAJOR_TO_REQUIREMENTS } from "#lib/major-config.ts";
+import { assert } from "#lib/util.ts";
 import { getCreditStats } from "./util";
 
 const env = {

@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest";
-import type { CourseId } from "$lib/akiko";
-import { knownCourses } from "$lib/current-courses";
+import type { CourseId } from "#lib/akiko.ts";
+import { knownCourses } from "#lib/current-courses.ts";
 import {
   classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
   getCreditRequirements,
-} from "$lib/requirements/mast-since-2021";
+} from "#lib/requirements/mast-since-2021.ts";
 import { classifySingleRealCourse, runTest } from "./util";
 
 test("grade-csvs/2023/mast-1.csv", () => {

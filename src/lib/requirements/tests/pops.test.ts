@@ -3,7 +3,7 @@ import {
   classifyFakeCourses,
   classifyRealCourses,
   getCreditRequirements,
-} from "$lib/requirements/pops-since-2023";
+} from "#lib/requirements/pops-since-2023.ts";
 import { runTest } from "./util";
 
 test("grade-csvs/2023/pops-ses-1.csv", () => {

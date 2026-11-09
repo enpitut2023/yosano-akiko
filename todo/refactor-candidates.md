@@ -14,6 +14,15 @@ the effort. Nothing here changes behavior unless it says so.
       `wontTake`/`mightTake`/`taken` appears three times in
       `akikoGetCoursesInCell` and `akikoGetAllCourses`. One helper that
       buckets ids by list kind would replace all three.
+- [ ] Changes behavior: `RequirementsTable` squishes the column credit sums
+      and the overall sum to fit their boxes with a `scaleX` it measures
+      once, when the effect runs (on mount and on zoom). It doesn't run
+      again when the web font loads, so if the font arrives after the
+      measurement, the scale was computed from the fallback font's width
+      and the text can overflow or be squished too much. Seen as
+      run-to-run differences in screenshots of the css, mast, psy, …
+      pages. Re-measure on `document.fonts` `loadingdone`, or after
+      `document.fonts.ready`.
 - [x] `akikoNew` returns `Akiko | undefined` but never returns `undefined`.
       `MajorApp` asserts it away. Make the return type `Akiko`.
 - [x] Unused icons and `student-stressed-1.png`: deleted.
@@ -79,7 +88,7 @@ the effort. Nothing here changes behavior unless it says so.
       would cover both.
 - [x] `SUPPORT_URL` is in `routes/[tableYear]/[major]/links.ts`, while the
       other outside links (`FEEDBACK_FORM_URL`, `AKIKO_X_URL`, `ENPIT_URL`)
-      are in `$lib/constants`.
+      are in `#lib/constants.ts`.
 
 ## UI consistency
 

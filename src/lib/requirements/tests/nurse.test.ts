@@ -1,13 +1,13 @@
 import { describe, expect, test } from "vitest";
-import { type CourseId, fakeCourseIdFromContent } from "$lib/akiko";
-import { instances, type Major } from "$lib/constants";
-import { knownCourses } from "$lib/current-courses";
+import { type CourseId, fakeCourseIdFromContent } from "#lib/akiko.ts";
+import { instances, type Major } from "#lib/constants.ts";
+import { knownCourses } from "#lib/current-courses.ts";
 import {
   classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
   getCreditRequirements,
-} from "$lib/requirements/nurse-since-2023";
+} from "#lib/requirements/nurse-since-2023.ts";
 import { classifySingleRealCourse, runTest } from "./util";
 
 const HEADER =

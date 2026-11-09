@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { localDataFromJson } from "$lib/local-data";
+import { localDataFromJson } from "#lib/local-data.ts";
 
 const WIP = "GB10000";
 const PLANNED = "GB40000";

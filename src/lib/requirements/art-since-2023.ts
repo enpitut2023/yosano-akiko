@@ -5,9 +5,12 @@ import {
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
-} from "$lib/akiko";
-import type { ClassifyOptions, SetupCreditRequirements } from "$lib/app-setup";
-import type { Major } from "$lib/constants";
+} from "#lib/akiko.ts";
+import type {
+  ClassifyOptions,
+  SetupCreditRequirements,
+} from "#lib/app-setup.ts";
+import type { Major } from "#lib/constants.ts";
 import {
   isArt,
   isCompulsoryEnglishByName,
@@ -33,7 +36,7 @@ import {
   UNLISTED,
   unlisted,
 } from "./common";
-import { unreachable } from "$lib/util";
+import { unreachable } from "#lib/util.ts";
 
 export type Specialty = "none" | "jad";
 function majorToSpecialtyOrFail(m: Major): Specialty {

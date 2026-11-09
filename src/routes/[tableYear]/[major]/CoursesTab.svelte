@@ -10,8 +10,8 @@
     type CourseId,
     type CreditStats,
     type ListKindOverrides,
-  } from "$lib/akiko";
-  import { trackEvent } from "$lib/analytics";
+  } from "#lib/akiko.ts";
+  import { trackEvent } from "#lib/analytics.ts";
   import {
     courseMatchesFilters,
     filterChoicesOf,

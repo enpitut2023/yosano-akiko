@@ -3,7 +3,7 @@ import {
   classifyFakeCourses,
   classifyRealCourses,
   getCreditRequirements,
-} from "$lib/requirements/coens-since-2023";
+} from "#lib/requirements/coens-since-2023.ts";
 import { runTest } from "./util";
 
 test("grade-csvs/2024/coens-ap-1.csv", () => {

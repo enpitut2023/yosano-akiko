@@ -7,7 +7,7 @@ import {
   type OccupiedSlots,
   type Slot,
   type Term,
-} from "$lib/akiko";
+} from "#lib/akiko.ts";
 
 /** What the user narrows 当てはまる授業 down by. Undefined and empty mean any. */
 export type WontTakeFilters = {

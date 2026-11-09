@@ -1,4 +1,4 @@
-import type { BaseCreditStats, CreditStats } from "$lib/akiko";
+import type { BaseCreditStats, CreditStats } from "#lib/akiko.ts";
 
 /**
  * Logs credit stats in the shape the tests expect, for writing a test from a

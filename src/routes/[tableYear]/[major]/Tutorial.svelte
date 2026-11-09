@@ -185,7 +185,7 @@
     style="left:{popoverPosition.left}px; top:{popoverPosition.top}px"
   >
     <header>
-      <img src={asset("/images/akiko.png")} alt="あきこ" />
+      <img src={asset("images/akiko.png")} alt="あきこ" />
       <h2 id="tutorial-title">{step.title}</h2>
       <span class="count">{index + 1} / {steps.length}</span>
       <button

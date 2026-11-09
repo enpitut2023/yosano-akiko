@@ -1,4 +1,4 @@
-import { type Slot, type Term } from "$lib/akiko";
+import { type Slot, type Term } from "#lib/akiko.ts";
 
 /** The term shown in the timetable. "other" is the tab for courses without a fixed day and period. */
 export type TimetableTab = Term | "other";

@@ -1,5 +1,5 @@
-import { gradeIsPass, type CourseId, type RealCourse } from "$lib/akiko";
-import { arrayRemove, assert } from "$lib/util";
+import { gradeIsPass, type CourseId, type RealCourse } from "#lib/akiko.ts";
+import { arrayRemove, assert } from "#lib/util.ts";
 
 /**
  * "known"は履修の選択肢(当てはまる授業)、"real"は成績の分類

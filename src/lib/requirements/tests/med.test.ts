@@ -1,13 +1,13 @@
 import { describe, expect, test } from "vitest";
-import type { CourseId } from "$lib/akiko";
-import { knownCourses } from "$lib/current-courses";
-import type { Major } from "$lib/constants";
+import type { CourseId } from "#lib/akiko.ts";
+import { knownCourses } from "#lib/current-courses.ts";
+import type { Major } from "#lib/constants.ts";
 import {
   classifyFakeCourses,
   classifyKnownCourses,
   classifyRealCourses,
   getCreditRequirements,
-} from "$lib/requirements/med-since-2023";
+} from "#lib/requirements/med-since-2023.ts";
 import { classifySingleRealCourse, runTest } from "./util";
 
 function counted(id: string, major: Major, tableYear: number) {

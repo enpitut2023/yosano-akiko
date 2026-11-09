@@ -5,11 +5,11 @@ import {
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
-} from "$lib/akiko";
+} from "#lib/akiko.ts";
 import {
   type ClassifyOptions,
   type SetupCreditRequirements,
-} from "$lib/app-setup";
+} from "#lib/app-setup.ts";
 import {
   isCompulsoryEnglishById,
   isCompulsoryEnglishByName,
@@ -29,8 +29,8 @@ import {
   UNLISTED,
   unlisted,
 } from "./common";
-import { unreachable } from "$lib/util";
-import { type Major } from "$lib/constants";
+import { unreachable } from "#lib/util.ts";
+import { type Major } from "#lib/constants.ts";
 
 export type Specialty = "nurse-n" | "nurse-phn" | "nurse-h";
 function majorToSpecialtyOrFail(m: Major): Specialty {

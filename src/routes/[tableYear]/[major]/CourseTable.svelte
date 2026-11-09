@@ -4,7 +4,7 @@
     type CellId,
     type CourseId,
     type MergedCourse,
-  } from "$lib/akiko";
+  } from "#lib/akiko.ts";
   import { gradeDisplay } from "./credit-display";
   import SyllabusLink from "./SyllabusLink.svelte";
 

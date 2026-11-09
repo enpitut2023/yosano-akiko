@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
+  import { browser } from "$app/env";
 
   const ENCODED = "nxvxb-pbagnpg@gbrvqb.wc";
 

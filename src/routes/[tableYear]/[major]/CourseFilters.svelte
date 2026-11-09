@@ -1,6 +1,6 @@
 <script lang="ts">
   import Funnel from "lucide-svelte/icons/funnel";
-  import { DOWS, dowToString, termToString, type Term } from "$lib/akiko";
+  import { DOWS, dowToString, termToString, type Term } from "#lib/akiko.ts";
   import {
     filtersActiveCount,
     filtersInEffect,

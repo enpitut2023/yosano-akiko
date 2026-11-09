@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { isCourseId, type RealCourse } from "$lib/akiko";
-import { assert } from "$lib/util";
+import { isCourseId, type RealCourse } from "#lib/akiko.ts";
+import { assert } from "#lib/util.ts";
 import { findExactCombination } from "./common";
 
 function course(id: string, credit: number): RealCourse {

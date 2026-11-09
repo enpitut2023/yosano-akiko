@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { FakeCourse } from "$lib/akiko";
+  import type { FakeCourse } from "#lib/akiko.ts";
 
   let { courses }: { courses: FakeCourse[] } = $props();
 </script>

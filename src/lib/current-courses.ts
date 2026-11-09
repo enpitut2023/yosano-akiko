@@ -1,5 +1,5 @@
 // @ts-nocheck
-import type { KnownCourse } from "$lib/akiko";
+import type { KnownCourse } from "#lib/akiko.ts";
 export const knownCourseYear = 2026;
 export const knownCourses = [
 {"id":"1101102","name":"ファーストイヤーセミナー","credit":1,"expects":[1],"expectsString":"1","slots":[{"term":"spring-a","when":{"kind":"regular","dow":"fri","period":2}},{"term":"spring-b","when":{"kind":"regular","dow":"fri","period":2}}],"slotsString":"春AB金2","availability":"available","remark":"人文1クラス対象\n対面"},

@@ -5,9 +5,12 @@ import {
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
-} from "$lib/akiko";
-import type { ClassifyOptions, SetupCreditRequirements } from "$lib/app-setup";
-import type { Major } from "$lib/constants";
+} from "#lib/akiko.ts";
+import type {
+  ClassifyOptions,
+  SetupCreditRequirements,
+} from "#lib/app-setup.ts";
+import type { Major } from "#lib/constants.ts";
 import {
   isCompulsoryEnglishByName,
   isCompulsoryPe1,
@@ -22,8 +25,8 @@ import {
   type Mode,
   UNLISTED,
   unlisted,
-} from "$lib/requirements/common";
-import { unreachable } from "$lib/util";
+} from "#lib/requirements/common.ts";
+import { unreachable } from "#lib/util.ts";
 
 type Specialty = "ms" | "ims" | "mspis";
 

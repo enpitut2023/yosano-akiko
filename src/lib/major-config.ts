@@ -1,4 +1,5 @@
 import { asset } from "$app/paths";
+import type { AssetPath } from "$app/types";
 import z from "zod";
 import { type MajorConfig } from "./app-setup";
 import { type Major } from "./constants";
@@ -115,7 +116,7 @@ export async function getMajorConfig(
   }
   const req: RequirementsModule = await loadRequirements();
 
-  const rectsUrl = asset(`/rects/${tableYear}/${major}.json`);
+  const rectsUrl = assetBuiltAtRuntime(`rects/${tableYear}/${major}.json`);
   const rectsResponse = await fetch(rectsUrl);
   if (!rectsResponse.ok) {
     throw new Error(`Failed to fetch ${rectsUrl}: ${rectsResponse.status}`);
@@ -123,7 +124,7 @@ export async function getMajorConfig(
   const cellIdToRectRecord: MajorConfig["cellIdToRectRecord"] =
     cellIdToRectRecordParser.parse(await rectsResponse.json());
 
-  const svgUrl = asset(`/tables/${tableYear}/${major}.svg`);
+  const svgUrl = tableSvgUrl(tableYear, major);
   const svgResponse = await fetch(svgUrl);
   if (!svgResponse.ok) {
     throw new Error(`Failed to fetch ${svgUrl}: ${svgResponse.status}`);
@@ -146,4 +147,18 @@ export async function getMajorConfig(
     classifyFakeCourses: req.classifyFakeCourses,
     getRemark: req.getRemark,
   };
+}
+
+/** The URL of a page's 履修要覧 table. */
+export function tableSvgUrl(tableYear: number, major: Major): string {
+  return assetBuiltAtRuntime(`tables/${tableYear}/${major}.svg`);
+}
+
+/**
+ * `asset` for a path whose type can't list only the files that exist, since
+ * not every year has a table for every major. Prerendering fails on a
+ * missing one instead.
+ */
+function assetBuiltAtRuntime(path: string): string {
+  return asset(path as AssetPath);
 }

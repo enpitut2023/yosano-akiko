@@ -5,9 +5,12 @@ import {
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
-} from "$lib/akiko";
-import type { ClassifyOptions, SetupCreditRequirements } from "$lib/app-setup";
-import type { Major } from "$lib/constants";
+} from "#lib/akiko.ts";
+import type {
+  ClassifyOptions,
+  SetupCreditRequirements,
+} from "#lib/app-setup.ts";
+import type { Major } from "#lib/constants.ts";
 import {
   isArt,
   isCompulsoryEnglishByName,
@@ -28,7 +31,7 @@ import {
   type Mode,
   UNLISTED,
   unlisted,
-} from "$lib/requirements/common";
+} from "#lib/requirements/common.ts";
 
 function isA1(id: string): boolean {
   return (

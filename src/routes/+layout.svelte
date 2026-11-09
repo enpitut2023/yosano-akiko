@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { dev } from "$app/environment";
+  import { dev } from "$app/env";
   import type { LayoutProps } from "./$types";
 
   let { children }: LayoutProps = $props();
@@ -30,7 +30,7 @@
 {@render children()}
 
 <style lang="scss">
-  @use "$lib/fonts.scss";
+  @use "../lib/fonts.scss";
 
   :global(:root) {
     --content-max-width: 800px;

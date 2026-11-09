@@ -5,10 +5,13 @@ import {
   type FakeCourseId,
   type KnownCourse,
   type RealCourse,
-} from "$lib/akiko";
-import type { ClassifyOptions, SetupCreditRequirements } from "$lib/app-setup";
-import type { Major } from "$lib/constants";
-import { unreachable } from "$lib/util";
+} from "#lib/akiko.ts";
+import type {
+  ClassifyOptions,
+  SetupCreditRequirements,
+} from "#lib/app-setup.ts";
+import type { Major } from "#lib/constants.ts";
+import { unreachable } from "#lib/util.ts";
 import {
   isArt,
   isCompulsoryEnglishByName,

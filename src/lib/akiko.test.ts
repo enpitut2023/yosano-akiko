@@ -19,9 +19,9 @@ import {
   isCellId,
   isCourseId,
   isFakeCourseId,
-} from "$lib/akiko";
-import { creditRequirementsNewOrFail } from "$lib/app-setup";
-import { assert } from "$lib/util";
+} from "#lib/akiko.ts";
+import { creditRequirementsNewOrFail } from "#lib/app-setup.ts";
+import { assert } from "#lib/util.ts";
 
 function courseId(s: string): CourseId {
   assert(isCourseId(s), `Bad course id: "${s}"`);

@@ -12,11 +12,11 @@
     type MergedCourse,
     type CellId,
     type KnownCourse,
-  } from "$lib/akiko";
-  import { trackEvent } from "$lib/analytics";
-  import type { MajorConfig } from "$lib/app-setup";
-  import Dialog from "$lib/Dialog.svelte";
-  import { SUPPORT_URL } from "$lib/constants";
+  } from "#lib/akiko.ts";
+  import { trackEvent } from "#lib/analytics.ts";
+  import type { MajorConfig } from "#lib/app-setup.ts";
+  import Dialog from "#lib/Dialog.svelte";
+  import { SUPPORT_URL } from "#lib/constants.ts";
   import SyllabusLink from "./SyllabusLink.svelte";
   import type { TimetableTab } from "./timetable";
 

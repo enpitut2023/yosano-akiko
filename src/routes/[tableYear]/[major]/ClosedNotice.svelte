@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Dialog from "$lib/Dialog.svelte";
-  import Meta from "$lib/Meta.svelte";
+  import Dialog from "#lib/Dialog.svelte";
+  import Meta from "#lib/Meta.svelte";
 
   let { name }: { name: string } = $props();
 </script>

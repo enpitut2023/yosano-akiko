@@ -3,7 +3,7 @@ import {
   classifyFakeCourses,
   classifyRealCourses,
   getCreditRequirements,
-} from "$lib/requirements/cis-since-2023";
+} from "#lib/requirements/cis-since-2023.ts";
 import { runTest } from "./util";
 
 test("grade-csvs/2024/cis-ir-1.csv", () => {

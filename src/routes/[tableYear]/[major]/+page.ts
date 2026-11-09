@@ -1,12 +1,12 @@
-import { getMajorConfig } from "$lib/major-config";
+import { getMajorConfig } from "#lib/major-config.ts";
 import {
   instances,
   isMajor,
   majorIsClosed,
   MAJOR_TO_COLLEGE,
   COLLEGE_TO_JA,
-} from "$lib/constants";
-import { assert, parseIntStrict } from "$lib/util";
+} from "#lib/constants.ts";
+import { assert, parseIntStrict } from "#lib/util.ts";
 import type { EntryGenerator, PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ params, fetch }) => {

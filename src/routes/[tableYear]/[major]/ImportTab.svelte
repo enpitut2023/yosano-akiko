@@ -14,7 +14,7 @@
     type Akiko,
     type FakeCourse,
     type RealCourse,
-  } from "$lib/akiko";
+  } from "#lib/akiko.ts";
   import { gradeDisplay } from "./credit-display";
   import SyllabusLink from "./SyllabusLink.svelte";
 

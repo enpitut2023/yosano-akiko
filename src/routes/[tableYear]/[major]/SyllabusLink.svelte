@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { MergedCourse } from "$lib/akiko";
+  import type { MergedCourse } from "#lib/akiko.ts";
   import { syllabusUrl } from "./links";
 
   let {

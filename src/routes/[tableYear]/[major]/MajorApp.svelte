@@ -4,9 +4,13 @@
   import ChevronLeft from "lucide-svelte/icons/chevron-left";
   import ChevronRight from "lucide-svelte/icons/chevron-right";
   import { type TimetableTab } from "./timetable";
-  import Meta from "$lib/Meta.svelte";
-  import { FEEDBACK_FORM_URL, MAJOR_TO_JA, SUPPORT_URL } from "$lib/constants";
-  import { parseImportedCsv } from "$lib/csv";
+  import Meta from "#lib/Meta.svelte";
+  import {
+    FEEDBACK_FORM_URL,
+    MAJOR_TO_JA,
+    SUPPORT_URL,
+  } from "#lib/constants.ts";
+  import { parseImportedCsv } from "#lib/csv.ts";
   import {
     akikoGetCourseLists,
     akikoGetCreditStats,
@@ -17,20 +21,20 @@
     type FakeCourse,
     type ListKindOverrides,
     type RealCourse,
-  } from "$lib/akiko";
+  } from "#lib/akiko.ts";
   import {
     creditRequirementsNewOrFail,
     classifyCoursesOrFail,
     type MajorConfig,
-  } from "$lib/app-setup";
-  import { trackEvent } from "$lib/analytics";
+  } from "#lib/app-setup.ts";
+  import { trackEvent } from "#lib/analytics.ts";
   import {
     localDataDefault,
     localDataFromJson,
     localDataToJson,
     type LocalDataV3,
-  } from "$lib/local-data";
-  import { browser, dev } from "$app/environment";
+  } from "#lib/local-data.ts";
+  import { browser, dev } from "$app/env";
   import { onMount, untrack } from "svelte";
   import { markSeen, seen } from "./seen";
   import { creditStatsDebugPrint } from "./debug";
@@ -406,7 +410,7 @@
     {#snippet overlay()}
       <div id="title">
         <a href={resolve("/")} class="akiko"
-          ><img src={asset("/images/akiko.png")} alt="あきこ" /></a
+          ><img src={asset("images/akiko.png")} alt="あきこ" /></a
         >
         <span
           >このページは <strong>{config.tableYear}</strong>
@@ -434,7 +438,7 @@
       <button
         class:active={activeTab === "import"}
         onclick={() => (activeTab = "import")}
-        ><span class="icon" style="--src: url({asset('/icons/math.svg')})"
+        ><span class="icon" style="--src: url({asset('icons/math.svg')})"
         ></span>単位チェック</button
       >
       <span class="workflow-arrow" aria-hidden="true">
@@ -444,7 +448,7 @@
         data-tutorial="tab-courses"
         class:active={activeTab === "courses"}
         onclick={() => (activeTab = "courses")}
-        ><span class="icon" style="--src: url({asset('/icons/book.svg')})"
+        ><span class="icon" style="--src: url({asset('icons/book.svg')})"
         ></span>履修を組む</button
       >
       <span class="workflow-arrow" aria-hidden="true">
@@ -454,7 +458,7 @@
         data-tutorial="tab-export"
         class:active={activeTab === "export"}
         onclick={() => (activeTab = "export")}
-        ><span class="icon" style="--src: url({asset('/icons/itf.svg')})"
+        ><span class="icon" style="--src: url({asset('icons/itf.svg')})"
         ></span>TWINSに出力</button
       >
     </div>

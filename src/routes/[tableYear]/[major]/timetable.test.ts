@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { Slot, Term } from "$lib/akiko";
+import type { Slot, Term } from "#lib/akiko.ts";
 import { timetableTabAfterPlanning } from "./timetable";
 
 function regular(term: Term): Slot {

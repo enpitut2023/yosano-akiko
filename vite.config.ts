@@ -1,9 +1,15 @@
+import adapter from "@sveltejs/adapter-static";
 import { sveltekit } from "@sveltejs/kit/vite";
+import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 
+// The e2e tests build the site with a fixture course catalog. Their output goes
+// elsewhere so it never replaces the real build or what `npm run preview`
+// serves.
 const e2e = process.env.AKIKO_E2E !== undefined;
+const out = e2e ? "build-e2e" : "build";
 
 const catalog = fileURLToPath(
   new URL("src/lib/current-courses.ts", import.meta.url),
@@ -33,7 +39,28 @@ function useE2eCatalog(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [e2e && useE2eCatalog(), sveltekit()],
+  plugins: [
+    e2e && useE2eCatalog(),
+    sveltekit({
+      preprocess: vitePreprocess(),
+      adapter: adapter({
+        pages: out,
+        assets: out,
+        fallback: "404.html",
+        strict: true,
+      }),
+      outDir: e2e ? ".svelte-kit-e2e" : ".svelte-kit",
+      paths: {
+        base: (process.env.BASE_PATH ?? "/yosano-akiko") as `/${string}`,
+        relative: false,
+      },
+      // Nothing reads `updated`, so fetching version.json every hour is waste
+      version: { pollInterval: 0 },
+      compilerOptions: {
+        warningFilter: (warning) => !warning.code.startsWith("a11y_"),
+      },
+    }),
+  ],
   server: { port: 42263 },
   build: { chunkSizeWarningLimit: 1000 },
   // The default pattern would also pick up the Playwright specs in tests/e2e

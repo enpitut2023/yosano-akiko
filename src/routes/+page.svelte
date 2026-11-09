@@ -1,5 +1,6 @@
 <script lang="ts">
   import { resolve, asset } from "$app/paths";
+  import type { AssetPath } from "$app/types";
   import {
     instances,
     MAJOR_TO_JA,
@@ -8,12 +9,12 @@
     type College,
     type Instance,
     majorCompare,
-  } from "$lib/constants";
-  import { assert } from "$lib/util";
-  import Callout from "$lib/Callout.svelte";
-  import Dialog from "$lib/Dialog.svelte";
-  import Meta from "$lib/Meta.svelte";
-  import Nav from "$lib/Nav.svelte";
+  } from "#lib/constants.ts";
+  import { assert } from "#lib/util.ts";
+  import Callout from "#lib/Callout.svelte";
+  import Dialog from "#lib/Dialog.svelte";
+  import Meta from "#lib/Meta.svelte";
+  import Nav from "#lib/Nav.svelte";
   import ArrowDown from "lucide-svelte/icons/arrow-down";
 
   const description =
@@ -88,25 +89,25 @@
   const features: {
     title: string[];
     body: string;
-    src: string;
+    src: AssetPath;
     alt: string;
   }[] = [
     {
       title: ["あと何単位", "必要かわかる"],
       body: "TWINSの成績ファイルを読み込むと、履修要覧の表に色が付く",
-      src: "/images/top/credits.jpg",
+      src: "images/top/credits.jpg",
       alt: "取った単位で色が付いた履修要覧の表",
     },
     {
       title: ["取れる授業が", "すぐ見つかる"],
       body: "表のマスを押すと、そこに当てはまる授業が全部出てくる",
-      src: "/images/top/courses.jpg",
+      src: "images/top/courses.jpg",
       alt: "選んだマスに当てはまる授業の一覧",
     },
     {
       title: ["TWINSに", "まとめて登録"],
       body: "組んだ時間割をファイルにして、TWINSで一度にアップロード",
-      src: "/images/top/timetable.jpg",
+      src: "images/top/timetable.jpg",
       alt: "授業が入った時間割と「TWINSに出力」ボタン",
     },
   ];
@@ -123,7 +124,7 @@
 
 <Dialog
   speaker="student"
-  image="/images/student-stressed-2.png"
+  image="images/student-stressed-2.png"
   alt="困っている学生"
   >筑波大は履修する授業を探すのも、取れた単位を計算するのも大変だな...</Dialog
 >
@@ -142,7 +143,7 @@
   {/each}
 </ol>
 
-<Dialog speaker="student" image="/images/student-relieved.png" alt="嬉しい学生"
+<Dialog speaker="student" image="images/student-relieved.png" alt="嬉しい学生"
   >あきこさん！ありがとう！！！</Dialog
 >
 

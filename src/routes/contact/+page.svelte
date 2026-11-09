@@ -1,9 +1,9 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
-  import { AKIKO_X_URL, FEEDBACK_FORM_URL } from "$lib/constants";
-  import ContactEmail from "$lib/ContactEmail.svelte";
-  import Meta from "$lib/Meta.svelte";
-  import Nav from "$lib/Nav.svelte";
+  import { AKIKO_X_URL, FEEDBACK_FORM_URL } from "#lib/constants.ts";
+  import ContactEmail from "#lib/ContactEmail.svelte";
+  import Meta from "#lib/Meta.svelte";
+  import Nav from "#lib/Nav.svelte";
 
   const title = "あきこへのお問い合わせ";
   const description = "あきこへのお問い合わせ方法をご案内します。";

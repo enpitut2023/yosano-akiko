@@ -2,8 +2,8 @@
 // break when the real catalog is regenerated. The tests target 2023 coins, so
 // each course is chosen to land in a known cell under
 // src/lib/requirements/coins-since-2021.ts.
-import { isCourseId, type KnownCourse } from "$lib/akiko";
-import { assert } from "$lib/util";
+import { isCourseId, type KnownCourse } from "#lib/akiko.ts";
+import { assert } from "#lib/util.ts";
 
 function course(c: Omit<KnownCourse, "id"> & { id: string }): KnownCourse {
   const { id } = c;

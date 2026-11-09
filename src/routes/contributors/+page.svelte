@@ -1,8 +1,8 @@
 <script lang="ts">
   import { asset } from "$app/paths";
-  import { COLLEGE_TO_JA, type College } from "$lib/constants";
-  import Meta from "$lib/Meta.svelte";
-  import Nav from "$lib/Nav.svelte";
+  import { COLLEGE_TO_JA, type College } from "#lib/constants.ts";
+  import Meta from "#lib/Meta.svelte";
+  import Nav from "#lib/Nav.svelte";
 
   const title = "あきこの主な貢献者一覧";
   const description = "あきこに主に貢献した人たちの一覧です。";
@@ -38,7 +38,7 @@
   </p>
 
   <div class="dialog student">
-    <img src={asset("/images/crowd.png")} alt="貢献者たち" />
+    <img src={asset("images/crowd.png")} alt="貢献者たち" />
     <span>貢献者たち</span>
     <span>私たちがあきこです！</span>
   </div>

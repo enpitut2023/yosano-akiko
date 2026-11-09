@@ -3,7 +3,7 @@ import {
   instances,
   MAJOR_TO_COLLEGE,
   type College,
-} from "$lib/constants";
+} from "#lib/constants.ts";
 import { clickUntil, expect, test, type Page } from "./test";
 
 // A year in which 情報科学類 has several majors and 心理学類 has one
