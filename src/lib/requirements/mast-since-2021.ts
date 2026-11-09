@@ -496,8 +496,8 @@ const reqSince2025: SetupCreditRequirements = {
     f: { min: 1, max: 10 },
     h: { min: 6, max: 15 },
   },
-  compulsory: 50,
-  elective: 74,
+  compulsory: 51,
+  elective: 73,
 };
 
 export function getCreditRequirements(
