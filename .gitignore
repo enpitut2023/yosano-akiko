@@ -11,6 +11,7 @@ node_modules
 /.svelte-kit-e2e
 /test-results
 /playwright-report
+/screenshots
 
 # OS
 .DS_Store
