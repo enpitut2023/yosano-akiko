@@ -431,7 +431,7 @@ const reqJlttSince2026: SetupCreditRequirements = {
     b8: { min: 0, max: 20 },
     c1: { min: 1, max: 1 },
     c2: { min: 1, max: 1 },
-    d0: { min: 2, max: 2 },
+    d1: { min: 2, max: 2 },
     d2: { min: 3, max: 3 },
     d3: { min: 3, max: 3 },
     d4: { min: 1, max: 1 },
