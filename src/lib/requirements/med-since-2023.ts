@@ -511,10 +511,9 @@ export function getRemark(
 ): string | undefined {
   const specialty = majorToSpecialtyOrFail(major);
   if (
-    (tableYear >= 2024 &&
-      (specialty === "med" || specialty === "med-new") &&
-      id === "a14") ||
-    ((specialty === "med-2" || specialty === "med-2-new") && id === "a11")
+    tableYear >= 2024 &&
+    (((specialty === "med" || specialty === "med-new") && id === "a14") ||
+      ((specialty === "med-2" || specialty === "med-2-new") && id === "a11"))
   ) {
     // !!B!!
     return `医療概論IVの中にアドヴァンストコースが含まれているとシラバスに記載があるので統合していますが、間違っている可能性があります。`;
@@ -525,27 +524,8 @@ export function getRemark(
   }
 }
 
-export const reqMedMedNewSince2023: SetupCreditRequirements = {
+const reqMedMedNewShared = {
   cells: {
-    a1: { min: 1, max: 1 },
-    a2: { min: 2, max: 2 },
-    a3: { min: 2, max: 2 },
-    a4: { min: 11, max: 11 },
-    a5: { min: 27, max: 27 },
-    a6: { min: 2, max: 2 },
-    a7: { min: 37, max: 37 },
-    a8: { min: 3, max: 3 },
-    a9: { min: 18, max: 18 },
-    a10: { min: 2, max: 2 },
-    a11: { min: 11, max: 11 },
-    a12: { min: 2, max: 2 },
-    a13: { min: 22, max: 22 },
-    a14: { min: 4, max: 4 },
-    a15: { min: 11, max: 11 },
-    a16: { min: 2, max: 2 },
-    a17: { min: 10, max: 2 },
-    a18: { min: 1, max: 1 },
-    a19: { min: 2, max: 2 },
     c1: { min: 1, max: 1 },
     c2: { min: 1, max: 1 },
     c3: { min: 1, max: 1 },
@@ -573,24 +553,8 @@ export const reqMedMedNewSince2023: SetupCreditRequirements = {
   elective: 13,
 };
 
-export const reqMed2MedNew2Since2023: SetupCreditRequirements = {
+const reqMed2Med2NewShared = {
   cells: {
-    a1: { min: 9, max: 9 },
-    a2: { min: 27, max: 27 },
-    a3: { min: 2, max: 2 },
-    a4: { min: 1, max: 1 },
-    a5: { min: 37, max: 37 },
-    a6: { min: 3, max: 3 },
-    a7: { min: 2, max: 2 },
-    a8: { min: 18, max: 18 },
-    a9: { min: 2, max: 2 },
-    a10: { min: 11, max: 11 },
-    a11: { min: 1, max: 1 },
-    a12: { min: 1, max: 1 },
-    a13: { min: 22, max: 22 },
-    a14: { min: 15, max: 15 },
-    a15: { min: 2, max: 2 },
-    a16: { min: 10, max: 10 },
     c1: { min: 1, max: 1 },
     c2: { min: 1, max: 1 },
     c3: { min: 1, max: 1 },
@@ -605,18 +569,213 @@ export const reqMed2MedNew2Since2023: SetupCreditRequirements = {
   elective: 0,
 };
 
+const reqMedSince2023: SetupCreditRequirements = {
+  ...reqMedMedNewShared,
+  cells: {
+    a1: { min: 1, max: 1 },
+    a2: { min: 2, max: 2 },
+    a3: { min: 2, max: 2 },
+    a4: { min: 11, max: 11 },
+    a5: { min: 27, max: 27 },
+    a6: { min: 2, max: 2 },
+    a7: { min: 37, max: 37 },
+    a8: { min: 3, max: 3 },
+    a9: { min: 18, max: 18 },
+    a10: { min: 2, max: 2 },
+    a11: { min: 11, max: 11 },
+    a12: { min: 2, max: 2 },
+    a13: { min: 22, max: 22 },
+    a14: { min: 4, max: 4 },
+    a15: { min: 11, max: 11 },
+    a16: { min: 2, max: 2 },
+    a17: { min: 10, max: 10 },
+    a18: { min: 1, max: 1 },
+    a19: { min: 2, max: 2 },
+    ...reqMedMedNewShared.cells,
+  },
+};
+
+const reqMedSince2024: SetupCreditRequirements = {
+  ...reqMedMedNewShared,
+  cells: {
+    a1: { min: 1, max: 1 },
+    a2: { min: 2, max: 2 },
+    a3: { min: 2, max: 2 },
+    a4: { min: 11, max: 11 },
+    a5: { min: 27, max: 27 },
+    a6: { min: 2, max: 2 },
+    a7: { min: 1, max: 1 },
+    a8: { min: 37, max: 37 },
+    a9: { min: 3, max: 3 },
+    a10: { min: 2, max: 2 },
+    a11: { min: 18, max: 18 },
+    a12: { min: 2, max: 2 },
+    a13: { min: 11, max: 11 },
+    a14: { min: 2, max: 2 },
+    a15: { min: 22, max: 22 },
+    a16: { min: 4, max: 4 },
+    a17: { min: 11, max: 11 },
+    a18: { min: 2, max: 2 },
+    a19: { min: 10, max: 10 },
+    ...reqMedMedNewShared.cells,
+  },
+};
+
+const reqMedNewSince2023: SetupCreditRequirements = {
+  ...reqMedMedNewShared,
+  cells: {
+    a1: { min: 1, max: 1 },
+    a2: { min: 2, max: 2 },
+    a3: { min: 2, max: 2 },
+    a4: { min: 11, max: 11 },
+    a5: { min: 27, max: 27 },
+    a6: { min: 2, max: 2 },
+    a7: { min: 37, max: 37 },
+    a8: { min: 3, max: 3 },
+    a9: { min: 18, max: 18 },
+    a10: { min: 2, max: 2 },
+    a11: { min: 11, max: 11 },
+    a12: { min: 2, max: 2 },
+    a13: { min: 22, max: 22 },
+    a14: { min: 15, max: 15 },
+    a15: { min: 2, max: 2 },
+    a16: { min: 10, max: 10 },
+    a17: { min: 1, max: 1 },
+    a18: { min: 2, max: 2 },
+    ...reqMedMedNewShared.cells,
+  },
+};
+
+const reqMedNewSince2024: SetupCreditRequirements = {
+  ...reqMedMedNewShared,
+  cells: {
+    a1: { min: 1, max: 1 },
+    a2: { min: 2, max: 2 },
+    a3: { min: 2, max: 2 },
+    a4: { min: 11, max: 11 },
+    a5: { min: 27, max: 27 },
+    a6: { min: 2, max: 2 },
+    a7: { min: 1, max: 1 },
+    a8: { min: 37, max: 37 },
+    a9: { min: 3, max: 3 },
+    a10: { min: 2, max: 2 },
+    a11: { min: 18, max: 18 },
+    a12: { min: 2, max: 2 },
+    a13: { min: 11, max: 11 },
+    a14: { min: 2, max: 2 },
+    a15: { min: 22, max: 22 },
+    a16: { min: 15, max: 15 },
+    a17: { min: 2, max: 2 },
+    a18: { min: 10, max: 10 },
+    ...reqMedMedNewShared.cells,
+  },
+};
+
+const reqMed2Since2023: SetupCreditRequirements = {
+  ...reqMed2Med2NewShared,
+  cells: {
+    a1: { min: 9, max: 9 },
+    a2: { min: 27, max: 27 },
+    a3: { min: 2, max: 2 },
+    a4: { min: 37, max: 37 },
+    a5: { min: 3, max: 3 },
+    a6: { min: 18, max: 18 },
+    a7: { min: 2, max: 2 },
+    a8: { min: 11, max: 11 },
+    a9: { min: 2, max: 2 },
+    a10: { min: 22, max: 22 },
+    a11: { min: 4, max: 4 },
+    a12: { min: 11, max: 11 },
+    a13: { min: 2, max: 2 },
+    a14: { min: 10, max: 10 },
+    a15: { min: 1, max: 1 },
+    a16: { min: 2, max: 2 },
+    ...reqMed2Med2NewShared.cells,
+  },
+};
+
+const reqMed2Since2024: SetupCreditRequirements = {
+  ...reqMed2Med2NewShared,
+  cells: {
+    a1: { min: 9, max: 9 },
+    a2: { min: 27, max: 27 },
+    a3: { min: 2, max: 2 },
+    a4: { min: 1, max: 1 },
+    a5: { min: 37, max: 37 },
+    a6: { min: 3, max: 3 },
+    a7: { min: 2, max: 2 },
+    a8: { min: 18, max: 18 },
+    a9: { min: 2, max: 2 },
+    a10: { min: 11, max: 11 },
+    a11: { min: 2, max: 2 },
+    a12: { min: 22, max: 22 },
+    a13: { min: 4, max: 4 },
+    a14: { min: 11, max: 11 },
+    a15: { min: 2, max: 2 },
+    a16: { min: 10, max: 10 },
+    ...reqMed2Med2NewShared.cells,
+  },
+};
+
+const reqMed2NewSince2023: SetupCreditRequirements = {
+  ...reqMed2Med2NewShared,
+  cells: {
+    a1: { min: 9, max: 9 },
+    a2: { min: 27, max: 27 },
+    a3: { min: 2, max: 2 },
+    a4: { min: 37, max: 37 },
+    a5: { min: 3, max: 3 },
+    a6: { min: 18, max: 18 },
+    a7: { min: 2, max: 2 },
+    a8: { min: 11, max: 11 },
+    a9: { min: 2, max: 2 },
+    a10: { min: 22, max: 22 },
+    a11: { min: 15, max: 15 },
+    a12: { min: 2, max: 2 },
+    a13: { min: 10, max: 10 },
+    a14: { min: 1, max: 1 },
+    a15: { min: 2, max: 2 },
+    ...reqMed2Med2NewShared.cells,
+  },
+};
+
+const reqMed2NewSince2024: SetupCreditRequirements = {
+  ...reqMed2Med2NewShared,
+  cells: {
+    a1: { min: 9, max: 9 },
+    a2: { min: 27, max: 27 },
+    a3: { min: 2, max: 2 },
+    a4: { min: 1, max: 1 },
+    a5: { min: 37, max: 37 },
+    a6: { min: 3, max: 3 },
+    a7: { min: 2, max: 2 },
+    a8: { min: 18, max: 18 },
+    a9: { min: 2, max: 2 },
+    a10: { min: 11, max: 11 },
+    a11: { min: 2, max: 2 },
+    a12: { min: 22, max: 22 },
+    a13: { min: 15, max: 15 },
+    a14: { min: 2, max: 2 },
+    a15: { min: 10, max: 10 },
+    ...reqMed2Med2NewShared.cells,
+  },
+};
+
 export function getCreditRequirements(
-  _tableYear: number,
+  tableYear: number,
   major: Major,
 ): SetupCreditRequirements {
   const specialty = majorToSpecialtyOrFail(major);
+  const since2024 = tableYear >= 2024;
   switch (specialty) {
     case "med":
+      return since2024 ? reqMedSince2024 : reqMedSince2023;
     case "med-new":
-      return reqMedMedNewSince2023;
+      return since2024 ? reqMedNewSince2024 : reqMedNewSince2023;
     case "med-2":
+      return since2024 ? reqMed2Since2024 : reqMed2Since2023;
     case "med-2-new":
-      return reqMed2MedNew2Since2023;
+      return since2024 ? reqMed2NewSince2024 : reqMed2NewSince2023;
     default:
       return unreachable(specialty);
   }
