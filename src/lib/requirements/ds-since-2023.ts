@@ -300,7 +300,7 @@ const reqSince2023: SetupCreditRequirements = {
     c: { min: 25, max: 25 },
     d: { min: 0, max: 10 },
     e: { min: 15, max: 15 },
-    g: { min: 1, max: 40 },
+    f: { min: 1, max: 40 },
     h: { min: 6, max: 45 },
   },
   compulsory: 46,
