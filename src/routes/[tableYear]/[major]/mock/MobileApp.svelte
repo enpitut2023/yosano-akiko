@@ -1,6 +1,7 @@
 <script lang="ts">
   import { asset, resolve } from "$app/paths";
   import CalendarDays from "lucide-svelte/icons/calendar-days";
+  import ListChecks from "lucide-svelte/icons/list-checks";
   import Search from "lucide-svelte/icons/search";
   import { tick, untrack } from "svelte";
   import {
@@ -326,8 +327,7 @@
           <button
             class:active={sheetTab === "plan"}
             onclick={() => showSheetTab("plan")}
-            >{@render fileIcon(asset("icons/book.svg"))}取る授業 {planned
-              .mightTake.length}</button
+            ><ListChecks size={15} />取る授業 {planned.mightTake.length}</button
           >
           <button
             class:active={sheetTab === "timetable"}
