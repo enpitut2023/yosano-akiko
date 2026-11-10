@@ -7,6 +7,11 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
 
 ## Decided
 
+- The mock is published on main at `/yosano-akiko/2023/coins/mock`, the
+  only page `entries` prerenders. It stays under `[tableYear]/[major]/` rather
+  than at `/mock`: it imports the major page's components as `../X`, and sits
+  beside the code it will be merged into.
+
 - Layout: the table fills the screen as a map, under a bottom sheet with
   three heights (peek, half, full) and three tabs: 授業を探す, 取る授業,
   時間割.
@@ -20,6 +25,10 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
   rules, rows stacked like its course tables, the credit summary as a box
   filled like its column sums, the table's green and yellow tints for taken
   and planned rows. Chosen over a ruled 履修要覧 look and a pink one.
+- Credits: the peek shows only the selected cell, or a hint. The totals live
+  in a 単位 tab. The column sums always show in a strip under the table's
+  columns, pinned above the sheet: they have no names a student knows (a1,
+  b2 are internal), so they only make sense lined up with the columns.
 - A tap on the table outside a cell clears the selection, as on desktop;
   there's no clear button.
 - Keep the ＋/− zoom buttons: mouse and trackpad users have no pinch, and a
@@ -35,6 +44,11 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
 - [ ] A trackpad pinch (ctrl+wheel) zooms the whole page, not the table.
 
 ## To decide
+
+- [ ] A better 単位 tab. For now it shows what's left to graduate as a big
+      number (卒業まで あと 94→81 単位) over meters for 必修 and 選択; it
+      could be better. Also tried and dropped: a meter each for 必修, 選択 and
+      合計, and a ruled table of 取得済み, 取る授業, 必要 and あと.
 
 - [ ] How the desktop components reused in the sheet should look on a phone:
       `CourseFilters`, `Timetable`, `ImportTab`, `ExportTab`.
