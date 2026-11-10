@@ -235,6 +235,7 @@
 </div>
 
 <style lang="scss">
+  @use "../../../lib/hover" as *;
   @use "./steps-panel";
 
   table,
@@ -290,7 +291,7 @@
     font-size: 18px;
     font-weight: bold;
 
-    &:hover {
+    @include hover {
       background-color: oklch(50% 50% 270);
     }
 

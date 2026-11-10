@@ -1,0 +1,16 @@
+// Use instead of &:hover. A touch screen keeps :hover on whatever was tapped
+// last until the next tap elsewhere, so a tapped toggle shows its hover look
+// over its on state. $not leaves out states that hover mustn't cover.
+@mixin hover($not: null) {
+  @media (hover: hover) {
+    @if $not {
+      &:hover:not(#{$not}) {
+        @content;
+      }
+    } @else {
+      &:hover {
+        @content;
+      }
+    }
+  }
+}

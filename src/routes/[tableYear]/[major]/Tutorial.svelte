@@ -209,6 +209,7 @@
 </div>
 
 <style lang="scss">
+  @use "../../../lib/hover" as *;
   .tutorial {
     font-size: 14px;
   }
@@ -293,7 +294,7 @@
     border-radius: 10px;
     background-color: white;
 
-    &:hover {
+    @include hover {
       background-color: oklch(95% 0 0);
     }
 
@@ -303,7 +304,7 @@
       border-color: $c;
       color: white;
 
-      &:hover {
+      @include hover {
         background-color: oklch(65% 50% 270);
       }
     }
