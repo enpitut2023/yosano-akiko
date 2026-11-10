@@ -464,7 +464,11 @@
           <button
             class:active={sheetTab === "plan"}
             onclick={() => showSheetTab("plan")}
-            ><ListChecks size={15} />取る授業 {planned.mightTake.length}</button
+            ><ListChecks
+              size={15}
+            />取る授業{#if planned.mightTake.length > 0}<span class="count"
+                >{planned.mightTake.length}</span
+              >{/if}</button
           >
           <button
             class:active={sheetTab === "timetable"}
@@ -810,6 +814,7 @@
     border-bottom: 1px solid var(--c-rule);
 
     & > button {
+      position: relative;
       flex: 1;
       display: flex;
       justify-content: center;
@@ -833,6 +838,21 @@
         color: var(--c-accent);
       }
     }
+  }
+
+  // In the tab's corner, like the desktop's filter badge
+  .count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    box-sizing: border-box;
+    min-width: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background-color: oklch(60% 15% 250);
+    color: white;
+    font-size: 12px;
+    line-height: 20px;
   }
 
   .scroll {
