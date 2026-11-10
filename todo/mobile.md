@@ -14,6 +14,9 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
 - Layout: the table fills the screen as a map, under a bottom sheet with
   three heights (peek, half, full) and four tabs: 探す, 取る授業, 時間割,
   単位.
+- Letting go of the sheet projects its height by its speed and snaps to the
+  nearest; a quick flick moves one snap its way, and only a very fast one
+  can skip half. The thresholds in `sheet.ts` are guesses to tune on a phone.
 - Courses move between lists with a ＋/✓ button on each row, not by
   dragging. Dragging can stay on desktop.
 - A course row: bold name, slot chip, then credits, year and ID in small

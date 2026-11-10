@@ -1,10 +1,12 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import {
-    SHEET_PEEK_HEIGHT,
-    SHEET_SNAPS,
+    sheetDragEnd,
+    sheetDragMove,
+    sheetDragStart,
     sheetSnapHeight,
     sheetSnapNearest,
+    type SheetDrag,
     type SheetSnap,
   } from "./sheet";
 
@@ -22,46 +24,41 @@
     children: Snippet;
   } = $props();
 
-  // Smaller moves are taps, not drags
-  const DRAG_THRESHOLD = 5;
-
-  let drag = $state<
-    | { startY: number; startHeight: number; height: number | undefined }
-    | undefined
-  >();
+  let drag = $state.raw<SheetDrag | undefined>();
   const height = $derived(
-    drag?.height ?? sheetSnapHeight(snap, containerHeight),
+    drag?.kind === "dragging"
+      ? drag.height
+      : sheetSnapHeight(snap, containerHeight),
   );
 
   function down(e: PointerEvent) {
     if (e.currentTarget instanceof Element)
       e.currentTarget.setPointerCapture(e.pointerId);
-    drag = { startY: e.clientY, startHeight: height, height: undefined };
+    drag = sheetDragStart(e.clientY, height);
   }
 
   function move(e: PointerEvent) {
     if (drag === undefined) return;
-    const dy = drag.startY - e.clientY;
-    if (drag.height === undefined && Math.abs(dy) < DRAG_THRESHOLD) return;
-    drag.height = Math.min(
-      containerHeight,
-      Math.max(SHEET_PEEK_HEIGHT, drag.startHeight + dy),
-    );
+    drag = sheetDragMove(drag, e.clientY, e.timeStamp, containerHeight);
   }
 
-  function up() {
+  function up(e: PointerEvent) {
     if (drag === undefined) return;
-    snap =
-      drag.height !== undefined
-        ? sheetSnapNearest(drag.height, containerHeight)
-        : SHEET_SNAPS[(SHEET_SNAPS.indexOf(snap) + 1) % SHEET_SNAPS.length];
+    snap = sheetDragEnd(drag, e.timeStamp, snap, containerHeight);
+    drag = undefined;
+  }
+
+  // The browser took the pointer, e.g. to scroll, so neither a tap nor a fling
+  function cancel() {
+    if (drag?.kind === "dragging")
+      snap = sheetSnapNearest(drag.height, containerHeight);
     drag = undefined;
   }
 </script>
 
 <section
   class="sheet"
-  class:dragging={drag?.height !== undefined}
+  class:dragging={drag?.kind === "dragging"}
   style="height: {height}px"
 >
   <button
@@ -70,7 +67,7 @@
     onpointerdown={down}
     onpointermove={move}
     onpointerup={up}
-    onpointercancel={up}
+    onpointercancel={cancel}
   >
     <span></span>
   </button>
