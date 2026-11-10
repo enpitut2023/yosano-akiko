@@ -118,18 +118,18 @@
     grid-template-columns: 1fr auto;
     align-items: center;
     background-color: var(--c-surface);
-    border: 1px solid var(--c-line);
-    border-left: 5px solid var(--c-line);
-    border-radius: 10px;
-    overflow: hidden;
+    border: 1px solid var(--c-rule);
+
+    :global(.row) + & {
+      margin-top: -1px;
+    }
 
     &.planned {
-      border-left-color: var(--c-plan);
-      background-color: var(--c-plan-bg);
+      background-color: var(--c-plan-tint);
     }
 
     &.taken {
-      border-left-color: var(--c-taken);
+      background-color: var(--c-taken-tint);
     }
 
     &.unavailable {
@@ -168,10 +168,9 @@
   }
 
   .slots {
-    background-color: var(--c-accent-bg);
-    color: var(--c-accent);
+    background-color: var(--c-panel);
+    color: var(--c-text);
     font-size: var(--fs-sm);
-    font-weight: bold;
   }
 
   .overlap {
@@ -199,24 +198,23 @@
     width: 45px;
     height: 45px;
     margin-right: 10px;
-    border: 2px solid var(--c-accent);
+    border: 1px solid var(--c-rule);
     border-radius: 50%;
     background-color: var(--c-surface);
-    color: var(--c-accent);
   }
 
   .planned .move {
-    border-color: var(--c-plan);
     background-color: var(--c-plan);
-    color: var(--c-text);
   }
 
+  // The desktop's course remarks
   .more {
     grid-column: 1 / -1;
     display: grid;
     gap: 10px;
     padding: 10px;
-    border-top: 1px dashed var(--c-line);
+    border-top: 1px solid var(--c-line);
+    background-color: hsl(0, 0%, 96%);
     font-size: var(--fs-sm);
 
     & > p {

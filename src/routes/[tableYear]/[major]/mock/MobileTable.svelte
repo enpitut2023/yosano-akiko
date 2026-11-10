@@ -21,7 +21,8 @@
     selectedCellId: CellId | undefined;
     /** How much of the bottom something else covers */
     coveredHeight: number;
-    onSelect: (cellId: CellId) => void;
+    /** Called with undefined on a tap outside the cells */
+    onSelect: (cellId: CellId | undefined) => void;
   } = $props();
 
   const ZOOM_MIN = 0.25;
@@ -95,6 +96,11 @@
     class="scroll"
     bind:this={scrollEl}
     {@attach pinchZoom({ zoom: () => zoom, setZoom })}
+    onclick={(e) => {
+      // A pan or a pinch fires no click
+      if (!(e.target instanceof Element && e.target.closest(".cell")))
+        onSelect(undefined);
+    }}
   >
     <div
       class="canvas"
@@ -180,7 +186,9 @@
 
     &.selected {
       opacity: 0.6;
-      outline: 5px solid var(--c-accent);
+      // The desktop table's
+      outline: 5px solid #0066ff;
+      outline-offset: 5px;
       z-index: 1;
     }
   }
@@ -200,9 +208,8 @@
       width: 45px;
       height: 45px;
       border: 1px solid var(--c-line);
-      border-radius: 50%;
+      border-radius: 10px;
       background-color: var(--c-surface);
-      box-shadow: 0 0 5px var(--c-line);
     }
   }
 </style>

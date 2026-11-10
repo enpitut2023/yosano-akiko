@@ -74,7 +74,7 @@
   >
     <span></span>
   </button>
-  {@render peek()}
+  <div>{@render peek()}</div>
   <div class="body">{@render children()}</div>
 </section>
 
@@ -86,9 +86,8 @@
     bottom: 0;
     display: grid;
     grid-template-rows: auto auto 1fr;
-    background-color: var(--c-bg);
-    border-radius: 20px 20px 0 0;
-    box-shadow: 0 -5px 20px oklch(25% 0.02 270 / 0.15);
+    background-color: var(--c-surface);
+    border-top: 1px solid var(--c-rule);
     overflow: hidden;
     transition: height 0.2s;
 
@@ -110,7 +109,7 @@
       width: 40px;
       height: 5px;
       border-radius: 5px;
-      background-color: var(--c-line);
+      background-color: var(--c-sub);
     }
   }
 

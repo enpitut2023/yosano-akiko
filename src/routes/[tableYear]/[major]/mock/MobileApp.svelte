@@ -1,6 +1,7 @@
 <script lang="ts">
   import { asset, resolve } from "$app/paths";
-  import X from "lucide-svelte/icons/x";
+  import CalendarDays from "lucide-svelte/icons/calendar-days";
+  import Search from "lucide-svelte/icons/search";
   import { tick, untrack } from "svelte";
   import {
     akikoGetCourseLists,
@@ -233,7 +234,7 @@
     s.effectiveMightTake,
     s.min,
   )}
-  <div class="credit">
+  <div class="credit" style="--green:{green}%; --yellow:{yellow}%">
     <div>
       <span>{label}</span>
       <strong
@@ -242,8 +243,11 @@
       >
       <span>/ {creditBoundsToString(s.min, s.max)}単位</span>
     </div>
-    <div class="credit-bar" style="--green:{green}%; --yellow:{yellow}%"></div>
   </div>
+{/snippet}
+
+{#snippet fileIcon(src: string)}
+  <span class="icon" style="--src: url({src})"></span>
 {/snippet}
 
 {#snippet row({ course, listKind }: ListedCourse, showGotoCell: boolean)}
@@ -280,8 +284,12 @@
       <strong>{MAJOR_TO_JA[config.major]}</strong>
       <span>{config.tableYear}年度入学</span>
     </div>
-    <button onclick={() => (screen = "import")}>成績</button>
-    <button onclick={() => (screen = "export")}>出力</button>
+    <button onclick={() => (screen = "import")}
+      >{@render fileIcon(asset("icons/math.svg"))}成績</button
+    >
+    <button onclick={() => (screen = "export")}
+      >{@render fileIcon(asset("icons/itf.svg"))}出力</button
+    >
   </header>
 
   <div class="stage" bind:clientHeight={stageHeight}>
@@ -294,7 +302,10 @@
         snap === "full" ? "half" : snap,
         stageHeight,
       )}
-      onSelect={(cellId: CellId) => void showCell(cellId)}
+      onSelect={(cellId: CellId | undefined) => {
+        if (cellId === undefined) selectedCellId = undefined;
+        else void showCell(cellId);
+      }}
     />
 
     <BottomSheet bind:snap containerHeight={stageHeight}>
@@ -302,12 +313,6 @@
         <div class="summary">
           {#if selectedCellStats}
             {@render credit("選択中のマス", selectedCellStats)}
-            <button
-              class="clear"
-              aria-label="マスの選択を解除"
-              onclick={() => (selectedCellId = undefined)}
-              ><X size={15} /></button
-            >
           {:else}
             {@render credit("合計", creditStats.total)}
           {/if}
@@ -315,16 +320,19 @@
         <div class="tabs">
           <button
             class:active={sheetTab === "find"}
-            onclick={() => showSheetTab("find")}>授業を探す</button
+            onclick={() => showSheetTab("find")}
+            ><Search size={15} />授業を探す</button
           >
           <button
             class:active={sheetTab === "plan"}
             onclick={() => showSheetTab("plan")}
-            >取る授業 {planned.mightTake.length}</button
+            >{@render fileIcon(asset("icons/book.svg"))}取る授業 {planned
+              .mightTake.length}</button
           >
           <button
             class:active={sheetTab === "timetable"}
-            onclick={() => showSheetTab("timetable")}>時間割</button
+            onclick={() => showSheetTab("timetable")}
+            ><CalendarDays size={15} />時間割</button
           >
         </div>
       {/snippet}
@@ -465,19 +473,22 @@
 
 <style lang="scss">
   .app {
-    --c-bg: oklch(97% 0.005 270);
+    // From the desktop page
     --c-surface: white;
-    --c-line: oklch(88% 0.01 270);
-    --c-track: oklch(92% 0.005 270);
-    --c-text: oklch(25% 0.02 270);
-    --c-sub: oklch(50% 0.02 270);
-    --c-accent: oklch(45% 0.15 270);
-    --c-accent-bg: oklch(95% 0.03 270);
+    --c-rule: black;
+    --c-line: #ccc;
+    --c-panel: oklch(95% 0 0);
+    --c-text: black;
+    --c-sub: #666;
+    --c-accent: oklch(45% 30% 270);
+    --c-tab-accent: oklch(70% 50% 270);
     --c-brand-bg: oklch(98% 4% 350);
     --c-brand-line: oklch(92% 10% 350);
     --c-taken: rgb(51, 204, 51);
     --c-plan: rgb(255, 204, 0);
-    --c-plan-bg: oklch(96% 0.07 95);
+    // The table's tints
+    --c-taken-tint: rgb(51 204 51 / 0.4);
+    --c-plan-tint: rgb(255 204 0 / 0.4);
     --c-warn: oklch(50% 0.18 30);
     --c-warn-bg: oklch(95% 0.04 30);
     // The components shared with the desktop page size their text with these
@@ -491,7 +502,7 @@
     grid-template-rows: auto auto 1fr;
     font-size: 15px;
     color: var(--c-text);
-    background-color: var(--c-bg);
+    background-color: var(--c-surface);
 
     & button {
       color: inherit;
@@ -512,12 +523,23 @@
     }
 
     & > button {
-      padding: 0 10px;
+      padding: 0 5px;
       border: 1px solid var(--c-sub);
       border-radius: 5px;
       background: none;
+      color: inherit;
       font-size: inherit;
+      white-space: nowrap;
     }
+  }
+
+  // The desktop's tab icons, which are single-color SVGs
+  .icon {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    background-color: currentColor;
+    mask: var(--src) center / contain no-repeat;
   }
 
   header {
@@ -565,10 +587,13 @@
 
     & > button {
       flex: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
       height: 35px;
-      padding: 0 15px;
+      padding: 0 10px;
       border: 1px solid var(--c-line);
-      border-radius: 20px;
+      border-radius: 10px;
       background-color: var(--c-surface);
       font-size: var(--fs-sm);
     }
@@ -581,73 +606,59 @@
   }
 
   .summary {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 10px;
-    height: 45px;
-    padding: 0 15px;
+    padding: 0 10px;
   }
 
+  // Like the desktop's column sums: a box filled behind its text
   .credit {
-    display: grid;
-    gap: 5px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 5px 10px;
+    border: 1px solid var(--c-rule);
+    background: linear-gradient(
+      90deg,
+      var(--c-taken-tint) 0 var(--green),
+      var(--c-plan-tint) var(--green) var(--yellow),
+      transparent var(--yellow)
+    );
+    font-size: var(--fs-sm);
 
-    & > div:first-child {
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-      font-size: var(--fs-sm);
-
-      & > strong {
-        font-size: 1.2em;
-      }
+    & strong {
+      font-size: 1.2em;
     }
   }
 
-  .credit-bar {
-    height: 5px;
-    border-radius: 5px;
-    background: linear-gradient(
-      90deg,
-      var(--c-taken) 0 var(--green),
-      var(--c-plan) var(--green) var(--yellow),
-      var(--c-track) var(--yellow)
-    );
-  }
-
-  .clear {
-    all: unset;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    background-color: var(--c-track);
-  }
-
+  // The desktop's tabs
   .tabs {
     display: flex;
-    gap: 5px;
-    height: 45px;
-    box-sizing: border-box;
-    padding: 5px 15px;
-    border-bottom: 1px solid var(--c-line);
+    align-items: flex-end;
+    gap: 10px;
+    padding: 10px 10px 0;
+    border-bottom: 1px solid var(--c-rule);
 
     & > button {
-      all: unset;
-      cursor: pointer;
       flex: 1;
-      border-radius: 5px;
-      text-align: center;
-      font-size: var(--fs-sm);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+      // Overlaps the bottom border so the active tab joins its content
+      margin-bottom: -1px;
+      padding: 10px 0;
+      border: 1px solid var(--c-rule);
+      border-radius: 10px 10px 0 0;
+      background-color: var(--c-panel);
       color: var(--c-sub);
+      font-size: var(--fs-sm);
+      white-space: nowrap;
 
       &.active {
-        background-color: var(--c-accent-bg);
+        border-bottom-color: var(--c-surface);
+        background-color: var(--c-surface);
+        box-shadow: inset 0 3px 0 var(--c-tab-accent);
         color: var(--c-accent);
-        font-weight: bold;
       }
     }
   }
@@ -659,7 +670,6 @@
 
   .list {
     display: grid;
-    gap: 5px;
     padding: 0 15px 20px;
 
     & > h2 {
@@ -671,18 +681,17 @@
       gap: 10px;
       margin: 0;
       padding: 15px 0 5px;
-      background-color: var(--c-bg);
-      font-size: var(--fs-sm);
-      color: var(--c-sub);
+      background-color: var(--c-surface);
+      font-size: 1.2em;
 
       & > small {
-        font-weight: normal;
+        font-size: var(--fs-sm);
       }
     }
 
     & > .pill {
       justify-self: center;
-      margin-top: 10px;
+      margin-top: 15px;
     }
   }
 
@@ -698,7 +707,6 @@
   .remark {
     margin: 15px 0 0;
     padding: 10px;
-    border-radius: 10px;
     font-size: var(--fs-sm);
   }
 
@@ -708,8 +716,7 @@
   }
 
   .remark {
-    background-color: var(--c-surface);
-    border: 1px solid var(--c-line);
+    border: 1px solid var(--c-rule);
 
     & > p {
       margin: 10px 0 0;
@@ -723,33 +730,30 @@
     gap: 10px;
     margin: 0;
     padding: 10px;
-    border: 1px solid var(--c-line);
-    border-radius: 10px;
-    background-color: var(--c-surface);
+    border: 1px solid var(--c-rule);
+
+    & + .fake {
+      margin-top: -1px;
+    }
   }
 
   .totals {
     display: grid;
-    gap: 15px;
-    padding: 15px;
-    border: 1px solid var(--c-line);
-    border-radius: 10px;
-    background-color: var(--c-surface);
+    gap: 10px;
   }
 
   .timetable {
     display: grid;
     height: 400px;
     margin: 15px;
-    border: 1px solid black;
-    background-color: var(--c-surface);
+    border: 1px solid var(--c-rule);
   }
 
   .pill {
     height: 45px;
     padding: 0 20px;
     border: 1px solid var(--c-line);
-    border-radius: 20px;
+    border-radius: 10px;
     background-color: var(--c-surface);
     font-size: var(--fs-sm);
   }
