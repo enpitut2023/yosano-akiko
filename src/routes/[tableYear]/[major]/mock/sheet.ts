@@ -38,4 +38,4 @@ export function sheetSnapNearest(
 }
 
 /** The tab shown in the sheet. */
-export type SheetTab = "find" | "plan" | "timetable";
+export type SheetTab = "find" | "plan" | "timetable" | "credits";

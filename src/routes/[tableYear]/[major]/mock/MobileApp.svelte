@@ -1,6 +1,7 @@
 <script lang="ts">
   import { asset, resolve } from "$app/paths";
   import CalendarDays from "lucide-svelte/icons/calendar-days";
+  import GraduationCap from "lucide-svelte/icons/graduation-cap";
   import ListChecks from "lucide-svelte/icons/list-checks";
   import Search from "lucide-svelte/icons/search";
   import { tick, untrack } from "svelte";
@@ -10,11 +11,13 @@
     akikoGetOccupiedSlots,
     akikoMoveCourse,
     akikoNew,
+    columnIdIsElective,
     courseIdCompare,
     coursesCreditSum,
     occupiedSlotsOverlap,
     type AkikoMoveCourseDst,
     type CellId,
+    type ColumnId,
     type CourseId,
     type FakeCourse,
     type ListKind,
@@ -41,6 +44,7 @@
     cellCreditStatsDisplay,
     creditBoundsToString,
     creditFillPercentages,
+    electiveCreditStatsDisplay,
   } from "../credit-display";
   import ExportTab from "../ExportTab.svelte";
   import ImportTab from "../ImportTab.svelte";
@@ -49,14 +53,14 @@
   import BottomSheet from "./BottomSheet.svelte";
   import CourseRow from "./CourseRow.svelte";
   import MobileTable from "./MobileTable.svelte";
-  import { sampleGrades } from "./sample-grades";
+  import { sampleGrades, type SampleGrades } from "./sample-grades";
   import { sheetSnapHeight, type SheetSnap, type SheetTab } from "./sheet";
 
   let { config }: { config: MajorConfig } = $props();
 
   // Kept in memory only, so trying the mock can't touch what the real page saved
   let realCourses = $state.raw<RealCourse[]>(
-    untrack(() => sampleGrades(config.knownCourseYear)),
+    untrack(() => sampleGrades("typical", config.knownCourseYear)),
   );
   let fakeCourses = $state.raw<FakeCourse[]>([]);
   let listKindOverrides = $state.raw<ListKindOverrides>(new Map());
@@ -101,6 +105,21 @@
     listKindOverrides = new Map();
   }
 
+  type GradesSource = SampleGrades | "none" | "imported";
+  const GRADES_SOURCES: Record<GradesSource, string> = {
+    typical: "サンプル成績",
+    overflowing: "上限超えの成績",
+    none: "成績なし",
+    imported: "読み込んだ成績",
+  };
+  let gradesSource = $state<GradesSource>("typical");
+  function setGradesSource(source: GradesSource) {
+    gradesSource = source;
+    if (source === "none") useGrades([], []);
+    else if (source !== "imported")
+      useGrades(sampleGrades(source, config.knownCourseYear), []);
+  }
+
   function importCsvFile(file: File) {
     void file.text().then((csv) => {
       const result = parseImportedCsv(csv);
@@ -109,6 +128,7 @@
         return;
       }
       useGrades(result.realCourses, result.fakeCourses);
+      gradesSource = "imported";
     });
   }
 
@@ -129,8 +149,39 @@
       : undefined,
   );
 
+  const overflowingColumns = $derived(
+    [...creditStats.columns]
+      .filter(([colId, s]) => columnIdIsElective(colId) && s.overflowTotal > 0)
+      .map(([colId, stats]) => ({ colId, stats })),
+  );
+
+  type CreditProgress = {
+    min: number;
+    max: number | undefined;
+    effectiveTaken: number;
+    effectiveMightTake: number;
+  };
+
+  /** Credits still needed to reach `min`, after the planned courses too if `planned`. */
+  function creditsLeft(s: CreditProgress, planned: boolean): number {
+    const have = s.effectiveTaken + (planned ? s.effectiveMightTake : 0);
+    return Math.max(0, s.min - have);
+  }
+  const electiveWarning = $derived(
+    electiveCreditStatsDisplay(creditStats.elective).warning,
+  );
+
   // Typed by hand: ESLint can't see the types of a component's exports
-  let table = $state<{ scrollCellIntoView: (cellId: CellId) => void }>();
+  let table = $state<{
+    scrollCellIntoView: (cellId: CellId) => void;
+    scrollColumnIntoView: (colId: ColumnId) => void;
+  }>();
+
+  /** Scrolls the column into view above the sheet, where its sum shows. */
+  function showColumn(colId: ColumnId) {
+    if (snap === "full") snap = "half";
+    table?.scrollColumnIntoView(colId);
+  }
 
   /** Selects the cell, lists its courses, and scrolls it into view above the sheet. */
   async function showCell(cellId: CellId) {
@@ -228,6 +279,7 @@
     max: number | undefined;
     effectiveTaken: number;
     effectiveMightTake: number;
+    overflowTotal: number;
   },
 )}
   {@const [green, yellow] = creditFillPercentages(
@@ -235,7 +287,11 @@
     s.effectiveMightTake,
     s.min,
   )}
-  <div class="credit" style="--green:{green}%; --yellow:{yellow}%">
+  <div
+    class="credit"
+    class:over={s.overflowTotal > 0}
+    style="--green:{green}%; --yellow:{yellow}%"
+  >
     <div>
       <span>{label}</span>
       <strong
@@ -245,6 +301,55 @@
       <span>/ {creditBoundsToString(s.min, s.max)}単位</span>
     </div>
   </div>
+{/snippet}
+
+{#snippet progress(s: CreditProgress)}
+  {s.effectiveTaken}{#if s.effectiveMightTake > 0}→{s.effectiveTaken +
+      s.effectiveMightTake}{/if}
+{/snippet}
+
+{#snippet meter(label: string, s: CreditProgress)}
+  {@const [green, yellow] = creditFillPercentages(
+    s.effectiveTaken,
+    s.effectiveMightTake,
+    s.min,
+  )}
+  <div class="meter">
+    <strong>{label}</strong>
+    <div class="bar" style="--green:{green}%; --yellow:{yellow}%"></div>
+    <span
+      ><b>{@render progress(s)}</b> / {creditBoundsToString(s.min, s.max)}</span
+    >
+  </div>
+{/snippet}
+
+{#snippet legend()}
+  <p class="legend">
+    <span class="swatch taken"></span>取得済み
+    <span class="swatch plan"></span>取る授業
+  </p>
+{/snippet}
+
+{#snippet creditsLeftToGraduate()}
+  {@const total = creditStats.total}
+  <div class="hero">
+    <span>卒業まで あと</span>
+    <strong
+      >{creditsLeft(
+        total,
+        false,
+      )}{#if total.effectiveMightTake > 0}→{creditsLeft(
+          total,
+          true,
+        )}{/if}</strong
+    >
+    <span>単位</span>
+  </div>
+  <div class="meters">
+    {@render meter("必修", creditStats.compulsory)}
+    {@render meter("選択", creditStats.elective)}
+  </div>
+  {@render legend()}
 {/snippet}
 
 {#snippet fileIcon(src: string)}
@@ -270,11 +375,12 @@
 
 <div class="app">
   <div class="mock-bar">
-    <span>モック：ここでの変更は保存されません</span>
-    <button onclick={() => useGrades(sampleGrades(config.knownCourseYear), [])}
-      >サンプル成績</button
-    >
-    <button onclick={() => useGrades([], [])}>成績なし</button>
+    <span>モック：変更は保存されません</span>
+    <select aria-label="成績" bind:value={() => gradesSource, setGradesSource}>
+      {#each Object.entries(GRADES_SOURCES) as [value, label] (value)}
+        <option {value} disabled={value === "imported"}>{label}</option>
+      {/each}
+    </select>
   </div>
 
   <header>
@@ -315,14 +421,16 @@
           {#if selectedCellStats}
             {@render credit("選択中のマス", selectedCellStats)}
           {:else}
-            {@render credit("合計", creditStats.total)}
+            <p class="peek-hint">
+              表のマスを押すと、そのマスの単位と授業が出ます
+            </p>
           {/if}
         </div>
         <div class="tabs">
           <button
             class:active={sheetTab === "find"}
             onclick={() => showSheetTab("find")}
-            ><Search size={15} />授業を探す</button
+            ><Search size={15} />探す</button
           >
           <button
             class:active={sheetTab === "plan"}
@@ -333,6 +441,11 @@
             class:active={sheetTab === "timetable"}
             onclick={() => showSheetTab("timetable")}
             ><CalendarDays size={15} />時間割</button
+          >
+          <button
+            class:active={sheetTab === "credits"}
+            onclick={() => showSheetTab("credits")}
+            ><GraduationCap size={15} />単位</button
           >
         </div>
       {/snippet}
@@ -394,11 +507,6 @@
               {/if}
             {:else}
               <p class="hint">表のマスを押すか、授業を検索してください</p>
-              <div class="totals">
-                {@render credit("必修", creditStats.compulsory)}
-                {@render credit("選択", creditStats.elective)}
-                {@render credit("合計", creditStats.total)}
-              </div>
             {/if}
           </div>
         {:else if sheetTab === "plan"}
@@ -418,6 +526,23 @@
                 「授業を探す」で授業の ＋ を押すと、ここと時間割に入ります
               </p>
             {/each}
+          </div>
+        {:else if sheetTab === "credits"}
+          <div class="list credits">
+            <h2>卒業に必要な単位</h2>
+            {@render creditsLeftToGraduate()}
+            {#if electiveWarning}<p class="warning">
+                ⚠️ {electiveWarning}
+              </p>{/if}
+            {#each overflowingColumns as { colId, stats } (colId)}
+              <p class="warning">
+                ⚠️ 赤い枠の列は{stats.max}単位までで、{stats.overflowTotal}単位が卒業単位に入りません。
+                <button class="link" onclick={() => showColumn(colId)}
+                  >表で見る</button
+                >
+              </p>
+            {/each}
+            <p class="hint">列ごとの選択科目の単位は、表の下の帯に出ます</p>
           </div>
         {:else}
           <div class="timetable">
@@ -448,7 +573,7 @@
             {fakeCourses}
             bind:native
             onImport={importCsvFile}
-            onReset={() => useGrades([], [])}
+            onReset={() => setGradesSource("none")}
           />
         {:else}
           <ExportTab
@@ -498,8 +623,8 @@
 
     position: fixed;
     inset: 0;
-    display: grid;
-    grid-template-rows: auto auto 1fr;
+    display: flex;
+    flex-direction: column;
     font-size: 15px;
     color: var(--c-text);
     background-color: var(--c-surface);
@@ -522,7 +647,7 @@
       margin-right: auto;
     }
 
-    & > button {
+    & > select {
       padding: 0 5px;
       border: 1px solid var(--c-sub);
       border-radius: 5px;
@@ -600,13 +725,25 @@
   }
 
   .stage {
+    flex: 1;
     position: relative;
     min-height: 0;
     overflow: hidden;
   }
 
   .summary {
+    display: grid;
     padding: 0 10px;
+  }
+
+  .peek-hint {
+    margin: 0;
+    padding: 5px 0;
+    border: 1px dashed var(--c-line);
+    text-align: center;
+    font-size: var(--fs-sm);
+    line-height: 1.6;
+    color: var(--c-sub);
   }
 
   // Like the desktop's column sums: a box filled behind its text
@@ -623,9 +760,15 @@
       transparent var(--yellow)
     );
     font-size: var(--fs-sm);
+    white-space: nowrap;
 
     & strong {
       font-size: 1.2em;
+    }
+
+    &.over {
+      outline: 1px solid var(--c-warn);
+      border-color: var(--c-warn);
     }
   }
 
@@ -633,8 +776,8 @@
   .tabs {
     display: flex;
     align-items: flex-end;
-    gap: 10px;
-    padding: 10px 10px 0;
+    gap: 5px;
+    padding: 10px 5px 0;
     border-bottom: 1px solid var(--c-rule);
 
     & > button {
@@ -737,9 +880,85 @@
     }
   }
 
-  .totals {
+  .credits {
+    gap: 15px;
+  }
+
+  .hero {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+
+    & > strong {
+      font-size: 2.4em;
+      line-height: 1;
+    }
+  }
+
+  // A name, a bar and a figure per row, the bars aligned
+  .meters {
     display: grid;
+    grid-template-columns: auto 1fr auto;
     gap: 10px;
+  }
+
+  .meter {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    align-items: center;
+    font-size: var(--fs-sm);
+
+    & > span {
+      text-align: right;
+      white-space: nowrap;
+
+      & > b {
+        font-size: 1.2em;
+      }
+    }
+  }
+
+  .bar {
+    height: 15px;
+    border: 1px solid var(--c-rule);
+    background: linear-gradient(
+      90deg,
+      var(--c-taken-tint) 0 var(--green),
+      var(--c-plan-tint) var(--green) var(--yellow),
+      transparent var(--yellow)
+    );
+  }
+
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    font-size: var(--fs-xs);
+    color: var(--c-sub);
+  }
+
+  .swatch {
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--c-rule);
+
+    &.taken {
+      background-color: var(--c-taken-tint);
+    }
+
+    &.plan {
+      margin-left: 10px;
+      background-color: var(--c-plan-tint);
+    }
+  }
+
+  .link {
+    all: unset;
+    cursor: pointer;
+    color: var(--c-accent);
+    text-decoration: underline;
   }
 
   .timetable {

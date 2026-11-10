@@ -2,11 +2,22 @@
   import Minus from "lucide-svelte/icons/minus";
   import Plus from "lucide-svelte/icons/plus";
   import { onMount, untrack } from "svelte";
-  import { isCellId, type CellId, type CreditStats } from "#lib/akiko.ts";
+  import {
+    cellIdToColumnId,
+    cellIdToRow,
+    columnIdIsElective,
+    isCellId,
+    type CellId,
+    type ColumnId,
+    type CreditStats,
+  } from "#lib/akiko.ts";
   import type { MajorConfig } from "#lib/app-setup.ts";
   import { tableSvgUrl } from "#lib/major-config.ts";
   import { assert } from "#lib/util.ts";
-  import { creditFillPercentages } from "../credit-display";
+  import {
+    creditBoundsToString,
+    creditFillPercentages,
+  } from "../credit-display";
   import { pinchZoom, zoomAround } from "./pinch";
 
   let {
@@ -24,6 +35,9 @@
     /** Called with undefined on a tap outside the cells */
     onSelect: (cellId: CellId | undefined) => void;
   } = $props();
+
+  const COLUMN_SUMS_HEIGHT = 40;
+  const obscuredHeight = $derived(coveredHeight + COLUMN_SUMS_HEIGHT);
 
   const ZOOM_MIN = 0.25;
   const ZOOM_MAX = 2;
@@ -55,6 +69,22 @@
     }),
   );
 
+  // Under each elective column, as wide as its first row, like the desktop's
+  const columnBoxes = $derived(
+    cellRects.flatMap((rect) => {
+      if (cellIdToRow(rect.id) !== 1) return [];
+      const colId = cellIdToColumnId(rect.id);
+      const stats = creditStats.columns.get(colId);
+      if (!columnIdIsElective(colId) || stats === undefined) return [];
+      const [green, yellow] = creditFillPercentages(
+        stats.effectiveTaken,
+        stats.effectiveMightTake,
+        stats.min,
+      );
+      return [{ colId, rect, stats, green, yellow }];
+    }),
+  );
+
   let scrollEl = $state<HTMLDivElement | undefined>();
 
   /** Zooms around the middle of the part that isn't covered. */
@@ -65,15 +95,25 @@
       { zoom: () => zoom, setZoom },
       zoom * factor,
       scrollEl.clientWidth / 2,
-      (scrollEl.clientHeight - coveredHeight) / 2,
+      (scrollEl.clientHeight - obscuredHeight) / 2,
     );
+  }
+
+  /** Scrolls sideways so the column is in the middle. */
+  export function scrollColumnIntoView(colId: ColumnId) {
+    const box = columnBoxes.find((b) => b.colId === colId);
+    if (!box || !scrollEl) return;
+    scrollEl.scrollTo({
+      left: box.rect.x + box.rect.width / 2 - scrollEl.clientWidth / 2,
+      behavior: "smooth",
+    });
   }
 
   /** Scrolls the cell to the middle of the part that isn't covered. */
   export function scrollCellIntoView(cellId: CellId) {
     const rect = cellRects.find((r) => r.id === cellId);
     if (!rect || !scrollEl) return;
-    const visibleHeight = scrollEl.clientHeight - coveredHeight;
+    const visibleHeight = scrollEl.clientHeight - obscuredHeight;
     scrollEl.scrollTo({
       left: rect.x + rect.width / 2 - scrollEl.clientWidth / 2,
       // A cell taller than the visible part shows from its top
@@ -104,8 +144,7 @@
   >
     <div
       class="canvas"
-      style="width:{TABLE_WIDTH * zoom}px; height:{tableHeight *
-        zoom}px; margin-bottom:{coveredHeight}px"
+      style="width:{TABLE_WIDTH * zoom}px; height:{tableHeight * zoom}px"
     >
       <img
         src={tableSvgUrl(config.tableYear, config.major)}
@@ -132,6 +171,28 @@
         {/if}
       {/each}
     </div>
+    <!-- Sticks to the bottom of the part that isn't covered, and scrolls sideways with the table -->
+    <div
+      class="column-sums"
+      style:width="{TABLE_WIDTH * zoom}px"
+      style:height="{COLUMN_SUMS_HEIGHT}px"
+      style:bottom="{coveredHeight}px"
+    >
+      {#each columnBoxes as b (b.colId)}
+        <div
+          class:over={b.stats.overflowTotal > 0}
+          style="left:{b.rect.x}px; width:{b.rect
+            .width}px; --green:{b.green}%; --yellow:{b.yellow}%"
+        >
+          <strong
+            >{b.stats.effectiveTaken}{#if b.stats.effectiveMightTake > 0}→{b
+                .stats.effectiveTaken + b.stats.effectiveMightTake}{/if}</strong
+          >
+          <span>/ {creditBoundsToString(b.stats.min, b.stats.max)}</span>
+        </div>
+      {/each}
+    </div>
+    <div style="height:{coveredHeight}px"></div>
   </div>
   <div class="zoom">
     <button aria-label="拡大" onclick={() => zoomBy(ZOOM_STEP)}
@@ -190,6 +251,39 @@
       outline: 5px solid #0066ff;
       outline-offset: 5px;
       z-index: 1;
+    }
+  }
+
+  .column-sums {
+    position: sticky;
+    z-index: 2;
+    border-top: 1px solid var(--c-rule);
+    background-color: white;
+
+    & > div {
+      position: absolute;
+      top: 5px;
+      bottom: 5px;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      gap: 5px;
+      padding: 5px;
+      overflow: hidden;
+      border: 1px solid var(--c-rule);
+      background: linear-gradient(
+        90deg,
+        var(--c-taken-tint) 0 var(--green),
+        var(--c-plan-tint) var(--green) var(--yellow),
+        transparent var(--yellow)
+      );
+      font-size: var(--fs-sm);
+      white-space: nowrap;
+
+      &.over {
+        border: 2px solid var(--c-warn);
+      }
     }
   }
 
