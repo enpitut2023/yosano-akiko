@@ -64,7 +64,8 @@ export default defineConfig({
       },
     }),
   ],
-  server: { port: 42263 },
+  // `tailscale serve` (npm run dev:tailnet) forwards requests for *.ts.net
+  server: { port: 42263, allowedHosts: [".ts.net"] },
   build: { chunkSizeWarningLimit: 1000 },
   // The default pattern would also pick up the Playwright specs in tests/e2e
   test: { include: ["src/**/*.test.ts"] },
