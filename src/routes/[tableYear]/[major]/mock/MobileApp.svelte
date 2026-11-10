@@ -249,6 +249,33 @@
 
   const planned = $derived(akikoGetCourseLists(akiko, undefined, false));
 
+  // Taken out on the 取る授業 tab but still listed there, so a mistaken tap is
+  // one tap to undo; they go when the tab changes
+  let unplannedOnPlanTab = $state.raw<ReadonlySet<CourseId>>(new Set());
+  $effect(() => {
+    void sheetTab;
+    unplannedOnPlanTab = new Set();
+  });
+
+  const planList = $derived.by<ListedCourse[]>(() => {
+    const unplanned =
+      unplannedOnPlanTab.size === 0
+        ? []
+        : akikoGetCourseLists(akiko, undefined, true).wontTake.filter((c) =>
+            unplannedOnPlanTab.has(c.id),
+          );
+    return [
+      ...planned.mightTake.map((course) => ({
+        course,
+        listKind: "might-take" as const,
+      })),
+      ...unplanned.map((course) => ({
+        course,
+        listKind: "wont-take" as const,
+      })),
+    ].sort((a, b) => courseIdCompare(a.course.id, b.course.id));
+  });
+
   let timetableYear = $state(untrack(() => config.knownCourseYear));
   let timetableTerm = $state<TimetableTab>("spring-a");
   let lastAddedCourseId = $state<CourseId | undefined>();
@@ -257,6 +284,8 @@
     const moved = akikoMoveCourse(akiko, courseId, dst);
     if (moved.kind !== "moved") return;
     listKindOverrides = moved.listKindOverrides;
+    if (sheetTab === "plan" && dst === "wont-take")
+      unplannedOnPlanTab = new Set([...unplannedOnPlanTab, courseId]);
     if (dst !== "might-take") return;
     lastAddedCourseId = courseId;
     timetableYear = akiko.knownCourseYear;
@@ -519,8 +548,8 @@
                 )}単位</small
               >
             </h2>
-            {#each planned.mightTake as course (course.id)}
-              {@render row({ course, listKind: "might-take" }, true)}
+            {#each planList as listed (listed.course.id)}
+              {@render row(listed, true)}
             {:else}
               <p class="hint">
                 「授業を探す」で授業の ＋ を押すと、ここと時間割に入ります

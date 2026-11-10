@@ -22,7 +22,8 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
 - A course row: bold name, slot chip, then credits, year and ID in small
   grey text; yellow for 取る, green for 取得済み; a 時間が重複 tag; tap to
   expand 備考, シラバス and 該当マスを表示. The button doesn't make the row
-  jump.
+  jump: a course taken out on the 取る授業 tab stays listed, with a ＋, until
+  the tab changes.
 - Look: the desktop's, not an app-like one. Folder tabs with icons, black
   rules, rows stacked like its course tables, the credit summary as a box
   filled like its column sums, the table's green and yellow tints for taken
@@ -73,7 +74,27 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
 - [ ] Touch pan and pinch zoom in `gestures.ts`.
 - [ ] Rewrite the tutorial's steps for the mobile layout, and remove
       `MobileUnsupportedNotice`.
-- [ ] Playwright e2e tests at a phone viewport.
+- [ ] Playwright e2e tests at a phone viewport, on the real page once the
+      layout is in `MajorApp`. Behaviors to cover:
+  - Tapping a cell selects it, opens the sheet to half on 探す with its
+    courses, and scrolls the cell into view above the sheet and the strip.
+  - Tapping the table outside a cell clears the selection; panning doesn't.
+  - ＋ and ✓ move a course without moving its row, and the peek's credits
+    and the tab's count follow.
+  - A course taken out on 取る授業 stays listed with a ＋ until the tab
+    changes, and ＋ puts it back.
+  - 該当マスを表示 and a timetable bar select their course's cell.
+  - The 時間が重複 tag shows on a course clashing with a planned one.
+  - さらに表示 lists more of a long cell.
+  - The ＋/− zoom keeps what's in the middle of the visible part in place,
+    with the sheet at each height.
+  - The column strip lines up under its columns through scrolling and
+    zooming; a column past its limit has a red border, and its warning's
+    表で見る scrolls to it.
+  - The 単位 tab's numbers match the credit stats.
+  - A grip tap moves the sheet to the next height; one drag and one flick,
+    as a check that `BottomSheet` wires up the rules `sheet.test.ts` covers.
+  - Importing grades from 成績 and downloading from 出力 still work.
 - [ ] Remove the mock route.
 
 ## Later
