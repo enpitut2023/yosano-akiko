@@ -11,10 +11,9 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
   only page `entries` prerenders. It stays under `[tableYear]/[major]/` rather
   than at `/mock`: it imports the major page's components as `../X`, and sits
   beside the code it will be merged into.
-
 - Layout: the table fills the screen as a map, under a bottom sheet with
-  three heights (peek, half, full) and three tabs: 授業を探す, 取る授業,
-  時間割.
+  three heights (peek, half, full) and four tabs: 探す, 取る授業, 時間割,
+  単位.
 - Courses move between lists with a ＋/✓ button on each row, not by
   dragging. Dragging can stay on desktop.
 - A course row: bold name, slot chip, then credits, year and ID in small
@@ -42,6 +41,12 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
       for a `tick` before scrolling. A CSS transform during the gesture,
       applying the zoom only when it ends, may fix it.
 - [ ] A trackpad pinch (ctrl+wheel) zooms the whole page, not the table.
+- [ ] The major's name is cut off in the header. Maybe the whole top bar is
+      the wrong choice.
+- [ ] A course row and a course's bar in the timetable look like different
+      things, but they're the same course; they should look alike, or at
+      least feel alike.
+- [ ] The ✓ on a course row doesn't say what it means.
 
 ## To decide
 
@@ -49,7 +54,7 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
       number (卒業まで あと 94→81 単位) over meters for 必修 and 選択; it
       could be better. Also tried and dropped: a meter each for 必修, 選択 and
       合計, and a ruled table of 取得済み, 取る授業, 必要 and あと.
-
+- [ ] The order of the sheet's tabs.
 - [ ] How the desktop components reused in the sheet should look on a phone:
       `CourseFilters`, `Timetable`, `ImportTab`, `ExportTab`.
 - [ ] The ＋/− buttons could be smaller once pinch works well.
@@ -67,3 +72,9 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
       `MobileUnsupportedNotice`.
 - [ ] Playwright e2e tests at a phone viewport.
 - [ ] Remove the mock route.
+
+## Later
+
+- [ ] Adding あきこ to the home screen (a web app manifest, maybe offline).
+- [ ] Making it a handy timetable viewer: open it and see this term's
+      classes.
