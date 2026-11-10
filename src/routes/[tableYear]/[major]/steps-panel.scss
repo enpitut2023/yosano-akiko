@@ -1,3 +1,5 @@
+@use "../../../lib/hover" as *;
+
 // Numbered steps shared by the 単位チェック and TWINSに出力 tabs
 
 .steps-panel {
@@ -101,7 +103,7 @@ summary {
   font-size: var(--fs-sm);
   text-decoration: none;
 
-  &:hover {
+  @include hover {
     background-color: oklch(90% 0.05 270);
   }
 }

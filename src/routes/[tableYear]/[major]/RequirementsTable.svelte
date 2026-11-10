@@ -284,6 +284,7 @@
 </div>
 
 <style lang="scss">
+  @use "../../../lib/hover" as *;
   $color-progress-taken: rgb(51, 204, 51);
   $color-progress-might-take: rgb(255, 204, 0);
   $color-hover-overlay: rgba(0, 0, 0, 0.25);
@@ -348,7 +349,7 @@
       opacity: 0.4;
     }
 
-    &:hover {
+    @include hover {
       background-color: $color-hover-overlay;
     }
 
@@ -401,7 +402,7 @@
         display: unset;
       }
 
-      &:hover {
+      @include hover {
         background-color: $color-hover-overlay;
       }
     }

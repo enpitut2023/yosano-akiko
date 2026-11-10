@@ -191,6 +191,7 @@
 </div>
 
 <style lang="scss">
+  @use "../../../lib/hover" as *;
   @use "./steps-panel";
 
   table,
@@ -232,8 +233,11 @@
     color: oklch(40% 0.1 270);
     cursor: pointer;
 
-    &:hover,
     &.dragover {
+      background-color: oklch(92% 0.05 270);
+    }
+
+    @include hover {
       background-color: oklch(92% 0.05 270);
     }
 
@@ -242,8 +246,11 @@
       background-color: oklch(97% 0.03 150);
       color: oklch(40% 0.1 150);
 
-      &:hover,
       &.dragover {
+        background-color: oklch(92% 0.06 150);
+      }
+
+      @include hover {
         background-color: oklch(92% 0.06 150);
       }
     }
@@ -303,7 +310,7 @@
     color: #888;
     cursor: pointer;
 
-    &:hover {
+    @include hover {
       color: oklch(50% 0.2 25);
       text-decoration: underline;
     }

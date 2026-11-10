@@ -131,6 +131,7 @@
 </div>
 
 <style lang="scss">
+  @use "../../../lib/hover" as *;
   #filter-bar {
     border-bottom: 1px dashed black;
     display: flex;
@@ -168,8 +169,11 @@
     color: gray;
     cursor: pointer;
 
-    &:hover,
     &.open {
+      background-color: oklch(95% 0 0);
+    }
+
+    @include hover {
       background-color: oklch(95% 0 0);
     }
   }
@@ -220,7 +224,7 @@
     background-color: white;
     cursor: pointer;
 
-    &:hover:not(:disabled) {
+    @include hover(":disabled, .active") {
       background-color: oklch(95% 0 0);
     }
 

@@ -249,6 +249,33 @@
 
   const planned = $derived(akikoGetCourseLists(akiko, undefined, false));
 
+  // Taken out on the 取る授業 tab but still listed there, so a mistaken tap is
+  // one tap to undo; they go when the tab changes
+  let unplannedOnPlanTab = $state.raw<ReadonlySet<CourseId>>(new Set());
+  $effect(() => {
+    void sheetTab;
+    unplannedOnPlanTab = new Set();
+  });
+
+  const planList = $derived.by<ListedCourse[]>(() => {
+    const unplanned =
+      unplannedOnPlanTab.size === 0
+        ? []
+        : akikoGetCourseLists(akiko, undefined, true).wontTake.filter((c) =>
+            unplannedOnPlanTab.has(c.id),
+          );
+    return [
+      ...planned.mightTake.map((course) => ({
+        course,
+        listKind: "might-take" as const,
+      })),
+      ...unplanned.map((course) => ({
+        course,
+        listKind: "wont-take" as const,
+      })),
+    ].sort((a, b) => courseIdCompare(a.course.id, b.course.id));
+  });
+
   let timetableYear = $state(untrack(() => config.knownCourseYear));
   let timetableTerm = $state<TimetableTab>("spring-a");
   let lastAddedCourseId = $state<CourseId | undefined>();
@@ -257,6 +284,8 @@
     const moved = akikoMoveCourse(akiko, courseId, dst);
     if (moved.kind !== "moved") return;
     listKindOverrides = moved.listKindOverrides;
+    if (sheetTab === "plan" && dst === "wont-take")
+      unplannedOnPlanTab = new Set([...unplannedOnPlanTab, courseId]);
     if (dst !== "might-take") return;
     lastAddedCourseId = courseId;
     timetableYear = akiko.knownCourseYear;
@@ -435,7 +464,11 @@
           <button
             class:active={sheetTab === "plan"}
             onclick={() => showSheetTab("plan")}
-            ><ListChecks size={15} />取る授業 {planned.mightTake.length}</button
+            ><ListChecks
+              size={15}
+            />取る授業{#if planned.mightTake.length > 0}<span class="count"
+                >{planned.mightTake.length}</span
+              >{/if}</button
           >
           <button
             class:active={sheetTab === "timetable"}
@@ -519,8 +552,8 @@
                 )}単位</small
               >
             </h2>
-            {#each planned.mightTake as course (course.id)}
-              {@render row({ course, listKind: "might-take" }, true)}
+            {#each planList as listed (listed.course.id)}
+              {@render row(listed, true)}
             {:else}
               <p class="hint">
                 「授業を探す」で授業の ＋ を押すと、ここと時間割に入ります
@@ -781,6 +814,7 @@
     border-bottom: 1px solid var(--c-rule);
 
     & > button {
+      position: relative;
       flex: 1;
       display: flex;
       justify-content: center;
@@ -804,6 +838,21 @@
         color: var(--c-accent);
       }
     }
+  }
+
+  // In the tab's corner, like the desktop's filter badge
+  .count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    box-sizing: border-box;
+    min-width: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background-color: oklch(60% 15% 250);
+    color: white;
+    font-size: 12px;
+    line-height: 20px;
   }
 
   .scroll {

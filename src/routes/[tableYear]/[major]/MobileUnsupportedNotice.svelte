@@ -38,6 +38,7 @@
 {/if}
 
 <style lang="scss">
+  @use "../../../lib/hover" as *;
   #mobile-unsupported {
     position: fixed;
     inset: 0;
@@ -65,7 +66,7 @@
         background-color: #f8f8f8;
         cursor: pointer;
 
-        &:hover {
+        @include hover {
           background-color: #eee;
         }
       }

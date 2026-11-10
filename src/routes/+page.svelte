@@ -237,6 +237,7 @@
 </p>
 
 <style lang="scss">
+  @use "../lib/hover" as *;
   :global(body) {
     max-width: var(--content-max-width);
     margin: auto;
@@ -372,7 +373,7 @@
     text-decoration: none;
     cursor: pointer;
 
-    &:hover {
+    @include hover {
       background-color: oklch(95% 0 0);
     }
 
@@ -405,7 +406,7 @@
       content: " ›";
     }
 
-    &:hover {
+    @include hover {
       background-color: oklch(97% 3% 270);
     }
 

@@ -534,6 +534,7 @@
 {/if}
 
 <style lang="scss">
+  @use "../../../lib/hover" as *;
   :global(:root) {
     --sidebar-width: 740px;
     --toggle-width: 30px;
@@ -614,7 +615,7 @@
         color: oklch(45% 0.1 75);
         text-decoration: none;
 
-        &:hover {
+        @include hover {
           background-color: oklch(93% 0.08 90);
         }
       }
@@ -666,7 +667,7 @@
       border: 1px solid black;
       border-radius: 10px 10px 0 0;
 
-      &:hover {
+      @include hover {
         background-color: oklch(90% 0 0);
       }
 
@@ -725,7 +726,7 @@
     border-left: 1px solid black;
     border-bottom: 1px solid black;
 
-    &:hover {
+    @include hover {
       background-color: #ddd;
     }
   }

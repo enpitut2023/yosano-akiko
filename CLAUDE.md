@@ -125,6 +125,9 @@ grades file logs the current stats in that same shape.
   props (`onShowCell={(cellId: CellId, term: TimetableTab) => …}`); otherwise
   every use is reported as unsafe.
 - Name callback props in camelCase (`onShowCell`, `onClose`).
+- Style hover with `@include hover { … }` from `src/lib/hover.scss`, not
+  `&:hover`: a touch screen keeps `:hover` on the last thing tapped, so a
+  toggle would show its hover look over its on state.
 - Write comments in English, except in `src/lib/requirements/`, where Japanese
   fits the domain (履修要覧, 科目区分, …). UI text is Japanese.
 - A requirements module mirrors its 履修要覧 table: one predicate per cell,

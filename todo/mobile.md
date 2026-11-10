@@ -11,16 +11,19 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
   only page `entries` prerenders. It stays under `[tableYear]/[major]/` rather
   than at `/mock`: it imports the major page's components as `../X`, and sits
   beside the code it will be merged into.
-
 - Layout: the table fills the screen as a map, under a bottom sheet with
-  three heights (peek, half, full) and three tabs: 授業を探す, 取る授業,
-  時間割.
+  three heights (peek, half, full) and four tabs: 探す, 取る授業, 時間割,
+  単位.
+- Letting go of the sheet projects its height by its speed and snaps to the
+  nearest; a quick flick moves one snap its way, and only a very fast one
+  can skip half. The thresholds in `sheet.ts` are guesses to tune on a phone.
 - Courses move between lists with a ＋/✓ button on each row, not by
   dragging. Dragging can stay on desktop.
 - A course row: bold name, slot chip, then credits, year and ID in small
   grey text; yellow for 取る, green for 取得済み; a 時間が重複 tag; tap to
   expand 備考, シラバス and 該当マスを表示. The button doesn't make the row
-  jump.
+  jump: a course taken out on the 取る授業 tab stays listed, with a ＋, until
+  the tab changes.
 - Look: the desktop's, not an app-like one. Folder tabs with icons, black
   rules, rows stacked like its course tables, the credit summary as a box
   filled like its column sums, the table's green and yellow tints for taken
@@ -42,6 +45,12 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
       for a `tick` before scrolling. A CSS transform during the gesture,
       applying the zoom only when it ends, may fix it.
 - [ ] A trackpad pinch (ctrl+wheel) zooms the whole page, not the table.
+- [ ] The major's name is cut off in the header. Maybe the whole top bar is
+      the wrong choice.
+- [ ] A course row and a course's bar in the timetable look like different
+      things, but they're the same course; they should look alike, or at
+      least feel alike.
+- [ ] The ✓ on a course row doesn't say what it means.
 
 ## To decide
 
@@ -49,7 +58,7 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
       number (卒業まで あと 94→81 単位) over meters for 必修 and 選択; it
       could be better. Also tried and dropped: a meter each for 必修, 選択 and
       合計, and a ruled table of 取得済み, 取る授業, 必要 and あと.
-
+- [ ] The order of the sheet's tabs.
 - [ ] How the desktop components reused in the sheet should look on a phone:
       `CourseFilters`, `Timetable`, `ImportTab`, `ExportTab`.
 - [ ] The ＋/− buttons could be smaller once pinch works well.
@@ -65,5 +74,31 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
 - [ ] Touch pan and pinch zoom in `gestures.ts`.
 - [ ] Rewrite the tutorial's steps for the mobile layout, and remove
       `MobileUnsupportedNotice`.
-- [ ] Playwright e2e tests at a phone viewport.
+- [ ] Playwright e2e tests at a phone viewport, on the real page once the
+      layout is in `MajorApp`. Behaviors to cover:
+  - Tapping a cell selects it, opens the sheet to half on 探す with its
+    courses, and scrolls the cell into view above the sheet and the strip.
+  - Tapping the table outside a cell clears the selection; panning doesn't.
+  - ＋ and ✓ move a course without moving its row, and the peek's credits
+    and the tab's count follow.
+  - A course taken out on 取る授業 stays listed with a ＋ until the tab
+    changes, and ＋ puts it back.
+  - 該当マスを表示 and a timetable bar select their course's cell.
+  - The 時間が重複 tag shows on a course clashing with a planned one.
+  - さらに表示 lists more of a long cell.
+  - The ＋/− zoom keeps what's in the middle of the visible part in place,
+    with the sheet at each height.
+  - The column strip lines up under its columns through scrolling and
+    zooming; a column past its limit has a red border, and its warning's
+    表で見る scrolls to it.
+  - The 単位 tab's numbers match the credit stats.
+  - A grip tap moves the sheet to the next height; one drag and one flick,
+    as a check that `BottomSheet` wires up the rules `sheet.test.ts` covers.
+  - Importing grades from 成績 and downloading from 出力 still work.
 - [ ] Remove the mock route.
+
+## Later
+
+- [ ] Adding あきこ to the home screen (a web app manifest, maybe offline).
+- [ ] Making it a handy timetable viewer: open it and see this term's
+      classes.

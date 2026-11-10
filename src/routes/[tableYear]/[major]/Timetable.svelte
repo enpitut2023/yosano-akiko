@@ -356,6 +356,7 @@
 </div>
 
 <style lang="scss">
+  @use "../../../lib/hover" as *;
   .timetable {
     display: flex;
     flex-direction: column;
@@ -408,7 +409,7 @@
       &:last-child {
         border-right: none;
       }
-      &:hover {
+      @include hover {
         background-color: oklch(0.95 0 0);
       }
       &.active {
@@ -526,7 +527,7 @@
     &[draggable="true"]:active {
       cursor: grabbing;
     }
-    &:hover {
+    @include hover {
       filter: brightness(0.9);
     }
   }

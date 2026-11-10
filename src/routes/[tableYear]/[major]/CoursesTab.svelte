@@ -367,6 +367,7 @@
 {/if}
 
 <style lang="scss">
+  @use "../../../lib/hover" as *;
   #left-bar {
     display: grid;
     grid-template-rows: auto 1fr auto;
@@ -406,7 +407,7 @@
       background-color: white;
       cursor: pointer;
 
-      &:hover {
+      @include hover {
         background-color: oklch(95% 0 0);
       }
     }
