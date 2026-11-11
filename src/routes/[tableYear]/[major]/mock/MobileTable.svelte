@@ -294,18 +294,22 @@
     top: 10px;
     right: 10px;
     display: grid;
-    gap: 5px;
+    border: 1px solid var(--c-line);
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: var(--c-surface);
 
     & > button {
       all: unset;
       cursor: pointer;
       display: grid;
       place-items: center;
-      width: 45px;
-      height: 45px;
-      border: 1px solid var(--c-line);
-      border-radius: 10px;
-      background-color: var(--c-surface);
+      width: 35px;
+      height: 35px;
+
+      & + button {
+        border-top: 1px solid var(--c-line);
+      }
     }
   }
 </style>

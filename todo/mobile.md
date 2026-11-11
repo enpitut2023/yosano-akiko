@@ -61,7 +61,8 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
 - [ ] The order of the sheet's tabs.
 - [ ] How the desktop components reused in the sheet should look on a phone:
       `CourseFilters`, `Timetable`, `ImportTab`, `ExportTab`.
-- [ ] The ＋/− buttons could be smaller once pinch works well.
+- [x] The ＋/− buttons could be smaller once pinch works well. Down from
+      45px to 35px, and joined into one box.
 - [ ] Importing and exporting what's saved in localStorage (deferred).
 
 ## To do
