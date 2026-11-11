@@ -243,6 +243,8 @@
       var(--c-plan) var(--green) var(--yellow),
       transparent var(--yellow)
     );
+    // From the padding box, the gradient would repeat under the right border
+    background-origin: border-box;
     opacity: 0.4;
 
     &.selected {

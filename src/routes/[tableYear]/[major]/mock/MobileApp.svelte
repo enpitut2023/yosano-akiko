@@ -821,10 +821,11 @@
       align-items: center;
       gap: 5px;
       min-width: 0;
-      // Overlaps the bottom border so the active tab joins its content
-      margin-bottom: -1px;
       padding: 10px 0;
       border: 1px solid var(--c-rule);
+      // The rule under the tabs is their bottom edge. Overlapping it instead
+      // misaligns by a device pixel at fractional pixel ratios.
+      border-bottom: none;
       border-radius: 10px 10px 0 0;
       background-color: var(--c-panel);
       color: var(--c-sub);
@@ -832,8 +833,20 @@
       white-space: nowrap;
 
       &.active {
-        border-bottom-color: var(--c-surface);
         background-color: var(--c-surface);
+
+        // Hides the rule between its sides, so it joins its content. It spills
+        // past the rule both ways: an exact fit leaves an antialiased hairline
+        // at fractional pixel ratios.
+        &::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: -2px;
+          height: 4px;
+          background-color: var(--c-surface);
+        }
         box-shadow: inset 0 3px 0 var(--c-tab-accent);
         color: var(--c-accent);
       }
