@@ -229,10 +229,12 @@ function isC4Unlisted(id: string): boolean {
   );
 }
 
+// TODO: 他学類開設の情報数学A(GA15111・GA15121・GA15131)を誰が使えるか知識学類
+// に確認する。今はどのマスにも入らない(d1は必修科目の指定として除いている)。
+// - 使えるならisC5Unlistedに入れ、必要ならfromSougouでも絞る
+// - 使えないなら、d1など他のマスに入るかも聞いて直す
 function isC5(id: string): boolean {
-  return id === "GA15141"; // 情報数学A !!A!!
-  // id === "GA15111" || //情報数学A coins
-  // id === "GA15121"; // 情報数学A coins
+  return id === "GA15141"; // 情報数学A
 }
 
 function isC6(id: string): boolean {
