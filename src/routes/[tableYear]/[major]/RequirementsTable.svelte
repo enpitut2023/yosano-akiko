@@ -254,7 +254,7 @@
       {#each uiColumnCredits as { colId, rect, display, green, yellow } (colId)}
         <div
           style="left:{rect.x}px; width:{rect.width}px; --green-percentage:{green}%; --yellow-percentage:{yellow}%"
-          data-message-on-click={display.warning}
+          class:has-warning={display.warning !== undefined}
           onclick={() => display.warning && alert(display.warning)}
         >
           <TriangleAlert size={20} fill="#fcec5f" />
@@ -273,7 +273,7 @@
       <div
         id="overall-credit-sum"
         style="--green-percentage:{green}%; --yellow-percentage:{yellow}%"
-        data-message-on-click={display.warning}
+        class:has-warning={display.warning !== undefined}
         onclick={() => display.warning && alert(display.warning)}
       >
         <TriangleAlert size={20} fill="#fcec5f" />
@@ -395,7 +395,7 @@
       transparent 100%
     );
 
-    &[data-message-on-click]:not([data-message-on-click=""]) {
+    &.has-warning {
       cursor: pointer;
 
       & > :global(svg) {
