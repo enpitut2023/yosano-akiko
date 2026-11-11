@@ -227,6 +227,14 @@ function isC5(id: string): boolean {
   );
 }
 
+function isC5Unlisted(id: string): boolean {
+  // 他学類開設の情報数学A。注4から判断したもので、支援室には未確認
+  return (
+    id === "GA15131" || // 情報メディア創成学類
+    id === "GA15141" // 知識情報・図書館学類
+  );
+}
+
 function isC6(id: string): boolean {
   // 専門英語基礎
   return id === "GB19061";
@@ -451,6 +459,7 @@ function classify(
   if (isC3Unlisted(id)) return unlisted("c3", mode);
   if (isC4(id)) return "c4";
   if (isC5(id)) return "c5";
+  if (isC5Unlisted(id)) return unlisted("c5", mode);
   if (isC6(id)) return "c6";
   if (isC7(id)) return "c7";
   if (isC7Unlisted(id, fromSougou)) return unlisted("c7", mode);

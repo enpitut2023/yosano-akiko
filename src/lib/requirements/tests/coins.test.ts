@@ -164,12 +164,12 @@ describe.each([
     name: "情報数学A",
     cellId: "c5",
     forCoins: ["GA15111", "GA15121"],
-    forOthersForEveryone: [],
-    forOthersForIkou: [],
-    forOthersForNobody: [
+    forOthersForEveryone: [
       "GA15131", // mast
       "GA15141", // klis
     ],
+    forOthersForIkou: [],
+    forOthersForNobody: [],
   },
   {
     name: "プログラミング入門A",
