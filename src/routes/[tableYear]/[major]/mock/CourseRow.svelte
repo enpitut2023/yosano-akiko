@@ -19,6 +19,8 @@
     overlaps,
     expanded,
     showGotoCell,
+    labelled = false,
+    tag,
     onToggleExpanded,
     onMove,
     onShowCell,
@@ -31,6 +33,10 @@
     /** Whether the remark and the links show */
     expanded: boolean;
     showGotoCell: boolean;
+    /** Whether the button says what it does, not only shows ＋ or ✓ */
+    labelled?: boolean;
+    /** Where the course's credits go, for a list not of one cell's courses */
+    tag?: { text: string; tone: "need" | "full" | "none" };
     onToggleExpanded: () => void;
     onMove: (dst: AkikoMoveCourseDst) => void;
     onShowCell: (cellId: CellId) => void;
@@ -71,6 +77,9 @@
       {#if course.real && listKind !== "taken"}
         <span>{gradeDisplay(course.real.grade)}</span>
       {/if}
+      {#if tag}
+        <span class="tag {tag.tone}">{tag.text}</span>
+      {/if}
       {#if overlaps}
         <span class="overlap"><TriangleAlert size={10} />時間が重複</span>
       {/if}
@@ -85,11 +94,20 @@
   {:else}
     <button
       class="move"
-      aria-label={planned ? "取る授業から外す" : "取る授業に追加"}
+      class:labelled
+      aria-label={labelled
+        ? undefined
+        : planned
+          ? "取る授業から外す"
+          : "取る授業に追加"}
       aria-pressed={planned}
       onclick={() => onMove(planned ? "wont-take" : "might-take")}
     >
-      {#if planned}<Check size={20} />{:else}<Plus size={20} />{/if}
+      {#if planned}<Check size={labelled ? 15 : 20} />{:else}<Plus
+          size={labelled ? 15 : 20}
+        />{/if}
+      <!-- A checkbox labelled 取る: checked when planned -->
+      {#if labelled}取る{/if}
     </button>
   {/if}
   {#if expanded}
@@ -162,6 +180,7 @@
   }
 
   .slots,
+  .tag,
   .overlap {
     padding: 0 5px;
     border-radius: 5px;
@@ -171,6 +190,18 @@
     background-color: var(--c-panel);
     color: var(--c-text);
     font-size: var(--fs-sm);
+  }
+
+  .tag {
+    border: 1px solid currentColor;
+
+    &.need {
+      color: var(--c-warn);
+    }
+
+    &.none {
+      border-style: dashed;
+    }
   }
 
   .overlap {
@@ -201,6 +232,17 @@
     border: 1px solid var(--c-rule);
     border-radius: 50%;
     background-color: var(--c-surface);
+  }
+
+  .move.labelled {
+    display: flex;
+    gap: 5px;
+    width: auto;
+    height: 35px;
+    padding: 0 15px;
+    border-radius: 20px;
+    font-size: var(--fs-sm);
+    font-weight: bold;
   }
 
   .planned .move {

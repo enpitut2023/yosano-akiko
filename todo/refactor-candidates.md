@@ -97,6 +97,14 @@ the effort. Nothing here changes behavior unless it says so.
       line weight matches the 筑波大学 logo.
 - [x] The warning icons in `RequirementsTable` are now lucide's
       `TriangleAlert`, filled yellow.
+- [ ] Changes behavior: `vite.config.ts` drops every `a11y_` compiler
+      warning (`warningFilter`), which hides 14 of them. The table's cells,
+      the column and overall credit sums, and the timetable bars are
+      `<div onclick>`, so the keyboard can't reach them: no cell can be
+      selected without a mouse or touch. The rest are the table's
+      click-outside handler, `CoursesTab`'s drop zones and the mock's
+      `MobileTable`. Make the clickable ones buttons (or give them a role,
+      `tabindex` and key handlers), then remove the filter so new ones show.
 - [ ] Import errors and the 編入生 notice use `alert()` (`MajorApp`), while
       the rest of the UI uses `Dialog`/`Callout` and inline notes. The
       import error could show under the drop zone in `ImportTab`.
