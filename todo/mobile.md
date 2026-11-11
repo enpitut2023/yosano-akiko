@@ -52,8 +52,51 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
       things, but they're the same course; they should look alike, or at
       least feel alike.
 - [ ] The ✓ on a course row doesn't say what it means.
+- [ ] 案：表と時間割's toolbar total (卒業まで あと 104→97 単位) and the
+      red あと N badges on cells and columns say the same kind of thing but
+      look nothing alike. They should look similar.
 
 ## To decide
+
+- [ ] Which layout. The mock bar's 案 switch picks between the panel layout
+      above (案：パネル, `SheetLayout`) and 案：表と時間割 (`ViewsLayout`).
+
+  Why a redesign: the panel layout only makes sense to those who already
+  know how akiko works, and a tutorial won't fix that; it's unintuitive at
+  heart. Its tabs (探す, 取る授業, 時間割, 単位) are akiko's model: a cell has
+  courses, a course moves between lists, and the lists drive the colors,
+  the credits and the export. Students instead think of their 履修 in terms
+  of the 履修要覧 table and the timetable, so those should be front and
+  center, with the model showing through what they do.
+
+  What 案：表と時間割 tries, and why:
+  - 表 and 時間割 as the two main views, switched at the top, with no tabs:
+    they're how students already think.
+  - Picking courses from either view. A cell lists its courses; a timetable
+    slot lists the courses at that time that count toward graduation, each
+    tagged with what its credits would do (マスにあと2単位必要, 単位は足りて
+    いる, …), the needed ones first. "What can I take on Monday 3rd period"
+    is how many students choose, and the tags tie the timetable back to the
+    table.
+  - The courses sheet opens only to pick, headed by what it's for, and closes
+    with ✕: always there, it competed with the views and asked to be
+    understood before anything else.
+  - あと N on each cell and column still short after the planned courses,
+    and a legend: the table says where to act without knowing what the colors
+    mean.
+  - The total (卒業まで あと 104→94 単位) in the toolbar, opening the 単位
+    details: it's the number students care about, so it's always in sight.
+  - ① 成績 → ② 授業を選ぶ → ③ TWINSへ as the header, in place of the pink
+    bar, the major's name and the 成績 and 出力 buttons. The steps describe
+    akiko's whole workflow in one line, doing much of a tutorial's job, and
+    take less room; importing and exporting are occasional.
+  - A 取る button, checked when planned, as the bare ＋/✓ didn't say what
+    it does.
+  - A banner asking for grades when there are none: on a first visit nothing
+    is green, and importing is what comes next.
+  - Tried and dropped: a 足りないマスへ button going through the short cells
+    in turn, and a toast after each move with 元に戻す and 時間割で見る. Not
+    needed.
 
 - [ ] A better 単位 tab. For now it shows what's left to graduate as a big
       number (卒業まで あと 94→81 単位) over meters for 必修 and 選択; it

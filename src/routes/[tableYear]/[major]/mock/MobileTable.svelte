@@ -18,6 +18,7 @@
     creditBoundsToString,
     creditFillPercentages,
   } from "../credit-display";
+  import { creditsLeft } from "./credits";
   import { pinchZoom, zoomAround } from "./pinch";
 
   let {
@@ -25,6 +26,7 @@
     creditStats,
     selectedCellId,
     coveredHeight,
+    showLeft = false,
     onSelect,
   }: {
     config: MajorConfig;
@@ -32,6 +34,8 @@
     selectedCellId: CellId | undefined;
     /** How much of the bottom something else covers */
     coveredHeight: number;
+    /** Whether a cell or column short of credits says how many more it needs */
+    showLeft?: boolean;
     /** Called with undefined on a tap outside the cells */
     onSelect: (cellId: CellId | undefined) => void;
   } = $props();
@@ -81,7 +85,8 @@
         stats.effectiveMightTake,
         stats.min,
       );
-      return [{ colId, rect, stats, green, yellow }];
+      const left = creditsLeft(stats, true);
+      return [{ colId, rect, stats, green, yellow, left }];
     }),
   );
 
@@ -168,6 +173,14 @@
             style="left:{r.x}px; top:{r.y}px; width:{r.width}px; height:{r.height}px; --green:{green}%; --yellow:{yellow}%"
             onclick={() => onSelect(r.id)}
           ></button>
+          {@const left = creditsLeft(cellStats, true)}
+          {#if showLeft && left > 0}
+            <span
+              class="left on-cell"
+              style="left:{r.x + r.width}px; top:{r.y + r.height}px"
+              aria-hidden="true">あと{left}</span
+            >
+          {/if}
         {/if}
       {/each}
     </div>
@@ -189,6 +202,9 @@
                 .stats.effectiveTaken + b.stats.effectiveMightTake}{/if}</strong
           >
           <span>/ {creditBoundsToString(b.stats.min, b.stats.max)}</span>
+          {#if showLeft && b.left > 0}
+            <span class="left" aria-hidden="true">あと{b.left}</span>
+          {/if}
         </div>
       {/each}
     </div>
@@ -253,6 +269,26 @@
       outline: 5px solid #0066ff;
       outline-offset: 5px;
       z-index: 1;
+    }
+  }
+
+  // Not zoomed, so it stays readable when the table is small
+  .left {
+    align-self: center;
+    padding: 0 5px;
+    border: 1px solid var(--c-warn);
+    border-radius: 5px;
+    background-color: var(--c-surface);
+    color: var(--c-warn);
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+    pointer-events: none;
+
+    &.on-cell {
+      position: absolute;
+      z-index: 1;
+      transform: translate(calc(-100% - 5px), calc(-100% - 5px));
     }
   }
 
