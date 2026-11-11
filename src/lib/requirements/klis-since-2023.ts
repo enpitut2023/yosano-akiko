@@ -113,7 +113,8 @@ function classifyColumnA(
   let offset = 0;
   if (tableYear >= 2026) {
     offset = 1;
-    // TODO: 科目番号不明 !!B!!
+    // TODO: 卒業論文の科目番号が科目一覧に載ったら入れる。今すぐに学生が履修できる
+    // 科目ではないため、現時点では含めないよう支援室から回答があった。
     if (id === "xxxxxxx") return "a3"; // 卒業論文
   }
   if (isA3(id, specialty)) return "a" + (3 + offset);
