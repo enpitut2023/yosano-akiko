@@ -199,23 +199,33 @@ function isC2(id: string): boolean {
   );
 }
 
-// TODO: 他学類開設のプログラミング入門A・Bを誰が使えるか知識学類に確認して、
-// - coins開設(GA18212・GA18312)は今は選択肢にも出しているので、isC3Unlisted・
-//   isC4Unlistedに移し、必要ならfromSougouでも絞る
-// - mast開設(GA18222・GA18322)も使えるなら同様に加える
 function isC3(id: string): boolean {
-  // プログラミング入門A
+  return id === "GA18232"; // プログラミング入門A
+}
+
+function isC3Unlisted(id: string): boolean {
+  // プログラミング入門A（情報学群または社会工学類開設）
   return (
-    id === "GA18232" || // 知識学類開設
-    id === "GA18212" // 情報科学類開設
+    id === "GA18212" || // 情報科学類開設
+    id === "GA18222" || // 情報メディア創成学類開設
+    id === "FH60474" || // 社会工学類開設
+    id === "FH60484" ||
+    id === "FH60494"
   );
 }
 
 function isC4(id: string): boolean {
-  // プログラミング入門B
+  return id === "GA18332"; // プログラミング入門B
+}
+
+function isC4Unlisted(id: string): boolean {
+  // プログラミング入門B（情報学群または社会工学類開設）
   return (
-    id === "GA18332" || // 知識学類開設
-    id === "GA18312" // 情報科学類開設
+    id === "GA18312" || // 情報科学類開設
+    id === "GA18322" || // 情報メディア創成学類開設
+    id === "FH60574" || // 社会工学類開設
+    id === "FH60584" ||
+    id === "FH60594"
   );
 }
 
@@ -364,7 +374,9 @@ function classify(
   if (isC1(id)) return "c1";
   if (isC2(id)) return "c2";
   if (isC3(id)) return "c3";
+  if (isC3Unlisted(id)) return unlisted("c3", mode);
   if (isC4(id)) return "c4";
+  if (isC4Unlisted(id)) return unlisted("c4", mode);
   if (isC5(id)) return "c5";
   if (isC6(id)) return "c6";
   if (isC7(id)) return "c7";
