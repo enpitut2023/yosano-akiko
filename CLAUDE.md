@@ -86,6 +86,21 @@ another 学類's class of a course every 学類 teaches, or a course taken durin
 微分積分A for every student but offers it to none. `src/lib/requirements/tests/offered.test.ts`
 compares the two modes over the whole catalog and lists where they disagree.
 
+**Markers.** Comments in the modules carry `!!X!!` markers from the first pass
+over the tables, kept so open questions can be grepped:
+
+- `!!A!!`: courses with the same name exist (another 学類's or another class's),
+  and which of them should count is unsure.
+- `!!B!!`: a question to ask the 学類's 支援室.
+- `!!C!!`: a remark that a course may count in another cell than where it's
+  shown, as a code share or a course with the same content.
+- `!!D!!`: a remark that a 読み替え isn't handled, such as one for 移行生 from
+  総合学域群.
+- `!!E!!`: a remark that a 注, probably about 留学生 and 日本語, isn't handled.
+- `!!F!!`: a remark that a condition like 「〜単位以上履修していること」 isn't
+  handled.
+- `!!O!!`: credits overflowing from one cell into another.
+
 **Assembling a page.** `src/routes/[tableYear]/[major]/+page.ts` calls
 `getMajorConfig` (`major-config.ts`). It lazy-imports the major's requirements
 module, so each page bundles only its own, and fetches
