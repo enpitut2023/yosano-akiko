@@ -108,6 +108,10 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
 - [x] The ＋/− buttons could be smaller once pinch works well. Down from
       45px to 35px, and joined into one box.
 - [ ] Importing and exporting what's saved in localStorage (deferred).
+- [ ] Dragging the sheet from anywhere that doesn't scroll, as native sheets
+      do, not only by its grip. A tap still steps it to the next height only
+      on the grip. Dragging a list down from its top doesn't move the sheet:
+      handing the gesture between scrolling and dragging is fragile.
 - [ ] The timetable's orange highlight on the course added last (a7c4ab5)
       isn't needed on a phone. Leave it for now.
 
@@ -141,6 +145,9 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
   - The 単位 tab's numbers match the credit stats.
   - A grip tap moves the sheet to the next height; one drag and one flick,
     as a check that `BottomSheet` wires up the rules `sheet.test.ts` covers.
+  - If dragging from anywhere stays: a drag from the sheet's header moves
+    it, a tap on a button there still clicks, a drag that starts on one
+    doesn't click it, and a drag in a list scrolls the list.
   - Importing grades from 成績 and downloading from 出力 still work.
 - [ ] Add the donation link.
 - [ ] Remove the mock route.
