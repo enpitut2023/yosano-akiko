@@ -46,7 +46,8 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
       applying the zoom only when it ends, may fix it.
 - [ ] A trackpad pinch (ctrl+wheel) zooms the whole page, not the table.
 - [ ] The major's name is cut off in the header. Maybe the whole top bar is
-      the wrong choice.
+      the wrong choice: the pink bar with its 成績 and 出力 buttons takes too
+      much of the screen to show all the time.
 - [ ] A course row and a course's bar in the timetable look like different
       things, but they're the same course; they should look alike, or at
       least feel alike.
@@ -64,6 +65,8 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
 - [x] The ＋/− buttons could be smaller once pinch works well. Down from
       45px to 35px, and joined into one box.
 - [ ] Importing and exporting what's saved in localStorage (deferred).
+- [ ] The timetable's orange highlight on the course added last (a7c4ab5)
+      isn't needed on a phone. Leave it for now.
 
 ## To do
 
@@ -96,6 +99,7 @@ layout first: unlinked, `noindex`, in memory only. Try it on a phone with
   - A grip tap moves the sheet to the next height; one drag and one flick,
     as a check that `BottomSheet` wires up the rules `sheet.test.ts` covers.
   - Importing grades from 成績 and downloading from 出力 still work.
+- [ ] Add the donation link.
 - [ ] Remove the mock route.
 
 ## Later
